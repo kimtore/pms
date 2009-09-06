@@ -125,6 +125,7 @@ bool init_commandmap()
 	pms->commands->add("scroll-up", "Scroll up one line", PEND_SCROLL_UP);
 	pms->commands->add("scroll-down", "Scroll down one line", PEND_SCROLL_DOWN);
 	pms->commands->add("center-cursor", "Center the cursor", PEND_CENTER_CURSOR);
+	pms->commands->add("centre-cursor", "Centre the cursor", PEND_CENTER_CURSOR);
 
 	return true;
 }
