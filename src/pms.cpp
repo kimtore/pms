@@ -741,11 +741,11 @@ bool			Pms::run_shell(string cmd, Error & err)
 	err.code = system(cmd.c_str());
 	err.code = WEXITSTATUS(err.code);
 
-	debug("shell returned %d\n", err.code);
+	debug("Shell returned %d\n", err.code);
 	if (err.code != 0)
-		printf("\nshell returned %d\n", err.code);
+		printf(_("\nShell returned %d\n"), err.code);
 
-	printf("\nPress ENTER to continue");
+	printf(_("\nPress ENTER to continue"));
 	fflush(stdout);
 	scanf("%c", &c);
 
