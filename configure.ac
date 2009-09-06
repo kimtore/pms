@@ -1,4 +1,4 @@
-AC_INIT([pms], [0.41], [kimtjen@gmail.com])
+AC_INIT([pms], [0.42~git], [kimtjen@gmail.com])
 AC_CONFIG_SRCDIR([src/pms.cpp])
 MP_WITH_CURSES
 HAVE_CURS=$mp_cv_curses
