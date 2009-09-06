@@ -1,0 +1,10 @@
+To install PMS, type:
+
+$ ./configure
+
+If all went well, continue with:
+
+$ make
+$ su -
+Password:
+# make install

@@ -1,0 +1,5 @@
+- Directory browsing
+- Extended search
+	narrows down the list view to only show the search results.
+	this list is automatically added as a new list, and can be saved into mpd's playlists.
+- better album detection, and also customizable through the 'albumclass' setting.

@@ -1,0 +1,2 @@
+set args -d
+run

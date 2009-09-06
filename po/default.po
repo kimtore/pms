@@ -1,0 +1,445 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: pms 0.40.7\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-08-17 11:59+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Kim Tore Jensen <kimtjen@gmail.com>\n"
+"Language-Team: Kim Tore Jensen <kimtjen@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-Basepath: /home/kimt/code/pms/\n"
+"X-Poedit-SearchPath-0: src\n"
+
+#: src/action.cpp:178
+#, c-format
+msgid "Volume: %d%%%%"
+msgstr "Volum: %d%%%%"
+
+#: src/action.cpp:469
+#, c-format
+msgid "Added %d %s to %s."
+msgstr "La %d %s til %s."
+
+#: src/action.cpp:479
+#: src/action.cpp:485
+msgid "There is no next song."
+msgstr "Det finnes ingen neste sang i listen."
+
+#: src/action.cpp:528
+msgid "This command can only be run within a playlist."
+msgstr "Denne kommandoen kan kun brukes i en spilleliste."
+
+#: src/action.cpp:539
+msgid "You can't move anything else than songs."
+msgstr "Du kan kun flytte sanger."
+
+#: src/action.cpp:545
+msgid "Can't move."
+msgstr "Kan ikke flytte."
+
+#: src/action.cpp:629
+msgid "Not playing, can't seek."
+msgstr "Kan ikke spole fordi avspillingen er stoppet."
+
+#: src/action.cpp:634
+#, c-format
+msgid "Seeking by %d seconds?"
+msgstr "Spole %d sekunder?"
+
+#: src/action.cpp:688
+#, c-format
+msgid "shell returned %d"
+msgstr "Skallet gav returverdi %d"
+
+#: src/action.cpp:737
+#, c-format
+msgid "Error %d: %s"
+msgstr "Feilkode %d: %s"
+
+#: src/action.cpp:748
+#, c-format
+msgid "Pattern not found: %s"
+msgstr "Søkemønster ikke funnet: %s"
+
+#: src/action.cpp:785
+msgid "Can't change window."
+msgstr "Kan ikke skifte vindu."
+
+#: src/action.cpp:815
+#: src/action.cpp:833
+#: src/action.cpp:850
+msgid "Can't search within this window."
+msgstr "Kan ikke søke i dette vinduet."
+
+#: src/action.cpp:861
+msgid "This command has to be run with a field argument."
+msgstr "Denne kommandoen må kjøres med et felt som parameter."
+
+#: src/action.cpp:867
+msgid "This command has to be run within a playlist."
+msgstr "Denne kommandoen må kjøres i en spilleliste."
+
+#: src/action.cpp:879
+#, c-format
+msgid "Could not find another entry of type '%s'."
+msgstr "Finner ikke andre sanger av typen '%s'."
+
+#: src/action.cpp:1123
+msgid "A library update is already in progress."
+msgstr "Biblioteket er allerede under oppdatering."
+
+#: src/action.cpp:1151
+msgid "Reloaded configuration file."
+msgstr "Innstillinger er lastet på nytt."
+
+#: src/action.cpp:1156
+#, c-format
+msgid "Configuration error: %s"
+msgstr "Feil i innstillinger: %s"
+
+#: src/action.cpp:1164
+msgid "You have to specify a password."
+msgstr "Du må angi et passord."
+
+#: src/action.cpp:1169
+msgid "Password accepted by mpd."
+msgstr ""
+
+#: src/action.cpp:1218
+#, c-format
+msgid "Out of range, acceptable range is 1-%d."
+msgstr ""
+
+#: src/action.cpp:1319
+msgid "Playing"
+msgstr ""
+
+#: src/action.cpp:1319
+msgid "Adding"
+msgstr ""
+
+#: src/action.cpp:1326
+#, c-format
+msgid "%s all songs by %s"
+msgstr ""
+
+#: src/action.cpp:1338
+#: src/action.cpp:1349
+#, c-format
+msgid "%s album '%s' by %s"
+msgstr ""
+
+#: src/action.cpp:1356
+#, c-format
+msgid "%s remainder of album '%s' by %s"
+msgstr ""
+
+#: src/pms.cpp:113
+#, c-format
+msgid "Connecting to host %s, port %d..."
+msgstr ""
+
+#: src/pms.cpp:117
+#, c-format
+msgid "failed.\n"
+msgstr ""
+
+#: src/pms.cpp:123
+#, c-format
+msgid "connected.\n"
+msgstr ""
+
+#: src/pms.cpp:128
+#, c-format
+msgid "Sending password..."
+msgstr ""
+
+#: src/pms.cpp:130
+#, c-format
+msgid "password accepted.\n"
+msgstr ""
+
+#: src/pms.cpp:132
+#, c-format
+msgid "wrong password.\n"
+msgstr ""
+
+#: src/pms.cpp:138
+#, c-format
+msgid "This mpd server requires a password.\n"
+msgstr ""
+
+#: src/pms.cpp:141
+#, c-format
+msgid "Password: "
+msgstr ""
+
+#: src/pms.cpp:152
+#, c-format
+msgid "Wrong password, try again.\n"
+msgstr ""
+
+#: src/pms.cpp:158
+#, c-format
+msgid "Successfully logged in.\n"
+msgstr ""
+
+#: src/pms.cpp:161
+#, c-format
+msgid "Retrieving library and all playlists..."
+msgstr ""
+
+#: src/pms.cpp:163
+#: src/pms.cpp:169
+#, c-format
+msgid "done.\n"
+msgstr ""
+
+#: src/pms.cpp:167
+#, c-format
+msgid "Sorting library..."
+msgstr ""
+
+#: src/pms.cpp:178
+#, c-format
+msgid "Can't initialize display!\n"
+msgstr ""
+
+#: src/pms.cpp:192
+#, c-format
+msgid "Can't initialize windows!\n"
+msgstr ""
+
+#: src/pms.cpp:195
+msgid "Playlist"
+msgstr ""
+
+#: src/pms.cpp:196
+msgid "Library"
+msgstr ""
+
+#: src/pms.cpp:241
+msgid "Attempting reconnect..."
+msgstr ""
+
+#: src/pms.cpp:253
+msgid "Reconnected successfully."
+msgstr ""
+
+#: src/pms.cpp:263
+msgid "Library updated."
+msgstr ""
+
+#: src/pms.cpp:429
+msgid "#"
+msgstr ""
+
+#: src/pms.cpp:430
+msgid "Filename"
+msgstr ""
+
+#: src/pms.cpp:431
+msgid "Artist"
+msgstr ""
+
+#: src/pms.cpp:432
+msgid "Artist sort name"
+msgstr ""
+
+#: src/pms.cpp:433
+msgid "Album artist"
+msgstr ""
+
+#: src/pms.cpp:434
+msgid "Album artist sort name"
+msgstr ""
+
+#: src/pms.cpp:435
+msgid "Title"
+msgstr ""
+
+#: src/pms.cpp:436
+msgid "Album"
+msgstr ""
+
+#: src/pms.cpp:437
+msgid "Track"
+msgstr ""
+
+#: src/pms.cpp:438
+msgid "Length"
+msgstr ""
+
+#: src/pms.cpp:439
+msgid "Date"
+msgstr ""
+
+#: src/pms.cpp:440
+msgid "Year"
+msgstr ""
+
+#: src/pms.cpp:441
+msgid "Name"
+msgstr ""
+
+#: src/pms.cpp:442
+msgid "Genre"
+msgstr ""
+
+#: src/pms.cpp:443
+msgid "Composer"
+msgstr ""
+
+#: src/pms.cpp:444
+msgid "Performer"
+msgstr ""
+
+#: src/pms.cpp:445
+msgid "Disc"
+msgstr ""
+
+#: src/pms.cpp:446
+msgid "Comment"
+msgstr ""
+
+#: src/pms.cpp:607
+msgid "song"
+msgstr ""
+
+#: src/pms.cpp:609
+msgid "songs"
+msgstr ""
+
+#: src/input.cpp:631
+msgid "unknown command"
+msgstr ""
+
+#: src/config.cpp:176
+msgid "invalid command"
+msgstr ""
+
+#: src/config.cpp:247
+msgid "function key out of range"
+msgstr ""
+
+#: src/config.cpp:255
+msgid "invalid key"
+msgstr ""
+
+#: src/config.cpp:370
+msgid "invalid column type"
+msgstr ""
+
+#: src/config.cpp:542
+#: src/config.cpp:790
+msgid "invalid identifier"
+msgstr ""
+
+#: src/config.cpp:546
+msgid "missing name identifier after 'set'"
+msgstr ""
+
+#: src/config.cpp:549
+msgid "missing value for configuration option"
+msgstr ""
+
+#: src/config.cpp:567
+msgid "missing key after 'bind'"
+msgstr ""
+
+#: src/config.cpp:574
+msgid "missing command to bind to key"
+msgstr ""
+
+#: src/config.cpp:594
+msgid "Can't remove binding for key"
+msgstr ""
+
+#: src/config.cpp:611
+msgid "missing names after 'color'"
+msgstr ""
+
+#: src/config.cpp:618
+msgid "missing colors to add to "
+msgstr ""
+
+#: src/config.cpp:633
+msgid "syntax error: unexpected"
+msgstr ""
+
+#: src/config.cpp:800
+msgid "excess arguments: expected 1 or 2, got "
+msgstr ""
+
+#: src/config.cpp:882
+msgid "invalid color name"
+msgstr ""
+
+#: src/config.cpp:905
+msgid "invalid identifier name"
+msgstr ""
+
+#: src/config.cpp:1032
+msgid "on"
+msgstr ""
+
+#: src/config.cpp:1032
+msgid "off"
+msgstr ""
+
+#: src/config.cpp:1038
+msgid "<special>"
+msgstr ""
+
+#: src/config.cpp:1057
+msgid "missing name identifier"
+msgstr ""
+
+#: src/config.cpp:1104
+msgid "invalid scroll mode, expected 'normal', 'centered' or 'relative'"
+msgstr ""
+
+#: src/config.cpp:1119
+msgid "invalid play mode, expected 'manual', 'linear' or 'random'"
+msgstr ""
+
+#: src/config.cpp:1141
+msgid "invalid option"
+msgstr ""
+
+#: src/config.cpp:1198
+msgid "invalid topbar line"
+msgstr ""
+
+#: src/config.cpp:1200
+msgid "expected range is 1-99"
+msgstr ""
+
+#: src/config.cpp:1207
+msgid "expected placement after topbar index"
+msgstr ""
+
+#: src/config.cpp:1220
+msgid "invalid topbar position"
+msgstr ""
+
+#: src/display.cpp:476
+msgid "Error: directory structure could not be initialized - no permissions?"
+msgstr ""
+
+#: src/display.cpp:582
+msgid "Key"
+msgstr ""
+
+#: src/display.cpp:583
+msgid "Command"
+msgstr ""
+
+#: src/display.cpp:584
+msgid "Description"
+msgstr ""
+
