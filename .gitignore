@@ -25,3 +25,5 @@ config.h
 config.*
 depcomp
 missing
+po/Makefile
+install-sh
