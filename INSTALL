@@ -1,10 +1,22 @@
-To install PMS, type:
+To set up the build environment for PMS, type:
+$ ./autogen.sh
 
+If all went well, configure the build with:
 $ ./configure
 
-If all went well, continue with:
-
+If there were error messages address them -- you may have missing libraries. 
+Then run the configure script again.
+Otherwise, build PMS with:
 $ make
+
+Then, to install system-wide:
 $ su -
 Password:
 # make install
+
+Or, on systems which use sudo:
+
+$ sudo make install
+
+You should then be able to run PMS by typing
+$ pms

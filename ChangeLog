@@ -5,6 +5,8 @@ Changes in 0.42~git
 Kim Tore Jensen:
 2009-09-06: added: centre-cursor aliases center-cursor.
 
+Bart Nagel:
+2009-09-19: changed: updated the INSTALL file to be a bit more descriptive
 
 ---
 Changes in 0.41, released on 2009-09-06
