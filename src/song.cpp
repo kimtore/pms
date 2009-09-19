@@ -139,7 +139,7 @@ void		Song::init()
 	while (trackshort[0] == '0')
 		trackshort = trackshort.substr(1);
 	if ((i = trackshort.find('/')) != string::npos)
-		trackshort = trackshort.substr(i + 1);
+		trackshort = trackshort.substr(0, i);
 
 	/* sort names if none available */
 	if (artistsort.size() == 0)
