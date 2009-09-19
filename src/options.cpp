@@ -65,6 +65,7 @@ void			Options::reset()
 	showtopbar		= true;
 	topbarborders		= false;
 	topbarspace		= true;
+	columnspace		= true;
 	mouse			= false;
 	libraryroot		= "";
 	scrolloff		= 0;

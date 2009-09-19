@@ -1781,8 +1781,8 @@ unsigned int	pms_column::len()
 		else
 			abslen = (median / items);
 	}
-	if ((unsigned int)abslen < minlen)
-		return minlen;
+	if ((unsigned int)abslen < minlen + (pms->options->columnspace ? 1 : 0))
+		return minlen + (pms->options->columnspace ? 1 : 0);
 
 	return (unsigned int)abslen;
 }

@@ -80,6 +80,7 @@ public:
 	bool			nextafteraction;	// Move cursor to next item after selecting/unselecting/toggling selection or adding to playlist
 	bool			showtopbar;		// Whether or not to display the topbar
 	bool			topbarspace;		// Whether or not to leave a blank row between the topbar and the playlist windows
+	bool			columnspace;		// Whether or not to add an extra unit of width to fixed-width columns
 	bool			topbarborders;		// Draw borders on topbar window?
 	bool			addtoreturns;		// Return to original window when using addto?
 	vector<Topbarline *>	topbar;			// Topbar draw information

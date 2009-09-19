@@ -963,6 +963,8 @@ int			Configurator::get_opt_ptr(string name, void *& dest)
 		dest = &(opt->topbarborders);
 	else if (name == "topbarspace")
 		dest = &(opt->topbarspace);
+	else if (name == "columnspace")
+		dest = &(opt->columnspace);
 	else if (name == "mouse")
 		dest = &(opt->mouse);
 	else if (name == "addtoreturns")
@@ -1190,7 +1192,7 @@ bool			Configurator::set_option(string name, string value, Error & err)
 	{
 		if (pms->disp) pms->disp->setmousemask();
 	}
-	else if (name == "topbarvisible" || name == "topbarborders" || name == "topbarspace")
+	else if (name == "topbarvisible" || name == "topbarborders" || name == "topbarspace" || name == "columnspace")
 	{
 		if (pms->disp) pms->disp->resized();
 	}
