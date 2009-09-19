@@ -3,6 +3,7 @@ Changes in 0.42~git
 ---
 
 Kim Tore Jensen:
+2009-09-18: changed: default sort mode adds sort by release date before album name.
 2009-09-06: added: centre-cursor aliases center-cursor.
 
 Bart Nagel:

@@ -1007,7 +1007,7 @@ bool		Songlist::sort(string sorts)
 	if (sorts.size() == 0)
 		return false;
 	else if (sorts == "default")
-		sorts = "track disc album albumartistsort";
+		sorts = "track disc album date albumartistsort";
 
 	temp = songs;
 
