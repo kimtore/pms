@@ -40,6 +40,7 @@ Song::Song(mpd_Song * song)
 	title			= (song->title ? song->title : "");
 	album			= (song->album ? song->album : "");
 	track			= (song->track ? song->track : "");
+	trackshort		= "";
 	name			= (song->name ? song->name : "");
 	date			= (song->date ? song->date : "");
 	year			= (song->year ? song->year : "");
@@ -69,6 +70,7 @@ Song::Song(Song * song)
 	title			= song->title;
 	album			= song->album;
 	track			= song->track;
+	trackshort		= song->trackshort;
 	name			= song->name;
 	date			= song->date;
 
@@ -97,6 +99,7 @@ Song::Song(string uri)
 	title			= "";
 	album			= "";
 	track			= "";
+	trackshort		= "";
 	name			= "";
 	date			= "";
 	year			= "";
@@ -127,9 +130,18 @@ void		Song::init()
 	vector<string *>	original;
 	vector<string *>	rewritten;
 
+	/* year from date */
 	if (date.size() >= 4)
 		year = date.substr(0, 4);
 
+	/* trackshort from track */
+	trackshort = track;
+	while (trackshort[0] == '0')
+		trackshort = trackshort.substr(1);
+	if ((i = trackshort.find('/')) != string::npos)
+		trackshort = trackshort.substr(i + 1);
+
+	/* sort names if none available */
 	if (artistsort.size() == 0)
 	{
 		original.push_back(&artist);

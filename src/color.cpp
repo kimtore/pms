@@ -92,6 +92,7 @@ void			Colortable::clear()
 	delete fields.title;
 	delete fields.album;
 	delete fields.track;
+	delete fields.trackshort;
 	delete fields.time;
 	delete fields.date;
 	delete fields.year;
@@ -112,6 +113,7 @@ void			Colortable::clear()
 	delete topbar.fields.title;
 	delete topbar.fields.album;
 	delete topbar.fields.track;
+	delete topbar.fields.trackshort;
 	delete topbar.fields.time;
 	delete topbar.fields.date;
 	delete topbar.fields.year;
@@ -182,6 +184,7 @@ void			Colortable::defaults()
 	fields.title				= new color(COLOR_WHITE, -1, A_BOLD);
 	fields.album				= new color(COLOR_CYAN, -1, 0);
 	fields.track				= new color(COLOR_BLACK, -1, A_BOLD);
+	fields.trackshort			= new color(COLOR_BLACK, -1, A_BOLD);
 	fields.time				= new color(COLOR_MAGENTA, -1, 0);
 	fields.date				= new color(COLOR_YELLOW, -1, 0);
 	fields.year				= new color(COLOR_YELLOW, -1, 0);
@@ -202,6 +205,7 @@ void			Colortable::defaults()
 	topbar.fields.title			= new color(COLOR_WHITE, -1, A_BOLD);
 	topbar.fields.album			= new color(COLOR_CYAN, -1, 0);
 	topbar.fields.track			= new color(COLOR_BLACK, -1, A_BOLD);
+	topbar.fields.trackshort		= new color(COLOR_BLACK, -1, A_BOLD);
 	topbar.fields.time			= new color(COLOR_MAGENTA, -1, 0);
 	topbar.fields.date			= new color(COLOR_YELLOW, -1, 0);
 	topbar.fields.year			= new color(COLOR_YELLOW, -1, 0);

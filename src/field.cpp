@@ -142,6 +142,8 @@ Item			Formatter::field_to_item(string f)
 		return FIELD_YEAR;
 	else if (f == "track")
 		return FIELD_TRACK;
+	else if (f == "trackshort")
+		return FIELD_TRACKSHORT;
 	else if (f == "time")
 		return FIELD_TIME;
 	else if (f == "name")
@@ -463,6 +465,11 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 		case FIELD_TRACK:
 			if (!song) return retstr;
 			retstr = song->track;
+			break;
+
+		case FIELD_TRACKSHORT:
+			if (!song) return retstr;
+			retstr = song->trackshort;
 			break;
 
 		case FIELD_TIME:
@@ -860,6 +867,10 @@ color *			Formatter::getcolor(Item i, colortable_fields * f)
 			c = f->track;
 			break;
 
+		case FIELD_TRACKSHORT:
+			c = f->trackshort;
+			break;
+
 		case FIELD_TIME:
 			c = f->time;
 			break;
@@ -1017,6 +1028,8 @@ long			Formatter::item_to_match(Item i)
 			break;
 
 		case FIELD_TRACK:
+		case FIELD_TRACKSHORT:
+			/* same thing */
 			l = MATCH_TRACK;
 			break;
 

@@ -1029,6 +1029,9 @@ void pms_win_playlist::set_column_size()
 			case FIELD_TRACK:
 				ui = song->track.size();
 				break;
+			case FIELD_TRACKSHORT:
+				ui = song->trackshort.size();
+				break;
 			case FIELD_TIME:
 				ui = Pms::timeformat(song->time).size();
 				break;

@@ -59,6 +59,7 @@ typedef struct
 	color *			album;
 	color *			genre;
 	color *			track;
+	color *			trackshort;
 	color *			time;
 	color *			date;
 	color *			year;

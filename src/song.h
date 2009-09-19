@@ -47,6 +47,7 @@ public:
 	/* Custom parameters only used by PMS */
 	
 	bool		selected;
+	string		trackshort;
 
 	/* Standard parameters imported from libmpdclient.h */
 

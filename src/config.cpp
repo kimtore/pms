@@ -791,6 +791,8 @@ bool			Configurator::set_color(string name, string pairs, Error & err)
 					dest = field->genre;
 				else if (name == "track")
 					dest = field->track;
+				else if (name == "trackshort")
+					dest = field->trackshort;
 				else if (name == "time")
 					dest = field->time;
 				else if (name == "date")

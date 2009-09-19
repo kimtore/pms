@@ -435,6 +435,7 @@ int			Pms::init()
 	fieldtypes->add("title", _("Title"), FIELD_TITLE, 0, sort_compare_title);
 	fieldtypes->add("album", _("Album"), FIELD_ALBUM, 0, sort_compare_album);
 	fieldtypes->add("track", _("Track"), FIELD_TRACK, 7, sort_compare_track);
+	fieldtypes->add("trackshort", _("No"), FIELD_TRACKSHORT, 4, sort_compare_track);
 	fieldtypes->add("length", _("Length"), FIELD_TIME, 8, sort_compare_length);
 	fieldtypes->add("date", _("Date"), FIELD_DATE, 12, sort_compare_date);
 	fieldtypes->add("year", _("Year"), FIELD_YEAR, 6, sort_compare_year);

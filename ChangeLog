@@ -7,6 +7,7 @@ Kim Tore Jensen:
 2009-09-06: added: centre-cursor aliases center-cursor.
 
 Bart Nagel:
+2009-09-19: added: trackshort field, which is track truncated at the first slash and with leading zeros removed
 2009-09-19: changed: updated the INSTALL file to be a bit more descriptive
 
 ---
