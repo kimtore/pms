@@ -47,7 +47,7 @@ enum
 	MATCH_ALBUMARTISTSORT	= 1 << 6,
 	MATCH_TITLE		= 1 << 7,
 	MATCH_ALBUM		= 1 << 8,
-	MATCH_TRACK		= 1 << 9,
+	MATCH_TRACKSHORT	= 1 << 9,
 	MATCH_DATE		= 1 << 10,
 	MATCH_TIME		= 1 << 11,
 	MATCH_GENRE		= 1 << 12,

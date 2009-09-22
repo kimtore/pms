@@ -858,7 +858,7 @@ song_t			Songlist::match(string src, unsigned int from, unsigned int to, long mo
 		if (mode & MATCH_GENRE)			sources.push_back(song->genre);
 		if (mode & MATCH_DATE)			sources.push_back(song->date);
 		if (mode & MATCH_COMMENT)		sources.push_back(song->comment);
-		if (mode & MATCH_TRACK)			sources.push_back(song->track);
+		if (mode & MATCH_TRACKSHORT)		sources.push_back(song->trackshort);
 		if (mode & MATCH_DISC)			sources.push_back(song->disc);
 		if (mode & MATCH_FILE)			sources.push_back(song->file);
 		if (mode & MATCH_ARTISTSORT)		sources.push_back(song->artistsort);

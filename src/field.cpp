@@ -1029,8 +1029,10 @@ long			Formatter::item_to_match(Item i)
 
 		case FIELD_TRACK:
 		case FIELD_TRACKSHORT:
-			/* same thing */
-			l = MATCH_TRACK;
+			/* only match the short one so we don't get every track 
+			 * of an album marked up as xx/14 when searching for 
+			 * track 14s */
+			l = MATCH_TRACKSHORT;
 			break;
 
 		case FIELD_TIME:
