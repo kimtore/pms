@@ -1068,25 +1068,18 @@ bool	lcstrcmp(string & a, string & b)
  */
 bool	icstrsort(string & a, string & b)
 {
-	string::const_iterator ai, bi;
+	string		ai;
+	string		bi;
 
 	if (!pms->options->ignorecase)
 		return a < b;
 
-	ai = a.begin();
-	bi = b.begin();
+	ai = a;
+	bi = b;
+	::transform(ai.begin(), ai.end(), ai.begin(), ::tolower);
+	::transform(bi.begin(), bi.end(), bi.begin(), ::tolower);
 
-	while (ai != a.end() && bi != b.end())
-	{
-		if (::tolower(*ai) < ::tolower(*bi))
-			return true;
-		else if (::tolower(*ai) > ::tolower(*bi))
-			return false;
-		++ai;
-		++bi;
-	}
-
-	return false;
+	return (ai < bi);
 }
 
 /*
