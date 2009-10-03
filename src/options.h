@@ -83,6 +83,7 @@ public:
 	bool			columnspace;		// Whether or not to add an extra unit of width to fixed-width columns
 	bool			topbarborders;		// Draw borders on topbar window?
 	bool			addtoreturns;		// Return to original window when using addto?
+	bool			ignorecase;		// Perform case-insensitive sorts and matches?
 	vector<Topbarline *>	topbar;			// Topbar draw information
 	string			startuplist;		// This list is focused when PMS starts
 	string			stralbumclass;		// Textual representation of albumclass

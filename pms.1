@@ -171,9 +171,12 @@ The list which is activated and shown at program startup. This can be
 .BR "playlist" ", " "library" " or an arbitrary name of an existing playlist. Default: "
 .B playlist
 .TP
-.BR "regexsearch" " (boolean)"
+.BI "regexsearch" " (boolean)"
 Use regular expressions for search terms. Default:
 .B set
+.TP
+.BI "ignorecase" " (boolean)"
+.RB "Ignore case when sorting and searching. The alias " "ic" " can also be used. Default: " "set"
 .TP
 .BI "scroll=" "enum"
 Set scroll mode
@@ -202,7 +205,7 @@ Default:
 .RE
 .TP
 .BI "scrolloff=" "integer"
-.RB "When " "scroll" " is set to " "normal" ", try to keep this many songs above and below the cursor at all times. Default: " "0"
+.RB "When " "scroll" " is set to " "normal" ", try to keep this many songs above and below the cursor at all times. The alias " "so" " can also be used. Default: " "0"
 .TP
 .BI "playmode=" "enum"
 .RB "Set song progression mode to " "manual" ", " "linear" " or " "random" ". In manual progression mode playback will stop at the end of each song. Default: " "linear"

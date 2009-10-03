@@ -143,8 +143,8 @@ public:
 	unsigned int		qnumber() { return qnum; };
 };
 
-bool		make_year(Song *);
 bool		lcstrcmp(string &, string &);
+bool		icstrsort(string &, string &);
 
 /* Sorts */
 bool		sort_compare_file(Song *, Song *);

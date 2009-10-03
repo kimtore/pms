@@ -1064,15 +1064,40 @@ bool	lcstrcmp(string & a, string & b)
 }
 
 /*
+ * Performs a sort comparison based on the 'ignorecase' option.
+ */
+bool	icstrsort(string & a, string & b)
+{
+	string::const_iterator ai, bi;
+
+	if (!pms->options->ignorecase)
+		return a < b;
+
+	ai = a.begin();
+	bi = b.begin();
+
+	while (ai != a.end() && bi != b.end())
+	{
+		if (::tolower(*ai) < ::tolower(*bi))
+			return true;
+		else if (::tolower(*ai) > ::tolower(*bi))
+			return false;
+		++ai;
+		++bi;
+	}
+
+	return false;
+}
+
+/*
  * Sort functions
- *FIXME: case insensitive comparison
  */
 bool	sort_compare_file(Song *a, Song *b)
 {
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->file < b->file;
+	else 						return icstrsort(a->file, b->file);
 }
 
 bool	sort_compare_artist(Song *a, Song *b)
@@ -1080,7 +1105,7 @@ bool	sort_compare_artist(Song *a, Song *b)
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->artist < b->artist;
+	else 						return icstrsort(a->artist, b->artist);
 }
 
 bool	sort_compare_albumartist(Song *a, Song *b)
@@ -1088,7 +1113,7 @@ bool	sort_compare_albumartist(Song *a, Song *b)
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->albumartist < b->albumartist;
+	else 						return icstrsort(a->albumartist, b->albumartist);
 }
 
 bool	sort_compare_albumartistsort(Song *a, Song *b)
@@ -1096,7 +1121,7 @@ bool	sort_compare_albumartistsort(Song *a, Song *b)
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->albumartistsort < b->albumartistsort;
+	else 						return icstrsort(a->albumartistsort, b->albumartistsort);
 }
 
 bool	sort_compare_artistsort(Song *a, Song *b)
@@ -1104,7 +1129,7 @@ bool	sort_compare_artistsort(Song *a, Song *b)
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->artistsort < b->artistsort;
+	else 						return icstrsort(a->artistsort, b->artistsort);
 }
 
 bool	sort_compare_title(Song *a, Song *b)
@@ -1112,7 +1137,7 @@ bool	sort_compare_title(Song *a, Song *b)
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->title < b->title;
+	else 						return icstrsort(a->title, b->title);
 }
 
 bool	sort_compare_album(Song *a, Song *b)
@@ -1120,7 +1145,7 @@ bool	sort_compare_album(Song *a, Song *b)
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->album < b->album;
+	else 						return icstrsort(a->album, b->album);
 }
 
 bool	sort_compare_track(Song *a, Song *b)
@@ -1144,7 +1169,7 @@ bool	sort_compare_name(Song *a, Song *b)
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->name < b->name;
+	else 						return icstrsort(a->name, b->name);
 }
 
 bool	sort_compare_date(Song *a, Song *b)
@@ -1168,7 +1193,7 @@ bool	sort_compare_genre(Song *a, Song *b)
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->genre < b->genre;
+	else 						return icstrsort(a->genre, b->genre);
 }
 
 bool	sort_compare_composer(Song *a, Song *b)
@@ -1176,7 +1201,7 @@ bool	sort_compare_composer(Song *a, Song *b)
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->composer < b->composer;
+	else 						return icstrsort(a->composer, b->composer);
 }
 
 bool	sort_compare_performer(Song *a, Song *b)
@@ -1184,7 +1209,7 @@ bool	sort_compare_performer(Song *a, Song *b)
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->performer < b->performer;
+	else 						return icstrsort(a->performer, b->performer);
 }
 
 bool	sort_compare_disc(Song *a, Song *b)
@@ -1200,6 +1225,6 @@ bool	sort_compare_comment(Song *a, Song *b)
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
-	else 						return a->comment < b->comment;
+	else 						return icstrsort(a->comment, b->comment);
 }
 

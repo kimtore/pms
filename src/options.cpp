@@ -52,6 +52,7 @@ void			Options::reset()
 	directoryformat		= "%artist% - %title%";
 	playmode		= PLAYMODE_LINEAR;
 	repeatmode		= REPEAT_NONE;
+	ignorecase		= true;
 	regexsearch		= false;
 	resetstatus		= 3;
 	startuplist		= "playlist";

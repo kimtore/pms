@@ -949,6 +949,8 @@ int			Configurator::get_opt_ptr(string name, void *& dest)
 	else if (name == "regexsearch")
 		dest = &(opt->regexsearch);
 #endif
+	else if (name == "ignorecase" || name == "ic")
+		dest = &(opt->ignorecase);
 	else if (name == "followwindow")
 		dest = &(opt->followwindow);
 	else if (name == "followcursor")
