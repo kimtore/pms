@@ -120,6 +120,10 @@ Optional path to the library's root. See
 .BI "!" "string"
 below. If used, it should have a trailing slash. Default: empty string (nothing is prepended)
 .TP
+.BI "xtermtitle=" "string"
+If set, the XTerm window title will be set to the specified string. Default:
+.B PMS: %ifplaying% %artist% - %title% %else% Not playing %endif%
+.TP
 .BI "reconnectdelay=" "integer"
 If a connection is lost, this is how many seconds between each connection retry. Default:
 .B 30

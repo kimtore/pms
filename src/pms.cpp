@@ -322,6 +322,9 @@ int			Pms::main()
 		if (resetstatus(0) >= options->resetstatus || songchanged || statechanged)
 			drawstatus();
 
+		/* Draw XTerm window title */
+		disp->set_xterm_title();
+
 		/* Draw */
 		disp->topbar->wantdraw = true;
 		disp->draw();

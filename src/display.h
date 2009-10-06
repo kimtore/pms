@@ -309,6 +309,7 @@ public:
 	Song *				cursorsong();
 	void				draw();
 	void				forcedraw();
+	void				set_xterm_title();
 
 	pms_window *			findwlist(Songlist *);
 
