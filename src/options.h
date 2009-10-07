@@ -90,6 +90,7 @@ public:
 	vector<Item>		albumclass;		// What fields needs to be the same to call a group of songs 'album' ?
 	string			librarysort;		// How to sort the library
 	string			columns;		// Which columns to show in main view
+	string			xtermtitle;		// Title to set in graphical terminals
 	pms_play_mode		playmode;
 	pms_repeat_mode		repeatmode;
 	pms_scroll_mode		scroll_mode;

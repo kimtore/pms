@@ -1494,6 +1494,33 @@ void		Display::forcedraw()
 }
 
 /*
+ * Set XTerm window title
+ */
+void		Display::set_xterm_title()
+{
+	unsigned int	reallen;
+	string		t;
+
+	/* the current xterm title exists under the WM_NAME property */
+	/* and can be retrieved with xprop -id $WINDOWID */
+
+	if (pms->options->xtermtitle.size())
+	{
+		if (getenv("WINDOWID"))
+		{
+			t = pms->formatter->format(pms->cursong(), pms->options->xtermtitle, reallen, NULL, true);
+			printf("%c]0;%s%c", '\033', t.c_str(), '\007');
+		}
+		else
+		{
+			debug(_("Disabling XTerm window title: WINDOWID not found.\n"));
+			pms->options->xtermtitle = "";
+		}
+	}
+}
+
+
+/*
  * Finds window with specified playlist
  */
 pms_window *		Display::findwlist(Songlist * target)

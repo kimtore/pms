@@ -933,6 +933,7 @@ bool			Configurator::set_color(string name, string pairs, Error & err)
 }
 
 /*
+ * Configuration options.
  * Get an option pointer based on a name. Returns option type.
  */
 int			Configurator::get_opt_ptr(string name, void *& dest)
@@ -1025,6 +1026,8 @@ int			Configurator::get_opt_ptr(string name, void *& dest)
 		dest = &(opt->status_stop);
 	else if (name == "libraryroot")
 		dest = &(opt->libraryroot);
+	else if (name == "xtermtitle")
+		dest = &(opt->xtermtitle);
 
 	if (dest != NULL)
 		return OPT_STRING;
