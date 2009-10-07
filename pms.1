@@ -145,6 +145,13 @@ MPD does not support manual progression within the playlist. A hack is neccessar
 If manual song progression is not working correctly, increase this value. Default:
 .B 1
 .TP
+.BI "nextinterval=" "integer"
+This setting controls how many seconds from the current song ends until PMS automatically adds the next song to MPD's playlist. Default:
+.B 5
+.TP
+.BI "crossfade=" "integer"
+.BI "Set crossfade time in seconds. " "0" " turns crossfade off completely. Default: " "MPD's settings"
+.TP
 .BI "onplaylistfinish=" "string"
 Specify a shell command to run when the playlist finishes and playback stops. Default: none
 .TP

@@ -3,6 +3,7 @@ Changes in 0.42~git
 ---
 
 Kim Tore Jensen:
+2009-10-07: added: 'nextinterval' option to control when PMS auto-adds songs to playlist.
 2009-10-06: added: XTerm window title is now set with option 'xtermtitle', behaving the same way as topbar.
 2009-10-03: added: case-insensitive sorts. Enabled by default with option 'ignorecase' (or alias 'ic').
 2009-09-18: changed: default sort mode adds sort by release date before album name.
