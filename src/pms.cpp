@@ -325,6 +325,22 @@ int			Pms::main()
 		/* Draw XTerm window title */
 		disp->set_xterm_title();
 
+		/* Check out mediator events */
+		if (mediator->changed("setting.sort"))
+			comm->library()->sort(opt->librarysort);
+		else if (mediator->changed("setting.columns"))
+			disp->actwin()->set_column_size();
+		else if (mediator->changed("setting.mouse"))
+			disp->setmousemask();
+		else if (mediator->changed("topbarvisible"))
+			disp->resized();
+		else if (mediator->changed("topbarborders"))
+			disp->resized();
+		else if (mediator->changed("topbarspace"))
+			disp->resized();
+		else if (mediator->changed("columnspace"))
+			disp->resized();
+
 		/* Draw */
 		disp->topbar->wantdraw = true;
 		disp->draw();
@@ -383,6 +399,7 @@ int			Pms::init()
 	init_default_keymap();
 
 	/* Set up internal pointers and classes */
+	mediator = new Mediator();
 	formatter = new Formatter();
 	options = new Options();
 	config = new Configurator(options, bindings);

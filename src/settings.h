@@ -30,6 +30,7 @@
 #include <string>
 #include "color.h"
 #include "topbar.h"
+#include "error.h"
 
 using namespace std;
 
@@ -58,15 +59,15 @@ SettingType;
 class Setting
 {
 public:
-	string		v_string;
-	long		v_long;
-	bool		v_bool;
+	string			v_string;
+	long			v_long;
+	bool			v_bool;
 
-			Setting();
+				Setting();
 
-	Setting *	alias;
-	SettingType	type;
-	string		key;
+	Setting *		alias;
+	SettingType		type;
+	string			key;
 };
 
 
@@ -84,9 +85,15 @@ private:
 	void			destroy();
 
 public:
+	/* Our error object */
+	Error			err;
+
 	/* These are special settings that can't be contained in a Setting class */
 	vector<Topbarline *>	topbar;			// Topbar draw information
 	Colortable *		colors;
+
+	/* And special option setters */
+	bool			set_topbar_values(string, string);
 
 				Options();
 				~Options();
@@ -95,10 +102,12 @@ public:
 	bool			alias(string, string);
 
 	/* Set value - perform some types of error checking */
-	bool			set(string, SettingType, string);
-	bool			set_string(string, string);
-	bool			set_long(string, long);
-	bool			set_bool(string, bool);
+	bool			set(string, string);
+	Setting *		set(string, SettingType, string);
+	Setting *		set_string(string, string);
+	Setting *		set_long(string, long);
+	Setting *		set_bool(string, bool);
+	bool			toggle(string);
 
 	/* Returns setting type */
 	SettingType		get_type(string);
@@ -109,6 +118,8 @@ public:
 	bool 			get_bool(string);
 
 	/* Dump everything into a long string */
+	string			dump(string, Error &);
+	string			dump(Setting *);
 	string			dump_all();
 
 	/* Reset everything to defaults */

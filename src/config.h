@@ -107,14 +107,7 @@ private:
 	Options *			opt;
 	Bindings *			bindings;
 
-	string				get_option(string, Error &);
-	bool				set_option(string, string, Error &);
-	bool				toggle_option(string, Error &);
-	bool				show_option(string, Error &);
 	bool				set_color(string, string, Error &);
-	bool				set_topbar_values(string, string, Error &);
-	int				get_opt_ptr(string, void *&);
-	int				get_opt_type(string);
 
 
 public:

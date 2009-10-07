@@ -57,6 +57,7 @@
 #include "list.h"
 #include "action.h"
 #include "input.h"
+#include "mediator.h"
 
 using namespace std;
 
@@ -109,6 +110,9 @@ public:
 	Fieldtypes *			fieldtypes;
 	Formatter *			formatter;
 	Configurator *			config;
+
+	/* FIXME: this is an attempt on the above */
+	Mediator *			mediator;
 
 	/* Global public functions */
 	static string			tostring(long);
