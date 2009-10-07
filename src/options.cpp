@@ -21,7 +21,7 @@
  *
  */
 
-#include "options.h"
+#include "settings.h"
 #include "color.h"
 #include "i18n.h"
 

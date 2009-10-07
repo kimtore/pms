@@ -23,6 +23,8 @@
 
 
 #include "settings.h"
+#include "config.h"
+#include "pms.h"
 
 using namespace std;
 
@@ -45,15 +47,28 @@ Options::Options()
 
 Options::~Options()
 {
-	vector<Topbarline *>::iterator	i;
+	destroy();
+}
+
+void		Options::destroy()
+{
+	vector<Setting *>::iterator	i;
+	vector<Topbarline*>::iterator	j;
+
+	/* Truncate old settings array */
+	i = vals.begin();
+	while (i++ != vals.end())
+		delete *i;
+	vals.clear();
+
+	/* Truncate topbar */
+	j = topbar.begin();
+	while (j++ != topbar.end())
+		delete *j;
+	topbar.clear();
 
 	if (colors != NULL)
 		delete colors;
-
-	i = topbar.begin();
-	while (i++ != topbar.end())
-		delete *i;
-	topbar.clear();
 }
 
 
@@ -111,7 +126,8 @@ Setting *	Options::add(string key, SettingType t)
  */
 bool		Options::alias(string key, string dest)
 {
-	Setting *	s_key, s_dest;
+	Setting *	s_key;
+	Setting *	s_dest;
 
 	s_dest = lookup(dest);
 	if (s_dest == NULL)
@@ -270,7 +286,7 @@ string		Options::dump_all()
 	{
 		s = vals[i];
 		output += "set ";
-		output += s;
+		output += s->key;
 		output += "=";
 		switch(s->type)
 		{
@@ -299,23 +315,7 @@ string		Options::dump_all()
  */
 void		Options::reset()
 {
-	vector<Setting *>::iterator	i;
-	vector<Topbarline*>::iterator	j;
-
-	/* Truncate old settings array */
-	i = vals.begin();
-	while (i++ != vals.end())
-		delete *i;
-	vals.clear();
-
-	/* Truncate topbar */
-	j = topbar.begin();
-	while (j++ != topbar.end())
-		delete *j;
-	topbar.clear();
-
-	if (colors != NULL)
-		delete colors;
+	destroy();
 
 	set("scroll", SETTING_TYPE_SCROLL, "normal");
 	set("playmode", SETTING_TYPE_PLAYMODE, "linear");

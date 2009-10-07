@@ -47,7 +47,7 @@
 #include "libmpdclient.h"
 
 #include "types.h"
-#include "options.h"
+#include "settings.h"
 #include "song.h"
 #include "error.h"
 #include "topbar.h"

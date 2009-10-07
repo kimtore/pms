@@ -28,7 +28,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <string>
-#include "options.h"
+#include "settings.h"
 #include "input.h"
 #include "display.h"
 #include "error.h"

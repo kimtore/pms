@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * options.h - the options class 
+ * settings.h - the options class 
  *
  */
 

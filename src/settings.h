@@ -28,7 +28,8 @@
 
 #include <vector>
 #include <string>
-#include "pms.h"
+#include "color.h"
+#include "topbar.h"
 
 using namespace std;
 
@@ -44,7 +45,9 @@ typedef enum
 	SETTING_TYPE_LONG,
 	SETTING_TYPE_BOOLEAN,
 	SETTING_TYPE_FIELDLIST,
-	SETTING_TYPE_SCROLL
+	SETTING_TYPE_SCROLL,
+	SETTING_TYPE_PLAYMODE,
+	SETTING_TYPE_REPEATMODE
 }
 SettingType;
 
@@ -78,6 +81,8 @@ private:
 	Setting *		lookup(string);
 	Setting *		add(string, SettingType);
 
+	void			destroy();
+
 public:
 	/* These are special settings that can't be contained in a Setting class */
 	vector<Topbarline *>	topbar;			// Topbar draw information
@@ -99,9 +104,9 @@ public:
 	SettingType		get_type(string);
 
 	/* Returns the setting itself */
-	string *		get_string(string);
-	long *			get_long(string);
-	bool *			get_bool(string);
+	string			get_string(string);
+	long 			get_long(string);
+	bool 			get_bool(string);
 
 	/* Dump everything into a long string */
 	string			dump_all();
