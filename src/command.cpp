@@ -159,7 +159,7 @@ Control::Control(Connection * n_conn)
 	_active = NULL;
 	command_mode = 0;
 	mutevolume = 0;
-	crossfadetime = pms->options->crossfade;
+	crossfadetime = pms->options->get_long("crossfade");
 
 	usetime = 0;
 	time(&(mytime[0]));
@@ -1012,9 +1012,9 @@ bool		Control::get_status()
 
 	/* Override local settings if MPD mode changed */
 	if (st->random)
-		pms->options->playmode = PLAYMODE_RANDOM;
+		pms->options->set_long("playmode", PLAYMODE_RANDOM);
 	if (st->repeat)
-		pms->options->repeatmode = REPEAT_LIST;
+		pms->options->set_long("repeatmode", REPEAT_LIST);
 
 	if (st->db_update_time != st->last_db_update_time)
 	{
@@ -1404,8 +1404,8 @@ bool		Control::activatelist(Songlist * list)
 	/* Have MPD manage random inside playlist */
 	if (changed)
 	{
-		repeat(pms->options->repeatmode == REPEAT_LIST && activelist() == playlist());
-		random(pms->options->playmode == PLAYMODE_RANDOM && activelist() == playlist());
+		repeat(pms->options->get_long("repeatmode") == REPEAT_LIST && activelist() == playlist());
+		random(pms->options->get_long("playmode") == PLAYMODE_RANDOM && activelist() == playlist());
 	}
 
 	return changed;
