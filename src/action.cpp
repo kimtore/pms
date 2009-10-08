@@ -251,7 +251,7 @@ bool		handle_command(pms_pending_keys action)
 
 		case PEND_CENTER_CURSOR:
 			if (!win) break;
-			if (pms->options->scroll_mode != SCROLL_NORMAL) break;
+			if (pms->options->get_long("scroll_mode") != SCROLL_NORMAL) break;
 			pms->disp->scrollwin(win->scursor() - win->cursordrawstart() - (win->bheight() - 1) / 2);
 			break;
 
@@ -425,7 +425,7 @@ bool		handle_command(pms_pending_keys action)
 			}
 			else
 			{
-				if (i == 1 && pms->options->nextafteraction)
+				if (i == 1 && pms->options->get_bool("nextafteraction"))
 					pms->disp->movecursor(1);
 				pms->setstatus(STOK, _("Added %d %s to %s."), i, (i == 1 ? "song" : "songs"), s.c_str());
 			}
@@ -434,7 +434,7 @@ bool		handle_command(pms_pending_keys action)
 			break;
 
 		case PEND_NEXT:
-			i = playnext(pms->options->playmode, true);
+			i = playnext(pms->options->get_long("playmode"), true);
 
 			if (i == MPD_SONG_NO_ID)
 				pms->setstatus(STERR, _("There is no next song."));
@@ -452,7 +452,7 @@ bool		handle_command(pms_pending_keys action)
 			if (!pms->cursong()) return false;
 			if (pms->cursong()->pos <= 0)
 			{
-				if (pms->options->repeatmode == REPEAT_LIST)
+				if (pms->options->get_long("repeatmode") == REPEAT_LIST)
 					i = pms->comm->playlist()->size();
 				else
 					return false;
@@ -533,17 +533,24 @@ bool		handle_command(pms_pending_keys action)
 			break;
 
 		case PEND_REPEAT:
-			if (pms->options->repeatmode == REPEAT_NONE)
-				pms->options->repeatmode = REPEAT_ONE;
-			else if (pms->options->repeatmode == REPEAT_ONE)
-				pms->options->repeatmode = REPEAT_LIST;
-			else if (pms->options->repeatmode == REPEAT_LIST)
-				pms->options->repeatmode = REPEAT_NONE;
+			switch(pms->options->get_long("repeatmode"))
+			{
+				case REPEAT_NONE:
+					pms->options->set_long("repeatmode", REPEAT_ONE);
+					break;
+				case REPEAT_ONE:
+					pms->options->set_long("repeatmode", REPEAT_LIST);
+					break;
+				default:
+				case REPEAT_LIST:
+					pms->options->set_long("repeatmode", REPEAT_NONE);
+					break;
+			}
 
-			debug("Repeatmode set to %d\n", pms->options->repeatmode);
+			debug("Repeatmode set to %d\n", pms->options->get_long("repeatmode"));
 
 			/* Have MPD manage repeat inside playlist */
-			pms->comm->repeat(pms->options->repeatmode == REPEAT_LIST && pms->comm->activelist() == pms->comm->playlist());
+			pms->comm->repeat(pms->options->get_long("repeatmode") == REPEAT_LIST && pms->comm->activelist() == pms->comm->playlist());
 
 			pms->drawstatus();
 			break;
@@ -598,15 +605,15 @@ bool		handle_command(pms_pending_keys action)
 			/* Skip forward instead of loop */
 			if (pms->comm->status()->time_elapsed + i >= pms->comm->status()->time_total)
 			{
-				if (pms->options->repeatmode == REPEAT_ONE)
+				if (pms->options->get_long("repeatmode") == REPEAT_ONE)
 					pms->comm->playid(pms->cursong()->id);
 				else
-					playnext(pms->options->playmode, true);
+					playnext(pms->options->get_long("playmode"), true);
 			}
 			/* Skip backwards */
 			else if (pms->comm->status()->time_elapsed + i < 0)
 			{
-				if (pms->options->repeatmode == REPEAT_ONE)
+				if (pms->options->get_long("repeatmode") == REPEAT_ONE)
 				{
 					if (!pms->comm->seek(pms->cursong()->time + i))
 						generr();
@@ -719,7 +726,7 @@ bool		handle_command(pms_pending_keys action)
 				if (pms->input->winpop())
 				{
 					handle_command(pms->input->getpending());
-					if (pms->options->addtoreturns)
+					if (pms->options->get_bool("addtoreturns"))
 					{
 						setwin(pms->input->win);
 						pms->disp->lastwin = win;
@@ -855,7 +862,7 @@ bool		handle_command(pms_pending_keys action)
 					{
 						tmpwin->setcursor(tmpwin->size());
 						handle_command(pms->input->getpending());
-						if (pms->options->addtoreturns)
+						if (pms->options->get_bool("addtoreturns"))
 						{
 							setwin(pms->input->win);
 							pms->disp->lastwin = win;
@@ -1060,7 +1067,7 @@ bool		handle_command(pms_pending_keys action)
 				win->toggleselect();
 			}
 			if (makeselection(win->plist(), action, pms->input->param) && (pms->input->param.size() == 0)
-					&& pms->options->nextafteraction && action != PEND_CLEARSELECTION)
+					&& pms->options->get_bool("nextafteraction") && action != PEND_CLEARSELECTION)
 				win->movecursor(1);
 			win->wantdraw = true;
 			break;
@@ -1099,10 +1106,10 @@ bool		handle_command(pms_pending_keys action)
 
 		/* Program specific */
 		case PEND_REHASH:
-			if (pms->config->source(pms->options->configfile.c_str(), err))
+			if (pms->config->source(pms->options->get_string("configfile"), err))
 			{
 				pms->setstatus(STOK, _("Reloaded configuration file."));
-				pms->comm->library()->sort(pms->options->librarysort);
+				pms->comm->library()->sort(pms->options->get_string("librarysort"));
 			}
 			else
 			{
@@ -1120,7 +1127,7 @@ bool		handle_command(pms_pending_keys action)
 			if (pms->comm->sendpassword(pms->input->param))
 			{
 				pms->setstatus(STOK, _("Password accepted by mpd."));
-				pms->options->password = pms->input->param;
+				pms->options->set_string("password", pms->input->param);
 			}
 			else
 			{
@@ -1130,15 +1137,22 @@ bool		handle_command(pms_pending_keys action)
 
 		/* Cycle through between linear play, random and play single song */
 		case PEND_CYCLE_PLAYMODE:
-			if (pms->options->playmode == PLAYMODE_MANUAL)
-				pms->options->playmode = PLAYMODE_LINEAR;
-			else if (pms->options->playmode == PLAYMODE_LINEAR)
-				pms->options->playmode = PLAYMODE_RANDOM;
-			else if (pms->options->playmode == PLAYMODE_RANDOM)
-				pms->options->playmode = PLAYMODE_MANUAL;
+			switch(pms->options->get_long("playmode"))
+			{
+				default:
+				case PLAYMODE_MANUAL:
+					pms->options->set_long("playmode", PLAYMODE_LINEAR);
+					break;
+				case PLAYMODE_LINEAR:
+					pms->options->set_long("playmode", PLAYMODE_RANDOM);
+					break;
+				case PLAYMODE_RANDOM:
+					pms->options->set_long("playmode", PLAYMODE_MANUAL);
+					break;
+			}
 
 			/* Have MPD manage random inside playlist */
-			pms->comm->random(pms->options->playmode == PLAYMODE_RANDOM && pms->comm->activelist() == pms->comm->playlist());
+			pms->comm->random(pms->options->get_long("playmode") == PLAYMODE_RANDOM && pms->comm->activelist() == pms->comm->playlist());
 
 			pms->drawstatus();
 			break;
@@ -1355,7 +1369,7 @@ bool		setwin(pms_window * win)
 	else
 		pms->input->mode(INPUT_NORMAL);
 
-	if (pms->options->followwindow)
+	if (pms->options->get_bool("followwindow"))
 	{
 		pms->comm->activatelist(win->plist());
 		pms->drawstatus();
