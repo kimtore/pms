@@ -362,8 +362,12 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 	unsigned int		pint, progress;
 	Songlist *		list;
 	color *			c;
+	long			playmode;
+	long			repeatmode;
 
 	c = getcolor(keyword, f);
+	playmode = pms->options->get_long("playmode");
+	repeatmode = pms->options->get_long("repeatmode");
 
 	retstr = "";
 	switch(keyword)
@@ -554,7 +558,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 
 		case REPEAT:
 			c = pms->options->colors->topbar.repeat;
-			switch(pms->options->repeatmode)
+			switch(repeatmode)
 			{
 				case REPEAT_NONE:
 					retstr = "no";
@@ -573,7 +577,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 
 		case RANDOM:
 			c = pms->options->colors->topbar.random;
-			switch(pms->options->playmode)
+			switch(playmode)
 			{
 				case PLAYMODE_LINEAR:
 					retstr = "no";
@@ -589,7 +593,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 
 		case MANUALPROGRESSION:
 			c = pms->options->colors->topbar.manualprogression;
-			if (pms->options->playmode == PLAYMODE_MANUAL)
+			if (playmode == PLAYMODE_MANUAL)
 				retstr = "yes";
 			else
 				retstr = "no";
@@ -606,7 +610,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 
 		case REPEATSHORT:
 			c = pms->options->colors->topbar.repeatshort;
-			switch(pms->options->repeatmode)
+			switch(repeatmode)
 			{
 				default:
 				case REPEAT_NONE:
@@ -623,7 +627,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 
 		case RANDOMSHORT:
 			c = pms->options->colors->topbar.randomshort;
-			switch(pms->options->playmode)
+			switch(playmode)
 			{
 				default:
 				case PLAYMODE_LINEAR:
@@ -637,7 +641,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 
 		case MANUALPROGRESSIONSHORT:
 			c = pms->options->colors->topbar.manualprogressionshort;
-			if (pms->options->playmode == PLAYMODE_MANUAL)
+			if (playmode == PLAYMODE_MANUAL)
 				retstr = "1";
 			else
 				retstr = "-";
@@ -739,16 +743,16 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			{
 				default:
 				case MPD_STATUS_STATE_UNKNOWN:
-					retstr = pms->options->status_unknown;
+					retstr = pms->options->get_string("status_unknown");
 					break;
 				case MPD_STATUS_STATE_STOP:
-					retstr = pms->options->status_stop;
+					retstr = pms->options->get_string("status_stop");
 					break;
 				case MPD_STATUS_STATE_PLAY:
-					retstr = pms->options->status_play;
+					retstr = pms->options->get_string("status_play");
 					break;
 				case MPD_STATUS_STATE_PAUSE:
-					retstr = pms->options->status_pause;
+					retstr = pms->options->get_string("status_pause");
 					break;
 			}
 			break;
