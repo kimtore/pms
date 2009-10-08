@@ -32,7 +32,7 @@ bool		handle_command(pms_pending_keys);
 bool		init_commandmap();
 
 void		generr();
-int		playnext(pms_play_mode, int);
+int		playnext(long, int);
 song_t		gotonextentry(string, bool);
 int		multiplay(long, int);
 bool		setwin(pms_window *);

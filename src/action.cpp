@@ -1203,7 +1203,7 @@ void		generr()
 /*
  * Adds or enqueues the next song based on play mode
  */
-int		playnext(pms_play_mode mode, int playnow)
+int		playnext(long mode, int playnow)
 {
 	Song *		song;
 	int		i;

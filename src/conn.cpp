@@ -25,11 +25,11 @@
 #include "pms.h"
 
 
-Connection::Connection(string n_hostname, unsigned int n_port, int n_timeout)
+Connection::Connection(string n_hostname, long n_port, long n_timeout)
 {
 	this->host = n_hostname;
-	this->port = n_port;
-	this->timeout = n_timeout;
+	this->port = static_cast<unsigned int>(n_port);
+	this->timeout = static_cast<int>(n_timeout);
 
 	this->handle = NULL;
 }

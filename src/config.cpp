@@ -542,28 +542,28 @@ bool			Configurator::readline(string buffer, Error & err)
 			if (tok->size() == 2)
 			{
 				//check for various prefixes/suffixes
-				if (proc.substr(proc.length() - 1, 1) == "?" && get_opt_type(proc.substr(0, proc.length() - 1)) != OPT_NONE)
+				if (proc.substr(proc.length() - 1, 1) == "?" && pms->options->get_type(proc.substr(0, proc.length() - 1)) != SETTING_TYPE_EINVAL)
 				{
-					show_option(proc.substr(0, proc.length() - 1), err);
+					pms->options->dump(proc, err);
 					return false;
 				}
-				else if (proc.substr(0, 2) == "no" && get_opt_type(proc.substr(2)) == OPT_BOOL)
-					return set_option(proc.substr(2), "false", err);
-				else if (proc.substr(0, 3) == "inv" && get_opt_type(proc.substr(3)) == OPT_BOOL)
-					return toggle_option(proc.substr(3), err);
-				else if (proc.substr(proc.length() - 1, 1) == "!" && get_opt_type(proc.substr(0, proc.length() - 1)) == OPT_BOOL)
-					return toggle_option(proc.substr(0, proc.length() - 1), err);
-				else if (get_opt_type(proc) == OPT_BOOL)
-					return set_option(proc, "true", err);
-				else if (get_opt_type(proc) == OPT_NONE)
+				else if (proc.substr(0, 2) == "no" && pms->options->get_type(proc.substr(2)) == SETTING_TYPE_BOOLEAN)
+					return pms->options->set(proc.substr(2), "false");
+				else if (proc.substr(0, 3) == "inv" && pms->options->get_type(proc.substr(3)) == SETTING_TYPE_BOOLEAN)
+					return pms->options->toggle(proc.substr(3));
+				else if (proc.substr(proc.length() - 1, 1) == "!" && pms->options->get_type(proc.substr(0, proc.length() - 1)) == SETTING_TYPE_BOOLEAN)
+					return pms->options->toggle(proc.substr(0, proc.length() - 1));
+				else if (pms->options->get_type(proc) == SETTING_TYPE_BOOLEAN)
+					return pms->options->set(proc, "true");
+				else if (pms->options->get_type(proc) == SETTING_TYPE_EINVAL)
 					err.code = CERR_INVALID_IDENTIFIER;
 				else
 				{
-					show_option(proc, err);
+					pms->options->dump(proc, err);
 					return false;
 				}
 			}
-			else if (get_opt_type(proc) == OPT_BOOL || tok->at(2) != "=" && tok->at(2) != ":")
+			else if (pms->options->get_type(proc) == SETTING_TYPE_BOOLEAN || tok->at(2) != "=" && tok->at(2) != ":")
 				err.code = CERR_UNEXPECTED_TOKEN;
 		}
 
@@ -594,7 +594,7 @@ bool			Configurator::readline(string buffer, Error & err)
 				return false;
 		}
 
-		return set_option(proc, val, err);
+		return pms->options->set(proc, val);
 	}
 	else if (proc == "bind" || proc == "map")
 	{
@@ -930,29 +930,4 @@ bool			Configurator::set_color(string name, string pairs, Error & err)
 	delete pair;
 
 	return true;
-}
-
-
-/*
- * Show an option's name and value
- */
-bool			Configurator::show_option(string name, Error & err)
-{
-	string		val;
-
-	val = get_option(name, err);
-	if (err.code == CERR_NONE)
-	{
-		if (get_opt_type(name) == OPT_BOOL)
-		{
-			if (val == "on")
-				err.str = name;
-			else
-				err.str = "no" + name;
-		}
-		else
-			err.str = name + "=" + val;
-		return true;
-	}
-	return false;
 }

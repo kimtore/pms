@@ -386,6 +386,19 @@ bool		Options::toggle(string key)
 	return true;
 }
 
+/*
+ * Return the type of a variable
+ */
+SettingType	Options::get_type(string key)
+{
+	Setting *	s;
+
+	s = lookup(key);
+	if (s == NULL)
+		return SETTING_TYPE_EINVAL;
+	return s->type;
+}
+
 
 /*
  * Read functions
@@ -396,7 +409,7 @@ string		Options::get_string(string key)
 
 	s = lookup(key);
 	if (s == NULL)
-		return NULL;
+		return "";
 
 	while (s->alias != NULL)
 		s = s->alias;
@@ -410,7 +423,7 @@ long		Options::get_long(string key)
 
 	s = lookup(key);
 	if (s == NULL)
-		return NULL;
+		return 0;
 	
 	while (s->alias != NULL)
 		s = s->alias;
@@ -424,7 +437,7 @@ bool		Options::get_bool(string key)
 
 	s = lookup(key);
 	if (s == NULL)
-		return NULL;
+		return false;
 	
 	while (s->alias != NULL)
 		s = s->alias;
@@ -436,7 +449,7 @@ bool		Options::get_bool(string key)
 /*
  * Dump an option
  */
-string		Options::dump(string key, Error & e)
+bool		Options::dump(string key, Error & e)
 {
 	Setting *	s;
 
@@ -448,8 +461,12 @@ string		Options::dump(string key, Error & e)
 		e.str += " '" + key + "'";
 		return false;
 	}
-
-	return dump(s);
+	else
+	{
+		e.code = CERR_NONE;
+		e.str = dump(s);
+		return true;
+	}
 }
 
 string		Options::dump(Setting * s)

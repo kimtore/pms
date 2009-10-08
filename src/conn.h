@@ -37,7 +37,7 @@ private:
 	int		error;
 
 public:
-			Connection(string, unsigned int, int);
+			Connection(string, long, long);
 			~Connection();
 
 	mpd_Connection	*h() { return handle; };

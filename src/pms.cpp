@@ -62,10 +62,8 @@ void debug(const char * format, ...)
 	const time_t	rawtime = time(NULL);
 	tm *		timeinfo;
 
-	if (!pms->options->debug)
-	{
+	if (!pms->options->get_bool("debug"))
 		return;
-	}
 
 	timeinfo = localtime(&rawtime);
 	strftime(tbuffer, 80, "%Y-%m-%d %H:%M:%S", timeinfo);
@@ -102,6 +100,7 @@ Pms::~Pms()
  */
 int			Pms::main()
 {
+	string			t_str;
 	pms_pending_keys	pending = PEND_NONE;
 	char			pass[512] = "";
 	bool			statechanged = false;
@@ -110,7 +109,7 @@ int			Pms::main()
 	time_t			timer = 0;
 
 	/* Connection */
-	printf(_("Connecting to host %s, port %d..."), options->hostname.c_str(), options->port);
+	printf(_("Connecting to host %s, port %d..."), options->get_string("hostname").c_str(), options->get_long("port"));
 
 	if (conn->connect() != 0)
 	{
@@ -123,10 +122,10 @@ int			Pms::main()
 	printf(_("connected.\n"));
 
 	/* Password? */
-	if (options->password.size() > 0)
+	if (options->get_string("password").size() > 0)
 	{
 		printf(_("Sending password..."));
-		if (comm->sendpassword(options->password))
+		if (comm->sendpassword(options->get_string("password")))
 			printf(_("password accepted.\n"));
 		else
 			printf(_("wrong password.\n"));
@@ -144,9 +143,9 @@ int			Pms::main()
 			if (pass[strlen(pass)-1] == '\n')
 				pass[strlen(pass)-1] = '\0';
 
-			options->password = pass;
+			options->set_string("password", pass);
 
-			comm->sendpassword(options->password);
+			comm->sendpassword(pass);
 			comm->get_available_commands();
 			if (!(comm->authlevel() & AUTH_READ))
 				printf(_("Wrong password, try again.\n"));
@@ -165,7 +164,7 @@ int			Pms::main()
 	comm->has_new_library();
 	comm->has_new_playlist();
 	printf(_("Sorting library..."));
-	comm->library()->sort(options->librarysort);
+	comm->library()->sort(options->get_string("librarysort"));
 	printf(_("done.\n"));
 
 	/* Center attention to current song */
@@ -207,16 +206,14 @@ int			Pms::main()
 
 	/* Focus startup list */
 	comm->activatelist(comm->playlist());
-	if (options->startuplist == "library")
+	t_str = options->get_string("startuplist");
+	if (t_str == "library")
 	{
 		comm->activatelist(comm->library());
 	}
-	else if (options->startuplist != "playlist" && options->startuplist.size() > 0)
+	else if (t_str.size() > 0 && t_str != "playlist")
 	{
-		if (!comm->activatelist(comm->findplaylist(options->startuplist)))
-		{
-			comm->activatelist(comm->playlist());
-		}
+		comm->activatelist(comm->findplaylist(t_str));
 	}
 	disp->activate(disp->findwlist(comm->activelist()));
 
@@ -235,7 +232,7 @@ int			Pms::main()
 			{
 				setstatus(STERR, "Disconnected from mpd: %s", comm->err());
 			}
-			if (difftime(time(NULL), timer) >= options->reconnectdelay)
+			if (difftime(time(NULL), timer) >= options->get_long("reconnectdelay"))
 			{
 				if (timer != 0)
 					setstatus(STOK, _("Attempting reconnect..."));
@@ -263,7 +260,7 @@ int			Pms::main()
 			setstatus(STOK, _("Library updated."));
 			if (disp->actwin())
 				disp->actwin()->wantdraw = true;
-			library->list->sort(options->librarysort);
+			library->list->sort(options->get_string("librarysort"));
 			library->set_column_size();
 			connect_window_list();
 		}
@@ -293,7 +290,7 @@ int			Pms::main()
 		if (songchanged)
 		{
 			/* Cursor follows playback if song changed */
-			if (options->followplayback)
+			if (options->get_bool("followplayback"))
 			{
 				win = disp->findwlist(comm->activelist());
 				if (win)
@@ -307,19 +304,19 @@ int			Pms::main()
 		if (statechanged)
 		{
 			/* Shell command when song finishes */
-			if (options->onplaylistfinish.size() > 0 && cursong() && cursong()->pos == comm->playlist()->end())
+			if (options->get_string("onplaylistfinish").size() > 0 && cursong() && cursong()->pos == comm->playlist()->end())
 			{
 				/* If a manual stop was issued, don't do anything */
 				if (comm->status()->state == MPD_STATUS_STATE_STOP && pending != PEND_STOP)
 				{
-					system(options->onplaylistfinish.c_str());
+					system(options->get_string("onplaylistfinish").c_str());
 				}
 			}
 		}
 
 
 		/* Reset status */
-		if (resetstatus(0) >= options->resetstatus || songchanged || statechanged)
+		if (resetstatus(0) >= options->get_long("resetstatus") || songchanged || statechanged)
 			drawstatus();
 
 		/* Draw XTerm window title */
@@ -327,7 +324,7 @@ int			Pms::main()
 
 		/* Check out mediator events */
 		if (mediator->changed("setting.sort"))
-			comm->library()->sort(opt->librarysort);
+			comm->library()->sort(options->get_string("librarysort"));
 		else if (mediator->changed("setting.columns"))
 			disp->actwin()->set_column_size();
 		else if (mediator->changed("setting.mouse"))
@@ -406,35 +403,36 @@ int			Pms::init()
 
 	if (homedir != NULL)
 	{
-		options->configfile = homedir;
-		options->configfile += "/.pms/rc";
+		str = homedir;
+		str += "/.pms/rc";
 	}
 	else
 	{
-		options->configfile = ".pms/rc";
+		str = ".pms/rc";
 	}
+	options->set_string("configfile", str);
 
 	/* Some default options */
-	options->hostname = (host ? host : "127.0.0.1");
+	options->set_string("hostname", (host ? host : "127.0.0.1"));
 	if (!password && host)
 	{
 		tok = splitstr(host, "@");
 		if (tok->size() == 2)
 		{
-			options->hostname = (*tok)[0];
-			options->password = (*tok)[1];
+			options->set_string("hostname", (*tok)[0]);
+			options->set_string("password", (*tok)[1]);
 		}
 		delete tok;
 	}
-	if (options->password.size() == 0)
+	if (options->get_string("password").size() == 0)
 	{
-		options->password = (password ? password : "");
+		options->set_string("password", (password ? password : ""));
 	}
-	options->port = (port ? atoi(port) : 6600);
+	options->set_long("port", (port ? atoi(port) : 6600));
 
-	if (options->port <= 0 || options->port > 65535)
+	if (options->get_long("port") <= 0 || options->get_long("port") > 65535)
 	{
-		printf("Error: port number in environment variable MPD_PORT must be from 1-65535\n");
+		printf(_("Error: port number in environment variable MPD_PORT must be from 1-65535\n"));
 		return PMS_EXIT_BADARGS;
 	}
 
@@ -467,14 +465,14 @@ int			Pms::init()
 	fieldtypes->add("comment", _("Comment"), FIELD_COMMENT, 0, sort_compare_comment);
 
 	/* Read user configuration */
-	if (!config->source(options->configfile, err))
+	if (!config->source(options->get_string("configfile"), err))
 	{
 		if (err.code != CERR_NO_FILE)
 		{
-			printf("\nConfiguration error:\n%s\n", err.str.c_str());
+			printf(_("\nConfiguration error:\n%s\n"), err.str.c_str());
 			return PMS_EXIT_CONFIGERR;
 		}
-		printf("Didn't find a configuration file in %s\n", options->configfile.c_str());
+		printf(_("Didn't find a configuration file in %s\n"), options->get_string("configfile").c_str());
 	}
 
 	/* Parse arguments again to override config file */
@@ -484,7 +482,7 @@ int			Pms::init()
 	srand(time(NULL));
 
 	/* Setup some important stuff */
-	conn	= new Connection(options->hostname, options->port, options->mpd_timeout);
+	conn	= new Connection(options->get_string("hostname"), options->get_long("port"), options->get_long("mpd_timeout"));
 	comm	= new Control(conn);
 	disp	= new Display(comm);
 	input	= new Input();
@@ -696,7 +694,7 @@ bool			Pms::run_shell(string cmd, Error & err)
 	if (cursong())
 	{
 		search = "%";
-		replace = options->libraryroot;
+		replace = options->get_string("libraryroot");
 		replace += cursong()->file;
 		pos = 0;
 		while ((pos = cmd.find(search, pos)) != string::npos)
@@ -721,7 +719,7 @@ bool			Pms::run_shell(string cmd, Error & err)
 		{
 			if (!list->selection.size || list->songs[i]->selected)
 			{
-				replace += options->libraryroot;
+				replace += options->get_string("libraryroot");
 				replace += list->songs[i]->file;
 				replace += "\" \"";
 			}
@@ -745,7 +743,7 @@ bool			Pms::run_shell(string cmd, Error & err)
 	if (disp->cursorsong())
 	{
 		search = "#";
-		replace = options->libraryroot;
+		replace = options->get_string("libraryroot");
 		replace += disp->cursorsong()->file;
 		pos = 0;
 		while ((pos = cmd.find(search, pos)) != string::npos)
@@ -854,6 +852,9 @@ string			Pms::playstring()
 	string		list = "<unknown>";
 	bool		is_last;
 
+	long		playmode = options->get_long("playmode");
+	long		repeatmode = options->get_long("repeatmode");
+
 	if (!comm->status() || !conn->connected())
 	{
 		s = "Not connected.";
@@ -884,13 +885,13 @@ string			Pms::playstring()
 
 	s = "Playing ";
 
-	if (options->playmode == PLAYMODE_MANUAL)
+	if (playmode == PLAYMODE_MANUAL)
 	{
 		s += "this song, then stopping.";
 		return s;
 	}
 
-	if (options->repeatmode == REPEAT_ONE)
+	if (repeatmode == REPEAT_ONE)
 	{
 		s += "the same song indefinitely.";
 		return s;
@@ -898,28 +899,28 @@ string			Pms::playstring()
 
 	is_last = (cursong()->pos == static_cast<int>(comm->playlist()->end()));
 
-	if (!is_last && !(comm->activelist() == comm->playlist() && options->repeatmode == REPEAT_LIST))
+	if (!is_last && !(comm->activelist() == comm->playlist() && repeatmode == REPEAT_LIST))
 	{
 		s += "through playlist, then ";
 	}
 
-	if (options->playmode == PLAYMODE_RANDOM)
+	if (playmode == PLAYMODE_RANDOM)
 	{
 		s += "random songs from " + list + ".";
 		return s;
 	}
 
-	if (options->repeatmode == REPEAT_LIST)
+	if (repeatmode == REPEAT_LIST)
 	{
 		s += "songs from " + list + " repeatedly.";
 		return s;
 	}
 
-	if (options->repeatmode == REPEAT_NONE)
+	if (repeatmode == REPEAT_NONE)
 	{
 		if (comm->activelist() == comm->playlist())
 		{
-			if (options->followcursor)
+			if (options->get_bool("followcursor"))
 			{
 				if (is_last)
 					s += "this song, then ";
@@ -955,6 +956,9 @@ bool			Pms::progress_nextsong()
 	Songlist *		list = NULL;
 	unsigned int		remaining;
 
+	long			repeatmode;
+	long			playmode;
+
 	if (!cursong())		return false;
 
 	if (comm->status()->state != MPD_STATUS_STATE_PLAY)
@@ -962,10 +966,13 @@ bool			Pms::progress_nextsong()
 
 	remaining = (comm->status()->time_total - comm->status()->time_elapsed - comm->status()->crossfade);
 
+	repeatmode = options->get_long("repeatmode");
+	playmode = options->get_long("playmode");
+
 	/* Repeat-one hack */
-	if (options->repeatmode == REPEAT_ONE)
+	if (repeatmode == REPEAT_ONE)
 	{
-		if (remaining <= options->repeatonedelay)
+		if (remaining <= options->get_long("repeatonedelay"))
 		{
 			comm->playid(cursong()->id);
 			return true;
@@ -974,13 +981,13 @@ bool			Pms::progress_nextsong()
 	}
 
 	/* Too early */
-	if (remaining > options->nextinterval || lastid == cursong()->id)
+	if (remaining > options->get_long("nextinterval") || lastid == cursong()->id)
 		return false;
 
 	/* No auto-progression, even when in the middle of playlist */
-	if (options->playmode == PLAYMODE_MANUAL)
+	if (playmode == PLAYMODE_MANUAL)
 	{
-		if (remaining <= options->stopdelay)
+		if (remaining <= options->get_long("stopdelay"))
 		{
 			debug("Manual playmode, stopping playback.\n");
 			comm->stop();
@@ -1005,18 +1012,18 @@ bool			Pms::progress_nextsong()
 		if (list == comm->playlist())
 		{
 			/* Let MPD handle repeating of the playlist itself */
-			if (options->repeatmode == REPEAT_LIST)
+			if (repeatmode == REPEAT_LIST)
 				return false;
 
 			/* Let MPD handle random songs from playlist */
-			if (options->playmode == PLAYMODE_RANDOM)
+			if (playmode == PLAYMODE_RANDOM)
 				return false;
 		}
 
 		debug("Auto-progressing to next song.\n");
 
 		/* Playback follows cursor */
-		if (options->followcursor && lastcursor != disp->cursorsong() && disp->cursorsong()->file != cursong()->file)
+		if (options->get_bool("followcursor") && lastcursor != disp->cursorsong() && disp->cursorsong()->file != cursong()->file)
 		{
 			debug("Playback follows cursor: last cursor=%p, now cursor=%p.\n", lastcursor, disp->cursorsong());
 			lastcursor = disp->cursorsong();
@@ -1024,7 +1031,7 @@ bool			Pms::progress_nextsong()
 		}
 
 		/* Normal song progression */
-		lastid = playnext(options->playmode, false);
+		lastid = playnext(playmode, false);
 	}
 
 	if (lastcursor == NULL)
@@ -1226,7 +1233,7 @@ bool			Pms::parse_args(int argc, char * argv[])
 			switch (*i)
 			{
 				case 'd':
-					options->debug = true;
+					options->set_bool("debug", true);
 					break;
 				case 'v':
 					print_version();
@@ -1237,27 +1244,27 @@ bool			Pms::parse_args(int argc, char * argv[])
 				case 'c':
 					if (++argn >= argc)
 						return require_arg(*i);
-					options->configfile = argv[argn];
+					options->set_string("configfile", argv[argn]);
 					break;
 				case 'h':
 					if (++argn >= argc)
 						return require_arg(*i);
-					options->hostname = argv[argn];
+					options->set_string("hostname", argv[argn]);
 					break;
 				case 'p':
 					if (++argn >= argc)
 						return require_arg(*i);
-					options->port = atoi(argv[argn]);
-					if (options->port <= 0 || options->port > 65535)
+					options->set_long("port", atoi(argv[argn]));
+					if (options->get_long("port") <= 0 || options->get_long("port") > 65535)
 					{
-						printf("Error: port number must be from 1-65535\n");
+						printf(_("Error: port number must be from 1-65535\n"));
 						return false;
 					}
 					break;
 				case 'P':
 					if (++argn >= argc)
 						return require_arg(*i);
-					options->password = argv[argn];
+					options->set_string("password", argv[argn]);
 					break;
 				case '-':
 					if (switched)
@@ -1268,7 +1275,7 @@ bool			Pms::parse_args(int argc, char * argv[])
 					switched = true;
 					break;
 				default:
-					printf("Error: unknown option '%c'\n", *i);
+					printf(_("Error: unknown option '%c'\n"), *i);
 					print_usage();
 					return false;
 			}

@@ -118,7 +118,7 @@ public:
 	bool 			get_bool(string);
 
 	/* Dump everything into a long string */
-	string			dump(string, Error &);
+	bool			dump(string, Error &);
 	string			dump(Setting *);
 	string			dump_all();
 
