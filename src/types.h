@@ -124,24 +124,24 @@ pms_pending_keys;
 /*
  * Player state/mode
  */
-typedef enum
+enum
 {
 	PLAYMODE_MANUAL = 0,
 	PLAYMODE_LINEAR,
 	PLAYMODE_RANDOM
-}
-pms_play_mode;
+};
+
 
 /* 
  * Repeat state
  */
-typedef enum
+enum
 {
 	REPEAT_NONE = 0,
 	REPEAT_ONE,
 	REPEAT_LIST
-}
-pms_repeat_mode;
+};
+
 
 /*
  * Scroll mode

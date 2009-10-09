@@ -91,6 +91,7 @@ public:
 
 	/* And special option setters */
 	bool			set_topbar_values(string, string);
+	void			clear_topbar();
 
 				Options();
 				~Options();

@@ -536,14 +536,14 @@ bool		handle_command(pms_pending_keys action)
 			switch(pms->options->get_long("repeatmode"))
 			{
 				case REPEAT_NONE:
-					pms->options->set_long("repeatmode", REPEAT_ONE);
+					pms->options->set("repeatmode", "single");
 					break;
 				case REPEAT_ONE:
-					pms->options->set_long("repeatmode", REPEAT_LIST);
+					pms->options->set("repeatmode", "yes");
 					break;
 				default:
 				case REPEAT_LIST:
-					pms->options->set_long("repeatmode", REPEAT_NONE);
+					pms->options->set("repeatmode", "no");
 					break;
 			}
 
@@ -692,9 +692,9 @@ bool		handle_command(pms_pending_keys action)
 				else if (!pms->config->readline(pms->input->text))
 				{
 					if (err.code == CERR_NONE)
-						pms->setstatus(STOK, "  %s", err.str.c_str());
+						pms->setstatus(STOK, "  %s", pms->msg->str.c_str());
 					else
-						pms->setstatus(STERR, _("Error %d: %s"), err.code, err.str.c_str());
+						pms->setstatus(STERR, _("Error %d: %s"), pms->msg->code, pms->msg->str.c_str());
 					break;
 				}
 

@@ -339,6 +339,11 @@ int			Pms::main()
 			disp->resized();
 		else if (mediator->changed("columnspace"))
 			disp->resized();
+		else if (mediator->changed("setting.topbarclear"))
+		{
+			if (options->get_bool("topbarclear"))
+				options->topbar.clear();
+		}
 
 		/* Draw */
 		disp->topbar->wantdraw = true;
@@ -370,6 +375,11 @@ int			Pms::init()
 	char *			port;
 	char *			password;
 	const char *		charset = NULL;
+	
+	/* Internal pointers */
+	msg = new Error();
+	mediator = new Mediator();
+	formatter = new Formatter();
 
 	/* Setup locales and internationalization */
 	setlocale(LC_TIME, "");
@@ -412,19 +422,16 @@ int			Pms::init()
 	fieldtypes->add("disc", _("Disc"), FIELD_DISC, 5, sort_compare_disc);
 	fieldtypes->add("comment", _("Comment"), FIELD_COMMENT, 0, sort_compare_comment);
 
-	/* Set up internal pointers and classes */
-	msg = new Error();
-	mediator = new Mediator();
-	formatter = new Formatter();
-	options = new Options();
-	config = new Configurator(options, bindings);
-
 	/* Set up default bindings */
 	if (!init_commandmap())
 	{
 		return PMS_EXIT_NOCOMMAND;
 	}
+	options = new Options();
 	init_default_keymap();
+
+	/* Our configuration */
+	config = new Configurator(options, bindings);
 
 	/* Find default configuration file */
 	if (homedir != NULL)

@@ -55,7 +55,6 @@ Options::~Options()
 void		Options::destroy()
 {
 	vector<Setting *>::iterator	i;
-	vector<Topbarline*>::iterator	j;
 
 	/* Truncate old settings array */
 	i = vals.begin();
@@ -64,10 +63,7 @@ void		Options::destroy()
 	vals.clear();
 
 	/* Truncate topbar */
-	j = topbar.begin();
-	while (j++ != topbar.end())
-		delete *j;
-	topbar.clear();
+	clear_topbar();
 
 	if (colors != NULL)
 		delete colors;
@@ -91,6 +87,7 @@ void		Options::reset()
 	set("playmode", SETTING_TYPE_PLAYMODE, "linear");
 	set("repeatmode", SETTING_TYPE_REPEATMODE, "none");
 	set("columns", SETTING_TYPE_FIELDLIST, "artist track title album length");
+	set("librarysort", SETTING_TYPE_FIELDLIST, "track disc album date albumartistsort");
 
 	set_long("nextinterval", 5);
 	set_long("crossfade", 5);
@@ -110,6 +107,7 @@ void		Options::reset()
 	set_bool("followcursor", false);
 	set_bool("followplayback", false);
 	set_bool("nextafteraction", true);
+	set_bool("topbarclear", false);
 	set_bool("showtopbar", true);
 	set_bool("topbarborders", false);
 	set_bool("topbarspace", true);
@@ -121,7 +119,6 @@ void		Options::reset()
 	set_string("onplaylistfinish", "");
 	set_string("libraryroot", "");
 	set_string("startuplist", "playlist");
-	set_string("librarysort", "default");
 	set_string("albumclass", "artist album date"); //FIXME: implement this
 
 	set_string("status_unknown", "??");
@@ -176,8 +173,6 @@ Setting *	Options::lookup(string key)
 
 /*
  * Initialize a setting or return an existing one with type t.
- * Returns NULL if the setting exists but has a different SettingType,
- * else return the pointer to the new object.
  */
 Setting *	Options::add(string key, SettingType t)
 {
@@ -185,11 +180,7 @@ Setting *	Options::add(string key, SettingType t)
 
 	s = lookup(key);
 	if (s != NULL)
-	{
-		if (s->type != t)
-			return NULL;
 		return s;
-	}
 
 	s = new Setting();
 	if (s == NULL)
@@ -237,6 +228,7 @@ bool		Options::set(string key, string val)
 	Setting *	s;
 
 	debug("set: Setting option '%s'='%s'\n", key.c_str(), val.c_str());
+	pms->clearmsg();
 
 	if (key.size() > 6 && key.substr(0, 6) == "topbar")
 	{
@@ -249,19 +241,29 @@ bool		Options::set(string key, string val)
 	}
 
 	s = lookup(key);
+	while (s->alias != NULL)
+		s = s->alias;
+
 	if (s == NULL)
 	{
-		pms->clearmsg();
 		pms->msg->code = CERR_INVALID_OPTION;
 		pms->msg->str = _("invalid option");
 		pms->msg->str += " '" + key + "'";
 		return false;
 	}
 
-	if (set(key, s->type, val) != NULL)
+	if (set(s->key, s->type, val) != NULL)
 	{
 		pms->mediator->add("setting." + key);
 		return true;
+	}
+	else if (pms->msg->code == CERR_NONE)
+	{
+		pms->msg->code = CERR_INVALID_VALUE;
+		pms->msg->str = _("invalid value");
+		pms->msg->str += " '" + val + "' ";
+		pms->msg->str += _("for option");
+		pms->msg->str += " '" + s->key + "'";
 	}
 	return false;
 }
@@ -274,9 +276,20 @@ Setting *	Options::set(string key, SettingType t, string val)
 {
 	Setting *	s;
 
+//	fprintf(stderr, "set(%s, %d, %s)\n", key.c_str(), t, val.c_str());
+
 	s = add(key, t);
-	if (s == NULL)
+	if (s == NULL || s->type != t)
+		return NULL;
+
+	/*
+	 * Special case
+	 */
+	if (key == "topbarclear")
+	{
+		clear_topbar();
 		return s;
+	}
 
 	switch(t)
 	{
@@ -291,9 +304,25 @@ Setting *	Options::set(string key, SettingType t, string val)
 
 		case SETTING_TYPE_FIELDLIST:
 			if (Configurator::verify_columns(val))
-				return set_string(key, val);
+				s->v_string = val;
 			else
 				return NULL;
+			break;
+
+		case SETTING_TYPE_REPEATMODE:
+			if (val == "single")
+			{
+				s->v_long = REPEAT_ONE;
+			}
+			else
+			{
+				if (Configurator::strtobool(val))
+					s->v_long = REPEAT_LIST;
+				else
+					s->v_long = REPEAT_NONE;
+			}
+			s->v_string = val;
+			break;
 
 		case SETTING_TYPE_PLAYMODE:
 			if (val == "manual")
@@ -598,3 +627,21 @@ bool		Options::set_topbar_values(string name, string value)
 	return true;
 }
 
+
+/*
+ * Clear the topbar
+ */
+void		Options::clear_topbar()
+{
+	vector<Topbarline *>::iterator	i;
+
+	i = topbar.begin();
+
+	while (i != topbar.end())
+	{
+		delete *i;
+		++i;
+	}
+
+	topbar.clear();
+}

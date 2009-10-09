@@ -1007,8 +1007,6 @@ bool		Songlist::sort(string sorts)
 
 	if (sorts.size() == 0)
 		return false;
-	else if (sorts == "default")
-		sorts = "track disc album date albumartistsort";
 
 	if (pms->mediator->changed("setting.ignorecase"))
 		ignorecase = pms->options->get_bool("ignorecase");
