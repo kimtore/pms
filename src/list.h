@@ -87,6 +87,7 @@ public:
 				Songlist();
 				~Songlist();
 
+	bool			ignorecase;
 	bool			wrap;
 	string			filename;
 	

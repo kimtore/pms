@@ -53,6 +53,7 @@ Songlist::Songlist()
 	filename = "";
 	selection.size = 0;
 	selection.length = 0;
+	ignorecase = pms->options->get_bool("ignorecase");
 }
 
 Songlist::~Songlist()
@@ -94,7 +95,7 @@ Song *			Songlist::nextsong(song_t * id)
 	/* Wrap around */
 	if (++i >= static_cast<song_t>(size()))
 	{
-		if (pms->options->repeatmode == REPEAT_LIST)
+		if (pms->options->get_long("repeatmode") == REPEAT_LIST)
 			i = 0;
 		else
 			return NULL;
@@ -139,7 +140,7 @@ Song *			Songlist::prevsong(song_t * id)
 	/* Wrap around */
 	if (--i < 0)
 	{
-		if (pms->options->repeatmode == REPEAT_LIST)
+		if (pms->options->get_long("repeatmode") == REPEAT_LIST)
 			i = end();
 		else
 			return NULL;
@@ -872,7 +873,7 @@ song_t			Songlist::match(string src, unsigned int from, unsigned int to, long mo
 			if (mode & MATCH_EXACT)
 				matched = exactmatch(&(sources[j]), &src);
 #ifdef HAVE_LIBBOOST_REGEX
-			else if (pms->options->regexsearch)
+			else if (pms->options->get_bool("regexsearch"))
 				matched = regexmatch(&(sources[j]), &src);
 #endif
 			else
@@ -1009,6 +1010,9 @@ bool		Songlist::sort(string sorts)
 	else if (sorts == "default")
 		sorts = "track disc album date albumartistsort";
 
+	if (pms->mediator->changed("setting.ignorecase"))
+		ignorecase = pms->options->get_bool("ignorecase");
+
 	temp = songs;
 
 	start = temp.begin();
@@ -1071,7 +1075,7 @@ bool	icstrsort(string & a, string & b)
 	string		ai;
 	string		bi;
 
-	if (!pms->options->ignorecase)
+	if (!pms->options->get_bool("ignorecase"))
 		return a < b;
 
 	ai = a;

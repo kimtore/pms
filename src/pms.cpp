@@ -325,6 +325,8 @@ int			Pms::main()
 		/* Check out mediator events */
 		if (mediator->changed("setting.sort"))
 			comm->library()->sort(options->get_string("librarysort"));
+		else if (mediator->changed("setting.ignorecase"))
+			comm->library()->sort(options->get_string("librarysort"));
 		else if (mediator->changed("setting.columns"))
 			disp->actwin()->set_column_size();
 		else if (mediator->changed("setting.mouse"))
