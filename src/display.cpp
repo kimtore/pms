@@ -82,7 +82,7 @@ void			pms_win_topbar::draw()
 	Song *		song;
 
 	/* No-go */
-	if (pms->options->topbar.size() == 0 || !pms->options->showtopbar)
+	if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
 		return;
 
 	/* Clear window */
@@ -132,7 +132,7 @@ void			pms_win_topbar::draw()
  */
 int			pms_win_topbar::height()
 {
-	return pms->options->topbar.size() + (pms->options->topbarborders ? 2 : 0) + (pms->options->topbarspace ? 1 : 0);
+	return pms->options->topbar.size() + (pms->options->get_bool("topbarborders") ? 2 : 0) + (pms->options->get_bool("topbarspace") ? 1 : 0);
 }
 
 
@@ -337,7 +337,7 @@ unsigned int		pms_window::cursordrawstart()
 	{}
 
 	/* Cursors position on screen changes relative to cursor position in list */
-	else if (pms->options->scroll_mode == SCROLL_RELATIVE)
+	else if (pms->options->get_long("scroll") == SCROLL_RELATIVE)
 	{
 		ht	= bheight() - 2;
 
@@ -351,7 +351,7 @@ unsigned int		pms_window::cursordrawstart()
 	}
 
 	/* Cursor is always centered, except when nearing top or bottom of the list */
-	else if (pms->options->scroll_mode == SCROLL_CENTERED)
+	else if (pms->options->get_long("scroll") == SCROLL_CENTERED)
 	{
 		if (size() > static_cast<unsigned int>(bheight() - 1))
 		{
@@ -367,16 +367,15 @@ unsigned int		pms_window::cursordrawstart()
 	}
 
 	/* Window is scrolled when the cursor is about to go off the edge */
-	else if (pms->options->scroll_mode == SCROLL_NORMAL)
+	else if (pms->options->get_long("scroll") == SCROLL_NORMAL)
 	{
 		//note bheight() includes the column headings!
 
 		//if scrolloff is set to half the height or more drop it 
 		//temporarily
-		if (pms->options->scrolloff * 2 >= bheight() - 1)
+		sotemp = pms->options->get_long("scrolloff");
+		if (sotemp * 2 >= bheight() - 1)
 			sotemp = (bheight() - 1 - 1) / 2;
-		else
-			sotemp = pms->options->scrolloff;
 
 		//get rid of any empty space at the bottom which shouldn't be there
 		while (scrolloffset > 0 && scrolloffset + bheight() - 1 > size())
@@ -450,7 +449,7 @@ void		pms_window::scrollwin(int offset)
 	int	i;
 	int	sotemp;
 
-	if (pms->options->scroll_mode != SCROLL_NORMAL)
+	if (pms->options->get_long("scroll") != SCROLL_NORMAL)
 	{
 		movecursor(offset);
 		return;
@@ -463,10 +462,9 @@ void		pms_window::scrollwin(int offset)
 	}
 
 	//if scrolloff is set to half the height or more drop it temporarily
-	if (pms->options->scrolloff * 2 >= bheight() - 1)
+	sotemp = pms->options->get_long("scrolloff");
+	if (sotemp * 2 >= bheight() - 1)
 		sotemp = (bheight() - 1 - 1) / 2;
-	else
-		sotemp = pms->options->scrolloff;
 
 	if (offset == 0)
 		return;
@@ -571,7 +569,7 @@ void		pms_win_directory::draw()
 	debug("\n-- starting directory draw --\n");
 
 	/* Pop excess directories according to draw length */
-	maxdepth = (bwidth() / pms->options->directoryminlen);
+	maxdepth = (bwidth() / pms->options->get_long("directoryminlen"));
 	debug("Maximum directory depth = %d\n", maxdepth);
 	while (dirs.size() >= maxdepth)
 	{
@@ -588,7 +586,7 @@ void		pms_win_directory::draw()
 		int			in;
 
 		/* Cursors position on screen changes relative to cursor position in list */
-		if (pms->options->scroll_mode == SCROLL_RELATIVE)
+		if (pms->options->get_long("scroll") == SCROLL_RELATIVE)
 		{
 			ht	= bheight() - 2;
 	
@@ -602,7 +600,7 @@ void		pms_win_directory::draw()
 		}
 	
 		/* Cursor is always centered, except when nearing top or bottom of the list */
-		else if (pms->options->scroll_mode == SCROLL_CENTERED)
+		else if (pms->options->get_long("scroll") == SCROLL_CENTERED)
 		{
 			if ((*it)->children.size() > static_cast<unsigned int>(bheight() - 1))
 			{
@@ -644,7 +642,7 @@ void		pms_win_directory::draw()
 		else
 			hilight = pms->options->colors->standard;
 
-		s = pms->formatter->format(song, pms->options->directoryformat, printlen, &(pms->options->colors->fields));
+		s = pms->formatter->format(song, pms->options->get_string("directoryformat"), printlen, &(pms->options->colors->fields));
 		colprint(this, ydraw, xdraw, hilight, s.c_str());
 		++ydraw;
 	}
@@ -963,7 +961,7 @@ void pms_win_playlist::set_column_size()
 	}
 	column.clear();
 
-	v = Pms::splitstr(pms->options->columns, " ");
+	v = Pms::splitstr(pms->options->get_string("columns"), " ");
 
 	for (i = 0; i < v->size(); i++)
 	{
@@ -1301,7 +1299,7 @@ pms_window *		Display::playingwin()
  */
 mmask_t		Display::setmousemask()
 {
-	if (pms->options->mouse)
+	if (pms->options->get_bool("mouse"))
 		mmask = mousemask(ALL_MOUSE_EVENTS, &oldmmask);
 	else
 		mmask = mousemask(0, &oldmmask);
@@ -1340,7 +1338,7 @@ bool		Display::init()
 
 	resized();
 
-	if (pms->options->topbarborders)
+	if (pms->options->get_bool("topbarborders"))
 		topbar->setborders(true, true, true, true);
 	else
 		topbar->setborders(false, false, false, false);
@@ -1375,11 +1373,11 @@ void		Display::resized()
 	pms_window *		w;
 	unsigned int		i;
 
-	if (pms->options->topbar.size() == 0 || !pms->options->showtopbar)
-		topbar->resize(0, 0, 0, pms->options->topbarspace ? 1 : 0);
+	if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
+		topbar->resize(0, 0, 0, pms->options->get_bool("topbarspace") ? 1 : 0);
 	else
 	{
-		if (pms->options->topbarborders)
+		if (pms->options->get_bool("topbarborders"))
 			topbar->setborders(true, true, true, true);
 		else
 			topbar->setborders(false, false, false, false);
@@ -1395,7 +1393,7 @@ void		Display::resized()
 		w = windows[i];
 		if (!w) continue;
 
-		if (pms->options->topbar.size() == 0 || !pms->options->showtopbar)
+		if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
 			w->resize(0, 0, COLS, LINES - 1);
 		else
 			w->resize(0, pms->disp->topbar->height(), COLS, LINES - pms->disp->topbar->height() - 1);
@@ -1504,17 +1502,17 @@ void		Display::set_xterm_title()
 	/* the current xterm title exists under the WM_NAME property */
 	/* and can be retrieved with xprop -id $WINDOWID */
 
-	if (pms->options->xtermtitle.size())
+	if (pms->options->get_string("xtermtitle").size())
 	{
 		if (getenv("WINDOWID"))
 		{
-			t = pms->formatter->format(pms->cursong(), pms->options->xtermtitle, reallen, NULL, true);
+			t = pms->formatter->format(pms->cursong(), pms->options->get_string("xtermtitle"), reallen, NULL, true);
 			printf("%c]0;%s%c", '\033', t.c_str(), '\007');
 		}
 		else
 		{
 			debug(_("Disabling XTerm window title: WINDOWID not found.\n"));
-			pms->options->xtermtitle = "";
+			pms->options->set_string("xtermtitle", "");
 		}
 	}
 }
@@ -1642,7 +1640,7 @@ pms_win_bindings *	Display::create_bindlist()
 	w = new pms_win_bindings();
 	if (w)
 	{
-		if (pms->options->topbar.size() == 0 || !pms->options->showtopbar)
+		if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
 			w->resize(0, 0, COLS, LINES - 1);
 		else
 			w->resize(0, pms->disp->topbar->height(), COLS, LINES - pms->disp->topbar->height() - 1);
@@ -1666,7 +1664,7 @@ pms_win_windowlist *	Display::create_windowlist()
 	w = new pms_win_windowlist(this, &playlists);
 	if (w)
 	{
-		if (pms->options->topbar.size() == 0 || !pms->options->showtopbar)
+		if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
 			w->resize(0, 0, COLS, LINES - 1);
 		else
 			w->resize(0, pms->disp->topbar->height(), COLS, LINES - pms->disp->topbar->height() - 1);
@@ -1690,7 +1688,7 @@ pms_win_directory *	Display::create_directorylist()
 	w = new pms_win_directory(comm->rootdir, comm->library());
 	if (w)
 	{
-		if (pms->options->topbar.size() == 0 || !pms->options->showtopbar)
+		if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
 			w->resize(0, 0, COLS, LINES - 1);
 		else
 			w->resize(0, pms->disp->topbar->height(), COLS, LINES - pms->disp->topbar->height() - 1);
@@ -1714,7 +1712,7 @@ pms_win_playlist *	Display::create_playlist()
 	w = new pms_win_playlist();
 	if (w)
 	{
-		if (pms->options->topbar.size() == 0 || !pms->options->showtopbar)
+		if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
 			w->resize(0, 0, COLS, LINES - 1);
 		else
 			w->resize(0, pms->disp->topbar->height(), COLS, LINES - pms->disp->topbar->height() - 1);
@@ -1808,8 +1806,8 @@ unsigned int	pms_column::len()
 		else
 			abslen = (median / items);
 	}
-	if ((unsigned int)abslen < minlen + (pms->options->columnspace ? 1 : 0))
-		return minlen + (pms->options->columnspace ? 1 : 0);
+	if ((unsigned int)abslen < minlen + (pms->options->get_bool("columnspace") ? 1 : 0))
+		return minlen + (pms->options->get_bool("columnspace") ? 1 : 0);
 
 	return (unsigned int)abslen;
 }
