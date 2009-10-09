@@ -146,7 +146,7 @@ bool			Bindings::remove(string b)
 /*
  * Associate a key with a binding
  */
-bool			Bindings::add(string b, string command, Error & err)
+bool			Bindings::add(string b, string command)
 {
 	string			par = "";
 	pms_pending_keys	k;
@@ -172,9 +172,10 @@ bool			Bindings::add(string b, string command, Error & err)
 		}
 		else
 		{
-			err.code = CERR_INVALID_COMMAND;
-			err.str = _("invalid command");
-			err.str += " '" + command + "'";
+			pms->clearmsg();
+			pms->msg->code = CERR_INVALID_COMMAND;
+			pms->msg->str = _("invalid command");
+			pms->msg->str += " '" + command + "'";
 			return false;
 		}
 	}
@@ -243,17 +244,19 @@ bool			Bindings::add(string b, string command, Error & err)
 					i = KEY_F(i);
 				else
 				{
-					err.code = CERR_INVALID_KEY;
-					err.str = _("function key out of range");
-					err.str += ": " + b;
+					pms->clearmsg();
+					pms->msg->code = CERR_INVALID_KEY;
+					pms->msg->str = _("function key out of range");
+					pms->msg->str += ": " + b;
 					return false;
 				}
 			}
 			else
 			{
-				err.code = CERR_INVALID_KEY;
-				err.str = _("invalid key");
-				err.str += " '" + b + "'";
+				pms->clearmsg();
+				pms->msg->code = CERR_INVALID_KEY;
+				pms->msg->str = _("invalid key");
+				pms->msg->str += " '" + b + "'";
 				return false;
 			}
 		}
@@ -348,7 +351,7 @@ bool			Configurator::strtobool(string s)
 /*
  * Verify that a columns string is OK
  */
-bool			Configurator::verify_columns(string s, Error & err)
+bool			Configurator::verify_columns(string s)
 {
 	unsigned int		i;
 	vector<string> *	v;
@@ -362,9 +365,10 @@ bool			Configurator::verify_columns(string s, Error & err)
 	{
 		if (pms->fieldtypes->lookup((*v)[i]) == -1)
 		{
-			err.code = CERR_INVALID_COLUMN;
-			err.str = _("invalid column type");
-			err.str += " '" + (*v)[i] + "'";
+			pms->clearmsg();
+			pms->msg->code = CERR_INVALID_COLUMN;
+			pms->msg->str = _("invalid column type");
+			pms->msg->str += " '" + (*v)[i] + "'";
 			delete v;
 			return false;
 		}
@@ -391,19 +395,20 @@ Configurator::Configurator(Options * o, Bindings * b)
 /*
  * Loads a configuration file
  */
-bool			Configurator::source(string fn, Error & err)
+bool			Configurator::source(string fn)
 {
 	FILE *		fd;
 	char		buffer[1024];
 	int		line = 0;
 
-	err.code = CERR_NONE;
+	pms->clearmsg();
+	pms->msg->code = CERR_NONE;
 	fd = fopen(fn.c_str(), "r");
 
 	if (fd == NULL)
 	{
-		err.code = CERR_NO_FILE;
-		err.str = fn + ": could not open file.";
+		pms->msg->code = CERR_NO_FILE;
+		pms->msg->str = fn + ": could not open file.";
 		return false;
 	}
 
@@ -412,20 +417,20 @@ bool			Configurator::source(string fn, Error & err)
 	while (fgets(buffer, 1024, fd) != NULL)
 	{
 		++line;
-		if (!readline(buffer, err))
+		if (!readline(buffer))
 			break;
 	}
 
-	if (err.code != 0)
+	if (pms->msg->code != 0)
 	{
-		err.str = "line " + Pms::tostring(line) + ": " + err.str;
+		pms->msg->str = "line " + Pms::tostring(line) + ": " + pms->msg->str;
 	}
 
 	debug("Finished reading configuration file.\n");
 
 	fclose(fd);
 
-	return (err.code == 0);
+	return (pms->msg->code == 0);
 }
 
 /*
@@ -499,7 +504,7 @@ string			Configurator::getparamopt(string buffer)
 /*
  * Interprets a command line
  */
-bool			Configurator::readline(string buffer, Error & err)
+bool			Configurator::readline(string buffer)
 {
 	vector<string> *		tok;
 	vector<string>::iterator	it;
@@ -508,7 +513,7 @@ bool			Configurator::readline(string buffer, Error & err)
 	string				val;
 
 	/* No errors by default */
-	err.clear();
+	pms->clearmsg();
 
 	/* Empty lines pass through */
 	if (buffer.size() == 0)
@@ -535,7 +540,7 @@ bool			Configurator::readline(string buffer, Error & err)
 		val.clear();
 
 		if (tok->size() < 2)
-			err.code = CERR_MISSING_IDENTIFIER;
+			pms->msg->code = CERR_MISSING_IDENTIFIER;
 		else
 		{
 			proc = (*tok)[1];
@@ -544,7 +549,7 @@ bool			Configurator::readline(string buffer, Error & err)
 				//check for various prefixes/suffixes
 				if (proc.substr(proc.length() - 1, 1) == "?" && pms->options->get_type(proc.substr(0, proc.length() - 1)) != SETTING_TYPE_EINVAL)
 				{
-					pms->options->dump(proc, err);
+					pms->options->dump(proc);
 					return false;
 				}
 				else if (proc.substr(0, 2) == "no" && pms->options->get_type(proc.substr(2)) == SETTING_TYPE_BOOLEAN)
@@ -556,39 +561,39 @@ bool			Configurator::readline(string buffer, Error & err)
 				else if (pms->options->get_type(proc) == SETTING_TYPE_BOOLEAN)
 					return pms->options->set(proc, "true");
 				else if (pms->options->get_type(proc) == SETTING_TYPE_EINVAL)
-					err.code = CERR_INVALID_IDENTIFIER;
+					pms->msg->code = CERR_INVALID_IDENTIFIER;
 				else
 				{
-					pms->options->dump(proc, err);
+					pms->options->dump(proc);
 					return false;
 				}
 			}
 			else if (pms->options->get_type(proc) == SETTING_TYPE_BOOLEAN || tok->at(2) != "=" && tok->at(2) != ":")
-				err.code = CERR_UNEXPECTED_TOKEN;
+				pms->msg->code = CERR_UNEXPECTED_TOKEN;
 		}
 
-		if (err.code == CERR_NONE)
+		if (pms->msg->code == CERR_NONE)
 			val = Configurator::getparamopt(buffer);
 
 		delete tok;
 
-		switch(err.code)
+		switch(pms->msg->code)
 		{
 			case CERR_NONE:
 				break;
 			case CERR_INVALID_IDENTIFIER:
-				err.str = _("invalid identifier");
-				err.str += " '" + proc + "'";
+				pms->msg->str = _("invalid identifier");
+				pms->msg->str += " '" + proc + "'";
 				return false;
 			case CERR_MISSING_IDENTIFIER:
-				err.str = _("missing name identifier after 'set'");
+				pms->msg->str = _("missing name identifier after 'set'");
 				return false;
 			case CERR_MISSING_VALUE:
-				err.str = _("missing value for configuration option");
-				err.str += " '" + proc + "'";
+				pms->msg->str = _("missing value for configuration option");
+				pms->msg->str += " '" + proc + "'";
 				return false;
 			case CERR_UNEXPECTED_TOKEN:
-				err.str = _("unexpected token after identifier");
+				pms->msg->str = _("unexpected token after identifier");
 				return false;
 			default:
 				return false;
@@ -603,16 +608,16 @@ bool			Configurator::readline(string buffer, Error & err)
 
 		if (tok->size() == 1)
 		{
-			err.code = CERR_MISSING_IDENTIFIER;
-			err.str = _("missing key after 'bind'");
+			pms->msg->code = CERR_MISSING_IDENTIFIER;
+			pms->msg->str = _("missing key after 'bind'");
 			return false;
 		}
 
 		if (tok->size() == 2)
 		{
-			err.code = CERR_MISSING_VALUE;
-			err.str = _("missing command to bind to key");
-			err.str += " '" + tok->at(1) + "'";
+			pms->msg->code = CERR_MISSING_VALUE;
+			pms->msg->str = _("missing command to bind to key");
+			pms->msg->str += " '" + tok->at(1) + "'";
 			return false;
 		}
 
@@ -620,7 +625,7 @@ bool			Configurator::readline(string buffer, Error & err)
 		val = Pms::joinstr(tok, tok->begin() + 2, tok->end());
 		delete tok;
 
-		return bindings->add(proc, val, err);
+		return bindings->add(proc, val);
 	}
 	else if (proc == "unbind" || proc == "unmap" || proc == "unm")
 	{
@@ -629,9 +634,9 @@ bool			Configurator::readline(string buffer, Error & err)
 		{
 			if (!bindings->remove(*it))
 			{
-				err.code = CERR_INVALID_KEY;
-				err.str = _("Can't remove binding for key");
-				err.str += " '" + *it + "'";
+				pms->msg->code = CERR_INVALID_KEY;
+				pms->msg->str = _("Can't remove binding for key");
+				pms->msg->str += " '" + *it + "'";
 				delete tok;
 				return false;
 			}
@@ -646,16 +651,16 @@ bool			Configurator::readline(string buffer, Error & err)
 
 		if (tok->size() == 1)
 		{
-			err.code = CERR_MISSING_IDENTIFIER;
-			err.str = _("missing names after 'color'");
+			pms->msg->code = CERR_MISSING_IDENTIFIER;
+			pms->msg->str = _("missing names after 'color'");
 			return false;
 		}
 
 		if (tok->size() == 2)
 		{
-			err.code = CERR_MISSING_VALUE;
-			err.str = _("missing colors to add to ");
-			err.str += tok->at(1);
+			pms->msg->code = CERR_MISSING_VALUE;
+			pms->msg->str = _("missing colors to add to ");
+			pms->msg->str += tok->at(1);
 			return false;
 		}
 
@@ -663,13 +668,13 @@ bool			Configurator::readline(string buffer, Error & err)
 		val = Pms::joinstr(tok, tok->begin() + 2, tok->end());
 		delete tok;
 
-		return set_color(proc, val, err);
+		return set_color(proc, val);
 	}
 	else
 	{
-		err.code = CERR_SYNTAX;
-		err.str = _("syntax error: unexpected");
-		err.str += " '" + proc + "'";
+		pms->msg->code = CERR_SYNTAX;
+		pms->msg->str = _("syntax error: unexpected");
+		pms->msg->str += " '" + proc + "'";
 		return false;
 	}
 
@@ -679,7 +684,7 @@ bool			Configurator::readline(string buffer, Error & err)
 /*
  * Set a color pair for a field
  */
-bool			Configurator::set_color(string name, string pairs, Error & err)
+bool			Configurator::set_color(string name, string pairs)
 {
 	vector<string> *	pair;
 	string 			str;
@@ -693,6 +698,8 @@ bool			Configurator::set_color(string name, string pairs, Error & err)
 
 	if (pairs.size() == 0) return false;
 	c = opt->colors;
+
+	pms->clearmsg();
 
 	/* Standard colors */
 	if (name == "background")
@@ -810,25 +817,25 @@ bool			Configurator::set_color(string name, string pairs, Error & err)
 				else if (name == "comment")
 					dest = field->comment;
 				else
-					err.code = CERR_INVALID_IDENTIFIER;
+					pms->msg->code = CERR_INVALID_IDENTIFIER;
 			}
 		}
 		else
 		{
-			err.code = CERR_INVALID_IDENTIFIER;
+			pms->msg->code = CERR_INVALID_IDENTIFIER;
 		}
 	}
 
 	/* No valid color field */
 	else
 	{
-		err.code = CERR_INVALID_IDENTIFIER;
+		pms->msg->code = CERR_INVALID_IDENTIFIER;
 	}
 
-	if (err.code == CERR_INVALID_IDENTIFIER)
+	if (pms->msg->code == CERR_INVALID_IDENTIFIER)
 	{
-		err.str = _("invalid identifier");
-		err.str += " '" + name + "'";
+		pms->msg->str = _("invalid identifier");
+		pms->msg->str += " '" + name + "'";
 		return false;
 	}
 
@@ -836,9 +843,9 @@ bool			Configurator::set_color(string name, string pairs, Error & err)
 	if (pair->size() > 2)
 	{
 		delete pair;
-		err.code = CERR_EXCESS_ARGUMENTS;
-		err.str = _("excess arguments: expected 1 or 2, got ");
-		err.str += Pms::tostring(pair->size());
+		pms->msg->code = CERR_EXCESS_ARGUMENTS;
+		pms->msg->str = _("excess arguments: expected 1 or 2, got ");
+		pms->msg->str += Pms::tostring(pair->size());
 		return false;
 	}
 
@@ -918,9 +925,10 @@ bool			Configurator::set_color(string name, string pairs, Error & err)
 		else
 		{
 			delete pair;
-			err.code = CERR_INVALID_COLOR;
-			err.str = _("invalid color name");
-			err.str += " '" + str + "'";
+			pms->clearmsg();
+			pms->msg->code = CERR_INVALID_COLOR;
+			pms->msg->str = _("invalid color name");
+			pms->msg->str += " '" + str + "'";
 			return false;
 		}
 	}

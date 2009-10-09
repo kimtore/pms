@@ -390,6 +390,35 @@ int			Pms::init()
 	port = getenv("MPD_PORT");
 	password = getenv("MPD_PASSWORD");
 
+	/* Set up field types */
+	fieldtypes = new Fieldtypes();
+	fieldtypes->add("num", _("#"), FIELD_NUM, 0, NULL);
+	fieldtypes->add("file", _("Filename"), FIELD_FILE, 0, sort_compare_file);
+	fieldtypes->add("artist", _("Artist"), FIELD_ARTIST, 0, sort_compare_artist);
+	fieldtypes->add("artistsort", _("Artist sort name"), FIELD_ARTISTSORT, 0, sort_compare_artistsort);
+	fieldtypes->add("albumartist", _("Album artist"), FIELD_ALBUMARTIST, 0, sort_compare_albumartist);
+	fieldtypes->add("albumartistsort", _("Album artist sort name"), FIELD_ALBUMARTISTSORT, 0, sort_compare_albumartistsort);
+	fieldtypes->add("title", _("Title"), FIELD_TITLE, 0, sort_compare_title);
+	fieldtypes->add("album", _("Album"), FIELD_ALBUM, 0, sort_compare_album);
+	fieldtypes->add("track", _("Track"), FIELD_TRACK, 6, sort_compare_track);
+	fieldtypes->add("trackshort", _("No"), FIELD_TRACKSHORT, 3, sort_compare_track);
+	fieldtypes->add("length", _("Length"), FIELD_TIME, 7, sort_compare_length);
+	fieldtypes->add("date", _("Date"), FIELD_DATE, 11, sort_compare_date);
+	fieldtypes->add("year", _("Year"), FIELD_YEAR, 5, sort_compare_year);
+	fieldtypes->add("name", _("Name"), FIELD_NAME, 0, sort_compare_name);
+	fieldtypes->add("genre", _("Genre"), FIELD_GENRE, 0, sort_compare_genre);
+	fieldtypes->add("composer", _("Composer"), FIELD_COMPOSER, 0, sort_compare_composer);
+	fieldtypes->add("performer", _("Performer"), FIELD_PERFORMER, 0, sort_compare_performer);
+	fieldtypes->add("disc", _("Disc"), FIELD_DISC, 5, sort_compare_disc);
+	fieldtypes->add("comment", _("Comment"), FIELD_COMMENT, 0, sort_compare_comment);
+
+	/* Set up internal pointers and classes */
+	msg = new Error();
+	mediator = new Mediator();
+	formatter = new Formatter();
+	options = new Options();
+	config = new Configurator(options, bindings);
+
 	/* Set up default bindings */
 	if (!init_commandmap())
 	{
@@ -397,12 +426,7 @@ int			Pms::init()
 	}
 	init_default_keymap();
 
-	/* Set up internal pointers and classes */
-	mediator = new Mediator();
-	formatter = new Formatter();
-	options = new Options();
-	config = new Configurator(options, bindings);
-
+	/* Find default configuration file */
 	if (homedir != NULL)
 	{
 		str = homedir;
@@ -444,34 +468,12 @@ int			Pms::init()
 		return PMS_EXIT_BADARGS;
 	}
 
-	/* Set up field types */
-	fieldtypes = new Fieldtypes();
-	fieldtypes->add("num", _("#"), FIELD_NUM, 0, NULL);
-	fieldtypes->add("file", _("Filename"), FIELD_FILE, 0, sort_compare_file);
-	fieldtypes->add("artist", _("Artist"), FIELD_ARTIST, 0, sort_compare_artist);
-	fieldtypes->add("artistsort", _("Artist sort name"), FIELD_ARTISTSORT, 0, sort_compare_artistsort);
-	fieldtypes->add("albumartist", _("Album artist"), FIELD_ALBUMARTIST, 0, sort_compare_albumartist);
-	fieldtypes->add("albumartistsort", _("Album artist sort name"), FIELD_ALBUMARTISTSORT, 0, sort_compare_albumartistsort);
-	fieldtypes->add("title", _("Title"), FIELD_TITLE, 0, sort_compare_title);
-	fieldtypes->add("album", _("Album"), FIELD_ALBUM, 0, sort_compare_album);
-	fieldtypes->add("track", _("Track"), FIELD_TRACK, 6, sort_compare_track);
-	fieldtypes->add("trackshort", _("No"), FIELD_TRACKSHORT, 3, sort_compare_track);
-	fieldtypes->add("length", _("Length"), FIELD_TIME, 7, sort_compare_length);
-	fieldtypes->add("date", _("Date"), FIELD_DATE, 11, sort_compare_date);
-	fieldtypes->add("year", _("Year"), FIELD_YEAR, 5, sort_compare_year);
-	fieldtypes->add("name", _("Name"), FIELD_NAME, 0, sort_compare_name);
-	fieldtypes->add("genre", _("Genre"), FIELD_GENRE, 0, sort_compare_genre);
-	fieldtypes->add("composer", _("Composer"), FIELD_COMPOSER, 0, sort_compare_composer);
-	fieldtypes->add("performer", _("Performer"), FIELD_PERFORMER, 0, sort_compare_performer);
-	fieldtypes->add("disc", _("Disc"), FIELD_DISC, 5, sort_compare_disc);
-	fieldtypes->add("comment", _("Comment"), FIELD_COMMENT, 0, sort_compare_comment);
-
 	/* Read user configuration */
-	if (!config->source(options->get_string("configfile"), err))
+	if (!config->source(options->get_string("configfile")))
 	{
-		if (err.code != CERR_NO_FILE)
+		if (msg->code != CERR_NO_FILE)
 		{
-			printf(_("\nConfiguration error:\n%s\n"), err.str.c_str());
+			printf(_("\nConfiguration error:\n%s\n"), msg->str.c_str());
 			return PMS_EXIT_CONFIGERR;
 		}
 		printf(_("Didn't find a configuration file in %s\n"), options->get_string("configfile").c_str());
@@ -949,6 +951,20 @@ string			Pms::playstring()
 }
 
 /*
+ * Put the last message into the message log
+ */
+void			Pms::clearmsg()
+{
+	if (msg->code == 0 && msg->str.size() == 0)
+		return;
+
+	debug(_("%s code %d: %s\n"), (msg->code == 0 ? _("Message") : _("Error")), msg->code, msg->str.c_str());
+
+	msglog.push_back(msg);
+	msg = new Error();
+}
+
+/*
  * Checks if time is right for song progression, and takes necessary action
  */
 bool			Pms::progress_nextsong()
@@ -1075,85 +1091,84 @@ bool			Pms::connect_window_list()
  */
 void			Pms::init_default_keymap()
 {
-	Error e;
 	bindings->clear();
 
 	/* Movement */
-	bindings->add("up", "move-up", e);
-	bindings->add("down", "move-down", e);
-	bindings->add("pageup", "move-pgup", e);
-	bindings->add("pagedown", "move-pgdn", e);
-	bindings->add("^B", "move-pgup", e);
-	bindings->add("^F", "move-pgdn", e);
-	bindings->add("^U", "move-halfpgup", e);
-	bindings->add("^D", "move-halfpgdn", e);
-	bindings->add("^Y", "scroll-up", e);
-	bindings->add("^E", "scroll-down", e);
-	bindings->add("z", "center-cursor", e);
-	bindings->add("home", "move-home", e);
-	bindings->add("end", "move-end", e);
-	bindings->add("g", "goto-current", e);
-	bindings->add("R", "goto-random", e);
-	bindings->add("j", "move-down", e);
-	bindings->add("k", "move-up", e);
-	bindings->add("t", "prev-window", e);
-	bindings->add("T", "next-window", e);
-	bindings->add("(", "prev-of album", e);
-	bindings->add(")", "next-of album", e);
-	bindings->add("{", "prev-of artist", e);
-	bindings->add("}", "next-of artist", e);
-	bindings->add("1", "change-window playlist", e);
-	bindings->add("2", "change-window library", e);
-	bindings->add("w", "change-window windowlist", e);
+	bindings->add("up", "move-up");
+	bindings->add("down", "move-down");
+	bindings->add("pageup", "move-pgup");
+	bindings->add("pagedown", "move-pgdn");
+	bindings->add("^B", "move-pgup");
+	bindings->add("^F", "move-pgdn");
+	bindings->add("^U", "move-halfpgup");
+	bindings->add("^D", "move-halfpgdn");
+	bindings->add("^Y", "scroll-up");
+	bindings->add("^E", "scroll-down");
+	bindings->add("z", "center-cursor");
+	bindings->add("home", "move-home");
+	bindings->add("end", "move-end");
+	bindings->add("g", "goto-current");
+	bindings->add("R", "goto-random");
+	bindings->add("j", "move-down");
+	bindings->add("k", "move-up");
+	bindings->add("t", "prev-window");
+	bindings->add("T", "next-window");
+	bindings->add("(", "prev-of album");
+	bindings->add(")", "next-of album");
+	bindings->add("{", "prev-of artist");
+	bindings->add("}", "next-of artist");
+	bindings->add("1", "change-window playlist");
+	bindings->add("2", "change-window library");
+	bindings->add("w", "change-window windowlist");
 	// TODO: add this for a later version
-	//bindings->add("W", "change-window directorylist", e);
-	bindings->add("tab", "last-window", e);
+	//bindings->add("W", "change-window directorylist");
+	bindings->add("tab", "last-window");
 
 	/* Searching */
-	bindings->add("/", "quick-find", e);
-	bindings->add("n", "next-result", e);
-	bindings->add("N", "prev-result", e);
+	bindings->add("/", "quick-find");
+	bindings->add("n", "next-result");
+	bindings->add("N", "prev-result");
 
 	/* Playlist management */
-	bindings->add("a", "add", e);
-	bindings->add("A", "add-to", e);
-	bindings->add("b", "add-album", e);
-	bindings->add("B", "play-album", e);
-	bindings->add("delete", "remove", e);
-	bindings->add("c", "cropsel", e);
-	bindings->add("C", "crop", e);
-	bindings->add("insert", "toggle-select", e);
-	bindings->add("F12", "activate-list", e);
-	bindings->add("^X", "delete-list", e);
-	bindings->add("J", "move 1", e);
-	bindings->add("K", "move -1", e);
+	bindings->add("a", "add");
+	bindings->add("A", "add-to");
+	bindings->add("b", "add-album");
+	bindings->add("B", "play-album");
+	bindings->add("delete", "remove");
+	bindings->add("c", "cropsel");
+	bindings->add("C", "crop");
+	bindings->add("insert", "toggle-select");
+	bindings->add("F12", "activate-list");
+	bindings->add("^X", "delete-list");
+	bindings->add("J", "move 1");
+	bindings->add("K", "move -1");
 
 	/* Controls */
-	bindings->add("return", "play", e);
-	bindings->add("kpenter", "play", e);
-	bindings->add("backspace", "stop", e);
-	bindings->add("p", "pause", e);
-	bindings->add("space", "toggle-play", e);
-	bindings->add("l", "next", e);
-	bindings->add("h", "prev", e);
-	bindings->add("M", "mute", e);
-	bindings->add("m", "playmode", e);
-	bindings->add("r", "repeat", e);
-	bindings->add("+", "volume +5", e);
-	bindings->add("-", "volume -5", e);
-	bindings->add("left", "seek -5", e);
-	bindings->add("right", "seek 5", e);
+	bindings->add("return", "play");
+	bindings->add("kpenter", "play");
+	bindings->add("backspace", "stop");
+	bindings->add("p", "pause");
+	bindings->add("space", "toggle-play");
+	bindings->add("l", "next");
+	bindings->add("h", "prev");
+	bindings->add("M", "mute");
+	bindings->add("m", "playmode");
+	bindings->add("r", "repeat");
+	bindings->add("+", "volume +5");
+	bindings->add("-", "volume -5");
+	bindings->add("left", "seek -5");
+	bindings->add("right", "seek 5");
 
 	/* Maintenance */
-	bindings->add("f", "toggle followcursor", e);
-	bindings->add("F", "toggle followplayback", e);
-	bindings->add("^F", "toggle followwindow", e);
-	bindings->add(":", "command-mode", e);
-	bindings->add("u", "update-library", e);
-	bindings->add("v", "version", e);
-	bindings->add("q", "quit", e);
-	bindings->add("F1", "help", e);
-	bindings->add("^L", "redraw", e);
+	bindings->add("f", "toggle followcursor");
+	bindings->add("F", "toggle followplayback");
+	bindings->add("^F", "toggle followwindow");
+	bindings->add(":", "command-mode");
+	bindings->add("u", "update-library");
+	bindings->add("v", "version");
+	bindings->add("q", "quit");
+	bindings->add("F1", "help");
+	bindings->add("^L", "redraw");
 }
 
 

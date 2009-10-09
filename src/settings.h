@@ -85,9 +85,6 @@ private:
 	void			destroy();
 
 public:
-	/* Our error object */
-	Error			err;
-
 	/* These are special settings that can't be contained in a Setting class */
 	vector<Topbarline *>	topbar;			// Topbar draw information
 	Colortable *		colors;
@@ -118,7 +115,7 @@ public:
 	bool 			get_bool(string);
 
 	/* Dump everything into a long string */
-	bool			dump(string, Error &);
+	bool			dump(string);
 	string			dump(Setting *);
 	string			dump_all();
 

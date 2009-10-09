@@ -82,6 +82,7 @@ private:
 	pms_win_playlist *		playlist;
 	pms_win_playlist *		library;
 	pms_win_directory *		dirlist;
+	vector<Error *>			msglog;
 
 	/* Private functions */
 	void				init_default_keymap();
@@ -113,6 +114,7 @@ public:
 
 	/* FIXME: this is an attempt on the above */
 	Mediator *			mediator;
+	Error *				msg;
 
 	/* Global public functions */
 	static string			tostring(long);
@@ -133,6 +135,7 @@ public:
 	bool				run_shell(string, Error &);
 	Song *				cursong();
 	string				playstring();
+	void				clearmsg();			// Put the last message into the message log
 
 	/* Main loop and initialization */
 	int				init();

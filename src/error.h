@@ -57,6 +57,14 @@ public:
 				Error() { clear(); };
 	void			clear() { code = 0; str.clear(); };
 
+	Error			operator= (Error & e)
+	{
+		Error er;
+		er.code = e.code;
+		er.str = e.str;
+		return (er);
+	}
+
 	int			code;
 	string			str;
 };

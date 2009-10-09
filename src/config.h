@@ -92,7 +92,7 @@ public:
 	Bindings(Commandmap * c) { cmap = c; };
 	~Bindings() {};
 
-	bool			add(string, string, Error &);
+	bool			add(string, string);
 	bool			remove(string);
 	pms_pending_keys	act(int, string *);
 	unsigned int		size() { return key.size(); };
@@ -107,7 +107,7 @@ private:
 	Options *			opt;
 	Bindings *			bindings;
 
-	bool				set_color(string, string, Error &);
+	bool				set_color(string, string);
 
 
 public:
@@ -119,11 +119,11 @@ public:
 	static bool			strtobool(string);
 	static vector<string> *		splitline(string);
 	static string			getparamopt(string);
-	static bool			verify_columns(string, Error &);
+	static bool			verify_columns(string);
 	
 	/* Public members */
-	bool				source(string, Error &);
-	bool				readline(string, Error &);
+	bool				source(string);
+	bool				readline(string);
 };
 
 #endif

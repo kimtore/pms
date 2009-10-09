@@ -81,6 +81,12 @@ void		Options::reset()
 {
 	destroy();
 
+	colors = new Colortable();
+
+	set_string("host", "localhost");
+	set_long("port", 6600);
+	set_string("password", "");
+
 	set("scroll", SETTING_TYPE_SCROLL, "normal");
 	set("playmode", SETTING_TYPE_PLAYMODE, "linear");
 	set("repeatmode", SETTING_TYPE_REPEATMODE, "none");
@@ -230,6 +236,8 @@ bool		Options::set(string key, string val)
 {
 	Setting *	s;
 
+	debug("set: Setting option '%s'='%s'\n", key.c_str(), val.c_str());
+
 	if (key.size() > 6 && key.substr(0, 6) == "topbar")
 	{
 		if (set_topbar_values(key, val))
@@ -243,9 +251,10 @@ bool		Options::set(string key, string val)
 	s = lookup(key);
 	if (s == NULL)
 	{
-		err.code = CERR_INVALID_OPTION;
-		err.str = _("invalid option");
-		err.str += " '" + key + "'";
+		pms->clearmsg();
+		pms->msg->code = CERR_INVALID_OPTION;
+		pms->msg->str = _("invalid option");
+		pms->msg->str += " '" + key + "'";
 		return false;
 	}
 
@@ -281,7 +290,7 @@ Setting *	Options::set(string key, SettingType t, string val)
 			return set_bool(key, Configurator::strtobool(val));
 
 		case SETTING_TYPE_FIELDLIST:
-			if (Configurator::verify_columns(val, err))
+			if (Configurator::verify_columns(val))
 				return set_string(key, val);
 			else
 				return NULL;
@@ -295,8 +304,9 @@ Setting *	Options::set(string key, SettingType t, string val)
 				set_long(key, PLAYMODE_RANDOM);
 			else
 			{
-				err.code = CERR_INVALID_VALUE;
-				err.str = _("invalid play mode, expected 'manual', 'linear' or 'random'");
+				pms->clearmsg();
+				pms->msg->code = CERR_INVALID_VALUE;
+				pms->msg->str = _("invalid play mode, expected 'manual', 'linear' or 'random'");
 				return NULL;
 			}
 			s->v_string = val;
@@ -311,8 +321,9 @@ Setting *	Options::set(string key, SettingType t, string val)
 				set_long(key, SCROLL_NORMAL);
 			else
 			{
-				err.code = CERR_INVALID_VALUE;
-				err.str = _("invalid scroll mode, expected 'normal', 'centered' or 'relative'");
+				pms->clearmsg();
+				pms->msg->code = CERR_INVALID_VALUE;
+				pms->msg->str = _("invalid scroll mode, expected 'normal', 'centered' or 'relative'");
 				return NULL;
 			}
 			s->v_string = val;
@@ -396,6 +407,10 @@ SettingType	Options::get_type(string key)
 	s = lookup(key);
 	if (s == NULL)
 		return SETTING_TYPE_EINVAL;
+
+	while (s->alias != NULL)
+		s = s->alias;
+
 	return s->type;
 }
 
@@ -449,22 +464,26 @@ bool		Options::get_bool(string key)
 /*
  * Dump an option
  */
-bool		Options::dump(string key, Error & e)
+bool		Options::dump(string key)
 {
 	Setting *	s;
 
+	pms->clearmsg();
 	s = lookup(key);
+
 	if (s == NULL)
 	{
-		e.code = CERR_INVALID_OPTION;
-		e.str = _("invalid option");
-		e.str += " '" + key + "'";
+		pms->msg->code = CERR_INVALID_OPTION;
+		pms->msg->str = _("invalid option");
+		pms->msg->str += " '" + key + "'";
 		return false;
 	}
 	else
 	{
-		e.code = CERR_NONE;
-		e.str = dump(s);
+		while (s->alias != NULL)
+			s = s->alias;
+		pms->msg->code = CERR_NONE;
+		pms->msg->str = dump(s);
 		return true;
 	}
 }
@@ -537,17 +556,19 @@ bool		Options::set_topbar_values(string name, string value)
 		name = name.substr(8);
 	else
 	{
-		err.code = CERR_INVALID_TOPBAR_INDEX;
-		err.str = _("invalid topbar line");
-		err.str += " '" + Pms::tostring(column) + "', ";
-		err.str += _("expected range is 1-99");
+		pms->clearmsg();
+		pms->msg->code = CERR_INVALID_TOPBAR_INDEX;
+		pms->msg->str = _("invalid topbar line");
+		pms->msg->str += " '" + Pms::tostring(column) + "', ";
+		pms->msg->str += _("expected range is 1-99");
 		return false;
 	}
 
 	if (name.size() == 0)
 	{
-		err.code = CERR_INVALID_TOPBAR_POSITION;
-		err.str = _("expected placement after topbar index");
+		pms->clearmsg();
+		pms->msg->code = CERR_INVALID_TOPBAR_POSITION;
+		pms->msg->str = _("expected placement after topbar index");
 		return false;
 	}
 
@@ -559,10 +580,11 @@ bool		Options::set_topbar_values(string name, string value)
 		row = 2;
 	else
 	{
-		err.code = CERR_INVALID_TOPBAR_POSITION;
-		err.str = _("invalid topbar position");
-		err.str += " '" + name.substr(1) + "', ";
-		err.str += _("expected one of: left center right");
+		pms->clearmsg();
+		pms->msg->code = CERR_INVALID_TOPBAR_POSITION;
+		pms->msg->str = _("invalid topbar position");
+		pms->msg->str += " '" + name.substr(1) + "', ";
+		pms->msg->str += _("expected one of: left center right");
 		return false;
 	}
 

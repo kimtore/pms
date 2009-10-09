@@ -689,7 +689,7 @@ bool		handle_command(pms_pending_keys action)
 					handle_command(PEND_SHELL);
 					break;
 				}
-				else if (!pms->config->readline(pms->input->text, err))
+				else if (!pms->config->readline(pms->input->text))
 				{
 					if (err.code == CERR_NONE)
 						pms->setstatus(STOK, "  %s", err.str.c_str());
@@ -1106,7 +1106,7 @@ bool		handle_command(pms_pending_keys action)
 
 		/* Program specific */
 		case PEND_REHASH:
-			if (pms->config->source(pms->options->get_string("configfile"), err))
+			if (pms->config->source(pms->options->get_string("configfile")))
 			{
 				pms->setstatus(STOK, _("Reloaded configuration file."));
 				pms->comm->library()->sort(pms->options->get_string("librarysort"));
