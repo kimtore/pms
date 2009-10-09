@@ -549,7 +549,7 @@ bool			Configurator::readline(string buffer)
 				//check for various prefixes/suffixes
 				if (proc.substr(proc.length() - 1, 1) == "?" && pms->options->get_type(proc.substr(0, proc.length() - 1)) != SETTING_TYPE_EINVAL)
 				{
-					pms->options->dump(proc);
+					pms->options->dump(proc.substr(0, proc.length() - 1));
 					return false;
 				}
 				else if (proc.substr(0, 2) == "no" && pms->options->get_type(proc.substr(2)) == SETTING_TYPE_BOOLEAN)
