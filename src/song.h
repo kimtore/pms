@@ -43,6 +43,7 @@ public:
 	/* Common function to initialize special fields that MPD don't return */
 
 	void		init();
+	string		dirname();
 
 	/* Custom parameters only used by PMS */
 	
