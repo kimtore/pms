@@ -63,6 +63,10 @@ bool		Interface::check_events()
 		 * PMS specific stuff
 		 */
 
+		case PEND_EXEC:
+			exec(param);
+			break;
+
 		case PEND_VERSION:
 			version();
 			break;
@@ -116,6 +120,32 @@ bool		Interface::check_events()
 	return true;
 }
 
+/*
+ * Execute an input string from the command line
+ */
+long		Interface::exec(string s)
+{
+	if (pms->input->run(s, *msg))
+	{
+		pms->drawstatus();
+		handle_command(pms->input->getpending()); //FIXME
+
+		return STOK;
+	}
+	else if (pms->input->text.substr(0, 1) == "!")
+	{
+		return shell(pms->input->text.substr(1));
+	}
+	else if (!pms->config->readline(s))
+	{
+		if (pms->msg->code == CERR_NONE)
+			pms->log(MSG_STATUS, STOK, "  %s", pms->msg->str.c_str());
+		else
+			pms->log(MSG_STATUS, STERR, _("Error %d: %s"), pms->msg->code, pms->msg->str.c_str());
+
+		return pms->msg->code;
+	}
+}
 
 /*
  * Print program name and version.
@@ -210,6 +240,7 @@ long		Interface::quit()
 long		Interface::shell(string command)
 {
 	pms->run_shell(command);
+	pms->drawstatus();
 	return pms->msg->code;
 }
 
@@ -892,28 +923,7 @@ bool		handle_command(pms_pending_keys action)
 
 			if (mode == INPUT_COMMAND)
 			{
-				if (pms->input->run(pms->input->text, err))
-				{
-					pms->drawstatus();
-					handle_command(pms->input->getpending());
-				}
-				/* Might be a shell command */
-				else if (pms->input->text.substr(0, 1) == "!")
-				{
-					pms->input->param = pms->input->text.substr(1);
-					handle_command(PEND_SHELL);
-					break;
-				}
-				else if (!pms->config->readline(pms->input->text))
-				{
-					if (pms->msg->code == CERR_NONE)
-						pms->log(MSG_STATUS, STOK, "  %s", pms->msg->str.c_str());
-					else
-						pms->log(MSG_STATUS, STERR, _("Error %d: %s"), pms->msg->code, pms->msg->str.c_str());
-					break;
-				}
-
-				pms->disp->forcedraw();
+				pms->interface->exec(pms->input->text);
 			}
 			else if (mode == INPUT_JUMP)
 			{

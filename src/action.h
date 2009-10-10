@@ -48,6 +48,7 @@ public:
 	/*
 	 * PMS specific stuff
 	 */
+	long			exec(string);
 	long			version();
 	long			clear_topbar(int);
 	long			redraw();
@@ -62,6 +63,7 @@ public:
 	 */
 	long			password(string);
 	long			update_db(string);
+
 	long			setvolume();
 	long			mute();
 	long			crossfade();
@@ -72,7 +74,6 @@ public:
 	long			set_input_mode(int); //command mode, jump mode, search mode
 
 	long			toggle();
-	long			exec();
 	long			escape();
 
 	long			next_of();
@@ -86,7 +87,9 @@ public:
 	long			text_return();
 	long			text_escape();
 
-	/* List actions */
+	/*
+	 * List actions
+	 */
 	long			play();	// play of type, too: playartist, playalbum, playrandom, etc
 	long			add(); // play + add to, add all
 	long			remove();
