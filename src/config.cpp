@@ -172,7 +172,7 @@ bool			Bindings::add(string b, string command)
 		}
 		else
 		{
-			pms->clearmsg();
+			pms->msg->clear();
 			pms->msg->code = CERR_INVALID_COMMAND;
 			pms->msg->str = _("invalid command");
 			pms->msg->str += " '" + command + "'";
@@ -244,7 +244,7 @@ bool			Bindings::add(string b, string command)
 					i = KEY_F(i);
 				else
 				{
-					pms->clearmsg();
+					pms->msg->clear();
 					pms->msg->code = CERR_INVALID_KEY;
 					pms->msg->str = _("function key out of range");
 					pms->msg->str += ": " + b;
@@ -253,7 +253,7 @@ bool			Bindings::add(string b, string command)
 			}
 			else
 			{
-				pms->clearmsg();
+				pms->msg->clear();
 				pms->msg->code = CERR_INVALID_KEY;
 				pms->msg->str = _("invalid key");
 				pms->msg->str += " '" + b + "'";
@@ -365,7 +365,7 @@ bool			Configurator::verify_columns(string s)
 	{
 		if (pms->fieldtypes->lookup((*v)[i]) == -1)
 		{
-			pms->clearmsg();
+			pms->msg->clear();
 			pms->msg->code = CERR_INVALID_COLUMN;
 			pms->msg->str = _("invalid column type");
 			pms->msg->str += " '" + (*v)[i] + "'";
@@ -401,7 +401,7 @@ bool			Configurator::source(string fn)
 	char		buffer[1024];
 	int		line = 0;
 
-	pms->clearmsg();
+	pms->msg->clear();
 	pms->msg->code = CERR_NONE;
 	fd = fopen(fn.c_str(), "r");
 
@@ -513,7 +513,7 @@ bool			Configurator::readline(string buffer)
 	string				val;
 
 	/* No errors by default */
-	pms->clearmsg();
+	pms->msg->clear();
 
 	/* Empty lines pass through */
 	if (buffer.size() == 0)
@@ -699,7 +699,7 @@ bool			Configurator::set_color(string name, string pairs)
 	if (pairs.size() == 0) return false;
 	c = opt->colors;
 
-	pms->clearmsg();
+	pms->msg->clear();
 
 	/* Standard colors */
 	if (name == "background")
@@ -925,7 +925,7 @@ bool			Configurator::set_color(string name, string pairs)
 		else
 		{
 			delete pair;
-			pms->clearmsg();
+			pms->msg->clear();
 			pms->msg->code = CERR_INVALID_COLOR;
 			pms->msg->str = _("invalid color name");
 			pms->msg->str += " '" + str + "'";

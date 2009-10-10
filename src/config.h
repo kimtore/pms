@@ -31,7 +31,7 @@
 #include "settings.h"
 #include "input.h"
 #include "display.h"
-#include "error.h"
+#include "message.h"
 
 
 typedef enum

@@ -574,7 +574,7 @@ pms_pending_keys	Input::dispatch_normal()
 
 	if (pending == PEND_NONE)
 	{
-		pms->setstatus(STERR, "Key is not bound.");
+		pms->log(MSG_STATUS, STERR, _("Key is not bound."));
 		debug("Key %3d '%c' pressed but not bound.\n", ch, ch);
 	}
 
@@ -606,7 +606,7 @@ void		Input::savehistory()
 /*
  * Run a command
  */
-bool		Input::run(string s, Error & err)
+bool		Input::run(string s, Message & err)
 {
 	int		pos;
 

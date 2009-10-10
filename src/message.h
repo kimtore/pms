@@ -17,19 +17,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * topbar.h - topbar container class
+ * message.h - The Message class
  *
  */
 
-#ifndef _PMS_ERROR_H_
-#define _PMS_ERROR_H_
+#ifndef _PMS_MESSAGE_H_
+#define _PMS_MESSAGE_H_
 
 #include <string>
 
 using namespace std;
 
 
-typedef enum
+/*
+ * Message verbosity levels
+ */
+enum
+{
+	MSG_STATUS = 0,
+	MSG_CONSOLE,
+	MSG_DEBUG
+};
+
+enum
 {
 	CERR_NONE = 0,
 	CERR_NO_FILE,
@@ -48,26 +58,24 @@ typedef enum
 	CERR_INVALID_COLUMN,
 	CERR_INVALID_TOPBAR_INDEX,
 	CERR_INVALID_TOPBAR_POSITION
-}
-Cerror;
+};
 
-class Error
+class Message
 {
 public:
-				Error() { clear(); };
-	void			clear() { code = 0; str.clear(); };
-
-	Error			operator= (Error & e)
+				Message() { clear(); };
+	void			clear()
 	{
-		Error er;
-		er.code = e.code;
-		er.str = e.str;
-		return (er);
-	}
+		code = 0;
+		str.clear();
+		time(&timestamp);
+	};
 
 	int			code;
 	string			str;
+	time_t			timestamp;
+
 };
 
 
-#endif /* _PMS_ERROR_H_ */
+#endif /* _PMS_MESSAGE_H_ */

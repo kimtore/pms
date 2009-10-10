@@ -30,7 +30,7 @@
 #include <string>
 #include "color.h"
 #include "topbar.h"
-#include "error.h"
+#include "message.h"
 
 using namespace std;
 

@@ -52,27 +52,15 @@ int main(int argc, char *argv[])
 }
 
 /*
- * Pass string to stderr
+ * Pass string to stderr.
+ * DEPRECATED: please use pms->log(MSG_DEBUG, ...) instead.
  */
 void debug(const char * format, ...)
 {
 	va_list		ap;
-	char		buffer[1024];
-	char		tbuffer[80];
-	const time_t	rawtime = time(NULL);
-	tm *		timeinfo;
-
-	if (!pms->options->get_bool("debug"))
-		return;
-
-	timeinfo = localtime(&rawtime);
-	strftime(tbuffer, 80, "%Y-%m-%d %H:%M:%S", timeinfo);
 
 	va_start(ap, format);
-	vsprintf(buffer, format, ap);
-	va_end(ap);
-
-	fprintf(stderr, "%s\t%s", tbuffer, buffer);
+	pms->log(MSG_DEBUG, 0, format, ap);
 }
 
 
@@ -230,24 +218,24 @@ int			Pms::main()
 		{
 			if (timer == 0)
 			{
-				setstatus(STERR, "Disconnected from mpd: %s", comm->err());
+				log(MSG_STATUS, STERR, "Disconnected from mpd: %s", comm->err());
 			}
 			if (difftime(time(NULL), timer) >= options->get_long("reconnectdelay"))
 			{
 				if (timer != 0)
-					setstatus(STOK, _("Attempting reconnect..."));
+					log(MSG_STATUS, STOK, _("Attempting reconnect..."));
 
 				if (conn->connect() != 0)
 				{
 					if (timer != 0)
-						setstatus(STERR, conn->errorstr().c_str());
+						log(MSG_STATUS, STERR, conn->errorstr().c_str());
 
 					time(&timer);
 					continue;
 				}
 				else
 				{
-					setstatus(STOK, _("Reconnected successfully."));
+					log(MSG_STATUS, STOK, _("Reconnected successfully."));
 					comm->clearerror();
 					timer = 0;
 				}
@@ -257,7 +245,7 @@ int			Pms::main()
 		/* Get updated info about state and playlists */
 		if (comm->has_new_library())
 		{
-			setstatus(STOK, _("Library updated."));
+			log(MSG_STATUS, STOK, _("Library updated."));
 			if (disp->actwin())
 				disp->actwin()->wantdraw = true;
 			library->list->sort(options->get_string("librarysort"));
@@ -365,7 +353,6 @@ int			Pms::main()
  */
 int			Pms::init()
 {
-	Error			err;
 	string			str;
 	vector<string> *	tok;
 
@@ -377,7 +364,7 @@ int			Pms::init()
 	const char *		charset = NULL;
 	
 	/* Internal pointers */
-	msg = new Error();
+	msg = new Message();
 	mediator = new Mediator();
 	formatter = new Formatter();
 
@@ -688,7 +675,7 @@ string			Pms::formtext(string text)
  * TODO: add %artist% tags through the field pattern parser: meaning %file% -> filename, not % -> filename
  *	...but current implementation is nice and vim-like
  */
-bool			Pms::run_shell(string cmd, Error & err)
+bool			Pms::run_shell(string cmd, Message & err)
 {
 	string				search;
 	string				replace;
@@ -794,40 +781,17 @@ Song *			Pms::cursong()
 	return comm->song();
 }
 
-/*
- * Set statusbar string
- */
-void			Pms::setstatus(statusbar_mode mode, const char *format, ...)
-{
-	va_list		ap;
-	char		buffer[1024];
-	color *		pair;
-
-	va_start(ap, format);
-	vsprintf(buffer, format, ap);
-	va_end(ap);
-
-	if (mode == STOK)
-		pair = options->colors->status;
-	else if (mode == STERR)
-		pair = options->colors->status_error;
-
-	disp->statusbar->clear(false, pair);
-	colprint(disp->statusbar, 0, 0, pair, "%s", buffer);
-	resetstatus(1);
-}
-
 /* 
  * Reset status to its original state
  */
 void			Pms::drawstatus()
 {
 	if (input->mode() == INPUT_JUMP)
-		setstatus(STOK, "/%s", formtext(input->text).c_str());
+		log(MSG_STATUS, STOK, "/%s", formtext(input->text).c_str());
 	else if (input->mode() == INPUT_COMMAND)
-		setstatus(STOK, ":%s", formtext(input->text).c_str());
+		log(MSG_STATUS, STOK, ":%s", formtext(input->text).c_str());
 	else
-		setstatus(STOK, "%s", playstring().c_str());
+		log(MSG_STATUS, STOK, "%s", playstring().c_str());
 
 	resetstatus(-1);
 }
@@ -960,7 +924,7 @@ string			Pms::playstring()
 /*
  * Put the last message into the message log
  */
-void			Pms::clearmsg()
+void			Pms::putlog(Message *)
 {
 	if (msg->code == 0 && msg->str.size() == 0)
 		return;
@@ -968,7 +932,65 @@ void			Pms::clearmsg()
 	debug(_("%s code %d: %s\n"), (msg->code == 0 ? _("Message") : _("Error")), msg->code, msg->str.c_str());
 
 	msglog.push_back(msg);
-	msg = new Error();
+	msg = new Message();
+}
+
+/*
+ * Log a message.
+ * Verbosity levels:
+ *  0 = statusbar
+ *  1 = console
+ *  2 = debug
+ */
+void			Pms::log(int verbosity, long code, const char * format, ...)
+{
+	long		loglines;
+	va_list		ap;
+	char		buffer[1024];
+	char		tbuffer[20];
+	Message *	m;
+	tm *		timeinfo;
+	color *		pair;
+
+	if (verbosity >= MSG_DEBUG && !pms->options->get_bool("debug"))
+		return;
+
+	m = new Message();
+	if (m == NULL)
+		return;
+
+	va_start(ap, format);
+	vsprintf(buffer, format, ap);
+	va_end(ap);
+
+	m->str = buffer;
+	m->code = code;
+
+	if (verbosity == MSG_STATUS)
+	{
+		m->str += "\n";
+
+		if (code == STOK)
+			pair = options->colors->status;
+		else
+			pair = options->colors->status_error;
+
+		disp->statusbar->clear(false, pair);
+		colprint(disp->statusbar, 0, 0, pair, "%s", buffer);
+		resetstatus(1);
+	}
+
+	if (verbosity <= MSG_DEBUG && pms->options->get_bool("debug"))
+	{
+		timeinfo = localtime(&(m->timestamp));
+		strftime(tbuffer, 20, "%Y-%m-%d %H:%M:%S", timeinfo);
+		fprintf(stderr, "%s  %s", tbuffer, m->str.c_str());
+	}
+
+	msglog.push_back(m);
+	loglines = options->get_long("msg_buffer_size");
+	if (loglines > 0 && msglog.size() > loglines)
+		msglog.erase(msglog.begin());
 }
 
 /*

@@ -98,6 +98,7 @@ void		Options::reset()
 	set_long("directoryminlen", 30);
 	set_long("resetstatus", 3);
 	set_long("scrolloff", 0);
+	set_long("msg_buffer_size", 1024);
 
 	set_bool("debug", false);
 	set_bool("addtoreturns", false);
@@ -228,7 +229,7 @@ bool		Options::set(string key, string val)
 	Setting *	s;
 
 	debug("set: Setting option '%s'='%s'\n", key.c_str(), val.c_str());
-	pms->clearmsg();
+	pms->msg->clear();
 
 	if (key.size() > 6 && key.substr(0, 6) == "topbar")
 	{
@@ -333,7 +334,7 @@ Setting *	Options::set(string key, SettingType t, string val)
 				set_long(key, PLAYMODE_RANDOM);
 			else
 			{
-				pms->clearmsg();
+				pms->msg->clear();
 				pms->msg->code = CERR_INVALID_VALUE;
 				pms->msg->str = _("invalid play mode, expected 'manual', 'linear' or 'random'");
 				return NULL;
@@ -350,7 +351,7 @@ Setting *	Options::set(string key, SettingType t, string val)
 				set_long(key, SCROLL_NORMAL);
 			else
 			{
-				pms->clearmsg();
+				pms->msg->clear();
 				pms->msg->code = CERR_INVALID_VALUE;
 				pms->msg->str = _("invalid scroll mode, expected 'normal', 'centered' or 'relative'");
 				return NULL;
@@ -497,7 +498,7 @@ bool		Options::dump(string key)
 {
 	Setting *	s;
 
-	pms->clearmsg();
+	pms->msg->clear();
 	s = lookup(key);
 
 	if (s == NULL)
@@ -585,7 +586,7 @@ bool		Options::set_topbar_values(string name, string value)
 		name = name.substr(8);
 	else
 	{
-		pms->clearmsg();
+		pms->msg->clear();
 		pms->msg->code = CERR_INVALID_TOPBAR_INDEX;
 		pms->msg->str = _("invalid topbar line");
 		pms->msg->str += " '" + Pms::tostring(column) + "', ";
@@ -595,7 +596,7 @@ bool		Options::set_topbar_values(string name, string value)
 
 	if (name.size() == 0)
 	{
-		pms->clearmsg();
+		pms->msg->clear();
 		pms->msg->code = CERR_INVALID_TOPBAR_POSITION;
 		pms->msg->str = _("expected placement after topbar index");
 		return false;
@@ -609,7 +610,7 @@ bool		Options::set_topbar_values(string name, string value)
 		row = 2;
 	else
 	{
-		pms->clearmsg();
+		pms->msg->clear();
 		pms->msg->code = CERR_INVALID_TOPBAR_POSITION;
 		pms->msg->str = _("invalid topbar position");
 		pms->msg->str += " '" + name.substr(1) + "', ";

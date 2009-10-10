@@ -25,7 +25,7 @@
 #include "mycurses.h"
 #include "display.h"
 #include "types.h"
-#include "error.h"
+#include "message.h"
 
 #if NCURSES_MOUSE_VERSION > 1
 #define MOUSEWHEEL_DOWN	BUTTON4_PRESSED | BUTTON4_CLICKED | BUTTON4_DOUBLE_CLICKED | BUTTON4_TRIPLE_CLICKED
@@ -87,7 +87,7 @@ public:
 	pms_pending_keys	dispatch();
 	pms_pending_keys	getpending() { return pending; };
 	void			savehistory();
-	bool			run(string, Error &);
+	bool			run(string, Message &);
 
 };
 

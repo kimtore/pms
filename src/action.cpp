@@ -136,7 +136,7 @@ bool init_commandmap()
  */
 bool		handle_command(pms_pending_keys action)
 {
-	Error		err;
+	Message		err;
 	Song *		song = NULL;
 	Songlist *	list = NULL;
 	Songlist *	dlist = NULL;
@@ -160,12 +160,12 @@ bool		handle_command(pms_pending_keys action)
 			i = removesongs(list);
 			if (i <= 0)
 			{
-				pms->setstatus(STERR, "No songs removed.");
+				pms->log(MSG_STATUS, STERR, "No songs removed.");
 				return false;
 			}
 
 			win->wantdraw = true;
-			pms->setstatus(STOK, "Removed %d %s.", i, (i == 1 ? "song" : "songs"));
+			pms->log(MSG_STATUS, STOK, "Removed %d %s.", i, (i == 1 ? "song" : "songs"));
 			break;
 
 		case PEND_VOLUME:
@@ -176,7 +176,7 @@ bool		handle_command(pms_pending_keys action)
 				return false;
 			}
 
-			pms->setstatus(STOK, _("Volume: %d%%%%"), pms->comm->status()->volume);
+			pms->log(MSG_STATUS, STOK, _("Volume: %d%%%%"), pms->comm->status()->volume);
 			break;
 
 		case PEND_MUTE:
@@ -187,9 +187,9 @@ bool		handle_command(pms_pending_keys action)
 			}
 
 			if (pms->comm->muted())
-				pms->setstatus(STOK, "Mute is on, from %d%%%%", pms->comm->mvolume());
+				pms->log(MSG_STATUS, STOK, "Mute is on, from %d%%%%", pms->comm->mvolume());
 			else
-				pms->setstatus(STOK, "Mute is off, volume=%d%%%%", pms->comm->status()->volume);
+				pms->log(MSG_STATUS, STOK, "Mute is off, volume=%d%%%%", pms->comm->status()->volume);
 
 			break;
 
@@ -269,7 +269,7 @@ bool		handle_command(pms_pending_keys action)
 			if (!pms->cursong() || !list) return false;
 			if (!list->gotocurrent())
 			{
-				pms->setstatus(STERR, "Currently playing song is not here.");
+				pms->log(MSG_STATUS, STERR, "Currently playing song is not here.");
 				return false;
 			}
 
@@ -334,7 +334,7 @@ bool		handle_command(pms_pending_keys action)
 		case PEND_ADDTO:
 			if (!pms->disp->cursorsong() && !win->current())
 			{
-				pms->setstatus(STERR, "This is not a song.");
+				pms->log(MSG_STATUS, STERR, "This is not a song.");
 				break;
 			}
 
@@ -346,7 +346,7 @@ bool		handle_command(pms_pending_keys action)
 				debug("Adding list to list.\n");
 				list = win->current()->plist();
 				pms->comm->add(list, pms->comm->playlist());
-				pms->setstatus(STOK, "%d songs from %s appended to playlist.", list->size(), list->filename.c_str());
+				pms->log(MSG_STATUS, STOK, "%d songs from %s appended to playlist.", list->size(), list->filename.c_str());
 				setwin(pms->disp->findwlist(pms->comm->playlist()));
 				break;
 			}
@@ -360,7 +360,7 @@ bool		handle_command(pms_pending_keys action)
 					/* Add list from windowlist not supported - TODO */
 					if (win->type() == WIN_ROLE_WINDOWLIST)
 					{
-						pms->setstatus(STERR, "Not supported. Please select the songs you want to add before using the add-to command.");
+						pms->log(MSG_STATUS, STERR, "Not supported. Please select the songs you want to add before using the add-to command.");
 						break;
 					}
 					debug("Storing window parameters: win=%p\n", win);
@@ -399,7 +399,7 @@ bool		handle_command(pms_pending_keys action)
 			{
 				song = new Song(pms->input->param);
 				if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID)
-					pms->setstatus(STOK, "Added '%s' to %s.", pms->input->param.c_str(), s.c_str());
+					pms->log(MSG_STATUS, STOK, "Added '%s' to %s.", pms->input->param.c_str(), s.c_str());
 				else
 					generr();
 
@@ -427,7 +427,7 @@ bool		handle_command(pms_pending_keys action)
 			{
 				if (i == 1 && pms->options->get_bool("nextafteraction"))
 					pms->disp->movecursor(1);
-				pms->setstatus(STOK, _("Added %d %s to %s."), i, (i == 1 ? "song" : "songs"), s.c_str());
+				pms->log(MSG_STATUS, STOK, _("Added %d %s to %s."), i, (i == 1 ? "song" : "songs"), s.c_str());
 			}
 
 			win->wantdraw = true;
@@ -437,13 +437,13 @@ bool		handle_command(pms_pending_keys action)
 			i = playnext(pms->options->get_long("playmode"), true);
 
 			if (i == MPD_SONG_NO_ID)
-				pms->setstatus(STERR, _("There is no next song."));
+				pms->log(MSG_STATUS, STERR, _("There is no next song."));
 			else
 				pms->drawstatus();
 			break;
 		case PEND_REALLY_NEXT:
 			if (playnext(PLAYMODE_LINEAR, true) == MPD_SONG_NO_ID)
-				pms->setstatus(STERR, _("There is no next song."));
+				pms->log(MSG_STATUS, STERR, _("There is no next song."));
 			else
 				pms->drawstatus();
 			break;
@@ -486,7 +486,7 @@ bool		handle_command(pms_pending_keys action)
 		case PEND_GOTORANDOM:
 			if (!list)
 			{
-				pms->setstatus(STERR, _("This command can only be run within a playlist."));
+				pms->log(MSG_STATUS, STERR, _("This command can only be run within a playlist."));
 				break;
 			}
 			song = list->randsong(&sn);
@@ -497,13 +497,13 @@ bool		handle_command(pms_pending_keys action)
 		case PEND_MOVEITEMS:
 			if (!list || !win)
 			{
-				pms->setstatus(STERR, _("You can't move anything else than songs."));
+				pms->log(MSG_STATUS, STERR, _("You can't move anything else than songs."));
 				break;
 			}
 			i = pms->comm->move(list, atoi(pms->input->param.c_str()));
 			if (i == 0)
 			{
-				pms->setstatus(STERR, _("Can't move."));
+				pms->log(MSG_STATUS, STERR, _("Can't move."));
 				break;
 			}
 			else if (i == 1)
@@ -529,7 +529,7 @@ bool		handle_command(pms_pending_keys action)
 
 		case PEND_SHUFFLE:
 			if (pms->comm->shuffle() != 0) break;
-			pms->setstatus(STOK, "Playlist shuffled.");
+			pms->log(MSG_STATUS, STOK, "Playlist shuffled.");
 			break;
 
 		case PEND_REPEAT:
@@ -557,7 +557,7 @@ bool		handle_command(pms_pending_keys action)
 
 		case PEND_CLEAR:
 			if (!pms->comm->clear(list)) break;
-			pms->setstatus(STOK, "Playlist cleared.");
+			pms->log(MSG_STATUS, STOK, "Playlist cleared.");
 			break;
 
 		case PEND_CROP:
@@ -565,9 +565,9 @@ bool		handle_command(pms_pending_keys action)
 			if (!list) break;
 
 			if (!pms->comm->crop(list, (action == PEND_CROP ? 0 : 1)))
-				pms->setstatus(STERR, "Could not find playing song here.");
+				pms->log(MSG_STATUS, STERR, "Could not find playing song here.");
 			else
-				pms->setstatus(STOK, "Playlist cropped.");
+				pms->log(MSG_STATUS, STOK, "Playlist cropped.");
 			break;
 
 		case PEND_CROSSFADE:
@@ -577,7 +577,7 @@ bool		handle_command(pms_pending_keys action)
 				if (!pms->comm->crossfade(i))
 					generr();
 				else
-					pms->setstatus(STOK, "Crossfade set to %d seconds.", i);
+					pms->log(MSG_STATUS, STOK, "Crossfade set to %d seconds.", i);
 			}
 			else
 			{
@@ -585,21 +585,21 @@ bool		handle_command(pms_pending_keys action)
 				if (i == -1)
 					generr();
 				else if (i == 0)
-					pms->setstatus(STOK, "Crossfade switched off."); 
+					pms->log(MSG_STATUS, STOK, "Crossfade switched off."); 
 				else
-					pms->setstatus(STOK, "Crossfade switched on and is set to %d seconds.", i);
+					pms->log(MSG_STATUS, STOK, "Crossfade switched on and is set to %d seconds.", i);
 			}
 			break;
 
 		case PEND_SEEK:
 			if (!pms->cursong() || pms->comm->status()->state < MPD_STATUS_STATE_PLAY)
 			{
-				pms->setstatus(STERR, _("Not playing, can't seek."));
+				pms->log(MSG_STATUS, STERR, _("Not playing, can't seek."));
 			}
 			i = atoi(pms->input->param.c_str());
 			if (i == 0)
 			{
-				pms->setstatus(STERR, _("Seeking by %d seconds?"), i);
+				pms->log(MSG_STATUS, STERR, _("Seeking by %d seconds?"), i);
 				break;
 			}
 			/* Skip forward instead of loop */
@@ -645,7 +645,7 @@ bool		handle_command(pms_pending_keys action)
 		 */
 		case PEND_SHELL:
 			pms->run_shell(pms->input->param, err);
-			pms->setstatus(err.code == 0 ? STOK : STERR, _("shell returned %d"), err.code);
+			pms->log(MSG_STATUS, err.code == 0 ? STOK : STERR, _("shell returned %d"), err.code);
 			break;
 
 		/* Command-mode + searching*/
@@ -692,9 +692,9 @@ bool		handle_command(pms_pending_keys action)
 				else if (!pms->config->readline(pms->input->text))
 				{
 					if (err.code == CERR_NONE)
-						pms->setstatus(STOK, "  %s", pms->msg->str.c_str());
+						pms->log(MSG_STATUS, STOK, "  %s", pms->msg->str.c_str());
 					else
-						pms->setstatus(STERR, _("Error %d: %s"), pms->msg->code, pms->msg->str.c_str());
+						pms->log(MSG_STATUS, STERR, _("Error %d: %s"), pms->msg->code, pms->msg->str.c_str());
 					break;
 				}
 
@@ -705,7 +705,7 @@ bool		handle_command(pms_pending_keys action)
 				pms->input->searchterm = pms->input->text;
 
 				if (win->posof_jump(pms->input->text, 0) == -1)
-					pms->setstatus(STERR, _("Pattern not found: %s"), pms->input->text.c_str());
+					pms->log(MSG_STATUS, STERR, _("Pattern not found: %s"), pms->input->text.c_str());
 
 				//else do nothing so the search command is left visible
 			}
@@ -742,7 +742,7 @@ bool		handle_command(pms_pending_keys action)
 				{
 					/* Windowlist mode, switch to new window */
 					if (!setwin(win))
-						pms->setstatus(STERR, _("Can't change window."));
+						pms->log(MSG_STATUS, STERR, _("Can't change window."));
 				}
 			}
 			break;
@@ -772,42 +772,42 @@ bool		handle_command(pms_pending_keys action)
 		case PEND_JUMPNEXT:
 			if (!win || win->type() != WIN_ROLE_PLAYLIST)
 			{
-				pms->setstatus(STERR, _("Can't search within this window."));
+				pms->log(MSG_STATUS, STERR, _("Can't search within this window."));
 				break;
 			}
 			i = win->plist()->cursor() + 1;
 			if ((unsigned int)i > win->plist()->end()) i = 0;
 			if (win->jumpto(pms->input->searchterm, i))
 			{
-				pms->setstatus(STOK, "/%s", pms->input->searchterm.c_str());
+				pms->log(MSG_STATUS, STOK, "/%s", pms->input->searchterm.c_str());
 			}
 			else
 			{
-				pms->setstatus(STERR, "Pattern not found: %s", pms->input->searchterm.c_str());
+				pms->log(MSG_STATUS, STERR, "Pattern not found: %s", pms->input->searchterm.c_str());
 			}
 			break;
 
 		case PEND_JUMPPREV:
 			if (!win || win->type() != WIN_ROLE_PLAYLIST)
 			{
-				pms->setstatus(STERR, _("Can't search within this window."));
+				pms->log(MSG_STATUS, STERR, _("Can't search within this window."));
 				break;
 			}
-			pms->setstatus(STOK, "?%s", pms->input->searchterm.c_str());
+			pms->log(MSG_STATUS, STOK, "?%s", pms->input->searchterm.c_str());
 			if (win->jumpto(pms->input->searchterm, win->plist()->cursor(), true))
 			{
-				pms->setstatus(STOK, "?%s", pms->input->searchterm.c_str());
+				pms->log(MSG_STATUS, STOK, "?%s", pms->input->searchterm.c_str());
 			}
 			else
 			{
-				pms->setstatus(STERR, "Pattern not found: %s", pms->input->searchterm.c_str());
+				pms->log(MSG_STATUS, STERR, "Pattern not found: %s", pms->input->searchterm.c_str());
 			}
 			break;
 
 		case PEND_JUMPMODE:
 			if (!win || win->type() != WIN_ROLE_PLAYLIST)
 			{
-				pms->setstatus(STERR, _("Can't search within this window."));
+				pms->log(MSG_STATUS, STERR, _("Can't search within this window."));
 				break;
 			}
 			pms->input->mode(INPUT_JUMP);
@@ -818,13 +818,13 @@ bool		handle_command(pms_pending_keys action)
 		case PEND_NEXTOF:
 			if (pms->input->param.size() == 0)
 			{
-				pms->setstatus(STERR, _("This command has to be run with a field argument."));
+				pms->log(MSG_STATUS, STERR, _("This command has to be run with a field argument."));
 				return false;
 			}
 
 			if (list == NULL)
 			{
-				pms->setstatus(STERR, _("This command has to be run within a playlist."));
+				pms->log(MSG_STATUS, STERR, _("This command has to be run within a playlist."));
 				return false;
 			}
 
@@ -836,7 +836,7 @@ bool		handle_command(pms_pending_keys action)
 			if (sn != MATCH_FAILED && win != NULL)
 				win->setcursor(sn);
 			else
-				pms->setstatus(STERR, _("Could not find another entry of type '%s'."), pms->input->param.c_str());
+				pms->log(MSG_STATUS, STERR, _("Could not find another entry of type '%s'."), pms->input->param.c_str());
 
 			break;
 
@@ -882,7 +882,7 @@ bool		handle_command(pms_pending_keys action)
 			case 1:
 				setwin(win);
 				s = "\"%s\" already exists.";
-				pms->setstatus(STERR, s.c_str(), pms->input->param.c_str());
+				pms->log(MSG_STATUS, STERR, s.c_str(), pms->input->param.c_str());
 				break;
 			/* No parameter */
 			case -1:
@@ -895,11 +895,11 @@ bool		handle_command(pms_pending_keys action)
 				break;
 			case -3:
 			default:
-				pms->setstatus(STERR, "Internal error: can't create a window.");
+				pms->log(MSG_STATUS, STERR, "Internal error: can't create a window.");
 				debug("Window creation failed in PEND_CREATEPLAYLIST, win=%p list=%p\n", win, list);
 				break;
 			case -4:
-				pms->setstatus(STERR, "Internal error: can't find the right window.");
+				pms->log(MSG_STATUS, STERR, "Internal error: can't find the right window.");
 				debug("Window search failed in PEND_CREATEPLAYLIST, win=%p list=%p\n", win, list);
 			}
 			break;
@@ -925,7 +925,7 @@ bool		handle_command(pms_pending_keys action)
 
 				if (list->filename.size() == 0)
 				{
-					pms->setstatus(STERR, "You can't remove a pre-defined playlist.");
+					pms->log(MSG_STATUS, STERR, "You can't remove a pre-defined playlist.");
 					break;
 				}
 
@@ -936,7 +936,7 @@ bool		handle_command(pms_pending_keys action)
 			if (pms->comm->deleteplaylist(s))
 			{
 				pms->disp->delete_window(win);
-				pms->setstatus(STOK, "Deleted playlist '%s'.", s.c_str());
+				pms->log(MSG_STATUS, STOK, "Deleted playlist '%s'.", s.c_str());
 			}
 			else
 			{
@@ -956,12 +956,12 @@ bool		handle_command(pms_pending_keys action)
 
 		case PEND_NEXTWIN:
 			if (!setwin(pms->disp->nextwindow()))
-				pms->setstatus(STERR, "There is no next window.");
+				pms->log(MSG_STATUS, STERR, "There is no next window.");
 			break;
 
 		case PEND_PREVWIN:
 			if (!setwin(pms->disp->prevwindow()))
-				pms->setstatus(STERR, "There is no previous window.");
+				pms->log(MSG_STATUS, STERR, "There is no previous window.");
 			break;
 
 		case PEND_CHANGEWIN:
@@ -979,7 +979,7 @@ bool		handle_command(pms_pending_keys action)
 				win = pms->disp->findwlist(pms->comm->findplaylist(pms->input->param));
 				if (!win)
 				{
-					pms->setstatus(STERR, "Change window: invalid parameter '%s'", pms->input->param.c_str());
+					pms->log(MSG_STATUS, STERR, "Change window: invalid parameter '%s'", pms->input->param.c_str());
 					break;
 				}
 			}
@@ -1007,7 +1007,7 @@ bool		handle_command(pms_pending_keys action)
 
 			win = pms->disp->create_bindlist();
 			if (!win)
-				pms->setstatus(STERR, "Can not show the list of key pms->bindings.");
+				pms->log(MSG_STATUS, STERR, "Can not show the list of key pms->bindings.");
 			else
 				setwin(win);
 
@@ -1038,7 +1038,7 @@ bool		handle_command(pms_pending_keys action)
 
 			if (list == NULL)
 			{
-				pms->setstatus(STERR, "Invalid playlist name.");
+				pms->log(MSG_STATUS, STERR, "Invalid playlist name.");
 				break;
 			}
 
@@ -1050,7 +1050,7 @@ bool		handle_command(pms_pending_keys action)
 					win->wantdraw = true;
 			}
 			else
-				pms->setstatus(STERR, "Can not activate playlist '%s'.", list->filename.c_str());
+				pms->log(MSG_STATUS, STERR, "Can not activate playlist '%s'.", list->filename.c_str());
 
 			break;
 
@@ -1076,11 +1076,11 @@ bool		handle_command(pms_pending_keys action)
 
 		case PEND_UPDATE:
 			if (pms->comm->rescandb())
-				pms->setstatus(STOK, "Scanning library for changes...");
+				pms->log(MSG_STATUS, STOK, "Scanning library for changes...");
 			else
 			{
 				if (pms->comm->status()->db_updating)
-					pms->setstatus(STERR, _("A library update is already in progress."));
+					pms->log(MSG_STATUS, STERR, _("A library update is already in progress."));
 				else
 					generr();
 			}
@@ -1089,7 +1089,7 @@ bool		handle_command(pms_pending_keys action)
 		case PEND_SHOWINFO:
 			song = pms->disp->cursorsong();
 			if (!win || !list || !song) break;
-			pms->setstatus(STOK, "%d/%d/%d: %s", list->cursor() + 1, song->id, song->pos, song->file.c_str());
+			pms->log(MSG_STATUS, STOK, "%d/%d/%d: %s", list->cursor() + 1, song->id, song->pos, song->file.c_str());
 			debug("--- info for %s ---\n", song->file.c_str());
 			debug("artist *\t\t%s\n", song->artist.c_str());
 			debug("albumartist *\t\t%s\n", song->albumartist.c_str());
@@ -1108,12 +1108,12 @@ bool		handle_command(pms_pending_keys action)
 		case PEND_REHASH:
 			if (pms->config->source(pms->options->get_string("configfile")))
 			{
-				pms->setstatus(STOK, _("Reloaded configuration file."));
+				pms->log(MSG_STATUS, STOK, _("Reloaded configuration file."));
 				pms->comm->library()->sort(pms->options->get_string("librarysort"));
 			}
 			else
 			{
-				pms->setstatus(STERR, _("Configuration error: %s"), err.str.c_str());
+				pms->log(MSG_STATUS, STERR, _("Configuration error: %s"), err.str.c_str());
 			}
 			break;
 
@@ -1121,12 +1121,12 @@ bool		handle_command(pms_pending_keys action)
 		case PEND_PASSWORD:
 			if (pms->input->param.size() == 0)
 			{
-				pms->setstatus(STERR, _("You have to specify a password."));
+				pms->log(MSG_STATUS, STERR, _("You have to specify a password."));
 				break;
 			}
 			if (pms->comm->sendpassword(pms->input->param))
 			{
-				pms->setstatus(STOK, _("Password accepted by mpd."));
+				pms->log(MSG_STATUS, STOK, _("Password accepted by mpd."));
 				pms->options->set_string("password", pms->input->param);
 			}
 			else
@@ -1168,13 +1168,13 @@ bool		handle_command(pms_pending_keys action)
 			break;
 
 		case PEND_SHOWVERSION:
-			pms->setstatus(STOK, "%s %s", PMS_NAME, PACKAGE_VERSION);
+			pms->log(MSG_STATUS, STOK, "%s %s", PMS_NAME, PACKAGE_VERSION);
 			break;
 
 		case PEND_CLEARTOPBAR:
 			if (pms->options->topbar.size() == 0)
 			{
-				pms->setstatus(STERR, "The topbar is already empty.");
+				pms->log(MSG_STATUS, STERR, "The topbar is already empty.");
 				break;
 			}
 			if (pms->input->param.size() > 0)
@@ -1182,7 +1182,7 @@ bool		handle_command(pms_pending_keys action)
 				i = atoi(pms->input->param.c_str());
 				if (i < 1 || i > pms->options->topbar.size())
 				{
-					pms->setstatus(STERR, _("Out of range, acceptable range is 1-%d."), pms->options->topbar.size());
+					pms->log(MSG_STATUS, STERR, _("Out of range, acceptable range is 1-%d."), pms->options->topbar.size());
 					break;
 				}
 				--i;
@@ -1211,7 +1211,7 @@ bool		handle_command(pms_pending_keys action)
  */
 void		generr()
 {
-	pms->setstatus(STERR, "%s", pms->comm->err());
+	pms->log(MSG_STATUS, STERR, "%s", pms->comm->err());
 }
 
 /*
@@ -1290,7 +1290,7 @@ int		multiplay(long mode, int playmode)
 		case MATCH_ARTIST:
 			if (!song->artist.size()) return false;
 			pattern = song->artist;
-			pms->setstatus(STOK, _("%s all songs by %s"), pmode.c_str(), song->artist.c_str());
+			pms->log(MSG_STATUS, STOK, _("%s all songs by %s"), pmode.c_str(), song->artist.c_str());
 			i = 0;
 			break;
 
@@ -1302,7 +1302,7 @@ int		multiplay(long mode, int playmode)
 			{
 				//last track of the current playlist is not part of this album
 				i = 0;
-				pms->setstatus(STOK, _("%s album '%s' by %s"), pmode.c_str(), song->album.c_str(), song->artist.c_str());
+				pms->log(MSG_STATUS, STOK, _("%s album '%s' by %s"), pmode.c_str(), song->album.c_str(), song->artist.c_str());
 			}
 			else
 			{
@@ -1313,20 +1313,20 @@ int		multiplay(long mode, int playmode)
 				{
 					//last track of playlist matches last track of album
 					i = 0;
-					pms->setstatus(STOK, _("%s album '%s' by %s"), pmode.c_str(), song->album.c_str(), song->artist.c_str());
+					pms->log(MSG_STATUS, STOK, _("%s album '%s' by %s"), pmode.c_str(), song->album.c_str(), song->artist.c_str());
 				}
 				else
 				{
 					//find position in the library of the playlist's last track, 
 					//start adding from the one after that
 					i = list->match(pms->comm->playlist()->songs[pms->comm->playlist()->end()]->file, 0, list->end(), MATCH_FILE | MATCH_EXACT) + 1;
-					pms->setstatus(STOK, _("%s remainder of album '%s' by %s"), pmode.c_str(), song->album.c_str(), song->artist.c_str());
+					pms->log(MSG_STATUS, STOK, _("%s remainder of album '%s' by %s"), pmode.c_str(), song->album.c_str(), song->artist.c_str());
 				}
 			}
 			break;
 
 		case MATCH_ALL:
-			pms->setstatus(STOK, _("%s all songs on the current list"), pmode.c_str());
+			pms->log(MSG_STATUS, STOK, _("%s all songs on the current list"), pmode.c_str());
 			pattern = "";
 			i = 0;
 			break;

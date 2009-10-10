@@ -49,7 +49,7 @@
 #include "types.h"
 #include "settings.h"
 #include "song.h"
-#include "error.h"
+#include "message.h"
 #include "topbar.h"
 
 #include "config.h"
@@ -82,7 +82,7 @@ private:
 	pms_win_playlist *		playlist;
 	pms_win_playlist *		library;
 	pms_win_directory *		dirlist;
-	vector<Error *>			msglog;
+	vector<Message *>		msglog;
 
 	/* Private functions */
 	void				init_default_keymap();
@@ -114,7 +114,7 @@ public:
 
 	/* FIXME: this is an attempt on the above */
 	Mediator *			mediator;
-	Error *				msg;
+	Message *			msg;
 
 	/* Global public functions */
 	static string			tostring(long);
@@ -132,10 +132,11 @@ public:
 	void				drawstatus();
 	int				resetstatus(int);
 	void				shutdown() { _shutdown = true; };
-	bool				run_shell(string, Error &);
+	bool				run_shell(string, Message &);
 	Song *				cursong();
 	string				playstring();
-	void				clearmsg();			// Put the last message into the message log
+	void				putlog(Message *);			// Put an arbitrary message into the message log.
+	void				log(int, long, const char *, ...);
 
 	/* Main loop and initialization */
 	int				init();
