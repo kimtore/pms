@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * settings.h - configuration option class
+ * settings.cpp - configuration option class
  *
  */
 

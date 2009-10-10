@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * display.cpp
- * 	manages ncurses windows
+ * display.cpp - ncurses, display and window management
+ *
  */
 
 #include "display.h"
