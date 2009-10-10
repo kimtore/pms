@@ -115,6 +115,7 @@ public:
 	/* FIXME: this is an attempt on the above */
 	Mediator *			mediator;
 	Message *			msg;
+	Interface *			interface;
 
 	/* Global public functions */
 	static string			tostring(long);
@@ -132,7 +133,7 @@ public:
 	void				drawstatus();
 	int				resetstatus(int);
 	void				shutdown() { _shutdown = true; };
-	bool				run_shell(string, Message &);
+	bool				run_shell(string);
 	Song *				cursong();
 	string				playstring();
 	void				putlog(Message *);			// Put an arbitrary message into the message log.

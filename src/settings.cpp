@@ -58,8 +58,11 @@ void		Options::destroy()
 
 	/* Truncate old settings array */
 	i = vals.begin();
-	while (i++ != vals.end())
+	while (i != vals.end())
+	{
 		delete *i;
+		++i;
+	}
 	vals.clear();
 
 	/* Truncate topbar */

@@ -421,7 +421,7 @@ pms_pending_keys	Input::dispatch_normal()
 					pms->disp->actwin()->plist()->setcursor(mouselistindex);
 					if (mousemodctrl)
 						pms->disp->actwin()->plist()->selectsong(pms->disp->actwin()->plist()->songs[mouselistindex], !pms->disp->actwin()->plist()->songs[mouselistindex]->selected);
-					return PEND_FORCEDRAW;
+					return PEND_REDRAW;
 				}
 			}
 			if (mousestatusbar)

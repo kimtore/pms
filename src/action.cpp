@@ -31,103 +31,203 @@
 
 extern Pms *			pms;
 
-/*
- * Defines all commands which can be used
- */
-bool init_commandmap()
+
+
+Interface::Interface()
 {
-	pms->commands = new Commandmap();
-	if (pms->commands == NULL)	return false;
-	pms->bindings = new Bindings(pms->commands);
-	if (pms->bindings == NULL)
+	msg = new Message();
+}
+
+Interface::~Interface()
+{
+	delete msg;
+}
+
+
+/*
+ * Handle any events.
+ * This is a frontend to all the other functions in this class.
+ */
+bool		Interface::check_events()
+{
+	msg->clear();
+	action = pms->input->getpending();
+
+	switch(action)
 	{
-		delete pms->commands;
-		return false;
+		default:
+		case PEND_NONE:
+			return false;
+
+		case PEND_VERSION:
+			version();
+			break;
+
+		case PEND_CLEAR_TOPBAR:
+			clear_topbar(atoi(param.c_str()));
+			break;
+
+		case PEND_REDRAW:
+			redraw();
+			break;
+
+		case PEND_REHASH:
+			rehash();
+			break;
+
+		case PEND_SOURCE:
+			source(param);
+			break;
+
+		case PEND_QUIT:
+			quit();
+			break;
+		
+		case PEND_SHELL:
+			shell(param);
+			break;
+
+		case PEND_SHOW_INFO:
+			show_info();
+			break;
 	}
 
-	/* Misc stuff */
-	pms->commands->add("!", "Run a shell command", PEND_SHELL);
-	pms->commands->add("command-mode", "Switch to command mode", PEND_COMMANDMODE);
-	pms->commands->add("info", "Show file path", PEND_SHOWINFO);
-	pms->commands->add("password", "Send a password to the server", PEND_PASSWORD);
-	pms->commands->add("rehash", "Read configuration file", PEND_REHASH);
-	pms->commands->add("redraw", "Force screen redraw", PEND_FORCEDRAW);
-	pms->commands->add("version", "Show program version", PEND_SHOWVERSION);
-	pms->commands->add("v", "Show program version", PEND_SHOWVERSION);
-	pms->commands->add("clear-topbar", "Remove all contents in topbar", PEND_CLEARTOPBAR);
-	pms->commands->add("quit", "Quit program", PEND_QUIT);
-	pms->commands->add("q", "Quit program", PEND_QUIT);
-
-	/* Playlist management */
-	pms->commands->add("update", "Update MPD music library", PEND_UPDATE);
-	pms->commands->add("create", "Create an empty playlist", PEND_CREATEPLAYLIST);
-	pms->commands->add("save", "Save the playlist as a new playlist", PEND_SAVEPLAYLIST);
-	pms->commands->add("delete-list", "Delete the current playlist", PEND_DELETEPLAYLIST);
-	pms->commands->add("select", "Add song under cursor to selection", PEND_SELECT);
-	pms->commands->add("unselect", "Remove song under cursor to selection", PEND_UNSELECT);
-	pms->commands->add("clear-selection", "Clear selection", PEND_CLEARSELECTION);
-	pms->commands->add("toggle-select", "Toggle selection", PEND_TOGGLESELECT);
-	pms->commands->add("remove", "Remove selected song(s) from list", PEND_DELETE);
-	pms->commands->add("move", "Move songs by offset N", PEND_MOVEITEMS);
-
-	/* Searching */
-	pms->commands->add("next-result", "Jump to next result", PEND_JUMPNEXT);
-	pms->commands->add("prev-result", "Jump to previous result", PEND_JUMPPREV);
-	pms->commands->add("quick-find", "Go to quicksearch mode", PEND_JUMPMODE);
-	pms->commands->add("next-of", "Jump to next of given field", PEND_NEXTOF);
-	pms->commands->add("prev-of", "Jump to previous of given field", PEND_PREVOF);
-
-	/* Playback */
-	pms->commands->add("play", "Play song under cursor", PEND_PLAY);
-	pms->commands->add("play-album", "Play entire album of song under cursor", PEND_PLAYALBUM);
-	pms->commands->add("play-artist", "Play all songs from artist of song under cursor", PEND_PLAYARTIST);
-	pms->commands->add("play-random", "Play a random song", PEND_PLAYRANDOM);
-	pms->commands->add("add", "Add selected song(s) to playlist", PEND_ADD);
-	pms->commands->add("add-to", "Add selected song(s) to a named playlist", PEND_ADDTO);
-	pms->commands->add("add-album", "Add entire album of song under cursor to playlist", PEND_ADDALBUM);
-	pms->commands->add("add-artist", "Add all songs from artist of song under cursor to playlist", PEND_ADDARTIST);
-	pms->commands->add("add-random", "Add a random song to playlist", PEND_ADDRANDOM);
-	pms->commands->add("add-all", "Add all songs from the currently visible list to playlist", PEND_ADDALL);
-	pms->commands->add("next", "Next song by play mode", PEND_NEXT);
-	pms->commands->add("really-next", "Next song in list regardless of play mode", PEND_REALLY_NEXT);
-	pms->commands->add("prev", "Previous song", PEND_PREV);
-	pms->commands->add("pause", "Pause or play", PEND_PAUSE);
-	pms->commands->add("toggle-play", "Toggle playback, play if stopped", PEND_TOGGLEPLAY);
-	pms->commands->add("stop", "Stop", PEND_STOP);
-	pms->commands->add("shuffle", "Shuffle playlist", PEND_SHUFFLE);
-	pms->commands->add("clear", "Clear the list", PEND_CLEAR);
-	pms->commands->add("crop", "Crops list to currently playing song", PEND_CROP);
-	pms->commands->add("cropsel", "Crops list to selected songs", PEND_CROPSELECTION);
-	pms->commands->add("repeat", "Toggle repeat mode", PEND_REPEAT);
-	pms->commands->add("volume", "Increase or decrease volume", PEND_VOLUME);
-	pms->commands->add("mute", "Toggle mute", PEND_MUTE);
-	pms->commands->add("crossfade", "Set crossfade time", PEND_CROSSFADE);
-	pms->commands->add("seek", "Seek in stream", PEND_SEEK);
-	pms->commands->add("playmode", "Cycle play mode", PEND_CYCLE_PLAYMODE);
-
-	/* Movement */
-	pms->commands->add("next-window", "Go to next playlist", PEND_NEXTWIN);
-	pms->commands->add("prev-window", "Go to previous playlist", PEND_PREVWIN);
-	pms->commands->add("change-window", "Go to named playlist", PEND_CHANGEWIN);
-	pms->commands->add("last-window", "Switch to last window used", PEND_LASTWIN);
-	pms->commands->add("help", "Show current key pms->bindings", PEND_SHOWBIND);
-	pms->commands->add("goto-random", "Set the cursor to a random song.", PEND_GOTORANDOM);
-	pms->commands->add("goto-current", "Find current song", PEND_GOTO_CURRENT);
-	pms->commands->add("activate-list", "Activate list for playback", PEND_ACTIVATELIST);
-	pms->commands->add("move-up", "Move cursor up", PEND_MOVE_UP);
-	pms->commands->add("move-down", "Move cursor down", PEND_MOVE_DOWN);
-	pms->commands->add("move-halfpgup", "Move cursor one half page up", PEND_MOVE_HALFPGUP);
-	pms->commands->add("move-halfpgdn", "Move cursor one half page down", PEND_MOVE_HALFPGDN);
-	pms->commands->add("move-pgup", "Move cursor one page up", PEND_MOVE_PGUP);
-	pms->commands->add("move-pgdn", "Move cursor one page down", PEND_MOVE_PGDN);
-	pms->commands->add("move-home", "Move cursor to start of list", PEND_MOVE_HOME);
-	pms->commands->add("move-end", "Move cursor to end of list", PEND_MOVE_END);
-	pms->commands->add("scroll-up", "Scroll up one line", PEND_SCROLL_UP);
-	pms->commands->add("scroll-down", "Scroll down one line", PEND_SCROLL_DOWN);
-	pms->commands->add("center-cursor", "Center the cursor", PEND_CENTER_CURSOR);
-	pms->commands->add("centre-cursor", "Centre the cursor", PEND_CENTER_CURSOR);
+	if (msg->code != 0 && msg->str.size() > 0)
+	{
+		pms->putlog(msg);
+		msg->clear();
+	}
 
 	return true;
+}
+
+
+/*
+ * Print program name and version.
+ */
+long		Interface::version()
+{
+	pms->log(MSG_STATUS, STOK, "%s %s", PMS_NAME, PACKAGE_VERSION);
+	return STOK;
+}
+
+/*
+ * Clear out a line from the topbar.
+ * If line is 0, clear everything.
+ */
+long		Interface::clear_topbar(int line = 0)
+{
+	if (pms->options->topbar.size() == 0)
+		return STOK;
+
+	if (line == 0)
+	{
+		pms->options->topbar.clear();
+		pms->log(MSG_STATUS, STOK, _("Cleared out the entire topbar."));
+		return STOK;
+	}
+
+	if (line < 1 || line > pms->options->topbar.size())
+	{
+		pms->log(MSG_STATUS, STERR, _("Out of range, acceptable range is 1-%d."), pms->options->topbar.size());
+		return STERR;
+	}
+	pms->options->topbar.erase(pms->options->topbar.begin() + line - 1);
+	pms->log(MSG_STATUS, STOK, _("Removed line %d from topbar."), line);
+
+	pms->mediator->add("redraw.topbar");
+
+	return STOK;
+}
+
+/*
+ * Redraw everything
+ */
+long		Interface::redraw()
+{
+	pms->mediator->add("redraw");
+	return STOK;
+}
+
+/*
+ * Re-read the configuration file
+ */
+long		Interface::rehash()
+{
+	pms->options->reset();
+	msg->code = source(pms->options->get_string("configfile"));
+
+	if (msg->code == 0)
+		pms->log(MSG_STATUS, STOK, _("Reloaded configuration file."));
+
+	return msg->code;
+}
+
+/*
+ * Read a configuration file or script
+ */
+long		Interface::source(string file)
+{
+	if (pms->config->source(file))
+	{
+		pms->log(MSG_STATUS, STOK, _("Read configuration file: %s"), file.c_str());
+		return STOK;
+	}
+	else
+	{
+		pms->log(MSG_STATUS, STERR, _("Error reading %s: %s"), file.c_str(), pms->msg->str.c_str());
+		return STERR;
+	}
+}
+
+/*
+ * Quit PMS.
+ */
+long		Interface::quit()
+{
+	pms->shutdown();
+	return STOK;
+}
+
+/*
+ * Run a shell command
+ */
+long		Interface::shell(string command)
+{
+	pms->run_shell(command);
+	return pms->msg->code;
+}
+
+/*
+ * Put song info into the console
+ */
+long		Interface::show_info()
+{
+	Song *		song;
+
+	song = pms->disp->cursorsong();
+	if (song == NULL)
+	{
+		pms->log(MSG_STATUS, STERR, _("No info could be retrieved."));
+		return STERR;
+	}
+
+	pms->log(MSG_STATUS, STOK, "%s%s", pms->options->get_string("libraryroot").c_str(), song->file.c_str());
+	pms->log(MSG_CONSOLE, STOK, _("--- song info ---\n"));
+	pms->log(MSG_CONSOLE, STOK, "file\t\t = %s%s\n", pms->options->get_string("libraryroot").c_str(), song->file.c_str());
+	pms->log(MSG_CONSOLE, STOK, "artist\t\t = %s\n", song->artist.c_str());
+	pms->log(MSG_CONSOLE, STOK, "albumartist\t = %s\n", song->albumartist.c_str());
+	pms->log(MSG_CONSOLE, STOK, "albumartistsort\t = %s\n", song->albumartistsort.c_str());
+	pms->log(MSG_CONSOLE, STOK, "date\t\t = %s\n", song->date.c_str());
+	pms->log(MSG_CONSOLE, STOK, "year\t\t = %s\n", song->year.c_str());
+	pms->log(MSG_CONSOLE, STOK, "artistsort\t = %s\n", song->artistsort.c_str());
+	pms->log(MSG_CONSOLE, STOK, "title\t\t = %s\n", song->title.c_str());
+	pms->log(MSG_CONSOLE, STOK, "album\t\t = %s\n", song->album.c_str());
+	pms->log(MSG_CONSOLE, STOK, "track\t\t = %s\n", song->track.c_str());
+	pms->log(MSG_CONSOLE, STOK, "disc\t\t = %s\n", song->disc.c_str());
+	pms->log(MSG_CONSOLE, STOK, _("--- end of info ---\n"));
+
+	return STOK;
 }
 
 
@@ -147,6 +247,14 @@ bool		handle_command(pms_pending_keys action)
 	long		l = 0;
 	song_t		sn = 0;
 	string		s;
+
+	{
+		pms->interface->action = action;
+		pms->interface->param = pms->input->param;
+
+		if (pms->interface->check_events())
+			return true;
+	}
 
 	if (win) list = win->plist();
 
@@ -640,13 +748,6 @@ bool		handle_command(pms_pending_keys action)
 
 			break;
 
-		/*
-		 * Run a shell command
-		 */
-		case PEND_SHELL:
-			pms->run_shell(pms->input->param, err);
-			pms->log(MSG_STATUS, err.code == 0 ? STOK : STERR, _("shell returned %d"), err.code);
-			break;
 
 		/* Command-mode + searching*/
 		case PEND_COMMANDMODE:
@@ -1086,36 +1187,6 @@ bool		handle_command(pms_pending_keys action)
 			}
 			break;
 
-		case PEND_SHOWINFO:
-			song = pms->disp->cursorsong();
-			if (!win || !list || !song) break;
-			pms->log(MSG_STATUS, STOK, "%d/%d/%d: %s", list->cursor() + 1, song->id, song->pos, song->file.c_str());
-			pms->log(MSG_CONSOLE, 0, "--- info for %s ---\n", song->file.c_str());
-			pms->log(MSG_CONSOLE, 0, "artist *\t\t%s\n", song->artist.c_str());
-			pms->log(MSG_CONSOLE, 0, "albumartist *\t\t%s\n", song->albumartist.c_str());
-			pms->log(MSG_CONSOLE, 0, "albumartistsort *\t%s\n", song->albumartistsort.c_str());
-			pms->log(MSG_CONSOLE, 0, "date *\t\t\t%s\n", song->date.c_str());
-			pms->log(MSG_CONSOLE, 0, "year *\t\t\t%s\n", song->year.c_str());
-			pms->log(MSG_CONSOLE, 0, "artistsort *\t%s\n", song->artistsort.c_str());
-			pms->log(MSG_CONSOLE, 0, "title *\t\t\t%s\n", song->title.c_str());
-			pms->log(MSG_CONSOLE, 0, "album *\t\t\t%s\n", song->album.c_str());
-			pms->log(MSG_CONSOLE, 0, "track *\t\t\t%s\n", song->track.c_str());
-			pms->log(MSG_CONSOLE, 0, "disc *\t\t\t%s\n", song->disc.c_str());
-			pms->log(MSG_CONSOLE, 0, "--- end of info ---\n");
-			break;
-
-		/* Program specific */
-		case PEND_REHASH:
-			if (pms->config->source(pms->options->get_string("configfile")))
-			{
-				pms->log(MSG_STATUS, STOK, _("Reloaded configuration file."));
-				pms->comm->library()->sort(pms->options->get_string("librarysort"));
-			}
-			else
-			{
-				pms->log(MSG_STATUS, STERR, _("Configuration error: %s"), err.str.c_str());
-			}
-			break;
 
 		/* Specify a (new) password */
 		case PEND_PASSWORD:
@@ -1161,42 +1232,6 @@ bool		handle_command(pms_pending_keys action)
 			pms->disp->resized();
 			pms->disp->forcedraw();
 			pms->drawstatus();
-			break;
-
-		case PEND_FORCEDRAW:
-			pms->disp->forcedraw();
-			break;
-
-		case PEND_SHOWVERSION:
-			pms->log(MSG_STATUS, STOK, "%s %s", PMS_NAME, PACKAGE_VERSION);
-			break;
-
-		case PEND_CLEARTOPBAR:
-			if (pms->options->topbar.size() == 0)
-			{
-				pms->log(MSG_STATUS, STERR, "The topbar is already empty.");
-				break;
-			}
-			if (pms->input->param.size() > 0)
-			{
-				i = atoi(pms->input->param.c_str());
-				if (i < 1 || i > pms->options->topbar.size())
-				{
-					pms->log(MSG_STATUS, STERR, _("Out of range, acceptable range is 1-%d."), pms->options->topbar.size());
-					break;
-				}
-				--i;
-				pms->options->topbar.erase(pms->options->topbar.begin() + i);
-			}
-			else
-			{
-				pms->options->topbar.clear();
-			}
-			pms->disp->resized();
-			break;
-
-		case PEND_QUIT:
-			pms->shutdown();
 			break;
 
 		default:
@@ -1508,3 +1543,107 @@ int		createwindow(string param, pms_window *& win, Songlist *& list)
 
 	return 0;
 }
+
+
+
+/*
+ * Defines all commands which can be used
+ */
+bool init_commandmap()
+{
+	pms->commands = new Commandmap();
+	if (pms->commands == NULL)	return false;
+	pms->bindings = new Bindings(pms->commands);
+	if (pms->bindings == NULL)
+	{
+		delete pms->commands;
+		return false;
+	}
+
+	/* Misc stuff */
+	pms->commands->add("!", "Run a shell command", PEND_SHELL);
+	pms->commands->add("command-mode", "Switch to command mode", PEND_COMMANDMODE);
+	pms->commands->add("info", "Show file information in console", PEND_SHOW_INFO);
+	pms->commands->add("password", "Send a password to the server", PEND_PASSWORD);
+	pms->commands->add("source", "Read a script or configuration file", PEND_SOURCE);
+	pms->commands->add("rehash", "Read configuration file", PEND_REHASH);
+	pms->commands->add("redraw", "Force screen redraw", PEND_REDRAW);
+	pms->commands->add("version", "Show program version", PEND_VERSION);
+	pms->commands->add("v", "Show program version", PEND_VERSION);
+	pms->commands->add("clear-topbar", "Remove all contents in topbar", PEND_CLEAR_TOPBAR);
+	pms->commands->add("quit", "Quit program", PEND_QUIT);
+	pms->commands->add("q", "Quit program", PEND_QUIT);
+
+	/* Playlist management */
+	pms->commands->add("update", "Update MPD music library", PEND_UPDATE);
+	pms->commands->add("create", "Create an empty playlist", PEND_CREATEPLAYLIST);
+	pms->commands->add("save", "Save the playlist as a new playlist", PEND_SAVEPLAYLIST);
+	pms->commands->add("delete-list", "Delete the current playlist", PEND_DELETEPLAYLIST);
+	pms->commands->add("select", "Add song under cursor to selection", PEND_SELECT);
+	pms->commands->add("unselect", "Remove song under cursor to selection", PEND_UNSELECT);
+	pms->commands->add("clear-selection", "Clear selection", PEND_CLEARSELECTION);
+	pms->commands->add("toggle-select", "Toggle selection", PEND_TOGGLESELECT);
+	pms->commands->add("remove", "Remove selected song(s) from list", PEND_DELETE);
+	pms->commands->add("move", "Move songs by offset N", PEND_MOVEITEMS);
+
+	/* Searching */
+	pms->commands->add("next-result", "Jump to next result", PEND_JUMPNEXT);
+	pms->commands->add("prev-result", "Jump to previous result", PEND_JUMPPREV);
+	pms->commands->add("quick-find", "Go to quicksearch mode", PEND_JUMPMODE);
+	pms->commands->add("next-of", "Jump to next of given field", PEND_NEXTOF);
+	pms->commands->add("prev-of", "Jump to previous of given field", PEND_PREVOF);
+
+	/* Playback */
+	pms->commands->add("play", "Play song under cursor", PEND_PLAY);
+	pms->commands->add("play-album", "Play entire album of song under cursor", PEND_PLAYALBUM);
+	pms->commands->add("play-artist", "Play all songs from artist of song under cursor", PEND_PLAYARTIST);
+	pms->commands->add("play-random", "Play a random song", PEND_PLAYRANDOM);
+	pms->commands->add("add", "Add selected song(s) to playlist", PEND_ADD);
+	pms->commands->add("add-to", "Add selected song(s) to a named playlist", PEND_ADDTO);
+	pms->commands->add("add-album", "Add entire album of song under cursor to playlist", PEND_ADDALBUM);
+	pms->commands->add("add-artist", "Add all songs from artist of song under cursor to playlist", PEND_ADDARTIST);
+	pms->commands->add("add-random", "Add a random song to playlist", PEND_ADDRANDOM);
+	pms->commands->add("add-all", "Add all songs from the currently visible list to playlist", PEND_ADDALL);
+	pms->commands->add("next", "Next song by play mode", PEND_NEXT);
+	pms->commands->add("really-next", "Next song in list regardless of play mode", PEND_REALLY_NEXT);
+	pms->commands->add("prev", "Previous song", PEND_PREV);
+	pms->commands->add("pause", "Pause or play", PEND_PAUSE);
+	pms->commands->add("toggle-play", "Toggle playback, play if stopped", PEND_TOGGLEPLAY);
+	pms->commands->add("stop", "Stop", PEND_STOP);
+	pms->commands->add("shuffle", "Shuffle playlist", PEND_SHUFFLE);
+	pms->commands->add("clear", "Clear the list", PEND_CLEAR);
+	pms->commands->add("crop", "Crops list to currently playing song", PEND_CROP);
+	pms->commands->add("cropsel", "Crops list to selected songs", PEND_CROPSELECTION);
+	pms->commands->add("repeat", "Toggle repeat mode", PEND_REPEAT);
+	pms->commands->add("volume", "Increase or decrease volume", PEND_VOLUME);
+	pms->commands->add("mute", "Toggle mute", PEND_MUTE);
+	pms->commands->add("crossfade", "Set crossfade time", PEND_CROSSFADE);
+	pms->commands->add("seek", "Seek in stream", PEND_SEEK);
+	pms->commands->add("playmode", "Cycle play mode", PEND_CYCLE_PLAYMODE);
+
+	/* Movement */
+	pms->commands->add("next-window", "Go to next playlist", PEND_NEXTWIN);
+	pms->commands->add("prev-window", "Go to previous playlist", PEND_PREVWIN);
+	pms->commands->add("change-window", "Go to named playlist", PEND_CHANGEWIN);
+	pms->commands->add("last-window", "Switch to last window used", PEND_LASTWIN);
+	pms->commands->add("help", "Show current key pms->bindings", PEND_SHOWBIND);
+	pms->commands->add("goto-random", "Set the cursor to a random song.", PEND_GOTORANDOM);
+	pms->commands->add("goto-current", "Find current song", PEND_GOTO_CURRENT);
+	pms->commands->add("activate-list", "Activate list for playback", PEND_ACTIVATELIST);
+	pms->commands->add("move-up", "Move cursor up", PEND_MOVE_UP);
+	pms->commands->add("move-down", "Move cursor down", PEND_MOVE_DOWN);
+	pms->commands->add("move-halfpgup", "Move cursor one half page up", PEND_MOVE_HALFPGUP);
+	pms->commands->add("move-halfpgdn", "Move cursor one half page down", PEND_MOVE_HALFPGDN);
+	pms->commands->add("move-pgup", "Move cursor one page up", PEND_MOVE_PGUP);
+	pms->commands->add("move-pgdn", "Move cursor one page down", PEND_MOVE_PGDN);
+	pms->commands->add("move-home", "Move cursor to start of list", PEND_MOVE_HOME);
+	pms->commands->add("move-end", "Move cursor to end of list", PEND_MOVE_END);
+	pms->commands->add("scroll-up", "Scroll up one line", PEND_SCROLL_UP);
+	pms->commands->add("scroll-down", "Scroll down one line", PEND_SCROLL_DOWN);
+	pms->commands->add("center-cursor", "Center the cursor", PEND_CENTER_CURSOR);
+	pms->commands->add("centre-cursor", "Centre the cursor", PEND_CENTER_CURSOR);
+
+	return true;
+}
+
+

@@ -296,6 +296,7 @@ int			Pms::main()
 		disp->set_xterm_title();
 
 		/* Check out mediator events */
+		/* FIXME: add these into their appropriate places */
 		if (mediator->changed("setting.sort"))
 			comm->library()->sort(options->get_string("librarysort"));
 		else if (mediator->changed("setting.ignorecase"))
@@ -304,6 +305,10 @@ int			Pms::main()
 			disp->actwin()->set_column_size();
 		else if (mediator->changed("setting.mouse"))
 			disp->setmousemask();
+		else if (mediator->changed("redraw.topbar"))
+			disp->resized();
+		else if (mediator->changed("redraw"))
+			disp->resized();
 		else if (mediator->changed("topbarvisible"))
 			disp->resized();
 		else if (mediator->changed("topbarborders"))
@@ -325,6 +330,8 @@ int			Pms::main()
 
 	}
 	while (!_shutdown);
+
+	log(MSG_CONSOLE, STOK, _("Shutting down program.\n"));
 
 	delete disp;
 	delete comm;
@@ -351,6 +358,7 @@ int			Pms::init()
 	/* Internal pointers */
 	msg = new Message();
 	mediator = new Mediator();
+	interface = new Interface();
 	formatter = new Formatter();
 
 	/* Setup locales and internationalization */
@@ -657,10 +665,11 @@ string			Pms::formtext(string text)
 /*
  * Run a shell command
  *
+ * FIXME: perhaps this command should be within Interface class?
  * TODO: add %artist% tags through the field pattern parser: meaning %file% -> filename, not % -> filename
  *	...but current implementation is nice and vim-like
  */
-bool			Pms::run_shell(string cmd, Message & err)
+bool			Pms::run_shell(string cmd)
 {
 	string				search;
 	string				replace;
@@ -669,7 +678,7 @@ bool			Pms::run_shell(string cmd, Message & err)
 	Songlist *			list;
 	char				c;
 
-	err.clear();
+	msg->clear();
 
 	/*
 	 * %: path to current song, not enclosed in quotes
@@ -740,12 +749,12 @@ bool			Pms::run_shell(string cmd, Message & err)
 	//pms->log(MSG_DEBUG, 0, "running shell command '%s'\n", cmd.c_str());
 	endwin();
 
-	err.code = system(cmd.c_str());
-	err.code = WEXITSTATUS(err.code);
+	msg->code = system(cmd.c_str());
+	msg->code = WEXITSTATUS(msg->code);
 
-	pms->log(MSG_DEBUG, 0, "Shell returned %d\n", err.code);
-	if (err.code != 0)
-		printf(_("\nShell returned %d\n"), err.code);
+	pms->log(MSG_DEBUG, 0, "Shell returned %d\n", msg->code);
+	if (msg->code != 0)
+		printf(_("\nShell returned %d\n"), msg->code);
 
 	printf(_("\nPress ENTER to continue"));
 	fflush(stdout);
@@ -930,6 +939,7 @@ void			Pms::log(int verbosity, long code, const char * format, ...)
 	va_list		ap;
 	char		buffer[1024];
 	char		tbuffer[20];
+	string		level;
 	Message *	m;
 	tm *		timeinfo;
 	color *		pair;
@@ -966,7 +976,13 @@ void			Pms::log(int verbosity, long code, const char * format, ...)
 	{
 		timeinfo = localtime(&(m->timestamp));
 		strftime(tbuffer, 20, "%Y-%m-%d %H:%M:%S", timeinfo);
-		fprintf(stderr, "%s  %s", tbuffer, m->str.c_str());
+		if (verbosity == MSG_STATUS)
+			level = "status";
+		else if (verbosity == MSG_CONSOLE)
+			level = "console";
+		else if (verbosity == MSG_DEBUG)
+			level = "debug";
+		fprintf(stderr, "%s /%s/ %s", tbuffer, level.c_str(), m->str.c_str());
 	}
 
 	if (!disp && verbosity < MSG_DEBUG)

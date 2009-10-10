@@ -26,6 +26,96 @@
 
 #include "list.h"
 #include "display.h"
+#include "message.h"
+
+
+class Interface
+{
+private:
+	Message *		msg;
+
+public:
+				Interface();
+				~Interface();
+
+	bool			check_events();
+
+	//FIXME: REMOVE
+	int			action;
+	string			param;
+
+
+	/*
+	 * PMS specific stuff
+	 */
+	long			version();
+	long			clear_topbar(int);
+	long			redraw();
+	long			rehash();
+	long			source(string);
+	long			quit();
+	long			shell(string);
+	long			show_info();
+
+	long			password();
+	long			update_db();
+	long			setvolume();
+	long			mute();
+	long			crossfade();
+	long			seek();
+	long			cycle_playmode();
+	long			cycle_repeatmode();
+
+	long			set_input_mode(int); //command mode, jump mode, search mode
+
+	long			toggle();
+	long			exec();
+	long			escape();
+
+	long			next_of();
+	long			prev_of();
+	long			goto_random();
+	long			goto_current();
+	long			next_result();
+	long			prev_result();
+
+	long			text_updated();
+	long			text_return();
+	long			text_escape();
+
+	/* List actions */
+	long			play();	// play of type, too: playartist, playalbum, playrandom, etc
+	long			add(); // play + add to, add all
+	long			remove();
+	long			move();
+	long			next();
+	long			prev();
+	long			pause();
+	long			stop();
+	long			toggleplay();
+	long			shuffle();
+	long			clear();
+	long			crop(); // crop playing and crop selection
+	long			select(); //FIXME
+	long			unselect();
+	long			toggleselect();
+	long			clearselection();
+
+	long			create_playlist();
+	long			save_playlist();
+	long			delete_playlist();
+
+	long			next_window();
+	long			prev_window();
+	long			change_window();
+	long			last_window();
+
+	long			show_bindings();
+	long			activate_playlist();
+
+	long			move_cursor(); // move up/down, pgup/pgdn, center, etc
+	long			scroll_window();
+};
 
 
 bool		handle_command(pms_pending_keys);

@@ -408,17 +408,20 @@ bool			Configurator::source(string fn)
 	if (fd == NULL)
 	{
 		pms->msg->code = CERR_NO_FILE;
-		pms->msg->str = fn + ": could not open file.";
+		pms->msg->str = fn + _(": could not open file.\n");
 		return false;
 	}
 
-	pms->log(MSG_DEBUG, 0, "Reading configuration file %s\n", fn.c_str());
+	pms->log(MSG_CONSOLE, 0, _("Reading configuration file %s\n"), fn.c_str());
 
 	while (fgets(buffer, 1024, fd) != NULL)
 	{
 		++line;
 		if (!readline(buffer))
+		{
+			pms->log(MSG_CONSOLE, STERR, _("Encountered an error on line %d.\n"), line);
 			break;
+		}
 	}
 
 	if (pms->msg->code != 0)
@@ -426,7 +429,7 @@ bool			Configurator::source(string fn)
 		pms->msg->str = "line " + Pms::tostring(line) + ": " + pms->msg->str;
 	}
 
-	pms->log(MSG_DEBUG, 0, "Finished reading configuration file.\n");
+	pms->log(MSG_CONSOLE, 0, _("Finished reading configuration file.\n"));
 
 	fclose(fd);
 
