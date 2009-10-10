@@ -1511,7 +1511,7 @@ void		Display::set_xterm_title()
 		}
 		else
 		{
-			debug(_("Disabling XTerm window title: WINDOWID not found.\n"));
+			pms->log(MSG_DEBUG, 0, _("Disabling XTerm window title: WINDOWID not found.\n"));
 			pms->options->set_string("xtermtitle", "");
 		}
 	}

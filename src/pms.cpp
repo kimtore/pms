@@ -907,17 +907,14 @@ string			Pms::playstring()
 }
 
 /*
- * Put the last message into the message log
+ * Put an arbitrary message into the message log
  */
-void			Pms::putlog(Message *)
+void			Pms::putlog(Message * m)
 {
-	if (msg->code == 0 && msg->str.size() == 0)
+	if (m->code == 0 && m->str.size() == 0)
 		return;
 
-	debug(_("%s code %d: %s\n"), (msg->code == 0 ? _("Message") : _("Error")), msg->code, msg->str.c_str());
-
-	msglog.push_back(msg);
-	msg = new Message();
+	log(MSG_CONSOLE, m->code, m->str.c_str());
 }
 
 /*
@@ -970,6 +967,11 @@ void			Pms::log(int verbosity, long code, const char * format, ...)
 		timeinfo = localtime(&(m->timestamp));
 		strftime(tbuffer, 20, "%Y-%m-%d %H:%M:%S", timeinfo);
 		fprintf(stderr, "%s  %s", tbuffer, m->str.c_str());
+	}
+
+	if (!disp && verbosity < MSG_DEBUG)
+	{
+		printf(buffer);
 	}
 
 	msglog.push_back(m);
