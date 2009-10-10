@@ -566,11 +566,11 @@ void		pms_win_directory::draw()
 		return;
 	}
 
-	debug("\n-- starting directory draw --\n");
+	pms->log(MSG_DEBUG, 0, "\n-- starting directory draw --\n");
 
 	/* Pop excess directories according to draw length */
 	maxdepth = (bwidth() / pms->options->get_long("directoryminlen"));
-	debug("Maximum directory depth = %d\n", maxdepth);
+	pms->log(MSG_DEBUG, 0, "Maximum directory depth = %d\n", maxdepth);
 	while (dirs.size() >= maxdepth)
 	{
 		dirs.pop_back();
@@ -617,7 +617,7 @@ void		pms_win_directory::draw()
 		++it;
 	}
 	len = (bwidth() / (dirs.size() + 1)) - 1;
-	debug("Length of each panel = %d\n", len);
+	pms->log(MSG_DEBUG, 0, "Length of each panel = %d\n", len);
 
 	/* Determine which items to draw */
 	i = cursordrawstart();
@@ -629,7 +629,7 @@ void		pms_win_directory::draw()
 	ydraw = 1;
 	xdraw = (len * dirs.size());
 
-	debug("Starting draw of songlist at x=%d\n", xdraw);
+	pms->log(MSG_DEBUG, 0, "Starting draw of songlist at x=%d\n", xdraw);
 
 	for (i = cursordrawstart(); i < max; i++)
 	{
@@ -652,7 +652,7 @@ void		pms_win_directory::draw()
 	mitr = min.rbegin();
 	while (itr != dirs.rend())
 	{
-		debug("Draw directory '%s'\n", (*itr)->name().c_str());
+		pms->log(MSG_DEBUG, 0, "Draw directory '%s'\n", (*itr)->name().c_str());
 		++itr;
 	}
 	return;
@@ -1148,7 +1148,7 @@ bool		pms_window::resize(int nx, int ny, int nwidth, int nheight)
 
 	if (handle == NULL)
 	{
-		debug("resize: window creation FAILED: (%d, %d, %d, %d), exiting\n", nx, ny, nwidth, nheight);
+		pms->log(MSG_DEBUG, 0, "resize: window creation FAILED: (%d, %d, %d, %d), exiting\n", nx, ny, nwidth, nheight);
 		return false;
 	}
 
@@ -1606,7 +1606,7 @@ bool			Display::activate(pms_window * w)
 			if (curwin && curwin->type() == WIN_ROLE_PLAYLIST)
 			{
 				lastwin = curwin;
-				debug("Activate: setting lastwin=%p with list %p.\n", lastwin, lastwin->plist());
+				pms->log(MSG_DEBUG, 0, "Activate: setting lastwin=%p with list %p.\n", lastwin, lastwin->plist());
 			}
 			if (curwin && curwin != w)
 			{

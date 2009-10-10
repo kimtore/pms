@@ -50,7 +50,7 @@ void			Input::winstore(pms_window * w)
 	win = w;
 	winparam = param;
 	winpend = pending;
-	debug("winstore: win=%p, winparam=%s, winpend=%d\n", win, winparam.c_str(), winpend);
+	pms->log(MSG_DEBUG, 0, "winstore: win=%p, winparam=%s, winpend=%d\n", win, winparam.c_str(), winpend);
 }
 
 /*
@@ -69,7 +69,7 @@ void			Input::winclear()
 bool			Input::winpop()
 {
 	if (win == NULL) return false;
-	debug("winpop: setting param=%s, pending=%d\n", param.c_str(), pending);
+	pms->log(MSG_DEBUG, 0, "winpop: setting param=%s, pending=%d\n", param.c_str(), pending);
 
 	param = winparam;
 	pending = winpend;
@@ -132,7 +132,7 @@ bool			Input::goprev()
  */
 void			Input::mode(Input_mode m)
 {
-	debug("Entering input mode %d\n", m);
+	pms->log(MSG_DEBUG, 0, "Entering input mode %d\n", m);
 
 	switch(m)
 	{
@@ -235,7 +235,7 @@ pms_pending_keys	Input::dispatch_text()
 				{
 					break;
 				}
-				debug("Key %3d '%c' pressed in text mode but not textual and not bound.\n", ch, ch);
+				pms->log(MSG_DEBUG, 0, "Key %3d '%c' pressed in text mode but not textual and not bound.\n", ch, ch);
 			}
 			text += ch;
 
@@ -288,26 +288,26 @@ pms_pending_keys	Input::dispatch_normal()
 	{
 		if (getmouse(&mouseevent) == ERR)
 		{
-			debug("error with getmouse()\n");
+			pms->log(MSG_DEBUG, 0, "error with getmouse()\n");
 			ch = -1; // prevents weird results
 			return PEND_NONE;
 		}
 
-		debug("mevent x:%d, y:%d, z:%d\n", mouseevent.x, mouseevent.y, mouseevent.z);
+		pms->log(MSG_DEBUG, 0, "mevent x:%d, y:%d, z:%d\n", mouseevent.x, mouseevent.y, mouseevent.z);
 
 		if (mouseevent.bstate & BUTTON_SHIFT)
 		{
-			debug("shift is down\n");
+			pms->log(MSG_DEBUG, 0, "shift is down\n");
 			mousemodshift = true;
 		}
 		if (mouseevent.bstate & BUTTON_CTRL)
 		{
-			debug("ctrl is down\n");
+			pms->log(MSG_DEBUG, 0, "ctrl is down\n");
 			mousemodctrl = true;
 		}
 		if (mouseevent.bstate & BUTTON_ALT)
 		{
-			debug("alt is down\n");
+			pms->log(MSG_DEBUG, 0, "alt is down\n");
 			mousemodctrl = true;
 		}
 
@@ -316,7 +316,7 @@ pms_pending_keys	Input::dispatch_normal()
 
 		if (pms->disp->actwin() && wenclose(pms->disp->actwin()->h(), mouseevent.y, mouseevent.x))
 		{
-			debug("mouse event in current window\n");
+			pms->log(MSG_DEBUG, 0, "mouse event in current window\n");
 			mousecurwin = true;
 			wmouse_trafo(pms->disp->actwin()->h(), &mousewiny, &mousewinx, false);
 
@@ -329,38 +329,38 @@ pms_pending_keys	Input::dispatch_normal()
 				//not a playlist or clicked off the end of the 
 				//list
 				mouselistindex = -1;
-				debug("mouse event off the end of the list of songs or not a playlist\n");
+				pms->log(MSG_DEBUG, 0, "mouse event off the end of the list of songs or not a playlist\n");
 			}
 		}
 		else if (wenclose(pms->disp->topbar->h(), mouseevent.y, mouseevent.x))
 		{
-			debug("mouse event in topbar\n");
+			pms->log(MSG_DEBUG, 0, "mouse event in topbar\n");
 			mousetopbar = true;
 			wmouse_trafo(pms->disp->topbar->h(), &mousewiny, &mousewinx, false);
 		}
 		else if (wenclose(pms->disp->statusbar->h(), mouseevent.y, mouseevent.x))
 		{
-			debug("mouse event in statusbar\n");
+			pms->log(MSG_DEBUG, 0, "mouse event in statusbar\n");
 			mousestatusbar = true;
 			wmouse_trafo(pms->disp->statusbar->h(), &mousewiny, &mousewinx, false);
 		}
 		else if (wenclose(pms->disp->positionreadout->h(), mouseevent.y, mouseevent.x))
 		{
-			debug("mouse event in positionreadout\n");
+			pms->log(MSG_DEBUG, 0, "mouse event in positionreadout\n");
 			mousepositionreadout = true;
 			wmouse_trafo(pms->disp->positionreadout->h(), &mousewiny, &mousewinx, false);
 		}
 		else
 		{
-			debug("mouse event doesn't seem to be enclosed in any of our windows\n");
+			pms->log(MSG_DEBUG, 0, "mouse event doesn't seem to be enclosed in any of our windows\n");
 			return PEND_NONE;
 		}
 
-		debug("mouse event at row %d, col %d of window\n", mousewiny, mousewinx);
+		pms->log(MSG_DEBUG, 0, "mouse event at row %d, col %d of window\n", mousewiny, mousewinx);
 
 		if (mouseevent.bstate & MOUSEWHEEL_DOWN)
 		{
-			debug("mousewheel down\n");
+			pms->log(MSG_DEBUG, 0, "mousewheel down\n");
 			if (mousetopbar)
 			{
 				if (mousemodctrl)
@@ -380,7 +380,7 @@ pms_pending_keys	Input::dispatch_normal()
 		}
 		else if (mouseevent.bstate & MOUSEWHEEL_UP)
 		{
-			debug("mousewheel up\n");
+			pms->log(MSG_DEBUG, 0, "mousewheel up\n");
 			if (mousetopbar)
 			{
 				if (mousemodctrl) {
@@ -399,17 +399,17 @@ pms_pending_keys	Input::dispatch_normal()
 		}
 		else if (mouseevent.bstate & BUTTON1_PRESSED)
 		{
-			debug("button 1 down\n");
+			pms->log(MSG_DEBUG, 0, "button 1 down\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON1_RELEASED)
 		{
-			debug("button 1 released\n");
+			pms->log(MSG_DEBUG, 0, "button 1 released\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON1_CLICKED)
 		{
-			debug("button 1 clicked\n");
+			pms->log(MSG_DEBUG, 0, "button 1 clicked\n");
 			if (mousetopbar)
 				return PEND_TOGGLEPLAY;
 			if (mousecurwin)
@@ -430,7 +430,7 @@ pms_pending_keys	Input::dispatch_normal()
 		}
 		else if (mouseevent.bstate & BUTTON1_DOUBLE_CLICKED)
 		{
-			debug("button 1 doubleclicked\n");
+			pms->log(MSG_DEBUG, 0, "button 1 doubleclicked\n");
 			if (mousetopbar)
 				return PEND_STOP;
 			if (mousecurwin)
@@ -447,7 +447,7 @@ pms_pending_keys	Input::dispatch_normal()
 		}
 		else if (mouseevent.bstate & BUTTON1_TRIPLE_CLICKED)
 		{
-			debug("button 1 tripleclicked\n");
+			pms->log(MSG_DEBUG, 0, "button 1 tripleclicked\n");
 			if (mousecurwin && mouselistindex >= 0)
 			{
 				pms->disp->actwin()->plist()->setcursor(mouselistindex);
@@ -457,114 +457,114 @@ pms_pending_keys	Input::dispatch_normal()
 		}
 		else if (mouseevent.bstate & BUTTON2_PRESSED)
 		{
-			debug("button 2 down\n");
+			pms->log(MSG_DEBUG, 0, "button 2 down\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON2_RELEASED)
 		{
-			debug("button 2 released\n");
+			pms->log(MSG_DEBUG, 0, "button 2 released\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON2_CLICKED)
 		{
-			debug("button 2 clicked\n");
+			pms->log(MSG_DEBUG, 0, "button 2 clicked\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON2_DOUBLE_CLICKED)
 		{
-			debug("button 2 doubleclicked\n");
+			pms->log(MSG_DEBUG, 0, "button 2 doubleclicked\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON2_TRIPLE_CLICKED)
 		{
-			debug("button 2 tripleclicked\n");
+			pms->log(MSG_DEBUG, 0, "button 2 tripleclicked\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON3_PRESSED)
 		{
-			debug("button 3 down\n");
+			pms->log(MSG_DEBUG, 0, "button 3 down\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON3_RELEASED)
 		{
-			debug("button 3 released\n");
+			pms->log(MSG_DEBUG, 0, "button 3 released\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON3_CLICKED)
 		{
-			debug("button 3 clicked\n");
+			pms->log(MSG_DEBUG, 0, "button 3 clicked\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON3_DOUBLE_CLICKED)
 		{
-			debug("button 3 doubleclicked\n");
+			pms->log(MSG_DEBUG, 0, "button 3 doubleclicked\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON3_TRIPLE_CLICKED)
 		{
-			debug("button 3 tripleclicked\n");
+			pms->log(MSG_DEBUG, 0, "button 3 tripleclicked\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON4_PRESSED)
 		{
-			debug("button 4 down\n");
+			pms->log(MSG_DEBUG, 0, "button 4 down\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON4_RELEASED)
 		{
-			debug("button 4 released\n");
+			pms->log(MSG_DEBUG, 0, "button 4 released\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON4_CLICKED)
 		{
-			debug("button 4 clicked\n");
+			pms->log(MSG_DEBUG, 0, "button 4 clicked\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON4_DOUBLE_CLICKED)
 		{
-			debug("button 4 doubleclicked\n");
+			pms->log(MSG_DEBUG, 0, "button 4 doubleclicked\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON4_TRIPLE_CLICKED)
 		{
-			debug("button 4 tripleclicked\n");
+			pms->log(MSG_DEBUG, 0, "button 4 tripleclicked\n");
 			return PEND_NONE;
 		}
 #if NCURSES_MOUSE_VERSION > 1
 		else if (mouseevent.bstate & BUTTON5_PRESSED)
 		{
-			debug("button 5 down\n");
+			pms->log(MSG_DEBUG, 0, "button 5 down\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON5_RELEASED)
 		{
-			debug("button 5 released\n");
+			pms->log(MSG_DEBUG, 0, "button 5 released\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON5_CLICKED)
 		{
-			debug("button 5 clicked\n");
+			pms->log(MSG_DEBUG, 0, "button 5 clicked\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON5_DOUBLE_CLICKED)
 		{
-			debug("button 5 doubleclicked\n");
+			pms->log(MSG_DEBUG, 0, "button 5 doubleclicked\n");
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON5_TRIPLE_CLICKED)
 		{
-			debug("button 5 tripleclicked\n");
+			pms->log(MSG_DEBUG, 0, "button 5 tripleclicked\n");
 			return PEND_NONE;
 		}
 #endif
 		else if (mouseevent.bstate & REPORT_MOUSE_POSITION)
 		{
-			debug("mouse position -- what does this do?\n");
+			pms->log(MSG_DEBUG, 0, "mouse position -- what does this do?\n");
 			return PEND_NONE;
 		}
 		else
 		{
-			debug("mevent state (%d) unknown\n", mouseevent.bstate);
+			pms->log(MSG_DEBUG, 0, "mevent state (%d) unknown\n", mouseevent.bstate);
 			return PEND_NONE;
 		}
 	}
@@ -575,7 +575,7 @@ pms_pending_keys	Input::dispatch_normal()
 	if (pending == PEND_NONE)
 	{
 		pms->log(MSG_STATUS, STERR, _("Key is not bound."));
-		debug("Key %3d '%c' pressed but not bound.\n", ch, ch);
+		pms->log(MSG_DEBUG, 0, "Key %3d '%c' pressed but not bound.\n", ch, ch);
 	}
 
 	return pending;
@@ -618,10 +618,10 @@ bool		Input::run(string s, Message & err)
 	{
 		param = s.substr(pos + 1);
 		s = s.substr(0, pos);
-		debug("Running command '%s' with param '%s'\n", s.c_str(), param.c_str());
+		pms->log(MSG_DEBUG, 0, "Running command '%s' with param '%s'\n", s.c_str(), param.c_str());
 	}
 	else
-		debug("Running command '%s' without parameters\n", s.c_str());
+		pms->log(MSG_DEBUG, 0, "Running command '%s' without parameters\n", s.c_str());
 
 	pending = pms->commands->act(s);
 

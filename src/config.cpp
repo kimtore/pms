@@ -273,7 +273,7 @@ bool			Bindings::add(string b, string command)
 	/*
 	if (pms->options)
 	{
-		debug("Mapping key %3d to action %d '%s' with parameter '%s'\n", i, k, command.c_str(), par.c_str());
+		pms->log(MSG_DEBUG, 0, "Mapping key %3d to action %d '%s' with parameter '%s'\n", i, k, command.c_str(), par.c_str());
 	}
 	*/
 
@@ -412,7 +412,7 @@ bool			Configurator::source(string fn)
 		return false;
 	}
 
-	debug("Reading configuration file %s\n", fn.c_str());
+	pms->log(MSG_DEBUG, 0, "Reading configuration file %s\n", fn.c_str());
 
 	while (fgets(buffer, 1024, fd) != NULL)
 	{
@@ -426,7 +426,7 @@ bool			Configurator::source(string fn)
 		pms->msg->str = "line " + Pms::tostring(line) + ": " + pms->msg->str;
 	}
 
-	debug("Finished reading configuration file.\n");
+	pms->log(MSG_DEBUG, 0, "Finished reading configuration file.\n");
 
 	fclose(fd);
 
@@ -547,7 +547,9 @@ bool			Configurator::readline(string buffer)
 			if (tok->size() == 2)
 			{
 				//check for various prefixes/suffixes
-				if (proc.substr(proc.length() - 1, 1) == "?" && pms->options->get_type(proc.substr(0, proc.length() - 1)) != SETTING_TYPE_EINVAL)
+				if (pms->options->get_type(proc) == SETTING_TYPE_BOOLEAN)
+					return pms->options->set(proc, "true");
+				else if (proc.substr(proc.length() - 1, 1) == "?" && pms->options->get_type(proc.substr(0, proc.length() - 1)) != SETTING_TYPE_EINVAL)
 				{
 					pms->options->dump(proc.substr(0, proc.length() - 1));
 					return false;
@@ -558,8 +560,6 @@ bool			Configurator::readline(string buffer)
 					return pms->options->toggle(proc.substr(3));
 				else if (proc.substr(proc.length() - 1, 1) == "!" && pms->options->get_type(proc.substr(0, proc.length() - 1)) == SETTING_TYPE_BOOLEAN)
 					return pms->options->toggle(proc.substr(0, proc.length() - 1));
-				else if (pms->options->get_type(proc) == SETTING_TYPE_BOOLEAN)
-					return pms->options->set(proc, "true");
 				else if (pms->options->get_type(proc) == SETTING_TYPE_EINVAL)
 					pms->msg->code = CERR_INVALID_IDENTIFIER;
 				else
@@ -580,7 +580,7 @@ bool			Configurator::readline(string buffer)
 		switch(pms->msg->code)
 		{
 			case CERR_NONE:
-				break;
+				return pms->options->set(proc, val);
 			case CERR_INVALID_IDENTIFIER:
 				pms->msg->str = _("invalid identifier");
 				pms->msg->str += " '" + proc + "'";
@@ -598,8 +598,6 @@ bool			Configurator::readline(string buffer)
 			default:
 				return false;
 		}
-
-		return pms->options->set(proc, val);
 	}
 	else if (proc == "bind" || proc == "map")
 	{

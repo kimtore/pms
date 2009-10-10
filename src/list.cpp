@@ -245,7 +245,7 @@ song_t		Songlist::findentry(Item field, bool reverse)
 	i = match(cmp[0], i, i - 1, mode | MATCH_NOT | MATCH_EXACT);
 	if (i == MATCH_FAILED)
 	{
-		debug("gotonextentry() fails with mode = %d\n", mode);
+		pms->log(MSG_DEBUG, 0, "gotonextentry() fails with mode = %d\n", mode);
 		return i;
 	}
 
@@ -294,7 +294,7 @@ void		Songlist::truncate(unsigned int maxsize)
 {
 	unsigned int	i;
 
-//	debug("Truncating %p, maxsize=%d: ...\n", this, maxsize);
+//	pms->log(MSG_DEBUG, 0, "Truncating %p, maxsize=%d: ...\n", this, maxsize);
 	
 	if (maxsize == 0)
 	{
@@ -304,7 +304,7 @@ void		Songlist::truncate(unsigned int maxsize)
 
 	for (i = end(); i >= maxsize; i--)
 	{
-//		debug("...removing %d: %s\n", i, songs[i]->file.c_str());
+//		pms->log(MSG_DEBUG, 0, "...removing %d: %s\n", i, songs[i]->file.c_str());
 		remove(static_cast<int>(i));
 	}
 }
@@ -347,7 +347,7 @@ song_t		Songlist::add(Song * song)
 	else
 	{
 		i = songs.begin() + song->pos;
-		if (songs[song->pos]->pos == song->pos)
+		if (songs[song->pos]->pos == song->pos)	/* FIXME: random crash here? */
 		{
 			i = songs.erase(songs.begin() + song->pos);
 		}

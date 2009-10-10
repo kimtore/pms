@@ -52,28 +52,13 @@ int main(int argc, char *argv[])
 }
 
 /*
- * Pass string to stderr.
- * DEPRECATED: please use pms->log(MSG_DEBUG, ...) instead.
- */
-void debug(const char * format, ...)
-{
-	va_list		ap;
-
-	va_start(ap, format);
-	pms->log(MSG_DEBUG, 0, format, ap);
-}
-
-
-
-
-
-/*
  * Init
  */
 Pms::Pms(int c, char **v)
 {
 	argc = c;
 	argv = v;
+	disp = NULL;
 }
 
 /*
@@ -752,13 +737,13 @@ bool			Pms::run_shell(string cmd, Message & err)
 		}
 	}
 
-	//debug("running shell command '%s'\n", cmd.c_str());
+	//pms->log(MSG_DEBUG, 0, "running shell command '%s'\n", cmd.c_str());
 	endwin();
 
 	err.code = system(cmd.c_str());
 	err.code = WEXITSTATUS(err.code);
 
-	debug("Shell returned %d\n", err.code);
+	pms->log(MSG_DEBUG, 0, "Shell returned %d\n", err.code);
 	if (err.code != 0)
 		printf(_("\nShell returned %d\n"), err.code);
 
@@ -1036,7 +1021,7 @@ bool			Pms::progress_nextsong()
 	{
 		if (remaining <= options->get_long("stopdelay"))
 		{
-			debug("Manual playmode, stopping playback.\n");
+			pms->log(MSG_DEBUG, 0, "Manual playmode, stopping playback.\n");
 			comm->stop();
 			lastid = cursong()->id;
 			return true;
@@ -1067,12 +1052,12 @@ bool			Pms::progress_nextsong()
 				return false;
 		}
 
-		debug("Auto-progressing to next song.\n");
+		pms->log(MSG_DEBUG, 0, "Auto-progressing to next song.\n");
 
 		/* Playback follows cursor */
 		if (options->get_bool("followcursor") && lastcursor != disp->cursorsong() && disp->cursorsong()->file != cursong()->file)
 		{
-			debug("Playback follows cursor: last cursor=%p, now cursor=%p.\n", lastcursor, disp->cursorsong());
+			pms->log(MSG_DEBUG, 0, "Playback follows cursor: last cursor=%p, now cursor=%p.\n", lastcursor, disp->cursorsong());
 			lastcursor = disp->cursorsong();
 			lastid = comm->add(comm->playlist(), lastcursor);
 		}

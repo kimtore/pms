@@ -184,7 +184,7 @@ bool		Control::finish()
 
 	if (st->error != 0)
 	{
-		debug("MPD returned error %d: %s\n", st->error, st->errstr.c_str());
+		pms->log(MSG_DEBUG, 0, "MPD returned error %d: %s\n", st->error, st->errstr.c_str());
 
 		/* Connection closed */
 		if (st->error == MPD_ERROR_CONNCLOSED)
@@ -669,7 +669,7 @@ int		Control::remove(Songlist * list, Song * song)
 		pos = list->locatesong(song);
 		if (pos == MATCH_FAILED)
 			return false;
-		debug("Removing song %d from list.\n", pos);
+		pms->log(MSG_DEBUG, 0, "Removing song %d from list.\n", pos);
 	}
 
 	if (list == _playlist)
@@ -937,7 +937,7 @@ int		Control::prune(Songlist * list1, Songlist * list2)
 	{
 		if (list2->match(list1->songs[i]->file, 0, list2->size() - 1, MATCH_FILE) == MATCH_FAILED)
 		{
-			debug("Pruning '%s' from list.\n", list1->songs[i]->file.c_str());
+			pms->log(MSG_DEBUG, 0, "Pruning '%s' from list.\n", list1->songs[i]->file.c_str());
 			list1->remove(i);
 			++pruned;
 		}
@@ -996,7 +996,7 @@ bool		Control::get_status()
 
 	if (!st->alive())
 	{
-		debug("get_status returned NULL pointer.\n");
+		pms->log(MSG_DEBUG, 0, "get_status returned NULL pointer.\n");
 		delete _song;
 		_song = NULL;
 		st->song = MPD_SONG_NO_NUM;
@@ -1018,8 +1018,8 @@ bool		Control::get_status()
 
 	if (st->db_update_time != st->last_db_update_time)
 	{
-		debug("DB time was updated from %d to %d\n", st->db_update_time, st->last_db_update_time);
-		debug("Server playlist version is now %d, local is %d\n", st->playlist, st->last_playlist);
+		pms->log(MSG_DEBUG, 0, "DB time was updated from %d to %d\n", st->db_update_time, st->last_db_update_time);
+		pms->log(MSG_DEBUG, 0, "Server playlist version is now %d, local is %d\n", st->playlist, st->last_playlist);
 		st->last_db_update_time = st->db_update_time;
 		st->playlist = -1;
 		st->update_job_id = -1;
@@ -1052,7 +1052,7 @@ int		Control::update(bool force)
 	/* New playlist? */
 	if (st->playlist != st->last_playlist || st->last_playlist == -1)
 	{
-		debug("Playlist needs to be updated from version %d to %d\n", st->last_playlist, st->playlist);
+		pms->log(MSG_DEBUG, 0, "Playlist needs to be updated from version %d to %d\n", st->last_playlist, st->playlist);
 		update_playlist();
 		get_status();
 		st->last_playlist = st->playlist;
@@ -1125,7 +1125,7 @@ Directory *			Directory::add(string s)
 	}
 
 	/* Not found, this should _not_ happen */
-	debug("BUG: directory not found in hierarchy: '%s', '%s'\n", t.c_str(), s.c_str());
+	pms->log(MSG_DEBUG, 0, "BUG: directory not found in hierarchy: '%s', '%s'\n", t.c_str(), s.c_str());
 
 	return NULL;
 }
@@ -1136,12 +1136,12 @@ void		Directory::debug_tree()
 	vector<Directory *>::iterator	it;
 	vector<Song *>::iterator	is;
 
-	debug("Printing contents of %s\n", path().c_str());
+	pms->log(MSG_DEBUG, 0, "Printing contents of %s\n", path().c_str());
 
 	is = songs.begin();
 	while (is != songs.end())
 	{
-		debug("> %s\n", (*is)->file.c_str());
+		pms->log(MSG_DEBUG, 0, "> %s\n", (*is)->file.c_str());
 		++is;
 	}
 
@@ -1165,7 +1165,7 @@ void Control::update_library()
 
 	if (!alive())		return;
 
-	debug("Retrieving library from mpd...\n");
+	pms->log(MSG_DEBUG, 0, "Retrieving library from mpd...\n");
 	_library->clear();
 
 	mpd_sendListallInfoCommand(conn->h(), "/");
@@ -1180,7 +1180,7 @@ void Control::update_library()
 				break;
 			case MPD_INFO_ENTITY_TYPE_PLAYLISTFILE:
 				/* Should not receive this here. */
-				debug("BUG: Got playlist entity in update_library(): %s\n", ent->info.playlistFile->path);
+				pms->log(MSG_DEBUG, 0, "BUG: Got playlist entity in update_library(): %s\n", ent->info.playlistFile->path);
 				break;
 			case MPD_INFO_ENTITY_TYPE_DIRECTORY:
 				dir = rootdir->add(ent->info.directory->path);
@@ -1212,13 +1212,13 @@ unsigned int	Control::update_playlists()
 
 	if (!alive()) return 0;
 
-	debug("Refreshing playlists.\n");
+	pms->log(MSG_DEBUG, 0, "Refreshing playlists.\n");
 	mpd_sendLsInfoCommand(conn->h(), "/");
 	while ((ent = mpd_getNextInfoEntity(conn->h())) != NULL)
 	{
 		if (ent->type == MPD_INFO_ENTITY_TYPE_PLAYLISTFILE)
 		{
-			debug("Got playlist entity: %s\n", ent->info.playlistFile->path);
+			pms->log(MSG_DEBUG, 0, "Got playlist entity: %s\n", ent->info.playlistFile->path);
 			list = findplaylist(ent->info.playlistFile->path);
 			if (!list)
 			{
@@ -1240,7 +1240,7 @@ unsigned int	Control::update_playlists()
 			++i;
 		}
 
-		debug("Server returned %d new playlists, sums to total of of %d custom playlists.\n", newlist.size(), playlists.size());
+		pms->log(MSG_DEBUG, 0, "Server returned %d new playlists, sums to total of of %d custom playlists.\n", newlist.size(), playlists.size());
 	}
 
 	return playlists.size();
@@ -1315,7 +1315,7 @@ Songlist *	Control::newplaylist(string fn)
 		delete list;
 		return NULL;
 	}
-	debug("newplaylist(): created playlist '%s'\n", fn.c_str());
+	pms->log(MSG_DEBUG, 0, "newplaylist(): created playlist '%s'\n", fn.c_str());
 	list->filename = fn;
 	playlists.push_back(list);
 	return list;
@@ -1421,7 +1421,7 @@ void		Control::update_playlist()
 
 	if (!alive())		return;
 
-	debug("Quering playlist changes.\n");
+	pms->log(MSG_DEBUG, 0, "Quering playlist changes.\n");
 
 	if (st->last_playlist == -1)
 	{

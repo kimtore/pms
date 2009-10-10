@@ -24,6 +24,8 @@
 #include "conn.h"
 #include "pms.h"
 
+extern Pms *	pms;
+
 
 Connection::Connection(string n_hostname, long n_port, long n_timeout)
 {
@@ -76,7 +78,7 @@ bool		Connection::connected()
 
 int Connection::connect()
 {
-	debug("Connecting to %s:%d, handle=%p...\n", host.c_str(), port, handle);
+	pms->log(MSG_DEBUG, 0, "Connecting to %s:%d, handle=%p...\n", host.c_str(), port, handle);
 	if (handle != NULL)
 	{
 		if (handle->error == 0)
@@ -88,7 +90,7 @@ int Connection::connect()
 	if (handle == NULL)
 	{
 		handle = mpd_newConnection(host.c_str(), port, timeout);
-		debug("New connection handle is %p, error code %d\n", handle, handle->error);
+		pms->log(MSG_DEBUG, 0, "New connection handle is %p, error code %d\n", handle, handle->error);
 		error = handle->error;
 
 		return error;
@@ -99,7 +101,7 @@ int Connection::connect()
 
 int Connection::disconnect()
 {
-	debug("Closing connection.\n");
+	pms->log(MSG_DEBUG, 0, "Closing connection.\n");
 	if (handle != NULL)
 	{
 		mpd_closeConnection(handle);

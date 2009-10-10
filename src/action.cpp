@@ -290,7 +290,7 @@ bool		handle_command(pms_pending_keys action)
 			if (!list) return false;
 			song = list->cursorsong();
 			if (song == NULL) return false;
-			debug("Playing song with id=%d pos=%d filename=%s\n", song->id, song->pos, song->file.c_str());
+			pms->log(MSG_DEBUG, 0, "Playing song with id=%d pos=%d filename=%s\n", song->id, song->pos, song->file.c_str());
 			i = song->id;
 			if (i == MPD_SONG_NO_ID)
 			{
@@ -343,7 +343,7 @@ bool		handle_command(pms_pending_keys action)
 			/* Add list to list */
 			if (win && win->type() == WIN_ROLE_WINDOWLIST && win->current() && pms->input->win == NULL && action == PEND_ADD)
 			{
-				debug("Adding list to list.\n");
+				pms->log(MSG_DEBUG, 0, "Adding list to list.\n");
 				list = win->current()->plist();
 				pms->comm->add(list, pms->comm->playlist());
 				pms->log(MSG_STATUS, STOK, "%d songs from %s appended to playlist.", list->size(), list->filename.c_str());
@@ -363,7 +363,7 @@ bool		handle_command(pms_pending_keys action)
 						pms->log(MSG_STATUS, STERR, "Not supported. Please select the songs you want to add before using the add-to command.");
 						break;
 					}
-					debug("Storing window parameters: win=%p\n", win);
+					pms->log(MSG_DEBUG, 0, "Storing window parameters: win=%p\n", win);
 					pms->input->winstore(win);
 					setwin(pms->disp->create_windowlist());
 					break;
@@ -371,7 +371,7 @@ bool		handle_command(pms_pending_keys action)
 				if (win->current())
 					dlist = win->current()->plist();
 
-				debug("Returned window parameters: win=%p, destination list=%p\n", win->current(), dlist);
+				pms->log(MSG_DEBUG, 0, "Returned window parameters: win=%p, destination list=%p\n", win->current(), dlist);
 
 				if (dlist == NULL)
 				{
@@ -411,7 +411,7 @@ bool		handle_command(pms_pending_keys action)
 			song = list->popnextselected();
 			while (song != NULL)
 			{
-				debug("Adding song at %p with id=%d pos=%d filename=%s\n", song, song->id, song->pos, song->file.c_str());
+				pms->log(MSG_DEBUG, 0, "Adding song at %p with id=%d pos=%d filename=%s\n", song, song->id, song->pos, song->file.c_str());
 				if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID)
 					++i;
 				else
@@ -547,7 +547,7 @@ bool		handle_command(pms_pending_keys action)
 					break;
 			}
 
-			debug("Repeatmode set to %d\n", pms->options->get_long("repeatmode"));
+			pms->log(MSG_DEBUG, 0, "Repeatmode set to %d\n", pms->options->get_long("repeatmode"));
 
 			/* Have MPD manage repeat inside playlist */
 			pms->comm->repeat(pms->options->get_long("repeatmode") == REPEAT_LIST && pms->comm->activelist() == pms->comm->playlist());
@@ -691,7 +691,7 @@ bool		handle_command(pms_pending_keys action)
 				}
 				else if (!pms->config->readline(pms->input->text))
 				{
-					if (err.code == CERR_NONE)
+					if (pms->msg->code == CERR_NONE)
 						pms->log(MSG_STATUS, STOK, "  %s", pms->msg->str.c_str());
 					else
 						pms->log(MSG_STATUS, STERR, _("Error %d: %s"), pms->msg->code, pms->msg->str.c_str());
@@ -896,11 +896,11 @@ bool		handle_command(pms_pending_keys action)
 			case -3:
 			default:
 				pms->log(MSG_STATUS, STERR, "Internal error: can't create a window.");
-				debug("Window creation failed in PEND_CREATEPLAYLIST, win=%p list=%p\n", win, list);
+				pms->log(MSG_DEBUG, 0, "Window creation failed in PEND_CREATEPLAYLIST, win=%p list=%p\n", win, list);
 				break;
 			case -4:
 				pms->log(MSG_STATUS, STERR, "Internal error: can't find the right window.");
-				debug("Window search failed in PEND_CREATEPLAYLIST, win=%p list=%p\n", win, list);
+				pms->log(MSG_DEBUG, 0, "Window search failed in PEND_CREATEPLAYLIST, win=%p list=%p\n", win, list);
 			}
 			break;
 
@@ -1090,18 +1090,18 @@ bool		handle_command(pms_pending_keys action)
 			song = pms->disp->cursorsong();
 			if (!win || !list || !song) break;
 			pms->log(MSG_STATUS, STOK, "%d/%d/%d: %s", list->cursor() + 1, song->id, song->pos, song->file.c_str());
-			debug("--- info for %s ---\n", song->file.c_str());
-			debug("artist *\t\t%s\n", song->artist.c_str());
-			debug("albumartist *\t\t%s\n", song->albumartist.c_str());
-			debug("albumartistsort *\t%s\n", song->albumartistsort.c_str());
-			debug("date *\t\t\t%s\n", song->date.c_str());
-			debug("year *\t\t\t%s\n", song->year.c_str());
-			debug("artistsort *\t%s\n", song->artistsort.c_str());
-			debug("title *\t\t\t%s\n", song->title.c_str());
-			debug("album *\t\t\t%s\n", song->album.c_str());
-			debug("track *\t\t\t%s\n", song->track.c_str());
-			debug("disc *\t\t\t%s\n", song->disc.c_str());
-			debug("--- end of info ---\n");
+			pms->log(MSG_CONSOLE, 0, "--- info for %s ---\n", song->file.c_str());
+			pms->log(MSG_CONSOLE, 0, "artist *\t\t%s\n", song->artist.c_str());
+			pms->log(MSG_CONSOLE, 0, "albumartist *\t\t%s\n", song->albumartist.c_str());
+			pms->log(MSG_CONSOLE, 0, "albumartistsort *\t%s\n", song->albumartistsort.c_str());
+			pms->log(MSG_CONSOLE, 0, "date *\t\t\t%s\n", song->date.c_str());
+			pms->log(MSG_CONSOLE, 0, "year *\t\t\t%s\n", song->year.c_str());
+			pms->log(MSG_CONSOLE, 0, "artistsort *\t%s\n", song->artistsort.c_str());
+			pms->log(MSG_CONSOLE, 0, "title *\t\t\t%s\n", song->title.c_str());
+			pms->log(MSG_CONSOLE, 0, "album *\t\t\t%s\n", song->album.c_str());
+			pms->log(MSG_CONSOLE, 0, "track *\t\t\t%s\n", song->track.c_str());
+			pms->log(MSG_CONSOLE, 0, "disc *\t\t\t%s\n", song->disc.c_str());
+			pms->log(MSG_CONSOLE, 0, "--- end of info ---\n");
 			break;
 
 		/* Program specific */

@@ -313,7 +313,7 @@ string			Formatter::evalconditionals(string fmt)
 
 								default:
 									//shouldn't be here
-									debug("error: didn't know how to evaluate condition. assuming true\n");
+									pms->log(MSG_DEBUG, 0, "error: didn't know how to evaluate condition. assuming true\n");
 									satisfied = true;
 									break;
 							}
@@ -329,15 +329,15 @@ string			Formatter::evalconditionals(string fmt)
 					}
 					endif_start = endif_next;
 				}
-				debug("error: no matching endif\n");
+				pms->log(MSG_DEBUG, 0, "error: no matching endif\n");
 				return "";
 
 			case COND_ELSE:
-				debug("error: found else before if\n");
+				pms->log(MSG_DEBUG, 0, "error: found else before if\n");
 				return "";
 
 			case COND_ENDIF:
-				debug("error: found endif before if\n");
+				pms->log(MSG_DEBUG, 0, "error: found endif before if\n");
 				return "";
 
 			default:

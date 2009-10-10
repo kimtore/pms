@@ -228,7 +228,7 @@ bool		Options::set(string key, string val)
 {
 	Setting *	s;
 
-	debug("set: Setting option '%s'='%s'\n", key.c_str(), val.c_str());
+	pms->log(MSG_DEBUG, 0, "set: Setting option '%s'='%s'\n", key.c_str(), val.c_str());
 	pms->msg->clear();
 
 	if (key.size() > 6 && key.substr(0, 6) == "topbar")
@@ -539,7 +539,7 @@ string		Options::dump(Setting * s)
 			break;
 
 		case SETTING_TYPE_BOOLEAN:
-			if (s->v_bool)
+			if (!(s->v_bool))
 				r = "no";
 			r += s->key;
 			break;
