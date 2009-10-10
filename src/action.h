@@ -57,8 +57,11 @@ public:
 	long			shell(string);
 	long			show_info();
 
-	long			password();
-	long			update_db();
+	/*
+	 * MPD administrative
+	 */
+	long			password(string);
+	long			update_db(string);
 	long			setvolume();
 	long			mute();
 	long			crossfade();

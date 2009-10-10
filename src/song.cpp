@@ -189,15 +189,12 @@ string		Song::dirname()
 	string		ret = "";
 	size_t		p;
 
-	if (path.size() == 0)
+	if (file.size() == 0)
 		return ret;
 
-	p = path.find_last_of("/\\");
+	p = file.find_last_of("/\\");
 	if (p == string::npos)
 		return ret;
 
-	if (p < path.size() - 1)
-		--p;
-
-	return p.substr(0, p);
+	return file.substr(0, p);
 }

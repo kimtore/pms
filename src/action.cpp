@@ -59,6 +59,10 @@ bool		Interface::check_events()
 		case PEND_NONE:
 			return false;
 
+		/*
+		 * PMS specific stuff
+		 */
+
 		case PEND_VERSION:
 			version();
 			break;
@@ -89,6 +93,17 @@ bool		Interface::check_events()
 
 		case PEND_SHOW_INFO:
 			show_info();
+			break;
+
+		/*
+		 * MPD admin
+		 */
+		case PEND_PASSWORD:
+			password(param);
+			break;
+
+		case PEND_UPDATE_DB:
+			update_db(param);
 			break;
 	}
 
@@ -229,6 +244,105 @@ long		Interface::show_info()
 
 	return STOK;
 }
+
+/*
+ * Send a password to MPD
+ */
+long		Interface::password(string pass)
+{
+	if (pass.size() == 0)
+	{
+		pms->log(MSG_STATUS, STERR, _("You have to specify a password."));
+		return STERR;
+	}
+	if (pms->comm->sendpassword(pass))
+	{
+		pms->log(MSG_STATUS, STOK, _("Password accepted by mpd."));
+		pms->options->set_string("password", pms->input->param);
+		return STOK;
+	}
+	else
+	{
+		generr();
+		return STERR;
+	}
+}
+
+/*
+ * Update mpd's library.
+ * If location is empty, update everything.
+ * location 'this' means the selected (cursor) song.
+ * location 'current' means the currently playing song.
+ * location 'thisdir' means the selected (cursor) song's directory.
+ * location 'currentdir' means the currently playing song's directory.
+ */
+long		Interface::update_db(string location)
+{
+	string		libroot;
+
+	libroot = pms->options->get_string("libraryroot");
+
+	if (location.size() > 0)
+	{
+		if (location == "this" && pms->disp && pms->disp->cursorsong())
+		{
+			location = pms->disp->cursorsong()->file;
+			pms->log(MSG_DEBUG, STOK, "Encountered location 'this', translating to %s\n", location.c_str());
+		}
+		else if (location == "current" && pms->cursong())
+		{
+			location = pms->cursong()->file;
+			pms->log(MSG_DEBUG, STOK, "Encountered location 'current', translating to %s\n", location.c_str());
+		}
+		else if (location == "thisdir" && pms->disp && pms->disp->cursorsong())
+		{
+			location = pms->disp->cursorsong()->dirname();
+			pms->log(MSG_DEBUG, STOK, "Encountered location 'thisdir', translating to %s\n", location.c_str());
+		}
+		else if (location == "currentdir" && pms->cursong())
+		{
+			location = pms->cursong()->dirname();
+			pms->log(MSG_DEBUG, STOK, "Encountered location 'currentdir', translating to %s\n", location.c_str());
+		}
+		else if (libroot.size() > 0)
+		{
+			if (location.substr(0, libroot.size()) == libroot && location.size() > libroot.size())
+			{
+				location = location.substr(libroot.size());
+				pms->log(MSG_DEBUG, STOK, "Encountered library root in update parameter, stripping to %s\n", location.c_str());
+			}
+		}
+	}
+	else
+	{
+		location = "/";
+	}
+
+	if (pms->comm->rescandb(location))
+	{
+		if (location == "/")
+			pms->log(MSG_STATUS, STOK, _("Scanning entire library for changes..."));
+		else
+			pms->log(MSG_STATUS, STOK, _("Scanning '%s' for changes..."), location.c_str());
+
+		return STOK;
+	}
+	else if (pms->comm->status()->db_updating)
+	{
+		pms->log(MSG_STATUS, STERR, _("A library update is already in progress. Please wait for it to finish first."));
+	}
+	else
+	{
+		generr();
+	}
+
+	return STERR;
+}
+
+
+
+
+
 
 
 /*
@@ -1175,36 +1289,6 @@ bool		handle_command(pms_pending_keys action)
 
 		/* Other */
 
-		case PEND_UPDATE:
-			if (pms->comm->rescandb())
-				pms->log(MSG_STATUS, STOK, "Scanning library for changes...");
-			else
-			{
-				if (pms->comm->status()->db_updating)
-					pms->log(MSG_STATUS, STERR, _("A library update is already in progress."));
-				else
-					generr();
-			}
-			break;
-
-
-		/* Specify a (new) password */
-		case PEND_PASSWORD:
-			if (pms->input->param.size() == 0)
-			{
-				pms->log(MSG_STATUS, STERR, _("You have to specify a password."));
-				break;
-			}
-			if (pms->comm->sendpassword(pms->input->param))
-			{
-				pms->log(MSG_STATUS, STOK, _("Password accepted by mpd."));
-				pms->options->set_string("password", pms->input->param);
-			}
-			else
-			{
-				generr();
-			}
-			break;
 
 		/* Cycle through between linear play, random and play single song */
 		case PEND_CYCLE_PLAYMODE:
@@ -1575,7 +1659,7 @@ bool init_commandmap()
 	pms->commands->add("q", "Quit program", PEND_QUIT);
 
 	/* Playlist management */
-	pms->commands->add("update", "Update MPD music library", PEND_UPDATE);
+	pms->commands->add("update", "Update MPD music library", PEND_UPDATE_DB);
 	pms->commands->add("create", "Create an empty playlist", PEND_CREATEPLAYLIST);
 	pms->commands->add("save", "Save the playlist as a new playlist", PEND_SAVEPLAYLIST);
 	pms->commands->add("delete-list", "Delete the current playlist", PEND_DELETEPLAYLIST);

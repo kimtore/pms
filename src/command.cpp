@@ -1533,14 +1533,12 @@ int Control::get_current_playing()
 /*
  * Rescans entire library
  */
-bool		Control::rescandb()
+bool		Control::rescandb(string dest)
 {
-	char			dest[] = "/";
-
 	if (!alive())		return false;
 	if (st->db_updating)	return false;
 
-	mpd_sendUpdateCommand(conn->h(), dest);
+	mpd_sendUpdateCommand(conn->h(), dest.c_str());
 	st->update_job_id = mpd_getUpdateId(conn->h());
 
 	return finish();

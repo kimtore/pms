@@ -249,7 +249,7 @@ public:
 	/* Server management */
 	int			authlevel();
 	void			get_available_commands();
-	bool			rescandb();
+	bool			rescandb(string = "/");
 	bool			sendpassword(string);
 	void			clearerror();
 
