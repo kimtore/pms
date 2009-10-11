@@ -117,6 +117,14 @@ bool		Interface::check_events()
 		/*
 		 * Normal player actions
 		 */
+		case PEND_PAUSE:
+			pause(false);
+			break;
+
+		case PEND_TOGGLEPLAY:
+			pause(true);
+			break;
+
 		case PEND_NEXT:
 			next(false);
 			break;
@@ -494,12 +502,15 @@ long		Interface::prev()
 	return STOK;
 }
 
-long		Interface::pause()
+long		Interface::pause(bool tryplay = false)
 {
-}
-
-long		Interface::toggleplay()
-{
+	if (pms->comm->pause(tryplay))
+	{
+		pms->drawstatus();
+		return STOK;
+	}
+	pms->log(MSG_DEBUG, STERR, _("Unable to control play/pause state."));
+	return STERR;
 }
 
 long		Interface::stop()
@@ -980,16 +991,6 @@ bool		handle_command(pms_pending_keys action)
 			{
 				win->wantdraw = true;
 			}
-			pms->drawstatus();
-			break;
-
-		case PEND_PAUSE:
-			pms->comm->pause(false);
-			pms->drawstatus();
-			break;
-
-		case PEND_TOGGLEPLAY:
-			pms->comm->pause(true);
 			pms->drawstatus();
 			break;
 
