@@ -822,7 +822,7 @@ string			Pms::playstring()
 	bool		is_last;
 
 	long		playmode = options->get_long("playmode");
-	long		repeatmode = options->get_long("repeatmode");
+	long		repeatmode = options->get_long("repeat");
 
 	if (!comm->status() || !conn->connected())
 	{
@@ -1016,7 +1016,7 @@ bool			Pms::progress_nextsong()
 
 	remaining = (comm->status()->time_total - comm->status()->time_elapsed - comm->status()->crossfade);
 
-	repeatmode = options->get_long("repeatmode");
+	repeatmode = options->get_long("repeat");
 	playmode = options->get_long("playmode");
 
 	/* Repeat-one hack */

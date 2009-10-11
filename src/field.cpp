@@ -367,7 +367,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 
 	c = getcolor(keyword, f);
 	playmode = pms->options->get_long("playmode");
-	repeatmode = pms->options->get_long("repeatmode");
+	repeatmode = pms->options->get_long("repeat");
 
 	retstr = "";
 	switch(keyword)

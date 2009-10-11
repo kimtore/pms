@@ -95,7 +95,7 @@ Song *			Songlist::nextsong(song_t * id)
 	/* Wrap around */
 	if (++i >= static_cast<song_t>(size()))
 	{
-		if (pms->options->get_long("repeatmode") == REPEAT_LIST)
+		if (pms->options->get_long("repeat") == REPEAT_LIST)
 			i = 0;
 		else
 			return NULL;
@@ -140,7 +140,7 @@ Song *			Songlist::prevsong(song_t * id)
 	/* Wrap around */
 	if (--i < 0)
 	{
-		if (pms->options->get_long("repeatmode") == REPEAT_LIST)
+		if (pms->options->get_long("repeat") == REPEAT_LIST)
 			i = end();
 		else
 			return NULL;

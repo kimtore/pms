@@ -464,7 +464,7 @@ long		Interface::prev()
 	{
 		if (cs->pos <= 0)
 		{
-			if (pms->options->get_long("repeatmode") == REPEAT_LIST)
+			if (pms->options->get_long("repeat") == REPEAT_LIST)
 			{
 				i = pms->comm->playlist()->size();
 			}
@@ -609,7 +609,7 @@ long		Interface::seek(int seconds)
 	if (pms->comm->status()->time_elapsed + seconds >= pms->comm->status()->time_total)
 	{
 		/* Skip forward or loop if repeat-one */
-		if (pms->options->get_long("repeatmode") == REPEAT_ONE)
+		if (pms->options->get_long("repeat") == REPEAT_ONE)
 			pms->comm->playid(pms->cursong()->id);
 		else
 			playnext(pms->options->get_long("playmode"), true);
@@ -617,7 +617,7 @@ long		Interface::seek(int seconds)
 	else if (pms->comm->status()->time_elapsed + seconds < 0)
 	{
 		/* Skip backwards */
-		if (pms->options->get_long("repeatmode") == REPEAT_ONE)
+		if (pms->options->get_long("repeat") == REPEAT_ONE)
 		{
 			if (pms->comm->seek(pms->cursong()->time + seconds))
 				return STOK;
@@ -999,24 +999,24 @@ bool		handle_command(pms_pending_keys action)
 			break;
 
 		case PEND_REPEAT:
-			switch(pms->options->get_long("repeatmode"))
+			switch(pms->options->get_long("repeat"))
 			{
 				case REPEAT_NONE:
-					pms->options->set("repeatmode", "single");
+					pms->options->set("repeat", "single");
 					break;
 				case REPEAT_ONE:
-					pms->options->set("repeatmode", "yes");
+					pms->options->set("repeat", "yes");
 					break;
 				default:
 				case REPEAT_LIST:
-					pms->options->set("repeatmode", "no");
+					pms->options->set("repeat", "no");
 					break;
 			}
 
-			pms->log(MSG_DEBUG, 0, "Repeatmode set to %d\n", pms->options->get_long("repeatmode"));
+			pms->log(MSG_DEBUG, 0, "Repeatmode set to %d\n", pms->options->get_long("repeat"));
 
 			/* Have MPD manage repeat inside playlist */
-			pms->comm->repeat(pms->options->get_long("repeatmode") == REPEAT_LIST && pms->comm->activelist() == pms->comm->playlist());
+			pms->comm->repeat(pms->options->get_long("repeat") == REPEAT_LIST && pms->comm->activelist() == pms->comm->playlist());
 
 			pms->drawstatus();
 			break;

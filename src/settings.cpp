@@ -88,7 +88,7 @@ void		Options::reset()
 
 	set("scroll", SETTING_TYPE_SCROLL, "normal");
 	set("playmode", SETTING_TYPE_PLAYMODE, "linear");
-	set("repeatmode", SETTING_TYPE_REPEATMODE, "none");
+	set("repeat", SETTING_TYPE_REPEATMODE, "none");
 	set("columns", SETTING_TYPE_FIELDLIST, "artist track title album length");
 	set("librarysort", SETTING_TYPE_FIELDLIST, "track disc album date albumartistsort");
 

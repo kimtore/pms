@@ -1041,7 +1041,7 @@ bool		Control::get_status()
 	if (st->random)
 		pms->options->set_long("playmode", PLAYMODE_RANDOM);
 	if (st->repeat)
-		pms->options->set_long("repeatmode", REPEAT_LIST);
+		pms->options->set_long("repeat", REPEAT_LIST);
 
 	if (st->db_update_time != st->last_db_update_time)
 	{
@@ -1431,7 +1431,7 @@ bool		Control::activatelist(Songlist * list)
 	/* Have MPD manage random inside playlist */
 	if (changed)
 	{
-		repeat(pms->options->get_long("repeatmode") == REPEAT_LIST && activelist() == playlist());
+		repeat(pms->options->get_long("repeat") == REPEAT_LIST && activelist() == playlist());
 		random(pms->options->get_long("playmode") == PLAYMODE_RANDOM && activelist() == playlist());
 	}
 
