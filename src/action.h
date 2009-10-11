@@ -95,8 +95,7 @@ public:
 	long			add(); // play + add to, add all
 	long			next(bool);
 	long			prev();
-	long			pause();
-	long			toggleplay();
+	long			pause(bool);
 	long			stop();
 	long			remove();
 	long			move();

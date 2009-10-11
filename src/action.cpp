@@ -117,6 +117,10 @@ bool		Interface::check_events()
 		/*
 		 * Normal player actions
 		 */
+		case PEND_PLAY:
+			play();
+			break;
+
 		case PEND_PAUSE:
 			pause(false);
 			break;
@@ -431,8 +435,41 @@ long		Interface::update_db(string location)
  */
 
 
+/*
+ * Play song under cursor
+ */
 long		Interface::play()
 {
+	Songlist *	list;
+	Song *		song;
+	song_t		s;
+
+	list = pms->disp->actwin()->plist();
+	if (!list) return STERR;
+
+	song = list->cursorsong();
+	if (song == NULL) return STERR;
+
+	pms->log(MSG_CONSOLE, STOK, "Playing %s\n", song->file.c_str());
+
+	s = song->id;
+
+	if (song->id == MPD_SONG_NO_ID)
+	{
+		s = pms->comm->add(pms->comm->playlist(), song);
+		if (s == MPD_SONG_NO_ID)
+		{
+			generr();
+			return STERR;
+		}
+	}
+	if (pms->comm->playid(s))
+	{
+		pms->drawstatus();
+		return STOK;
+	}
+	generr();
+	return STOK;
 }
 
 long		Interface::add()
@@ -453,6 +490,10 @@ long		Interface::next(bool ignore_playmode = false)
 	return STOK;
 }
 
+/*
+ * Skip to the previous song in playlist.
+ * If repeat is set to REPEAT_LIST, wrap around.
+ */
 long		Interface::prev()
 {
 	Song *		cs;
@@ -502,6 +543,10 @@ long		Interface::prev()
 	return STOK;
 }
 
+/*
+ * Pause playback.
+ * If tryplay is true, toggle playback instead.
+ */
 long		Interface::pause(bool tryplay = false)
 {
 	if (pms->comm->pause(tryplay))
@@ -513,8 +558,18 @@ long		Interface::pause(bool tryplay = false)
 	return STERR;
 }
 
+/*
+ * Stop playback.
+ */
 long		Interface::stop()
 {
+	if (pms->comm->stop())
+	{
+		pms->drawstatus();
+		return STOK;
+	}
+	generr();
+	return STERR;
 }
 
 /*
@@ -528,8 +583,8 @@ long		Interface::setvolume(string vol)
 
 	if (vol.size() == 0)
 	{
-		pms->log(MSG_STATUS, STERR, _("Unexpected end of line, expected sign or integer value."));
-		return STERR;
+		pms->log(MSG_STATUS, STOK, _("Volume: %d%%%%"), pms->comm->status()->volume);
+		return STOK;
 	}
 	if (vol[0] != '+' && vol[0] != '-')
 	{
@@ -677,6 +732,7 @@ bool		handle_command(pms_pending_keys action)
 	song_t		sn = 0;
 	string		s;
 
+	/* FIXME */
 	{
 		pms->interface->action = action;
 		pms->interface->param = pms->input->param;
@@ -788,39 +844,6 @@ bool		handle_command(pms_pending_keys action)
 			win->wantdraw = true;
 			break;
 
-		case PEND_STOP:
-			if (!pms->comm->stop())
-			{
-				generr();
-				return false;
-			}
-
-			pms->drawstatus();
-			break;
-
-		case PEND_PLAY:
-			if (!list) return false;
-			song = list->cursorsong();
-			if (song == NULL) return false;
-			pms->log(MSG_DEBUG, 0, "Playing song with id=%d pos=%d filename=%s\n", song->id, song->pos, song->file.c_str());
-			i = song->id;
-			if (i == MPD_SONG_NO_ID)
-			{
-				i = pms->comm->add(pms->comm->playlist(), song);
-				if (i == MPD_SONG_NO_ID)
-				{
-					generr();
-					return false;
-				}
-			}
-			if (!pms->comm->playid(i))
-			{
-				generr();
-				return false;
-			}
-
-			pms->drawstatus();
-			break;
 
 		case PEND_PLAYALBUM:
 			multiplay(MATCH_ALBUM, 0);
