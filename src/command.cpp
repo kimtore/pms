@@ -869,7 +869,13 @@ int		Control::crossfade(int interval)
 
 	crossfadetime = interval;
 	mpd_sendCrossfadeCommand(conn->h(), crossfadetime);
-	return finish();
+
+	if (finish())
+	{
+		st->crossfade = crossfadetime;
+		return st->crossfade;
+	}
+	return -1;
 }
 
 /*

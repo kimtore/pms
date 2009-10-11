@@ -114,12 +114,35 @@ bool		Interface::check_events()
 			update_db(param);
 			break;
 
+		/*
+		 * Normal player actions
+		 */
+		case PEND_NEXT:
+			next(false);
+			break;
+
+		case PEND_REALLY_NEXT:
+			next(true);
+			break;
+
+		case PEND_PREV:
+			prev();
+			break;
+
 		case PEND_VOLUME:
 			setvolume(param);
 			break;
 
 		case PEND_MUTE:
 			mute();
+			break;
+
+		case PEND_CROSSFADE:
+			crossfade(atoi(param.c_str()));
+			break;
+
+		case PEND_SEEK:
+			seek(atoi(param.c_str()));
 			break;
 	}
 
@@ -394,6 +417,95 @@ long		Interface::update_db(string location)
 	return STERR;
 }
 
+
+/*
+ *************************** NORMAL PLAYER ACTIONS **************************
+ */
+
+
+long		Interface::play()
+{
+}
+
+long		Interface::add()
+{
+}
+
+/*
+ * Skip to the next song in line.
+ */
+long		Interface::next(bool ignore_playmode = false)
+{
+	if (playnext(ignore_playmode ? PLAYMODE_LINEAR : pms->options->get_long("playmode"), true) == MPD_SONG_NO_ID)
+	{
+		pms->log(MSG_STATUS, STERR, _("You have reached the end of the list."));
+		return STERR;
+	}
+	pms->drawstatus();
+	return STOK;
+}
+
+long		Interface::prev()
+{
+	Song *		cs;
+	song_t		i;
+
+	cs = pms->cursong();
+	if (cs == NULL)
+	{
+		if (pms->comm->playlist()->size() == 0)
+		{
+			pms->log(MSG_STATUS, STERR, _("Can't skip backwards - there are no songs in the playlist."));
+			return STERR;
+		}
+		i = pms->comm->activelist()->size();
+	}
+	else
+	{
+		if (cs->pos <= 0)
+		{
+			if (pms->options->get_long("repeatmode") == REPEAT_LIST)
+			{
+				i = pms->comm->playlist()->size();
+			}
+			else
+			{
+				pms->log(MSG_STATUS, STERR, _("No previous song."));
+				return STERR;
+			}
+		}
+		else
+		{
+			i = cs->pos;
+		}
+	}
+
+	--i;
+	if (i < 0 || i >= pms->comm->playlist()->size())
+	{
+		pms->log(MSG_CONSOLE, STERR, _("Previous song: out of range.\n"));
+		return STERR;
+	}
+
+	cs = pms->comm->playlist()->songs[i];
+	pms->comm->playid(cs->id);
+	pms->drawstatus();
+
+	return STOK;
+}
+
+long		Interface::pause()
+{
+}
+
+long		Interface::toggleplay()
+{
+}
+
+long		Interface::stop()
+{
+}
+
 /*
  * Set or adjust volume.
  * A pure integer value means set volume to this value.
@@ -452,6 +564,87 @@ long		Interface::mute()
 	return STOK;
 }
 
+/*
+ * Set crossfade time
+ */
+long		Interface::crossfade(int seconds)
+{
+	if (seconds == 0)
+	{
+		seconds = pms->comm->crossfade();
+		if (seconds == 0)
+			pms->log(MSG_STATUS, STOK, "Crossfade switched off."); 
+		else if (seconds > 0)
+			pms->log(MSG_STATUS, STOK, "Crossfade switched on and is set to %d seconds.", seconds);
+	}
+	else
+	{
+		seconds = pms->comm->crossfade(seconds);
+		if (seconds >= 0)
+			pms->log(MSG_STATUS, STOK, "Crossfade set to %d seconds.", seconds);
+	}
+	if (seconds == -1)
+	{
+		generr();
+		return STERR;
+	}
+	return STOK;
+}
+
+/*
+ * Seek in the current stream
+ */
+long		Interface::seek(int seconds)
+{
+	if (!pms->cursong() || pms->comm->status()->state < MPD_STATUS_STATE_PLAY)
+	{
+		pms->log(MSG_STATUS, STERR, _("Can't seek when player is stopped."));
+		return STERR;
+	}
+
+	if (seconds == 0)
+		return STERR;
+
+	/* Overflow handling */
+	if (pms->comm->status()->time_elapsed + seconds >= pms->comm->status()->time_total)
+	{
+		/* Skip forward or loop if repeat-one */
+		if (pms->options->get_long("repeatmode") == REPEAT_ONE)
+			pms->comm->playid(pms->cursong()->id);
+		else
+			playnext(pms->options->get_long("playmode"), true);
+	}
+	else if (pms->comm->status()->time_elapsed + seconds < 0)
+	{
+		/* Skip backwards */
+		if (pms->options->get_long("repeatmode") == REPEAT_ONE)
+		{
+			if (pms->comm->seek(pms->cursong()->time + seconds))
+				return STOK;
+		}
+		else
+		{
+			if (prev() == STOK)
+			{
+				pms->comm->update(true);
+				if (pms->comm->seek(pms->cursong()->time + seconds))
+					return STOK;
+			}
+			else
+			{
+				stop();
+			}
+		}
+	}
+	else
+	{
+		/* Normal seek */
+		if (pms->comm->seek(seconds))
+			return STOK;
+	}
+	generr();
+	return STERR;
+}
 
 
 
@@ -741,41 +934,6 @@ bool		handle_command(pms_pending_keys action)
 			win->wantdraw = true;
 			break;
 
-		case PEND_NEXT:
-			i = playnext(pms->options->get_long("playmode"), true);
-
-			if (i == MPD_SONG_NO_ID)
-				pms->log(MSG_STATUS, STERR, _("There is no next song."));
-			else
-				pms->drawstatus();
-			break;
-		case PEND_REALLY_NEXT:
-			if (playnext(PLAYMODE_LINEAR, true) == MPD_SONG_NO_ID)
-				pms->log(MSG_STATUS, STERR, _("There is no next song."));
-			else
-				pms->drawstatus();
-			break;
-
-		case PEND_PREV:
-			if (!pms->cursong()) return false;
-			if (pms->cursong()->pos <= 0)
-			{
-				if (pms->options->get_long("repeatmode") == REPEAT_LIST)
-					i = pms->comm->playlist()->size();
-				else
-					return false;
-			}
-			else
-			{
-				i = pms->comm->playlist()->match(Pms::tostring(pms->cursong()->pos), 0, pms->comm->playlist()->end(), MATCH_POS);
-			}
-			if (i == MATCH_FAILED || i == 0)
-				return false;
-			song = pms->comm->playlist()->songs[--i];
-			if (!song) return false;
-			pms->comm->playid(song->id);
-			pms->drawstatus();
-			break;
 
 		case PEND_PLAYRANDOM:
 		case PEND_ADDRANDOM:
@@ -878,75 +1036,6 @@ bool		handle_command(pms_pending_keys action)
 				pms->log(MSG_STATUS, STOK, "Playlist cropped.");
 			break;
 
-		case PEND_CROSSFADE:
-			i = atoi(pms->input->param.c_str());
-			if (pms->input->param.size() > 0)
-			{
-				if (!pms->comm->crossfade(i))
-					generr();
-				else
-					pms->log(MSG_STATUS, STOK, "Crossfade set to %d seconds.", i);
-			}
-			else
-			{
-				i = pms->comm->crossfade();
-				if (i == -1)
-					generr();
-				else if (i == 0)
-					pms->log(MSG_STATUS, STOK, "Crossfade switched off."); 
-				else
-					pms->log(MSG_STATUS, STOK, "Crossfade switched on and is set to %d seconds.", i);
-			}
-			break;
-
-		case PEND_SEEK:
-			if (!pms->cursong() || pms->comm->status()->state < MPD_STATUS_STATE_PLAY)
-			{
-				pms->log(MSG_STATUS, STERR, _("Not playing, can't seek."));
-			}
-			i = atoi(pms->input->param.c_str());
-			if (i == 0)
-			{
-				pms->log(MSG_STATUS, STERR, _("Seeking by %d seconds?"), i);
-				break;
-			}
-			/* Skip forward instead of loop */
-			if (pms->comm->status()->time_elapsed + i >= pms->comm->status()->time_total)
-			{
-				if (pms->options->get_long("repeatmode") == REPEAT_ONE)
-					pms->comm->playid(pms->cursong()->id);
-				else
-					playnext(pms->options->get_long("playmode"), true);
-			}
-			/* Skip backwards */
-			else if (pms->comm->status()->time_elapsed + i < 0)
-			{
-				if (pms->options->get_long("repeatmode") == REPEAT_ONE)
-				{
-					if (!pms->comm->seek(pms->cursong()->time + i))
-						generr();
-				}
-				else
-				{
-					if (handle_command(PEND_PREV))
-					{
-						pms->comm->update(true);
-						if (!pms->comm->seek(pms->cursong()->time + i))
-							generr();
-					}
-					else
-					{
-						handle_command(PEND_STOP);
-					}
-				}
-			}
-			else
-			{
-				if (!pms->comm->seek(i))
-					generr();
-			}
-
-			break;
 
 
 		/* Command-mode + searching*/

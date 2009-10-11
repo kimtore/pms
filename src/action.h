@@ -65,13 +65,6 @@ public:
 	long			password(string);
 	long			update_db(string);
 
-	long			setvolume(string);
-	long			mute();
-	long			crossfade();
-	long			seek();
-	long			cycle_playmode();
-	long			cycle_repeatmode();
-
 	long			set_input_mode(int); //command mode, jump mode, search mode
 
 	long			toggle();
@@ -89,17 +82,24 @@ public:
 	long			text_escape();
 
 	/*
-	 * List actions
+	 * Normal player actions
 	 */
+	long			setvolume(string);
+	long			mute();
+	long			crossfade(int);
+	long			seek(int);
+
+
+
 	long			play();	// play of type, too: playartist, playalbum, playrandom, etc
 	long			add(); // play + add to, add all
-	long			remove();
-	long			move();
-	long			next();
+	long			next(bool);
 	long			prev();
 	long			pause();
-	long			stop();
 	long			toggleplay();
+	long			stop();
+	long			remove();
+	long			move();
 	long			shuffle();
 	long			clear();
 	long			crop(); // crop playing and crop selection
@@ -107,6 +107,9 @@ public:
 	long			unselect();
 	long			toggleselect();
 	long			clearselection();
+
+	long			cycle_playmode();
+	long			cycle_repeatmode();
 
 	long			create_playlist();
 	long			save_playlist();
