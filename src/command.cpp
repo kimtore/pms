@@ -488,6 +488,27 @@ bool		Control::repeat(bool on)
 }
 
 /*
+ * Set an absolute volume
+ */
+bool		Control::setvolume(int vol)
+{
+	if (!alive())	return false;
+
+	if (vol < 0)
+		vol = 0;
+	else if (vol > 100)
+		vol = 100;
+
+	mpd_sendSetvolCommand(conn->h(), vol);
+	if (finish())
+	{
+		st->volume = vol;
+		return true;
+	}
+	return false;
+}
+
+/*
  * Changes volume
  */
 bool		Control::volume(int offset)

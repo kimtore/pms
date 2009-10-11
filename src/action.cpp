@@ -113,6 +113,14 @@ bool		Interface::check_events()
 		case PEND_UPDATE_DB:
 			update_db(param);
 			break;
+
+		case PEND_VOLUME:
+			setvolume(param);
+			break;
+
+		case PEND_MUTE:
+			mute();
+			break;
 	}
 
 	if (msg->code != 0 && msg->str.size() > 0)
@@ -218,7 +226,7 @@ long		Interface::rehash()
 long		Interface::write_config(string file)
 {
 	if (file.size() == 0)
-		file = pms->config->get_string("configfile");
+		file = pms->options->get_string("configfile");
 
 	return STERR;
 	//FIXME: implement this
@@ -386,7 +394,63 @@ long		Interface::update_db(string location)
 	return STERR;
 }
 
+/*
+ * Set or adjust volume.
+ * A pure integer value means set volume to this value.
+ * +/- before the integer means adjust volume by this percentage.
+ */
+long		Interface::setvolume(string vol)
+{
+	bool		ok;
 
+	if (vol.size() == 0)
+	{
+		pms->log(MSG_STATUS, STERR, _("Unexpected end of line, expected sign or integer value."));
+		return STERR;
+	}
+	if (vol[0] != '+' && vol[0] != '-')
+	{
+		ok = pms->comm->setvolume(atoi(vol.c_str()));
+	}
+	else
+	{
+		if (vol.size() == 1)
+		{
+			pms->log(MSG_STATUS, STERR, _("Unexpected end of line, expected integer value."));
+			return STERR;
+		}
+		ok = pms->comm->volume(atoi(vol.c_str()));
+	}
+	if (ok)
+	{
+		pms->log(MSG_STATUS, STOK, _("Volume: %d%%%%"), pms->comm->status()->volume);
+		return STOK;
+	}
+	else
+	{
+		generr();
+		return STERR;
+	}
+}
+
+/*
+ * Toggle muted status
+ */
+long		Interface::mute()
+{
+	if (!pms->comm->mute())
+	{
+		generr();
+		return STERR;
+	}
+
+	if (pms->comm->muted())
+		pms->log(MSG_STATUS, STOK, "Mute is on, from %d%%%%", pms->comm->mvolume());
+	else
+		pms->log(MSG_STATUS, STOK, "Mute is off, volume=%d%%%%", pms->comm->status()->volume);
+
+	return STOK;
+}
 
 
 
@@ -435,31 +499,6 @@ bool		handle_command(pms_pending_keys action)
 
 			win->wantdraw = true;
 			pms->log(MSG_STATUS, STOK, "Removed %d %s.", i, (i == 1 ? "song" : "songs"));
-			break;
-
-		case PEND_VOLUME:
-			i = atoi(pms->input->param.c_str());
-			if (!pms->comm->volume(i))
-			{
-				generr();
-				return false;
-			}
-
-			pms->log(MSG_STATUS, STOK, _("Volume: %d%%%%"), pms->comm->status()->volume);
-			break;
-
-		case PEND_MUTE:
-			if (!pms->comm->mute())
-			{
-				generr();
-				return false;
-			}
-
-			if (pms->comm->muted())
-				pms->log(MSG_STATUS, STOK, "Mute is on, from %d%%%%", pms->comm->mvolume());
-			else
-				pms->log(MSG_STATUS, STOK, "Mute is off, volume=%d%%%%", pms->comm->status()->volume);
-
 			break;
 
 		case PEND_MOVE_DOWN:

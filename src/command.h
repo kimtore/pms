@@ -275,6 +275,7 @@ public:
 	bool			seek(int);
 	bool			random(int);
 	bool			repeat(bool);
+	bool			setvolume(int);
 	bool			volume(int);
 	bool			mute();
 	bool			muted();

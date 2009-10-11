@@ -65,7 +65,7 @@ public:
 	long			password(string);
 	long			update_db(string);
 
-	long			setvolume();
+	long			setvolume(string);
 	long			mute();
 	long			crossfade();
 	long			seek();

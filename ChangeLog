@@ -3,6 +3,7 @@ Changes in 0.42~git
 ---
 
 Kim Tore Jensen:
+2009-10-11: fixed: the 'volume' command now correctly sets absolute values.
 2009-10-10: added: the update-library command now accepts more parameters: this, thisdir, current, currentdir, and any arbitrary file or directory.
 2009-10-10: dropped the 'follow' option.
 2009-10-07: added: 'nextinterval' option to control when PMS auto-adds songs to playlist.
