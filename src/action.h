@@ -53,6 +53,7 @@ public:
 	long			clear_topbar(int);
 	long			redraw();
 	long			rehash();
+	long			write_config(string);
 	long			source(string);
 	long			quit();
 	long			shell(string);

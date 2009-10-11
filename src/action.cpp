@@ -83,6 +83,10 @@ bool		Interface::check_events()
 			rehash();
 			break;
 
+		case PEND_WRITE_CONFIG:
+			write_config(param);
+			break;
+
 		case PEND_SOURCE:
 			source(param);
 			break;
@@ -206,6 +210,18 @@ long		Interface::rehash()
 		pms->log(MSG_STATUS, STOK, _("Reloaded configuration file."));
 
 	return msg->code;
+}
+
+/*
+ * Save the current configuration to a file
+ */
+long		Interface::write_config(string file)
+{
+	if (file.size() == 0)
+		file = pms->config->get_string("configfile");
+
+	return STERR;
+	//FIXME: implement this
 }
 
 /*
@@ -1660,6 +1676,7 @@ bool init_commandmap()
 	pms->commands->add("info", "Show file information in console", PEND_SHOW_INFO);
 	pms->commands->add("password", "Send a password to the server", PEND_PASSWORD);
 	pms->commands->add("source", "Read a script or configuration file", PEND_SOURCE);
+	pms->commands->add("write-config", "Save configuration file", PEND_WRITE_CONFIG);
 	pms->commands->add("rehash", "Read configuration file", PEND_REHASH);
 	pms->commands->add("redraw", "Force screen redraw", PEND_REDRAW);
 	pms->commands->add("version", "Show program version", PEND_VERSION);
