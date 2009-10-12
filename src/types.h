@@ -172,4 +172,10 @@ typedef enum
 }
 statusbar_mode;
 
+enum
+{
+	CROP_PLAYING = 0,
+	CROP_SELECTION
+};
+
 #endif /* _TYPES_H_ */

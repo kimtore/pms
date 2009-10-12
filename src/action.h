@@ -84,24 +84,22 @@ public:
 	/*
 	 * Normal player actions
 	 */
-	long			setvolume(string);
-	long			mute();
-	long			crossfade(int);
-	long			seek(int);
-
-
-
 	long			play();	// play of type, too: playartist, playalbum, playrandom, etc
 	long			add(string); // play + add to, add all
 	long			next(bool);
 	long			prev();
 	long			pause(bool);
 	long			stop();
-	long			remove();
-	long			move();
+	long			setvolume(string);
+	long			mute();
+	long			crossfade(int);
+	long			seek(int);
 	long			shuffle();
 	long			clear();
-	long			crop(); // crop playing and crop selection
+	long			crop(int);
+
+	long			move();
+	long			remove();
 	long			select(); //FIXME
 	long			unselect();
 	long			toggleselect();

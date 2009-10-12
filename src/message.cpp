@@ -17,61 +17,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * message.h - The Message class
+ * message.cpp - The Message class
  *
  */
 
-#ifndef _PMS_MESSAGE_H_
-#define _PMS_MESSAGE_H_
 
-#include <string>
-
-using namespace std;
+#include <cstdarg>
+#include <stdio.h>
+#include "message.h"
 
 
-/*
- * Message verbosity levels
- */
-enum
+Message::Message()
 {
-	MSG_STATUS = 0,
-	MSG_CONSOLE,
-	MSG_DEBUG
+	clear();
+}
+
+void		Message::clear()
+{
+	code = 0;
+	str.clear();
+	time(&timestamp);
 };
 
-enum
+void		Message::assign(int c, const char * format, ...)
 {
-	CERR_NONE = 0,
-	CERR_NO_FILE,
-	CERR_SYNTAX,
-	CERR_UNKNOWN_COMMAND,
-	CERR_EXCESS_ARGUMENTS,
-	CERR_MISSING_IDENTIFIER,
-	CERR_MISSING_VALUE,
-	CERR_UNEXPECTED_TOKEN,
-	CERR_INVALID_VALUE,
-	CERR_INVALID_OPTION,
-	CERR_INVALID_KEY,
-	CERR_INVALID_COLOR,
-	CERR_INVALID_COMMAND,
-	CERR_INVALID_IDENTIFIER,
-	CERR_INVALID_COLUMN,
-	CERR_INVALID_TOPBAR_INDEX,
-	CERR_INVALID_TOPBAR_POSITION
+	va_list		ap;
+	char		buffer[1024];
+
+	va_start(ap, format);
+	vsprintf(buffer, format, ap);
+	va_end(ap);
+
+	code = c;
+	str = buffer;
+	time(&timestamp);
 };
-
-class Message
-{
-public:
-				Message();
-
-	void			clear();
-	void			assign(int, const char *, ...);
-
-	int			code;
-	string			str;
-	time_t			timestamp;
-};
-
-
-#endif /* _PMS_MESSAGE_H_ */

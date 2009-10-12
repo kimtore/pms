@@ -161,6 +161,22 @@ bool		Interface::check_events()
 		case PEND_SEEK:
 			seek(atoi(param.c_str()));
 			break;
+
+		case PEND_SHUFFLE:
+			shuffle();
+			break;
+
+		case PEND_CLEAR:
+			clear();
+			break;
+
+		case PEND_CROP:
+			crop(CROP_PLAYING);
+			break;
+
+		case PEND_CROPSELECTION:
+			crop(CROP_SELECTION);
+			break;
 	}
 
 	if (msg->code != 0 && msg->str.size() > 0)
@@ -188,12 +204,19 @@ long		Interface::exec(string s)
 	{
 		return shell(pms->input->text.substr(1));
 	}
-	else if (!pms->config->readline(s))
+	else
 	{
-		if (pms->msg->code == CERR_NONE)
-			pms->log(MSG_STATUS, STOK, "  %s", pms->msg->str.c_str());
+		if (pms->config->readline(s))
+		{
+			pms->resetstatus(-1);
+		}
 		else
-			pms->log(MSG_STATUS, STERR, _("Error %d: %s"), pms->msg->code, pms->msg->str.c_str());
+		{
+			if (pms->msg->code == CERR_NONE)
+				pms->log(MSG_STATUS, STOK, "  %s", pms->msg->str.c_str());
+			else
+				pms->log(MSG_STATUS, STERR, _("Error %d: %s"), pms->msg->code, pms->msg->str.c_str());
+		}
 
 		return pms->msg->code;
 	}
@@ -506,7 +529,7 @@ long		Interface::add(string param)
 		pms->log(MSG_DEBUG, 0, "Adding list to list.\n");
 		list = win->current()->plist();
 		pms->comm->add(list, pms->comm->playlist());
-		pms->log(MSG_STATUS, STOK, "%d songs from %s appended to playlist.", list->size(), list->filename.c_str());
+		pms->log(MSG_STATUS, STOK, _("%d songs from %s appended to playlist."), list->size(), list->filename.c_str());
 		setwin(pms->disp->findwlist(pms->comm->playlist()));
 		return STOK;
 	}
@@ -830,7 +853,49 @@ long		Interface::seek(int seconds)
 	return STERR;
 }
 
+/*
+ * Shuffle the playlist (re-order tracks)
+ */
+long		Interface::shuffle()
+{
+	if (pms->comm->shuffle())
+	{
+		pms->log(MSG_STATUS, STOK, _("Playlist shuffled."));
+		return STOK;
+	}
+	generr();
+	return STERR;
+}
 
+/*
+ * Clear out the playlist
+ */
+long		Interface::clear()
+{
+	if (pms->comm->clear(pms->disp->actwin()->plist()))
+	{
+		pms->log(MSG_STATUS, STOK, _("Playlist shuffled."));
+		return STOK;
+	}
+	generr();
+	return STERR;
+}
+
+/*
+ * Crop the selected list
+ */
+long		Interface::crop(int crop_mode)
+{
+	if (pms->comm->crop(pms->disp->actwin()->plist(), crop_mode))
+	{
+		pms->log(MSG_CONSOLE, STOK, _("Playlist cropped.\n"));
+		pms->drawstatus();
+		pms->disp->actwin()->wantdraw = true;
+		return STOK;
+	}
+	generr();
+	return STERR;
+}
 
 
 /*
@@ -1035,11 +1100,6 @@ bool		handle_command(pms_pending_keys action)
 			pms->drawstatus();
 			break;
 
-		case PEND_SHUFFLE:
-			if (pms->comm->shuffle() != 0) break;
-			pms->log(MSG_STATUS, STOK, "Playlist shuffled.");
-			break;
-
 		case PEND_REPEAT:
 			switch(pms->options->get_long("repeat"))
 			{
@@ -1063,20 +1123,6 @@ bool		handle_command(pms_pending_keys action)
 			pms->drawstatus();
 			break;
 
-		case PEND_CLEAR:
-			if (!pms->comm->clear(list)) break;
-			pms->log(MSG_STATUS, STOK, "Playlist cleared.");
-			break;
-
-		case PEND_CROP:
-		case PEND_CROPSELECTION:
-			if (!list) break;
-
-			if (!pms->comm->crop(list, (action == PEND_CROP ? 0 : 1)))
-				pms->log(MSG_STATUS, STERR, "Could not find playing song here.");
-			else
-				pms->log(MSG_STATUS, STOK, "Playlist cropped.");
-			break;
 
 
 

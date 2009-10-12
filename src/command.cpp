@@ -184,7 +184,7 @@ bool		Control::finish()
 
 	if (st->error != 0)
 	{
-		pms->log(MSG_DEBUG, 0, "MPD returned error %d: %s\n", st->error, st->errstr.c_str());
+		pms->log(MSG_CONSOLE, STERR, "MPD returned error %d: %s\n", st->error, st->errstr.c_str());
 
 		/* Connection closed */
 		if (st->error == MPD_ERROR_CONNCLOSED)
@@ -222,6 +222,18 @@ bool		Control::alive()
  */
 const char *	Control::err()
 {
+	static char * buffer = static_cast<char *>(malloc(1024));
+
+	if (st->errstr.size() == 0)
+	{
+		if (pms->msg->code == 0)
+			sprintf(buffer, _("Error: %s"), pms->msg->str.c_str());
+		else
+			sprintf(buffer, _("Error %d: %s"), pms->msg->code, pms->msg->str.c_str());
+
+		return buffer;
+	}
+
 	return st->errstr.c_str();
 }
 
@@ -722,16 +734,28 @@ bool		Control::crop(Songlist * list, int mode)
 
 	if (!alive())		return false;
 	if (!list)		return false;
-	if (list == _library)	return false;
+	if (list == _library)
+	{
+		pms->msg->assign(STOK, _("The library is read-only."));
+		return false;
+	}
 
 	/* Crop to currently playing song */
-	if (mode == 0)
+	if (mode == CROP_PLAYING)
 	{
 		song = pms->cursong();
-		if (!song) return false;
+		if (!song)
+		{
+			pms->msg->assign(STOK, _("No song is playing: can't crop to playing song."));
+			return false;
+		}
 
 		pos = list->match(song->file, 0, list->end(), MATCH_FILE | MATCH_EXACT);
-		if (pos == MATCH_FAILED) return false;
+		if (pos == MATCH_FAILED)
+		{
+			pms->msg->assign(STOK, _("The currently playing song is not in this list."));
+			return false;
+		}
 		upos = static_cast<unsigned int>(pos);
 
 		list_start();
@@ -750,7 +774,7 @@ bool		Control::crop(Songlist * list, int mode)
 		return list_end();
 	}
 	/* Crop to selection */
-	else if (mode == 1)
+	else if (mode == CROP_SELECTION)
 	{
 		list->resetgets();
 		if (list->getnextselected() == list->cursorsong())
