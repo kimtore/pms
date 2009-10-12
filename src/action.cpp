@@ -50,8 +50,17 @@ Interface::~Interface()
  */
 bool		Interface::check_events()
 {
+	Songlist *		list;
+	pms_window *		win;
+
 	msg->clear();
 	action = pms->input->getpending();
+
+	win = pms->disp->actwin();
+	if (win != NULL)
+	{
+		list = win->plist();
+	}
 
 	switch(action)
 	{
@@ -176,6 +185,30 @@ bool		Interface::check_events()
 
 		case PEND_CROPSELECTION:
 			crop(CROP_SELECTION);
+			break;
+
+		case PEND_DELETE:
+			remove(list);
+			break;
+
+		case PEND_TOGGLESELECT:
+			select(win, SELECT_TOGGLE, param);
+			break;
+
+		case PEND_SELECT:
+			select(win, SELECT_ON, param);
+			break;
+
+		case PEND_UNSELECT:
+			select(win, SELECT_OFF, param);
+			break;
+
+		case PEND_CLEARSELECTION:
+			select(win, SELECT_CLEAR, param);
+			break;
+
+		case PEND_SELECTALL:
+			select(win, SELECT_ALL, param);
 			break;
 	}
 
@@ -897,6 +930,150 @@ long		Interface::crop(int crop_mode)
 	return STERR;
 }
 
+/*
+ * Remove selected songs from list
+ */
+long		Interface::remove(Songlist * list)
+{
+	int				count = 0;
+	Song *				song;
+	vector<Song *>			songs;
+	vector<Song *>::iterator	i;
+
+	if (!list)
+	{
+		pms->log(MSG_STATUS, STERR, _("This is not a playlist: you can't remove songs from here."));
+		return STERR;
+	}
+
+	if (list == pms->comm->library())
+	{
+		pms->log(MSG_STATUS, STERR, _("The library is read-only."));
+		return STERR;
+	}
+
+	song = list->popnextselected();
+	while (song != NULL)
+	{
+		songs.push_back(song);
+		song = list->popnextselected();
+	}
+
+	i = songs.begin();
+	while (i != songs.end())
+	{
+		if (pms->comm->remove(list, *i))
+			++count;
+		++i;
+	}
+
+	if (count > 0)
+	{
+		pms->disp->actwin()->wantdraw = true;
+		pms->log(MSG_STATUS, STOK, _("Removed %d %s."), count, (count == 1 ? _("song") : _("songs")));
+		return STOK;
+	}
+
+	pms->log(MSG_STATUS, STERR, _("No songs removed."));
+	return STERR;
+}
+
+/*
+ * Perform select, unselect or toggle select on one or more entries
+ */
+long		Interface::select(pms_window * win, int mode, string param)
+{
+	Songlist *	list;
+	Song *		song;
+	int		i = -1;
+
+	list = win->plist();
+
+	if (!list)
+	{
+		pms->log(MSG_STATUS, STERR, _("Can't select: this is not a playlist."));
+		return STERR;
+	}
+
+	switch(mode)
+	{
+		case SELECT_CLEAR:
+			for(i = 0; i <= list->end(); i++)
+				list->selectsong(list->songs[i], 0);
+			pms->log(MSG_DEBUG, STOK, _("Cleared selection.\n"));
+			win->wantdraw = true;
+			return STOK;
+
+		case SELECT_ALL:
+			for(i = 0; i <= list->end(); i++)
+				list->selectsong(list->songs[i], 1);
+			pms->log(MSG_DEBUG, STOK, _("Selected all songs.\n"));
+			win->wantdraw = true;
+			return STOK;
+
+		default:
+			break;
+	}
+
+	/* Perform only on one object */
+	if (param.size() == 0)
+	{
+		song = list->cursorsong();
+		if (!song)
+		{
+			pms->log(MSG_STATUS, STERR, _("Can't select: no song under cursor."));
+			return STERR;
+		}
+		if (mode == SELECT_TOGGLE)
+			list->selectsong(song, !song->selected);
+		else if (mode == SELECT_OFF)
+			list->selectsong(song, false);
+		else if (mode == SELECT_ON)
+			list->selectsong(song, true);
+
+		if (pms->options->get_bool("nextafteraction"))
+			win->movecursor(1);
+
+		win->wantdraw = true;
+		return STOK;
+	}
+
+	/* Perform on range of objects */
+	i = list->match(param, 0, list->end(), MATCH_ALL);
+	if (i == MATCH_FAILED)
+	{
+		pms->log(MSG_STATUS, STERR, _("No songs matching pattern %s"), param.c_str());
+		return STERR;
+	}
+	while (i != MATCH_FAILED)
+	{
+		song = list->songs[i];
+		if (!song)
+		{
+			pms->log(MSG_DEBUG, STERR, "***BUG*** in Interface::select(): Encountered NULL song!\n");
+			continue;
+		}
+
+		if (mode == SELECT_TOGGLE)
+			list->selectsong(song, !song->selected);
+		else if (mode == SELECT_OFF)
+			list->selectsong(song, false);
+		else if (mode == SELECT_ON)
+			list->selectsong(song, true);
+
+		if (static_cast<unsigned int>(i) == list->end())
+			break;
+
+		i = list->match(param, ++i, list->end(), MATCH_ALL);
+	}
+
+	win->wantdraw = true;
+	return STOK;
+}
+
+
+
+
 
 /*
  * Executes actions. This is the last bit of the user interface.
@@ -931,18 +1108,6 @@ bool		handle_command(pms_pending_keys action)
 		case PEND_NONE:
 			return false;
 
-		case PEND_DELETE:
-			if (!list) return false;
-			i = removesongs(list);
-			if (i <= 0)
-			{
-				pms->log(MSG_STATUS, STERR, "No songs removed.");
-				return false;
-			}
-
-			win->wantdraw = true;
-			pms->log(MSG_STATUS, STOK, "Removed %d %s.", i, (i == 1 ? "song" : "songs"));
-			break;
 
 		case PEND_MOVE_DOWN:
 		case PEND_MOVE_UP:
@@ -1512,22 +1677,6 @@ bool		handle_command(pms_pending_keys action)
 			break;
 
 		/* Selection */
-		case PEND_TOGGLESELECT:
-		case PEND_SELECT:
-		case PEND_UNSELECT:
-		case PEND_CLEARSELECTION:
-			if (!win) break;
-			if (!win->plist())
-			{
-				if (win->type() != WIN_ROLE_WINDOWLIST)
-					break;
-				win->toggleselect();
-			}
-			if (makeselection(win->plist(), action, pms->input->param) && (pms->input->param.size() == 0)
-					&& pms->options->get_bool("nextafteraction") && action != PEND_CLEARSELECTION)
-				win->movecursor(1);
-			win->wantdraw = true;
-			break;
 
 		/* Other */
 
@@ -1738,101 +1887,7 @@ bool		setwin(pms_window * win)
 	return true;
 }
 
-/*
- * Perform select, unselect or toggle select on one or more entries
- */
-bool		makeselection(Songlist * list, pms_pending_keys action, string param)
-{
-	Song *		song;
-	int		mode;
-	int		i = -1;
 
-	if (!list)	return false;
-
-	switch(action)
-	{
-		case PEND_SELECT:
-			mode = 1;
-			break;
-		case PEND_UNSELECT:
-			mode = 0;
-			break;
-		case PEND_TOGGLESELECT:
-			mode = 2;
-			break;
-		case PEND_CLEARSELECTION:
-			for(i = 0; i <= list->end(); i++)
-				list->selectsong(list->songs[i], 0);
-			return true;
-		default:
-			return false;
-	}
-
-	/* Perform only on one object */
-	if (param.size() == 0)
-	{
-		song = list->cursorsong();
-		if (!song)
-			return false;
-		if (mode == 2)
-			list->selectsong(song, !song->selected);
-		else
-			list->selectsong(song, mode);
-		return true;
-	}
-
-	/* Perform on range of objects */
-	i = list->match(param, 0, list->end(), MATCH_ALL);
-	if (i == MATCH_FAILED)
-		return false;
-	while (i != MATCH_FAILED)
-	{
-		song = list->songs[i];
-		if (!song)
-			continue;
-		if (mode == 2)
-			list->selectsong(song, !song->selected);
-		else
-			list->selectsong(song, mode);
-
-		if ((unsigned int)i == list->end())
-			break;
-
-		i = list->match(param, ++i, list->end(), MATCH_ALL);
-	}
-
-	return true;
-}
-
-/*
- * Remove selected songs in a list
- */
-int		removesongs(Songlist * list)
-{
-	int				count = 0;
-	Song *				song;
-	vector<Song *>			songs;
-	vector<Song *>::iterator	i;
-
-	if (!list) return 0;
-
-	song = list->popnextselected();
-	while (song != NULL)
-	{
-		songs.push_back(song);
-		song = list->popnextselected();
-	}
-
-	i = songs.begin();
-	while (i != songs.end())
-	{
-		if (pms->comm->remove(list, *i))
-			++count;
-		++i;
-	}
-
-	return count;
-}
 
 /*
  * Create a playlist and connect a window to it, returns the window if successful

@@ -192,19 +192,6 @@ void			pms_win_windowlist::switchlastwin()
 }
 
 /*
- * Toggle item selection
- */
-bool			pms_win_windowlist::toggleselect()
-{
-	if (selected == NULL)
-		selected = current();
-	else
-		selected = NULL;
-
-	return (selected != NULL);
-}
-
-/*
  * Return window under cursor
  */
 pms_window *		pms_win_windowlist::current()

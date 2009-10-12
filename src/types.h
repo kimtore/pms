@@ -64,7 +64,7 @@ typedef enum
 	PEND_UNSELECT,
 	PEND_TOGGLESELECT,
 	PEND_CLEARSELECTION,
-	PEND_TOGGLE,
+	PEND_SELECTALL,
 
 	PEND_RETURN,
 	PEND_RETURN_ESCAPE,
@@ -172,10 +172,26 @@ typedef enum
 }
 statusbar_mode;
 
+/*
+ * Crop types
+ */
 enum
 {
 	CROP_PLAYING = 0,
 	CROP_SELECTION
 };
+
+/*
+ * Selection modes
+ */
+enum
+{
+	SELECT_OFF = 0,
+	SELECT_ON,
+	SELECT_TOGGLE,
+	SELECT_ALL,
+	SELECT_CLEAR
+};
+
 
 #endif /* _TYPES_H_ */

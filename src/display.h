@@ -126,7 +126,6 @@ public:
 	virtual pms_window *	lastwin() { return NULL; };
 	virtual void		switchlastwin() {};
 	virtual bool		gotocurrent() { return false; };
-	virtual bool		toggleselect() { return false; };
 
 	/*
 	 * Scroll
@@ -232,7 +231,6 @@ public:
 	pms_window *			current();
 	pms_window *			lastwin();
 	void				switchlastwin();
-	bool				toggleselect();
 
 	unsigned int			size() { return (wlist ? wlist->size() : 0); };
 	void				draw();
