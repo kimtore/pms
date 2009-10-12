@@ -92,7 +92,7 @@ public:
 
 
 	long			play();	// play of type, too: playartist, playalbum, playrandom, etc
-	long			add(); // play + add to, add all
+	long			add(string); // play + add to, add all
 	long			next(bool);
 	long			prev();
 	long			pause(bool);

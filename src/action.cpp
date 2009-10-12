@@ -117,6 +117,11 @@ bool		Interface::check_events()
 		/*
 		 * Normal player actions
 		 */
+		case PEND_ADD:
+		case PEND_ADDTO:
+			add(param);
+			break;
+
 		case PEND_PLAY:
 			play();
 			break;
@@ -472,8 +477,121 @@ long		Interface::play()
 	return STOK;
 }
 
-long		Interface::add()
+/*
+ * Add selected song(s) to playlist
+ * FIXME: rewrite....
+ */
+long		Interface::add(string param)
 {
+	pms_window *	win;
+	Songlist *	list;
+	Songlist *	dlist;
+	Song *		song;
+	string		s;
+	size_t		i = 0;
+
+	win = pms->disp->actwin();
+	list = win->plist();
+	dlist = pms->comm->playlist();
+
+	if (!pms->disp->cursorsong() && !win->current())
+	{
+		pms->log(MSG_STATUS, STERR, _("This is not a song, so you can't add it."));
+		return STERR;
+	}
+
+	/* Add list to list */
+	if (win && win->type() == WIN_ROLE_WINDOWLIST && win->current() && pms->input->win == NULL && action == PEND_ADD)
+	{
+		pms->log(MSG_DEBUG, 0, "Adding list to list.\n");
+		list = win->current()->plist();
+		pms->comm->add(list, pms->comm->playlist());
+		pms->log(MSG_STATUS, STOK, "%d songs from %s appended to playlist.", list->size(), list->filename.c_str());
+		setwin(pms->disp->findwlist(pms->comm->playlist()));
+		return STOK;
+	}
+
+	/* Addto spawns windowlist */
+	if (action == PEND_ADDTO)
+	{
+		/* Need additional window param */
+		if (pms->input->win == NULL)
+		{
+			/* Add list from windowlist not supported - TODO */
+			if (win->type() == WIN_ROLE_WINDOWLIST)
+			{
+				pms->log(MSG_STATUS, STERR, _("Not supported. Please select the songs you want to add before using the add-to command."));
+				return STERR;
+			}
+			pms->log(MSG_DEBUG, 0, "Storing window parameters: win=%p\n", win);
+			pms->input->winstore(win);
+			setwin(pms->disp->create_windowlist());
+			return STOK;
+		}
+		if (win->current())
+			dlist = win->current()->plist();
+
+		pms->log(MSG_DEBUG, 0, "Returned window parameters: win=%p, destination list=%p\n", win->current(), dlist);
+
+		if (dlist == NULL)
+		{
+			pms->input->winclear();
+			return STOK;
+		}
+
+		if (pms->input->win)
+			list = pms->input->win->plist();
+		else
+			list = NULL;
+	}
+
+	if (!list || !dlist) return STERR;
+
+	if (dlist == pms->comm->playlist())
+		s = _("playlist");
+	else if (dlist == pms->comm->library())
+		s = _("library");
+	else
+		s = dlist->filename;
+
+	/* Add arbitrary file or stream */
+	if (param.size() > 0)
+	{
+		song = new Song(param);
+		if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID)
+			pms->log(MSG_STATUS, STOK, _("Added '%s' to %s."), param.c_str(), s.c_str());
+		else
+			generr();
+
+		delete song;
+		return STOK;
+	}
+
+	/* Add selected song(s) */
+	song = list->popnextselected();
+	while (song != NULL)
+	{
+		pms->log(MSG_DEBUG, 0, "Adding song at %p with id=%d pos=%d filename=%s\n", song, song->id, song->pos, song->file.c_str());
+		if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID)
+			++i;
+		else
+			generr();
+
+		song = list->popnextselected();
+	}
+	if (i == 0)
+	{
+		generr();
+	}
+	else
+	{
+		if (i == 1 && pms->options->get_bool("nextafteraction"))
+			pms->disp->movecursor(1);
+		pms->log(MSG_STATUS, STOK, _("Added %d %s to %s."), i, (i == 1 ? "song" : "songs"), s.c_str());
+	}
+
+	win->wantdraw = true;
+	return STOK;
 }
 
 /*
@@ -867,106 +985,6 @@ bool		handle_command(pms_pending_keys action)
 
 		case PEND_ADD:
 		case PEND_ADDTO:
-			if (!pms->disp->cursorsong() && !win->current())
-			{
-				pms->log(MSG_STATUS, STERR, "This is not a song.");
-				break;
-			}
-
-			dlist = pms->comm->playlist();
-
-			/* Add list to list */
-			if (win && win->type() == WIN_ROLE_WINDOWLIST && win->current() && pms->input->win == NULL && action == PEND_ADD)
-			{
-				pms->log(MSG_DEBUG, 0, "Adding list to list.\n");
-				list = win->current()->plist();
-				pms->comm->add(list, pms->comm->playlist());
-				pms->log(MSG_STATUS, STOK, "%d songs from %s appended to playlist.", list->size(), list->filename.c_str());
-				setwin(pms->disp->findwlist(pms->comm->playlist()));
-				break;
-			}
-
-			/* Addto spawns windowlist */
-			if (action == PEND_ADDTO)
-			{
-				/* Need additional window param */
-				if (pms->input->win == NULL)
-				{
-					/* Add list from windowlist not supported - TODO */
-					if (win->type() == WIN_ROLE_WINDOWLIST)
-					{
-						pms->log(MSG_STATUS, STERR, "Not supported. Please select the songs you want to add before using the add-to command.");
-						break;
-					}
-					pms->log(MSG_DEBUG, 0, "Storing window parameters: win=%p\n", win);
-					pms->input->winstore(win);
-					setwin(pms->disp->create_windowlist());
-					break;
-				}
-				if (win->current())
-					dlist = win->current()->plist();
-
-				pms->log(MSG_DEBUG, 0, "Returned window parameters: win=%p, destination list=%p\n", win->current(), dlist);
-
-				if (dlist == NULL)
-				{
-					pms->input->winclear();
-					break;
-				}
-
-				if (pms->input->win)
-					list = pms->input->win->plist();
-				else
-					list = NULL;
-			}
-
-			if (!list || !dlist) break;
-
-			if (dlist == pms->comm->playlist())
-				s = "playlist";
-			else if (dlist == pms->comm->library())
-				s = "library";
-			else
-				s = dlist->filename;
-
-			/* Add arbitrary file or stream */
-			if (pms->input->param.size() > 0)
-			{
-				song = new Song(pms->input->param);
-				if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID)
-					pms->log(MSG_STATUS, STOK, "Added '%s' to %s.", pms->input->param.c_str(), s.c_str());
-				else
-					generr();
-
-				delete song;
-				break;
-			}
-
-			/* Add selected song(s) */
-			song = list->popnextselected();
-			while (song != NULL)
-			{
-				pms->log(MSG_DEBUG, 0, "Adding song at %p with id=%d pos=%d filename=%s\n", song, song->id, song->pos, song->file.c_str());
-				if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID)
-					++i;
-				else
-					generr();
-
-				song = list->popnextselected();
-			}
-			if (i == 0)
-			{
-				generr();
-			}
-			else
-			{
-				if (i == 1 && pms->options->get_bool("nextafteraction"))
-					pms->disp->movecursor(1);
-				pms->log(MSG_STATUS, STOK, _("Added %d %s to %s."), i, (i == 1 ? "song" : "songs"), s.c_str());
-			}
-
-			win->wantdraw = true;
-			break;
 
 
 		case PEND_PLAYRANDOM:
