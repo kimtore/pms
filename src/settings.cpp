@@ -90,7 +90,7 @@ void		Options::reset()
 	set("playmode", SETTING_TYPE_PLAYMODE, "linear");
 	set("repeat", SETTING_TYPE_REPEATMODE, "none");
 	set("columns", SETTING_TYPE_FIELDLIST, "artist track title album length");
-	set("librarysort", SETTING_TYPE_FIELDLIST, "track disc album date albumartistsort");
+	set("sort", SETTING_TYPE_FIELDLIST, "track disc album date albumartistsort");
 
 	set_long("nextinterval", 5);
 	set_long("crossfade", 5);
