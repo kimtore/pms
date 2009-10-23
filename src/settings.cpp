@@ -245,8 +245,6 @@ bool		Options::set(string key, string val)
 	}
 
 	s = lookup(key);
-	while (s->alias != NULL)
-		s = s->alias;
 
 	if (s == NULL)
 	{
@@ -255,6 +253,9 @@ bool		Options::set(string key, string val)
 		pms->msg->str += " '" + key + "'";
 		return false;
 	}
+
+	while (s->alias != NULL)
+		s = s->alias;
 
 	if (set(s->key, s->type, val) != NULL)
 	{
