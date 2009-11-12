@@ -143,6 +143,10 @@ bool		Interface::check_events()
 			pause(true);
 			break;
 
+		case PEND_STOP:
+			stop();
+			break;
+
 		case PEND_NEXT:
 			next(false);
 			break;
