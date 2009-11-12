@@ -82,7 +82,7 @@ int			Pms::main()
 	time_t			timer = 0;
 
 	/* Connection */
-	printf(_("Connecting to host %s, port %d..."), options->get_string("hostname").c_str(), options->get_long("port"));
+	printf(_("Connecting to host %s, port %ld..."), options->get_string("hostname").c_str(), options->get_long("port"));
 
 	if (conn->connect() != 0)
 	{
@@ -354,6 +354,10 @@ int			Pms::init()
 	char *			port;
 	char *			password;
 	const char *		charset = NULL;
+	char *			xdgconfighome;
+	char *			xdgconfigdirs;
+	string			next;
+	vector<string>		configfiles;
 	
 	/* Internal pointers */
 	msg = new Message();
@@ -379,6 +383,8 @@ int			Pms::init()
 	host = getenv("MPD_HOST");
 	port = getenv("MPD_PORT");
 	password = getenv("MPD_PASSWORD");
+	xdgconfighome = getenv("XDG_CONFIG_HOME");
+	xdgconfigdirs = getenv("XDG_CONFIG_DIRS");
 
 	/* Set up field types */
 	fieldtypes = new Fieldtypes();
@@ -413,18 +419,6 @@ int			Pms::init()
 	/* Our configuration */
 	config = new Configurator(options, bindings);
 
-	/* Find default configuration file */
-	if (homedir != NULL)
-	{
-		str = homedir;
-		str += "/.pms/rc";
-	}
-	else
-	{
-		str = ".pms/rc";
-	}
-	options->set_string("configfile", str);
-
 	/* Some default options */
 	options->set_string("hostname", (host ? host : "127.0.0.1"));
 	if (!password && host)
@@ -455,19 +449,65 @@ int			Pms::init()
 		return PMS_EXIT_BADARGS;
 	}
 
-	/* Read user configuration */
-	if (!config->source(options->get_string("configfile")))
+	/* Make a list of possible configuration files */
+	// commandline argument
+	if (options->get_string("configfile").length() > 0)
+		configfiles.push_back(options->get_string("configfile"));
+
+	// XDG config home (usually $HOME/.config)
+	if (xdgconfighome == NULL || strlen(xdgconfighome) == 0)
 	{
-		if (msg->code != CERR_NO_FILE)
+		if (homedir != NULL && strlen(homedir) > 0)
 		{
-			printf(_("\nConfiguration error:\n%s\n"), msg->str.c_str());
-			return PMS_EXIT_CONFIGERR;
+			str = homedir;
+			configfiles.push_back(str + "/.config/pms/rc");
 		}
-		printf(_("Didn't find a configuration file in %s\n"), options->get_string("configfile").c_str());
+	}
+	else
+	{
+		str = xdgconfighome;
+		configfiles.push_back(str + "/pms/rc");
+	}
+	// XDG config dirs (colon-separated priority list, defaults to just /etc/xdg)
+	if (xdgconfigdirs == NULL || strlen(xdgconfigdirs) == 0)
+	{
+		configfiles.push_back("/usr/local/etc/xdg/pms/rc");
+		configfiles.push_back("/etc/xdg/pms/rc");
+	}
+	else
+	{
+		next = "";
+		str = xdgconfigdirs;
+		for (string::const_iterator it = str.begin(); it != str.end(); it++)
+		{
+			if (*it == ':')
+			{
+				if (next.length() > 0)
+				{
+					configfiles.push_back(next + "/pms/rc");
+					next = "";
+				}
+			}
+			else
+				next += *it;
+		}
+		if (next.length() > 0)
+			configfiles.push_back(next + "/pms/rc");
 	}
 
-	/* Parse arguments again to override config file */
-	parse_args(argc, argv);
+	/* Load configuration files in reverse order */
+	for (int i = configfiles.size() - 1; i >= 0; i--)
+	{
+		if (!config->source(configfiles[i]))
+		{
+			if (msg->code != CERR_NO_FILE)
+			{
+				pms->log(MSG_CONSOLE, 0, _("\nConfiguration error in file %s:\n%s\n"), configfiles[i].c_str(), msg->str.c_str());
+				return PMS_EXIT_CONFIGERR;
+			}
+			pms->log(MSG_CONSOLE, 0, _("Didn't find configuration file %s\n"), configfiles[i].c_str());
+		}
+	}
 
 	/* Seed random number generator */
 	srand(time(NULL));
@@ -987,7 +1027,7 @@ void			Pms::log(int verbosity, long code, const char * format, ...)
 
 	if (!disp && verbosity < MSG_DEBUG)
 	{
-		printf(buffer);
+		printf("%s", buffer);
 	}
 
 	msglog.push_back(m);

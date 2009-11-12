@@ -39,6 +39,7 @@ void			Options::reset()
 
 	colors = new Colortable();
 
+	configfile		= NULL;
 	scroll_mode		= SCROLL_NORMAL;
 	nextinterval		= 5;
 	crossfade		= 5;

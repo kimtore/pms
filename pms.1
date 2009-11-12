@@ -27,7 +27,7 @@ Turn on debugging to stderr
 .RI "Connect to MPD server " "hostname"
 .TP
 .BI "-c " "configfile"
-.RI "Use " "configfile" " as configuration file instead of default"
+.RI "Use " "configfile" " as an additional configuration file"
 .TP
 .BI "-p " "port"
 .RI "Connect to " "port" " on MPD server"
@@ -37,7 +37,13 @@ Specify password for the MPD server
 .SH CONFIGURATION
 Configuration is done in three parts: options, key bindings, and colors.
 .PP
-.RB "Options, bindings and colors can be set at runtime by entering command mode (default binding " ":" ") or can be preset in the configuration file (~/.pms/rc)."
+.RB "Options, bindings and colors can be set at runtime by entering command mode (default binding " ":" ") or can be preset in a configuration file."
+
+Configuration files are loaded in a specific order in line (almost) with the XDG Base Directory Specification (http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html).
+Possible directories are collected from the environment variables XDG_CONFIG_DIRS and XDG_CONFIG_HOME (the former defaults in PMS to /usr/local/etc/xdg:/etc/xdg rather than just /etc/xdg as in the spec, the latter defaults to $HOME/.config as in the spec).
+
+Each path in order from lowest priority (the last entry in XDG_CONFIG_DIRS) to highest (XDG_CONFIG_HOME) is suffixed with /pms/rc and if this file exists it is loaded.
+Finally, if a configuration file was specified on the commandline this file is loaded.
 .PP
 .B Setting options
 .RS
@@ -675,12 +681,18 @@ Jump to a random song in the playlist
 .RE
 .SH FILES
 .TP
-.B ~/.pms/rc
-Configuration file
+.BR "/etc/xdg/pms/rc" ", " "/usr/local/xdg/pms/rc" ", " "~/.config/pms/rc"
+Default paths to configuration files, loaded in this order (see the configuration section above)
 .SH ENVIRONMENT
 .TP
 .B HOME
-The configuration file is read from $HOME/.pms/rc
+Used to generate the default path to the configuration file if XDG_CONFIG_HOME is not set or empty
+.TP
+.B XDG_CONFIG_HOME
+The prefix for the user-specific configuration file
+.TP
+.B XDG_CONFIG_DIRS
+Prefixes for system-wide configuration files
 .TP
 .B MPD_HOST
 Specifies the host which MPD runs on
@@ -690,8 +702,6 @@ Specifies the port on which MPD listens
 .TP
 .B MPD_PASSWORD
 Specifies a password to send to MPD on connection
-.PP
-These environment variables are overridden by command-line switches and the config file.
 .SH AUTHOR
 Written by Kim Tore Jensen <kimtjen@gmail.com> with help from Bart Nagel <bart@tremby.net>.
 .PP

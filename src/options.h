@@ -57,7 +57,7 @@ public:
 	string			hostname;
 	unsigned int		port;
 	string			password;
-	string			configfile;
+	string			configfile;		// Custom config file
 
 	bool			debug;
 	Colortable *		colors;
