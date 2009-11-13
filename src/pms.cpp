@@ -137,7 +137,7 @@ int			Pms::main()
 	comm->has_new_library();
 	comm->has_new_playlist();
 	printf(_("Sorting library..."));
-	comm->library()->sort(options->get_string("librarysort"));
+	comm->library()->sort(options->get_string("sort"));
 	printf(_("done.\n"));
 
 	/* Center attention to current song */
