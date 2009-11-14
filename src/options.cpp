@@ -58,7 +58,7 @@ void			Options::reset()
 	regexsearch		= false;
 	resetstatus		= 3;
 	startuplist		= "playlist";
-	librarysort		= "default";
+	sort			= "default";
 	columns			= "artist track title album length";
 	onplaylistfinish	= "";
 	followwindow		= false;

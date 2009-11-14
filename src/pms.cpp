@@ -233,7 +233,7 @@ int			Pms::main()
 			log(MSG_STATUS, STOK, _("Library updated."));
 			if (disp->actwin())
 				disp->actwin()->wantdraw = true;
-			library->list->sort(options->get_string("librarysort"));
+			library->list->sort(options->get_string("sort"));
 			library->set_column_size();
 			connect_window_list();
 		}
@@ -298,9 +298,9 @@ int			Pms::main()
 		/* Check out mediator events */
 		/* FIXME: add these into their appropriate places */
 		if (mediator->changed("setting.sort"))
-			comm->library()->sort(options->get_string("librarysort"));
+			comm->library()->sort(options->get_string("sort"));
 		else if (mediator->changed("setting.ignorecase"))
-			comm->library()->sort(options->get_string("librarysort"));
+			comm->library()->sort(options->get_string("sort"));
 		else if (mediator->changed("setting.columns"))
 			disp->actwin()->set_column_size();
 		else if (mediator->changed("setting.mouse"))
