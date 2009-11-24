@@ -794,7 +794,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 
 		case LITERALPERCENT:
 			c = pms->options->colors->topbar.standard;
-			retstr = "%%";
+			retstr = "%";
 			break;
 
 		case EINVALID:
@@ -802,12 +802,11 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			return "";
 	}
 
-	//real length of returned string (not including colour codes)
-	if (keyword == LITERALPERCENT)
-		//exception
-		printlen = 1;
-	else
-		printlen = retstr.size();
+	// real length of returned string (not including colour codes)
+	printlen = retstr.size();
+
+	// escape any percent signs by doubling them
+	retstr = Pms::formtext(retstr);
 
 	/* Format string with colors */
 	if (c != NULL)

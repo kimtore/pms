@@ -13,6 +13,7 @@ Kim Tore Jensen:
 2009-09-06: added: centre-cursor aliases center-cursor.
 
 Bart Nagel:
+2009-11-24: fixed: literal percent signs in fields (eg song titles) are now handled properly
 2009-11-12: changed: implemented XDG Base Directory Specification, with a slight modification to the default for XDG_CONFIG_DIRS (see manpage), closing #14
 2009-11-12: fixed: :stop wasn't working, fixed #15
 2009-09-22: changed: search now matches trackshort rather than track
