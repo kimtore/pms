@@ -9,7 +9,10 @@ Then run the configure script again.
 Otherwise, build PMS with:
 $ make
 
-Then, to install system-wide:
+You now have a PMS binary in the current directory -- you can run it with
+$ ./pms
+
+If you want to install system-wide:
 $ su -
 Password:
 # make install
