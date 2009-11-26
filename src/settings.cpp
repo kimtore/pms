@@ -119,7 +119,7 @@ void		Options::reset()
 	set_bool("mouse", false);
 
 	set_string("directoryformat", "%artist% - %title%");
-	set_string("xtermtitle", "PMS: %ifstopped%Not playing%else%%ifpaused%[p] %endif%%artist% - %title%%endif%");
+	set_string("xtermtitle",  "PMS: %playstate%%ifcursong% %artist% - %title%%endif%");
 	set_string("onplaylistfinish", "");
 	set_string("libraryroot", "");
 	set_string("startuplist", "playlist");

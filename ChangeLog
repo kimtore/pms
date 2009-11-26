@@ -13,6 +13,7 @@ Kim Tore Jensen:
 2009-09-06: added: centre-cursor aliases center-cursor.
 
 Bart Nagel:
+2009-11-26: fixed: removed some redundant colour setting lines which fixes using topbar fields in the xterm title, changed default xterm title to make use of it
 2009-11-26: added: ifstopped and ifpaused conditionals, changed the default xterm title string to use them
 2009-11-24: changed: added a couple of lines to the INSTALL file
 2009-11-24: fixed: literal percent signs in fields (eg song titles) are now handled properly

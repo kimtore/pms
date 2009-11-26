@@ -529,7 +529,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 		/* Times */
 
 		case TIME_ELAPSED:
-			c = pms->options->colors->topbar.time_elapsed;
 			if (!pms->comm || !pms->comm->status()) return "";
 
 			retstr = Pms::timeformat(pms->comm->status()->time_elapsed);
@@ -537,7 +536,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case TIME_REMAINING:
-			c = pms->options->colors->topbar.time_remaining;
 			if (!pms->comm || !pms->comm->status()) return "";
 
 			retstr = Pms::timeformat(pms->comm->status()->time_total - pms->comm->status()->time_elapsed);
@@ -545,7 +543,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case PROGRESSPERCENTAGE:
-			c = pms->options->colors->topbar.progresspercentage;
 			if (!pms->disp || !pms->comm || !pms->comm->status() || pms->comm->status()->time_total == 0)
 				retstr = "0";
 			else
@@ -558,7 +555,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 		/* Widgets */
 
 		case PROGRESSBAR:
-			c = pms->options->colors->topbar.progressbar;
 			if (!pms->disp || !pms->comm || !pms->comm->status() || pms->comm->status()->time_total == 0) return "";
 
 			retstr.clear();
@@ -573,7 +569,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 		/* Status items */
 
 		case REPEAT:
-			c = pms->options->colors->topbar.repeat;
 			switch(repeatmode)
 			{
 				case REPEAT_NONE:
@@ -592,7 +587,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case RANDOM:
-			c = pms->options->colors->topbar.random;
 			switch(playmode)
 			{
 				case PLAYMODE_LINEAR:
@@ -608,7 +602,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case MANUALPROGRESSION:
-			c = pms->options->colors->topbar.manualprogression;
 			if (playmode == PLAYMODE_MANUAL)
 				retstr = "yes";
 			else
@@ -616,7 +609,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case MUTE:
-			c = pms->options->colors->topbar.mute;
 			if (!pms->comm) return "";
 			if (pms->comm->muted())
 				retstr = "yes";
@@ -625,7 +617,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case REPEATSHORT:
-			c = pms->options->colors->topbar.repeatshort;
 			switch(repeatmode)
 			{
 				default:
@@ -642,7 +633,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case RANDOMSHORT:
-			c = pms->options->colors->topbar.randomshort;
 			switch(playmode)
 			{
 				default:
@@ -656,7 +646,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case MANUALPROGRESSIONSHORT:
-			c = pms->options->colors->topbar.manualprogressionshort;
 			if (playmode == PLAYMODE_MANUAL)
 				retstr = "1";
 			else
@@ -664,7 +653,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case MUTESHORT:
-			c = pms->options->colors->topbar.muteshort;
 			if (!pms->comm) return "-";
 			if (pms->comm->muted())
 				retstr = "M";
@@ -673,7 +661,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case LIBRARYSIZE:
-			c = pms->options->colors->topbar.librarysize;
 			if (!pms->comm || !pms->comm->library()) return "";
 
 			list = pms->comm->library();
@@ -685,7 +672,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case LISTSIZE:
-			c = pms->options->colors->topbar.listsize;
 			if (!pms->disp || !pms->disp->actwin()) return "";
 
 			list = pms->disp->actwin()->plist();
@@ -711,7 +697,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case QUEUESIZE:
-			c = pms->options->colors->topbar.queuesize;
 			if (!pms->comm || !pms->comm->playlist()) return "";
 
 			tmpint = pms->comm->playlist()->qnumber();
@@ -720,7 +705,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case LIVEQUEUESIZE:
-			c = pms->options->colors->topbar.livequeuesize;
 			if (!pms->comm || !pms->comm->status() || !pms->comm->playlist()) return "";
 
 			if (pms->comm->playlist()->size() == 0)
@@ -752,7 +736,6 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case PLAYSTATE:
-			c = pms->options->colors->topbar.playstate;
 			if (!pms->comm || !pms->comm->status()) return "";
 
 			switch (pms->comm->status()->state)
@@ -774,42 +757,36 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case VOLUME:
-			c = pms->options->colors->topbar.volume;
 			if (!pms->comm || !pms->comm->status()) return "";
 
 			retstr = Pms::tostring(pms->comm->status()->volume);
 			break;
 
 		case BITRATE:
-			c = pms->options->colors->topbar.bitrate;
 			if (!pms->comm) return "";
 
 			retstr = Pms::tostring(pms->comm->status()->bitrate);
 			break;
 
 		case SAMPLERATE:
-			c = pms->options->colors->topbar.samplerate;
 			if (!pms->comm) return "";
 
 			retstr = Pms::tostring(static_cast<long>(pms->comm->status()->samplerate));
 			break;
 
 		case BITS:
-			c = pms->options->colors->topbar.bits;
 			if (!pms->comm) return "";
 
 			retstr = Pms::tostring(pms->comm->status()->bits);
 			break;
 
 		case CHANNELS:
-			c = pms->options->colors->topbar.channels;
 			if (!pms->comm) return "";
 
 			retstr = Pms::tostring(pms->comm->status()->channels);
 			break;
 
 		case LITERALPERCENT:
-			c = pms->options->colors->topbar.standard;
 			retstr = "%";
 			break;
 

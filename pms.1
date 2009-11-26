@@ -128,7 +128,7 @@ below. If used, it should have a trailing slash. Default: empty string (nothing 
 .TP
 .BI "xtermtitle=" "string"
 If set, the XTerm window title will be set to the specified string. Default:
-.B PMS: %ifstopped%Not playing%else%%ifpaused%[p] %endif%%artist% - %title%%endif%
+.B PMS: %playstate%%ifcursong% %artist% - %title%%endif%
 .TP
 .BI "reconnectdelay=" "integer"
 If a connection is lost, this is how many seconds between each connection retry. Default:

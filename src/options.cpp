@@ -51,7 +51,7 @@ void			Options::reset()
 	addtoreturns		= false;
 	directoryminlen		= 30;
 	directoryformat		= "%artist% - %title%";
-	xtermtitle		= "PMS: %ifstopped%Not playing%else%%ifpaused%[p] %endif%%artist% - %title%%endif%";
+	xtermtitle		= "PMS: %playstate%%ifcursong% %artist% - %title%%endif%";
 	playmode		= PLAYMODE_LINEAR;
 	repeatmode		= REPEAT_NONE;
 	ignorecase		= true;
