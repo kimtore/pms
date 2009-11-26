@@ -60,6 +60,8 @@ typedef enum
 	/* Conditionals */
 	COND_IFCURSONG,
 	COND_IFPLAYING,
+	COND_IFPAUSED,
+	COND_IFSTOPPED,
 	COND_ELSE,
 	COND_ENDIF,
 

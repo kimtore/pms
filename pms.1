@@ -128,7 +128,7 @@ below. If used, it should have a trailing slash. Default: empty string (nothing 
 .TP
 .BI "xtermtitle=" "string"
 If set, the XTerm window title will be set to the specified string. Default:
-.B PMS: %ifplaying% %artist% - %title% %else% Not playing %endif%
+.B PMS: %ifstopped%Not playing%else%%ifpaused%[p] %endif%%artist% - %title%%endif%
 .TP
 .BI "reconnectdelay=" "integer"
 If a connection is lost, this is how many seconds between each connection retry. Default:
@@ -325,7 +325,7 @@ Available variables to put in the topbar:
 .RE
 .TP
 Conditionals (if-else) are supported. Currently available conditionals:
-.BR "ifcursong" ", " "ifplaying"
+.BR "ifcursong" ", " "ifplaying" ", " "ifpaused" ", " "ifstopped"
 .PP
 See the defaults below for how conditionals are used.
 .PP

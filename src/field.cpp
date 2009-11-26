@@ -162,6 +162,10 @@ Item			Formatter::field_to_item(string f)
 		return COND_IFCURSONG;
 	else if (f == "ifplaying")
 		return COND_IFPLAYING;
+	else if (f == "ifpaused")
+		return COND_IFPAUSED;
+	else if (f == "ifstopped")
+		return COND_IFSTOPPED;
 	else if (f == "else")
 		return COND_ELSE;
 	else if (f == "endif")
@@ -272,6 +276,8 @@ string			Formatter::evalconditionals(string fmt)
 		{
 			case COND_IFCURSONG:
 			case COND_IFPLAYING:
+			case COND_IFPAUSED:
+			case COND_IFSTOPPED:
 				//find matching endif
 				endif_start = if_next;
 				while (true)
@@ -284,6 +290,8 @@ string			Formatter::evalconditionals(string fmt)
 					{
 						case COND_IFCURSONG:
 						case COND_IFPLAYING:
+						case COND_IFPAUSED:
+						case COND_IFSTOPPED:
 							depth++;
 							break;
 
@@ -309,6 +317,14 @@ string			Formatter::evalconditionals(string fmt)
 
 								case COND_IFPLAYING:
 									satisfied = pms->comm->status()->state == MPD_STATUS_STATE_PLAY;
+									break;
+
+								case COND_IFPAUSED:
+									satisfied = pms->comm->status()->state == MPD_STATUS_STATE_PAUSE;
+									break;
+
+								case COND_IFSTOPPED:
+									satisfied = pms->comm->status()->state == MPD_STATUS_STATE_STOP;
 									break;
 
 								default:

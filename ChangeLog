@@ -13,6 +13,7 @@ Kim Tore Jensen:
 2009-09-06: added: centre-cursor aliases center-cursor.
 
 Bart Nagel:
+2009-11-26: added: ifstopped and ifpaused conditionals, changed the default xterm title string to use them
 2009-11-24: changed: added a couple of lines to the INSTALL file
 2009-11-24: fixed: literal percent signs in fields (eg song titles) are now handled properly
 2009-11-12: changed: implemented XDG Base Directory Specification, with a slight modification to the default for XDG_CONFIG_DIRS (see manpage), closing #14
