@@ -692,6 +692,16 @@ string			Pms::formtext(string text)
 	return nutext;
 }
 
+/*
+ * Return true if the terminal supports Unicode
+ */
+bool			Pms::unicode()
+{
+	const char *		charset = NULL;
+
+	g_get_charset(&charset);
+	return strcmp(charset, "UTF-8") == 0;
+}
 
 
 

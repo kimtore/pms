@@ -50,8 +50,8 @@ void			Options::reset()
 	debug			= false;
 	addtoreturns		= false;
 	directoryminlen		= 30;
-	directoryformat		= "%artist% - %title%";
-	xtermtitle		= "PMS: %playstate%%ifcursong% %artist% - %title%%endif%";
+	directoryformat		= "%artist% – %title%";
+	xtermtitle		= "PMS: %playstate%%ifcursong% %artist% – %title%%endif%";
 	playmode		= PLAYMODE_LINEAR;
 	repeatmode		= REPEAT_NONE;
 	ignorecase		= true;
@@ -75,10 +75,10 @@ void			Options::reset()
 
 	//TODO: would be nice to have the commented alteratives default if 
 	//Unicode is available
-	status_unknown		= "??"; //?
-	status_play		= "|>"; //▶
-	status_pause		= "||"; //‖
-	status_stop		= "[]"; //■
+	status_unknown		= Pms::unicode() ? "?" : "??";
+	status_play		= Pms::unicode() ? "▶" : "|>";
+	status_pause		= Pms::unicode() ? "‖" : "||";
+	status_stop		= Pms::unicode() ? "■" : "[]";
 	
 	/* Album classification */
 	stralbumclass		= "artist album date";

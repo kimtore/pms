@@ -118,17 +118,17 @@ void		Options::reset()
 	set_bool("columnspace", true);
 	set_bool("mouse", false);
 
-	set_string("directoryformat", "%artist% - %title%");
-	set_string("xtermtitle",  "PMS: %playstate%%ifcursong% %artist% - %title%%endif%");
+	set_string("directoryformat", "%artist% – %title%");
+	set_string("xtermtitle",  "PMS: %playstate%%ifcursong% %artist% – %title%%endif%");
 	set_string("onplaylistfinish", "");
 	set_string("libraryroot", "");
 	set_string("startuplist", "playlist");
 	set_string("albumclass", "artist album date"); //FIXME: implement this
 
-	set_string("status_unknown", "??");
-	set_string("status_play", "|>");
-	set_string("status_pause", "||");
-	set_string("status_stop", "[]");
+	set_string("status_unknown", Pms::unicode() ? "?" : "??");
+	set_string("status_play", Pms::unicode() ? "▶" : "|>");
+	set_string("status_pause", Pms::unicode() ? "‖" : "||");
+	set_string("status_stop", Pms::unicode() ? "■" : "[]");
 
 	/*
 	 * Set up option aliases
@@ -136,13 +136,6 @@ void		Options::reset()
 	alias("ic", "ignorecase");
 	alias("so", "scrolloff");
 
-	//TODO: would be nice to have the commented alteratives default if 
-	//Unicode is available
-	//status_unknown		= "??"; //?
-	//status_play		= "|>"; //▶
-	//status_pause		= "||"; //‖
-	//status_stop		= "[]"; //■
-	
 	/* Set up default top bar values */
 	topbar.clear();
 	while(topbar.size() < 3)
