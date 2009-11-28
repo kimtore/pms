@@ -250,27 +250,6 @@ public:
 	void				draw();
 };
 
-class pms_win_directory : public pms_window
-{
-private:
-	Songlist *			library;
-	Directory *			rootdir;
-	Directory *			curdir;
-	int				level;
-	vector<int>			cursors;
-
-public:
-					pms_win_directory(Directory *, Songlist *);
-
-	void				stepin();
-	void				stepout();
-
-	int				type() { return WIN_ROLE_DIRECTORYLIST; };
-
-	unsigned int			size() { return (curdir ? curdir->songs.size() : 0); };
-	void				draw();
-};
-
 
 
 /*
@@ -320,7 +299,6 @@ public:
 
 	pms_win_bindings *		create_bindlist();
 	pms_win_windowlist *		create_windowlist();
-	pms_win_directory *		create_directorylist();
 	pms_win_playlist *		create_playlist();
 	bool				delete_window(pms_window *);
 };

@@ -1597,9 +1597,6 @@ bool		handle_command(pms_pending_keys action)
 				win = pms->disp->findwlist(pms->comm->library());
 			else if (pms->input->param == "windowlist")
 				win = pms->disp->create_windowlist();
-//TODO: add this for 0.40.7
-//			else if (pms->input->param == "directorylist")
-//				win = pms->disp->create_directorylist();
 			else
 			{
 				win = pms->disp->findwlist(pms->comm->findplaylist(pms->input->param));
@@ -1679,11 +1676,6 @@ bool		handle_command(pms_pending_keys action)
 				pms->log(MSG_STATUS, STERR, "Can not activate playlist '%s'.", list->filename.c_str());
 
 			break;
-
-		/* Selection */
-
-		/* Other */
-
 
 		/* Cycle through between linear play, random and play single song */
 		case PEND_CYCLE_PLAYMODE:
