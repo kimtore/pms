@@ -127,6 +127,7 @@ public:
 	static string			pluralformat(unsigned int);
 	static string			zeropad(int, unsigned int);
 	static string			formtext(string);
+	static bool			unicode();
 
 	/* Public member functions */
 	void				setstatus(statusbar_mode, const char *, ...);

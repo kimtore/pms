@@ -128,7 +128,7 @@ below. If used, it should have a trailing slash. Default: empty string (nothing 
 .TP
 .BI "xtermtitle=" "string"
 If set, the XTerm window title will be set to the specified string. Default:
-.B PMS: %playstate%%ifcursong% %artist% - %title%%endif%
+.B PMS: %playstate%%ifcursong% %artist% \[en] %title%%endif%
 .TP
 .BI "reconnectdelay=" "integer"
 If a connection is lost, this is how many seconds between each connection retry. Default:
@@ -256,6 +256,7 @@ below. Default:
 .RS
 Status strings. Defaults:
 .BR "??" ", " "|>" ", " "||" ", " "[]"
+or, when Unicode is available, single characters which I can't figure out how to print in this manpage.
 .RE
 .TP
 .BR "mouse" " (boolean)"
@@ -663,10 +664,10 @@ Find the next search result from the last quick-find
 Find the previous search result from the last quick-find
 .TP
 .BI "next-of " "string"
-.RB "Parameter should be a field name (see " "FIELDS" " above) -- jump to the next track in the list for which the field differs"
+.RB "Parameter should be a field name (see " "FIELDS" " above) \[en] jump to the next track in the list for which the field differs"
 .TP
 .BI "prev-of " "string"
-.RB "Parameter should be a field name (see " "FIELDS" " above) -- jump up the list to the first (topmost) of a set of tracks which have in common the next differing value of the given field"
+.RB "Parameter should be a field name (see " "FIELDS" " above) \[en] jump up the list to the first (topmost) of a set of tracks which have in common the next differing value of the given field"
 .RS
 .PP
 To put that another way, the cursor moves up until the given field changes, then keeps going until just before it would change again.
