@@ -41,8 +41,8 @@ extern Pms *			pms;
 Songlist::Songlist()
 {
 	lastget = NULL;
-	seliter = songs.begin();
-	rseliter = songs.rbegin();
+	seliter = filtersongs.begin();
+	rseliter = filtersongs.rbegin();
 	position = 0;
 	wrap = false;
 	length = 0;
@@ -64,14 +64,13 @@ Songlist::~Songlist()
 
 /*
  * Return a pointer to the Nth song in the list.
- * FIXME: add filters support
  */
 Song *			Songlist::song(song_t n)
 {
-	if (n < 0 || n >= songs.size())
+	if (n < 0 || n >= filtersongs.size())
 		return NULL;
 
-	return songs[n];
+	return filtersongs[n];
 }
 
 /*
@@ -90,7 +89,7 @@ Song *			Songlist::nextsong(song_t * id)
 		if (size() == 0)
 			return NULL;
 
-		return songs[0];
+		return filtersongs[0];
 	}
 
 	/* Find the current song in this list */
@@ -116,7 +115,7 @@ Song *			Songlist::nextsong(song_t * id)
 	if (id != NULL)
 		*id = i;
 
-	return songs[i];
+	return filtersongs[i];
 }
 
 /*
@@ -135,7 +134,7 @@ Song *			Songlist::prevsong(song_t * id)
 		if (size() == 0)
 			return NULL;
 
-		return songs[end()];
+		return filtersongs[end()];
 	}
 
 	/* Find the current song in this list */
@@ -161,7 +160,7 @@ Song *			Songlist::prevsong(song_t * id)
 	if (id != NULL)
 		*id = i;
 
-	return songs[i];
+	return filtersongs[i];
 }
 
 /*
@@ -183,7 +182,7 @@ Song *			Songlist::randsong(song_t * id)
 
 	i %= size();
 
-	if (songs[i] == pms->cursong())
+	if (filtersongs[i] == pms->cursong())
 	{
 		--i;
 		if (i < 0) i = end();
@@ -192,7 +191,7 @@ Song *			Songlist::randsong(song_t * id)
 	if (id != NULL)
 		*id = i;
 
-	return songs[i];
+	return filtersongs[i];
 }
 
 
@@ -261,7 +260,7 @@ song_t		Songlist::findentry(Item field, bool reverse)
 		return i;
 	}
 
-	song = songs[i];
+	song = filtersongs[i];
 
 	/* Reverse match must match first entry, not last */
 	if (reverse)
@@ -292,7 +291,7 @@ void		Songlist::set(Songlist * list)
 
 	for (i = 0; i < list->size(); i++)
 	{
-		s = new Song(list->songs[i]);
+		s = new Song(list->song(i));
 		s->id = MPD_SONG_NO_ID;
 		s->pos = MPD_SONG_NO_NUM;
 		add(s);
@@ -341,7 +340,7 @@ void		Songlist::filter_add(string param, long fields)
 void		Songlist::filter_clear()
 {
 	vector<Filter *>::iterator	it;
-	vector<Song *>::iterator	sit;
+	unsigned int			i;
 
 	it = filters.begin();
 	while (it++ != filters.end())
@@ -350,9 +349,11 @@ void		Songlist::filter_clear()
 	filters.clear();
 	filtersongs.clear();
 
-	sit = songs.begin();
-	while (sit++ != songs.end())
-		filtersongs.push_back(*sit);
+	for (i = 0; i < songs.size(); i++)
+	{
+		songs[i]->pos = i;
+		filtersongs.push_back(songs[i]);
+	}
 }
 
 /*
@@ -407,7 +408,7 @@ song_t		Songlist::add(Songlist * list)
 
 	for (i = 0; i < list->size(); i++)
 	{
-		result = add(new Song(list->songs[i]));
+		result = add(new Song(list->song(i)));
 		if (first == MPD_SONG_NO_ID && result != MPD_SONG_NO_ID)
 			first = result;
 	}
@@ -428,6 +429,8 @@ song_t		Songlist::add(Song * song)
 	if (song->pos == MPD_SONG_NO_NUM || song->pos == static_cast<song_t>(songs.size()))
 	{
 		songs.push_back(song);
+		if (filter_match(song))
+			filtersongs.push_back(song);
 	}
 	else
 	{
@@ -437,6 +440,7 @@ song_t		Songlist::add(Song * song)
 			i = songs.erase(songs.begin() + song->pos);
 		}
 		songs.insert(i, song);
+		/* FIXME: filtersongs does not get updated because of ->pos mismatch, but do we need it anyway? */
 	}
 
 	if (song->time != MPD_SONG_NO_TIME)
@@ -444,8 +448,8 @@ song_t		Songlist::add(Song * song)
 		length += song->time;
 	}
 
-	seliter = songs.begin();
-	rseliter = songs.rbegin();
+	seliter = filtersongs.begin();
+	rseliter = filtersongs.rbegin();
 
 	return static_cast<song_t>(songs.size() - 1);
 }
@@ -453,7 +457,7 @@ song_t		Songlist::add(Song * song)
 /*
  * Removes a song from the list
  */
-int		Songlist::remove(Song *song)
+int		Songlist::remove(Song * song)
 {
 	if (!song)	return false;
 
@@ -461,7 +465,7 @@ int		Songlist::remove(Song *song)
 
 	if (song->pos == MPD_SONG_NO_NUM)
 	{
-		return remove(match(song->file, 0, songs.size() - 1, MATCH_FILE));
+		return remove(match(song->file, 0, filtersongs.size() - 1, MATCH_FILE));
 	}
 	else	return remove(song->pos);
 }
@@ -472,8 +476,9 @@ int		Songlist::remove(Song *song)
 int		Songlist::remove(int songpos)
 {
 	vector<Song *>::iterator	it;
+	song_t				realsongpos;
 
-	if (songpos < 0 || (unsigned int)songpos >= songs.size() || songpos == MATCH_FAILED)
+	if (songpos < 0 || static_cast<unsigned int>(songpos) >= filtersongs.size() || songpos == MATCH_FAILED)
 	{
 		return false;
 	}
@@ -483,19 +488,22 @@ int		Songlist::remove(int songpos)
 		length -= songs[songpos]->time;
 	}
 
-	delete songs[songpos];
+	realsongpos = songs[songpos]->pos;
+	delete songs[realsongpos];
 
-	it = songs.begin() + songpos;
+	it = songs.begin() + realsongpos;
 	it = songs.erase(it);
-
 	while (it != songs.end())
 	{
 		--(*it)->pos;
 		++it;
 	}
 
-	seliter = songs.begin();
-	rseliter = songs.rbegin();
+	it = filtersongs.begin() + songpos;
+	it = filtersongs.erase(it);
+
+	seliter = filtersongs.begin();
+	rseliter = filtersongs.rbegin();
 
 	return true;
 }
@@ -509,20 +517,39 @@ bool			Songlist::swap(int a, int b)
 	int		tpos;
 	Song *		tmp;
 
-	if (a < 0 || a >= songs.size() || b < 0 || b >= songs.size())
-		return false;
-
 	i = static_cast<unsigned int>(a);
 	j = static_cast<unsigned int>(b);
 
-	tpos = songs[i]->pos;
+	if (filters.size() == 0)
+	{
+		if (a < 0 || a >= songs.size() || b < 0 || b >= songs.size())
+			return false;
 
-	tmp = songs[i];
-	songs[i] = songs[j];
-	songs[j] = tmp;
+		tpos = songs[i]->pos;
 
-	songs[j]->pos = songs[i]->pos;
-	songs[i]->pos = tpos;
+		tmp = songs[i];
+		songs[i] = songs[j];
+		filtersongs[i] = songs[j];
+		songs[j] = tmp;
+		filtersongs[j] = tmp;
+
+		songs[j]->pos = songs[i]->pos;
+		songs[i]->pos = tpos;
+	}
+	else
+	{
+		if (a < 0 || a >= filtersongs.size() || b < 0 || b >= filtersongs.size())
+			return false;
+
+		tpos = filtersongs[i]->pos;
+
+		tmp = filtersongs[i];
+		filtersongs[i] = filtersongs[j];
+		filtersongs[j] = tmp;
+
+		filtersongs[j]->pos = filtersongs[i]->pos;
+		filtersongs[i]->pos = tpos;
+	}
 
 	return true;
 }
@@ -533,6 +560,9 @@ bool			Songlist::swap(int a, int b)
 bool			Songlist::move(unsigned int from, unsigned int dest)
 {
 	int		songpos, direction, dst;
+
+	if (filters.size() > 0)
+		return false; //FIXME: add some kind of message?
 
 	if (dest >= songs.size() || from >= songs.size())
 		return false;
@@ -581,6 +611,7 @@ void Songlist::clear()
 	}
 
 	songs.clear();
+	filtersongs.clear();
 
 	length = 0;
 	qlen = 0;
@@ -599,10 +630,10 @@ int		Songlist::setcursor(song_t pos)
 		beep();
 		pos = 0;
 	}
-	else if (pos >= songs.size())
+	else if (pos >= filtersongs.size())
 	{
 		beep();
-		pos = songs.size() - 1;
+		pos = filtersongs.size() - 1;
 	}
 
 	position = pos;
@@ -636,9 +667,9 @@ int		Songlist::locatesong(Song * song)
 {
 	unsigned int		i;
 
-	for (i = 0; i < songs.size(); i++)
+	for (i = 0; i < filtersongs.size(); i++)
 	{
-		if (songs[i] == song)
+		if (filtersongs[i] == song)
 			return (int)i;
 	}
 
@@ -679,10 +710,10 @@ Song *		Songlist::getnextselected()
 {
 	if (lastget == NULL)
 	{
-		seliter = songs.begin();
+		seliter = filtersongs.begin();
 	}
 
-	while (seliter != songs.end())
+	while (seliter != filtersongs.end())
 	{
 		if (!(*seliter)) break; // out of bounds
 		if ((*seliter)->selected)
@@ -716,10 +747,10 @@ Song *		Songlist::getprevselected()
 {
 	if (lastget == NULL)
 	{
-		rseliter = songs.rbegin();
+		rseliter = filtersongs.rbegin();
 	}
 
-	while (rseliter != songs.rend())
+	while (rseliter != filtersongs.rend())
 	{
 		if (!(*rseliter)) break; // out of bounds
 		if ((*rseliter)->selected)
@@ -767,8 +798,8 @@ Song *		Songlist::popnextselected()
 void		Songlist::resetgets()
 {
 	lastget = NULL;
-	seliter = songs.begin();
-	rseliter = songs.rbegin();
+	seliter = filtersongs.begin();
+	rseliter = filtersongs.rbegin();
 }
 
 /*
@@ -776,8 +807,8 @@ void		Songlist::resetgets()
  */
 Song *		Songlist::cursorsong()
 {
-	if (songs.size() == 0) return NULL;
-	return (songs[cursor()]);
+	if (filtersongs.size() == 0) return NULL;
+	return (filtersongs[cursor()]);
 }
 
 /*
@@ -785,8 +816,8 @@ Song *		Songlist::cursorsong()
  */
 unsigned int		Songlist::cursor()
 {
-	if (position < 0)			position = 0;
-	else if (position >= songs.size())	position = songs.size() - 1;
+	if (position < 0)				position = 0;
+	else if (position >= filtersongs.size())	position = filtersongs.size() - 1;
 
 	return position;
 }
@@ -801,13 +832,13 @@ unsigned int		Songlist::qlength()
 	/* Find current playing song */
 	if (!pms->cursong() || pms->cursong()->id == MPD_SONG_NO_ID || pms->cursong()->pos == MPD_SONG_NO_NUM)
 	{
-		qnum = songs.size();
+		qnum = filtersongs.size();
 		qpos = 0;
 		qlen = length;
 		return qlen;
 	}
 
-	if ((int)qpos == pms->cursong()->id && qsize == songs.size())
+	if ((int)qpos == pms->cursong()->id && qsize == filtersongs.size())
 		return qlen;
 
 	qpos = pms->cursong()->id;
@@ -816,11 +847,11 @@ unsigned int		Songlist::qlength()
 	/* Calculate from start */
 	qlen = 0;
 	qnum = 0;
-	qsize = songs.size();
-	for (i = songpos + 1; i < songs.size(); i++)
+	qsize = filtersongs.size();
+	for (i = songpos + 1; i < filtersongs.size(); i++)
 	{
-		if (songs[i]->time != MPD_SONG_NO_TIME)
-			qlen += songs[i]->time;
+		if (filtersongs[i]->time != MPD_SONG_NO_TIME)
+			qlen += filtersongs[i]->time;
 		++qnum;
 	}
 	return qlen;
@@ -833,7 +864,7 @@ void		Songlist::movecursor(song_t offset)
 {
 	if (wrap == true)
 	{
-		if (songs.size() == 0)
+		if (filtersongs.size() == 0)
 		{
 			beep();
 			position = 0;
@@ -842,9 +873,9 @@ void		Songlist::movecursor(song_t offset)
 		position += offset;
 		while(position < 0)
 		{
-			position += songs.size();
+			position += filtersongs.size();
 		}
-		position %= songs.size();
+		position %= filtersongs.size();
 	}
 	else
 	{
@@ -855,40 +886,14 @@ void		Songlist::movecursor(song_t offset)
 			beep();
 			position = 0;
 		}
-		else if ((unsigned int)offset >= songs.size())
+		else if ((unsigned int)offset >= filtersongs.size())
 		{
 			beep();
-			position = songs.size() - 1;
+			position = filtersongs.size() - 1;
 		}
 		else
 			position = offset;
 	}
-}
-
-/*
- * Find all matches, returns list of song IDs
- */
-vector<song_t> *	Songlist::matchall(string src, long mode)
-{
-	vector<song_t> *	ret	= new vector<song_t>;
-	song_t			m	= 0;
-
-	while(m != songs.size() - 1)	
-	{
-		m = match(src, m, songs.size() - 1, mode);
-		if (m != MATCH_FAILED)
-			ret->push_back(m);
-		else
-			break;
-	}
-
-	if (ret->size() == 0)
-	{
-		delete ret;
-		return NULL;
-	}
-
-	return ret;
 }
 
 /*
@@ -957,11 +962,11 @@ song_t			Songlist::match(string src, unsigned int from, unsigned int to, long mo
 	int				i;
 	Song *				song;
 
-	if (songs.size() == 0)
+	if (filtersongs.size() == 0)
 		return MATCH_FAILED;
 
-	if (from < 0)		from = 0;
-	if (to >= songs.size())	to = songs.size() - 1;
+	if (from < 0)			from = 0;
+	if (to >= filtersongs.size())	to = filtersongs.size() - 1;
 
 	if (mode & MATCH_REVERSE)
 	{
@@ -975,17 +980,17 @@ song_t			Songlist::match(string src, unsigned int from, unsigned int to, long mo
 	while (true)
 	{
 		if (i < 0)
-			i = songs.size() - 1;
-		else if (i >= songs.size())
+			i = filtersongs.size() - 1;
+		else if (i >= filtersongs.size())
 			i = 0;
 
-		if (songs[i] == NULL)
+		if (filtersongs[i] == NULL)
 		{
 			i += (mode & MATCH_REVERSE ? -1 : 1);
 			continue;
 		}
 
-		if (match(songs[i], src, mode))
+		if (match(filtersongs[i], src, mode))
 			return i;
 
 		if (i == to)
@@ -1110,12 +1115,31 @@ bool		Songlist::sort(string sorts)
 	if (pms->mediator->changed("setting.ignorecase"))
 		ignorecase = pms->options->get_bool("ignorecase");
 
-	temp = songs;
+	v = Pms::splitstr(sorts, " ");
 
+	/* Sort the real song list */
+	start = songs.begin();
+	stop = songs.end();
+
+	for (i = 0; i < v->size(); i++)
+	{
+		ft = pms->fieldtypes->lookup((*v)[i]);
+		if (ft == -1)
+			continue;
+
+		func = pms->fieldtypes->sortfunc[(unsigned int)ft];
+		if (func == NULL) continue;
+
+		if (i == 0)
+			std::sort(start, stop, func);
+		else
+			std::stable_sort(start, stop, func);
+	}
+
+	/* Sort the filtered song list */
+	temp = filtersongs;
 	start = temp.begin();
 	stop = temp.end();
-
-	v = Pms::splitstr(sorts, " ");
 
 	for (i = 0; i < v->size(); i++)
 	{
@@ -1134,7 +1158,7 @@ bool		Songlist::sort(string sorts)
 
 	if (i == v->size())
 	{
-		songs = temp;
+		filtersongs = temp;
 		delete v;
 		return true;
 	}
