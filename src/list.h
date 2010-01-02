@@ -31,6 +31,7 @@
 #include "song.h"
 #include "types.h"
 #include "field.h"
+#include "filter.h"
 
 using namespace std;
 
@@ -82,6 +83,7 @@ private:
 	Song *					lastget;
 	vector<Song *>::iterator		seliter;
 	vector<Song *>::reverse_iterator	rseliter;
+	vector<Filter *>			filters;
 
 public:
 				Songlist();
