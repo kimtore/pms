@@ -306,8 +306,6 @@ void		Songlist::truncate(unsigned int maxsize)
 {
 	unsigned int	i;
 
-//	pms->log(MSG_DEBUG, 0, "Truncating %p, maxsize=%d: ...\n", this, maxsize);
-	
 	if (maxsize == 0)
 	{
 		this->clear();
@@ -316,10 +314,85 @@ void		Songlist::truncate(unsigned int maxsize)
 
 	for (i = end(); i >= maxsize; i--)
 	{
-//		pms->log(MSG_DEBUG, 0, "...removing %d: %s\n", i, songs[i]->file.c_str());
 		remove(static_cast<int>(i));
 	}
 }
+
+/*
+ * Add a filter to the list
+ */
+void		Songlist::filter_add(string param, long fields)
+{
+	Filter *	f;
+
+	f = new Filter();
+	if (f == NULL)
+		return;
+
+	f->param = param;
+	f->fields = fields;
+
+	this->filter_scan();
+}
+
+/*
+ * Clear out the filter list
+ */
+void		Songlist::filter_clear()
+{
+	vector<Filter *>::iterator	it;
+	vector<Song *>::iterator	sit;
+
+	it = filters.begin();
+	while (it++ != filters.end())
+		delete *it;
+	
+	filters.clear();
+	filtersongs.clear();
+
+	sit = songs.begin();
+	while (sit++ != songs.end())
+		filtersongs.push_back(*sit);
+}
+
+/*
+ * Scan through all songs and apply the filter to them
+ */
+void		Songlist::filter_scan()
+{
+	vector<Song *>::iterator	it;
+
+	it = filtersongs.begin();
+	while (it != filtersongs.end())
+	{
+		if (filter_match(*it))
+			it = filtersongs.erase(it);
+		else
+			++it;
+	}
+}
+
+/*
+ * Match a song against all filters
+ */
+bool		Songlist::filter_match(Song * s)
+{
+	vector<Filter *>::iterator	it;
+	song_t				n;
+
+	if (filters.size() == 0)
+		return true;
+	
+	it = filters.begin();
+	while (it++ != filters.end())
+	{
+		if (!match(s, (*it)->param, (*it)->fields));
+			return false;
+	}
+
+	return true;
+}
+
 
 /*
  * Appends an entire list. Returns the id of the first added song.
@@ -819,15 +892,70 @@ vector<song_t> *	Songlist::matchall(string src, long mode)
 }
 
 /*
- * Find next match
+ * Match a single song against criteria
+ */
+bool			Songlist::match(Song * song, string & src, long mode)
+{
+	vector<string>			sources;
+	bool				matched;
+	unsigned int			j;
+
+	/* try the sources in order of likeliness. ID etc last since if we're 
+	 * searching for them we likely won't be searching any of the other 
+	 * fields. */
+	if (mode & MATCH_TITLE)			sources.push_back(song->title);
+	if (mode & MATCH_ARTIST)		sources.push_back(song->artist);
+	if (mode & MATCH_ALBUMARTIST)		sources.push_back(song->albumartist);
+	if (mode & MATCH_COMPOSER)		sources.push_back(song->composer);
+	if (mode & MATCH_PERFORMER)		sources.push_back(song->performer);
+	if (mode & MATCH_ALBUM)			sources.push_back(song->album);
+	if (mode & MATCH_GENRE)			sources.push_back(song->genre);
+	if (mode & MATCH_DATE)			sources.push_back(song->date);
+	if (mode & MATCH_COMMENT)		sources.push_back(song->comment);
+	if (mode & MATCH_TRACKSHORT)		sources.push_back(song->trackshort);
+	if (mode & MATCH_DISC)			sources.push_back(song->disc);
+	if (mode & MATCH_FILE)			sources.push_back(song->file);
+	if (mode & MATCH_ARTISTSORT)		sources.push_back(song->artistsort);
+	if (mode & MATCH_ALBUMARTISTSORT)	sources.push_back(song->albumartistsort);
+	if (mode & MATCH_YEAR)			sources.push_back(song->year);
+	if (mode & MATCH_ID)			sources.push_back(Pms::tostring(song->id));
+	if (mode & MATCH_POS)			sources.push_back(Pms::tostring(song->pos));
+
+	for (j = 0; j < sources.size(); j++)
+	{
+		if (mode & MATCH_EXACT)
+			matched = exactmatch(&(sources[j]), &src);
+#ifdef HAVE_LIBBOOST_REGEX
+		else if (pms->options->get_bool("regexsearch"))
+			matched = regexmatch(&(sources[j]), &src);
+#endif
+		else
+			matched = inmatch(&(sources[j]), &src);
+
+		if (matched)
+		{
+			if (!(mode & MATCH_NOT))
+				return true;
+			else
+				continue;
+		}
+		else
+		{
+			if (mode & MATCH_NOT)
+				return true;
+		}
+	}
+
+	return false;
+}
+
+/*
+ * Find next match in the range from..to.
  */
 song_t			Songlist::match(string src, unsigned int from, unsigned int to, long mode)
 {
-	bool				matched;
 	int				i;
-	unsigned int			j;
 	Song *				song;
-	vector<string>			sources;
 
 	if (songs.size() == 0)
 		return MATCH_FAILED;
@@ -856,50 +984,9 @@ song_t			Songlist::match(string src, unsigned int from, unsigned int to, long mo
 			i += (mode & MATCH_REVERSE ? -1 : 1);
 			continue;
 		}
-		song = songs[i];
-		sources.clear();
 
-		/* try the sources in order of likeliness. ID etc last since if we're 
-		 * searching for them we likely won't be searching any of the other 
-		 * fields. */
-		if (mode & MATCH_TITLE)			sources.push_back(song->title);
-		if (mode & MATCH_ARTIST)		sources.push_back(song->artist);
-		if (mode & MATCH_ALBUMARTIST)		sources.push_back(song->albumartist);
-		if (mode & MATCH_COMPOSER)		sources.push_back(song->composer);
-		if (mode & MATCH_PERFORMER)		sources.push_back(song->performer);
-		if (mode & MATCH_ALBUM)			sources.push_back(song->album);
-		if (mode & MATCH_GENRE)			sources.push_back(song->genre);
-		if (mode & MATCH_DATE)			sources.push_back(song->date);
-		if (mode & MATCH_COMMENT)		sources.push_back(song->comment);
-		if (mode & MATCH_TRACKSHORT)		sources.push_back(song->trackshort);
-		if (mode & MATCH_DISC)			sources.push_back(song->disc);
-		if (mode & MATCH_FILE)			sources.push_back(song->file);
-		if (mode & MATCH_ARTISTSORT)		sources.push_back(song->artistsort);
-		if (mode & MATCH_ALBUMARTISTSORT)	sources.push_back(song->albumartistsort);
-		if (mode & MATCH_YEAR)			sources.push_back(song->year);
-		if (mode & MATCH_ID)			sources.push_back(Pms::tostring(song->id));
-		if (mode & MATCH_POS)			sources.push_back(Pms::tostring(song->pos));
-
-		for (j = 0; j < sources.size(); j++)
-		{
-			if (mode & MATCH_EXACT)
-				matched = exactmatch(&(sources[j]), &src);
-#ifdef HAVE_LIBBOOST_REGEX
-			else if (pms->options->get_bool("regexsearch"))
-				matched = regexmatch(&(sources[j]), &src);
-#endif
-			else
-				matched = inmatch(&(sources[j]), &src);
-
-			if (matched)
-				if (!(mode & MATCH_NOT))
-					return i;
-				else
-					continue;
-			else
-				if (mode & MATCH_NOT)
-					return i;
-		}
+		if (match(songs[i], src, mode))
+			return i;
 
 		if (i == to)
 			break;

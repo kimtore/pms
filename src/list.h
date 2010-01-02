@@ -62,7 +62,12 @@ enum
 
 	MATCH_NOT		= 1 << 18,
 	MATCH_EXACT		= 1 << 19,
-	MATCH_REVERSE		= 1 << 20
+	MATCH_REVERSE		= 1 << 20,
+	MATCH_ALMOST		= 1 << 21,
+	MATCH_LT		= 1 << 22,
+	MATCH_LTE		= 1 << 23,
+	MATCH_GT		= 1 << 24,
+	MATCH_GTE		= 1 << 25
 };
 
 struct Selection
@@ -85,6 +90,7 @@ private:
 	vector<Song *>::reverse_iterator	rseliter;
 
 	vector<Song *>				songs;
+	vector<Song *>				filtersongs;
 	vector<Filter *>			filters;
 
 public:
@@ -106,6 +112,7 @@ public:
 
 	vector<song_t> *	matchall(string, long);
 	song_t			match(string, unsigned int, unsigned int, long);
+	bool			match(Song *, string &, long);
 #ifdef HAVE_LIBBOOST_REGEX
 	bool			regexmatch(string *, string *);
 #endif
@@ -136,6 +143,12 @@ public:
 	song_t			nextof(string);
 	song_t			prevof(string);
 	song_t			findentry(Item, bool);
+
+	/* Filter functions */
+	void			filter_add(string param, long fields);
+	void			filter_clear();
+	void			filter_scan();
+	bool			filter_match(Song *);
 
 	song_t			add(Song *);
 	song_t			add(Songlist *);

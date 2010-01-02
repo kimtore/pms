@@ -21,23 +21,9 @@
  */
 
 
-enum
-{
-	COMPARE_EQUAL	= 1 << 0,
-	COMPARE_ALMOST	= 1 << 1,
-	COMPARE_LT	= 1 << 2,
-	COMPARE_LTE	= 1 << 3,
-	COMPARE_GT	= 1 << 4,
-	COMPARE_GTE	= 1 << 5,
-
-	COMPARE_NOT	= 1 << 6
-};
-
-
 class Filter
 {
 public:
 	string			param;
-	long			comp;
-	long			field;
+	long			fields;
 };
