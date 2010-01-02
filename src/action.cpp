@@ -714,7 +714,7 @@ long		Interface::prev()
 		return STERR;
 	}
 
-	cs = pms->comm->playlist()->songs[i];
+	cs = pms->comm->playlist()->song(i);
 	pms->comm->playid(cs->id);
 	pms->drawstatus();
 
@@ -1003,14 +1003,14 @@ long		Interface::select(pms_window * win, int mode, string param)
 	{
 		case SELECT_CLEAR:
 			for(i = 0; i <= list->end(); i++)
-				list->selectsong(list->songs[i], 0);
+				list->selectsong(list->song(i), 0);
 			pms->log(MSG_DEBUG, STOK, _("Cleared selection.\n"));
 			win->wantdraw = true;
 			return STOK;
 
 		case SELECT_ALL:
 			for(i = 0; i <= list->end(); i++)
-				list->selectsong(list->songs[i], 1);
+				list->selectsong(list->song(i), 1);
 			pms->log(MSG_DEBUG, STOK, _("Selected all songs.\n"));
 			win->wantdraw = true;
 			return STOK;
@@ -1051,7 +1051,7 @@ long		Interface::select(pms_window * win, int mode, string param)
 	}
 	while (i != MATCH_FAILED)
 	{
-		song = list->songs[i];
+		song = list->song(i);
 		if (!song)
 		{
 			pms->log(MSG_DEBUG, STERR, "***BUG*** in Interface::select(): Encountered NULL song!\n");
@@ -1814,7 +1814,7 @@ int		multiplay(long mode, int playmode)
 			{
 				//last track of the current playlist is part of this album
 				//get last track of the album
-				song = list->songs[list->match(pattern, 0, list->end(), mode | MATCH_EXACT | MATCH_REVERSE)];
+				song = list->song(list->match(pattern, 0, list->end(), mode | MATCH_EXACT | MATCH_REVERSE));
 				if (pms->comm->playlist()->match(song->file, pms->comm->playlist()->end(), pms->comm->playlist()->end(), MATCH_FILE | MATCH_EXACT) != MATCH_FAILED)
 				{
 					//last track of playlist matches last track of album
@@ -1825,7 +1825,7 @@ int		multiplay(long mode, int playmode)
 				{
 					//find position in the library of the playlist's last track, 
 					//start adding from the one after that
-					i = list->match(pms->comm->playlist()->songs[pms->comm->playlist()->end()]->file, 0, list->end(), MATCH_FILE | MATCH_EXACT) + 1;
+					i = list->match(pms->comm->playlist()->song(pms->comm->playlist()->end())->file, 0, list->end(), MATCH_FILE | MATCH_EXACT) + 1;
 					pms->log(MSG_STATUS, STOK, _("%s remainder of album '%s' by %s"), pmode.c_str(), song->album.c_str(), song->artist.c_str());
 				}
 			}
@@ -1850,7 +1850,7 @@ int		multiplay(long mode, int playmode)
 		if (i == MATCH_FAILED) break;
 		if (first == -1)
 			first = pms->comm->playlist()->size();
-		pms->comm->add(pms->comm->playlist(), list->songs[i]);
+		pms->comm->add(pms->comm->playlist(), list->song(i));
 		if (++i > listend) break;
 	}
 	if (!pms->comm->list_end())

@@ -83,6 +83,8 @@ private:
 	Song *					lastget;
 	vector<Song *>::iterator		seliter;
 	vector<Song *>::reverse_iterator	rseliter;
+
+	vector<Song *>				songs;
 	vector<Filter *>			filters;
 
 public:
@@ -93,7 +95,7 @@ public:
 	bool			wrap;
 	string			filename;
 	
-	vector<Song *>		songs;
+	Song *			song(song_t);
 	unsigned int		length;
 	void			clear();
 	Selection		selection;

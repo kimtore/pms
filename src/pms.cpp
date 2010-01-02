@@ -759,10 +759,10 @@ bool			Pms::run_shell(string cmd)
 		replace = "";
 		for (i = 0; i < list->size(); i++)
 		{
-			if (!list->selection.size || list->songs[i]->selected)
+			if (!list->selection.size || list->song(i)->selected)
 			{
 				replace += options->get_string("libraryroot");
-				replace += list->songs[i]->file;
+				replace += list->song(i)->file;
 				replace += "\" \"";
 			}
 		}

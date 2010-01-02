@@ -39,5 +39,5 @@ class Filter
 public:
 	string			param;
 	long			comp;
-	Item			field;
+	long			field;
 };

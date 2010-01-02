@@ -709,7 +709,7 @@ void		pms_win_playlist::draw()
 		++counter;
 		hilight = NULL;
 
-		song = list->songs[i];
+		song = list->song(i);
 		if (i == list->cursor())
 		{
 			hilight = pms->options->colors->cursor;
@@ -821,7 +821,7 @@ void pms_win_playlist::set_column_size()
 	/* Find minimum length needed to display all content */
 	for (i = 0; i < list->size(); i++)
 	{
-		song = list->songs[i];
+		song = list->song(i);
 		
 		for (j = 0; j < column.size(); j++)
 		{

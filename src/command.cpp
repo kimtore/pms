@@ -624,7 +624,7 @@ song_t		Control::add(Songlist * source, Songlist * dest)
 	list_start();
 	for (i = 0; i < source->size(); i++)
 	{
-		result = add(dest, source->songs[i]);
+		result = add(dest, source->song(i));
 		if (first == MPD_SONG_NO_ID && result != MPD_SONG_NO_ID)
 			first = result;
 	}
@@ -764,7 +764,7 @@ bool		Control::crop(Songlist * list, int mode)
 			if (upos != i)
 			{
 				if (list == _playlist)
-					mpd_sendDeleteIdCommand(conn->h(), list->songs[i]->id);
+					mpd_sendDeleteIdCommand(conn->h(), list->song(i)->id);
 				else
 					mpd_sendPlaylistDeleteCommand(conn->h(), (char *)list->filename.c_str(), static_cast<int>(i));
 				list->remove(i);
@@ -788,10 +788,10 @@ bool		Control::crop(Songlist * list, int mode)
 		list_start();
 		for (i = list->end(); i < list->size(); i--)
 		{
-			if (list->songs[i]->selected == false)
+			if (list->song(i)->selected == false)
 			{
 				if (list == _playlist)
-					mpd_sendDeleteIdCommand(conn->h(), list->songs[i]->id);
+					mpd_sendDeleteIdCommand(conn->h(), list->song(i)->id);
 				else
 					mpd_sendPlaylistDeleteCommand(conn->h(), (char *)list->filename.c_str(), static_cast<int>(i));
 				list->remove(i);
@@ -799,7 +799,7 @@ bool		Control::crop(Songlist * list, int mode)
 			}
 			else
 			{
-				list->selectsong(list->songs[i], false);
+				list->selectsong(list->song(i), false);
 			}
 		}
 		return list_end();
@@ -986,9 +986,9 @@ int		Control::prune(Songlist * list1, Songlist * list2)
 
 	for (i = 0; i < list1->size(); i++)
 	{
-		if (list2->match(list1->songs[i]->file, 0, list2->size() - 1, MATCH_FILE) == MATCH_FAILED)
+		if (list2->match(list1->song(i)->file, 0, list2->size() - 1, MATCH_FILE) == MATCH_FAILED)
 		{
-			pms->log(MSG_DEBUG, 0, "Pruning '%s' from list.\n", list1->songs[i]->file.c_str());
+			pms->log(MSG_DEBUG, 0, "Pruning '%s' from list.\n", list1->song(i)->file.c_str());
 			list1->remove(i);
 			++pruned;
 		}

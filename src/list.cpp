@@ -63,6 +63,18 @@ Songlist::~Songlist()
 }
 
 /*
+ * Return a pointer to the Nth song in the list.
+ * FIXME: add filters support
+ */
+Song *			Songlist::song(song_t n)
+{
+	if (n < 0 || n >= songs.size())
+		return NULL;
+
+	return songs[n];
+}
+
+/*
  * Returns the next song in line, starting from current song
  */
 Song *			Songlist::nextsong(song_t * id)
