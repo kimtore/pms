@@ -1513,30 +1513,6 @@ pms_win_windowlist *	Display::create_windowlist()
 }
 
 /*
- * Creates the directory view window
- */
-pms_win_directory *	Display::create_directorylist()
-{
-	pms_win_directory *	w;
-
-	w = new pms_win_directory(comm->rootdir, comm->library());
-	if (w)
-	{
-		if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
-			w->resize(0, 0, COLS, LINES - 1);
-		else
-			w->resize(0, pms->disp->topbar->height(), COLS, LINES - pms->disp->topbar->height() - 1);
-		w->setborders(true, false, false, false);
-		w->settitle("Directory view");
-		windows.push_back(w);
-		if (curwin == NULL)
-			curwin = w;
-	}
-
-	return w;
-}
-
-/*
  * Creates a new playlist window
  */
 pms_win_playlist *	Display::create_playlist()

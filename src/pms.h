@@ -81,7 +81,6 @@ private:
 	Connection *			conn;
 	pms_win_playlist *		playlist;
 	pms_win_playlist *		library;
-	pms_win_directory *		dirlist;
 	vector<Message *>		msglog;
 
 	/* Private functions */
