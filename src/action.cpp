@@ -449,11 +449,6 @@ int		Interface::set_input_mode(Input_mode mode)
 			return pms->input->mode();
 		}
 	}
-	if (mode == INPUT_SEARCH)
-	{
-		list = pms->disp->actwin()->plist();
-		list->filter_add("", MATCH_ALL);
-	}
 	pms->input->mode(mode);
 	pms->drawstatus();
 	return pms->input->mode();
@@ -1364,23 +1359,6 @@ bool		handle_command(pms_pending_keys action)
 				if ((unsigned int)i >= win->size()) i = 0;
 				win->jumpto(pms->input->text, i);
 			}
-			else if (pms->input->mode() == INPUT_SEARCH)
-			{
-				if (!list) break;
-				if (!list->lastfilter()) break;
-				if (list->lastfilter()->param.size() > pms->input->text.size())
-				{
-					list->filter_remove(list->lastfilter());
-					list->filter_add(pms->input->text, MATCH_ALL);
-				}
-				else
-				{
-					list->lastfilter()->param = pms->input->text;
-					list->filter_scan();
-				}
-				pms->mediator->add("redraw");
-				pms->drawstatus();
-			}
 			break;
 
 		case PEND_TEXT_RETURN:
@@ -1405,6 +1383,12 @@ bool		handle_command(pms_pending_keys action)
 					pms->log(MSG_STATUS, STERR, _("Pattern not found: %s"), pms->input->text.c_str());
 
 				//else do nothing so the search command is left visible
+			}
+			else if (mode == INPUT_SEARCH)
+			{
+				if (!list) break;
+				list->filter_add(pms->input->text, MATCH_ALL);
+				pms->mediator->add("redraw");
 			}
 			else
 			{
