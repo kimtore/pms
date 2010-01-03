@@ -360,7 +360,7 @@ void		Songlist::filter_remove(Filter * f)
 			filtersongs.clear();
 			for (i = 0; i < songs.size(); i++)
 			{
-				songs[i]->pos = i;
+//				songs[i]->pos = i;
 				filtersongs.push_back(songs[i]);
 			}
 			filter_scan();
@@ -392,7 +392,7 @@ void		Songlist::filter_clear()
 
 	for (i = 0; i < songs.size(); i++)
 	{
-		songs[i]->pos = i;
+//		songs[i]->pos = i;
 		filtersongs.push_back(songs[i]);
 	}
 }
@@ -416,7 +416,7 @@ void		Songlist::filter_scan()
 		}
 		else
 		{
-			(*it)->pos = pos;
+//			(*it)->pos = pos;
 			++it;
 		}
 		++pos;

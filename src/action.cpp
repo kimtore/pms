@@ -399,6 +399,8 @@ long		Interface::show_info()
 
 	pms->log(MSG_STATUS, STOK, "%s%s", pms->options->get_string("libraryroot").c_str(), song->file.c_str());
 	pms->log(MSG_CONSOLE, STOK, _("--- song info ---\n"));
+	pms->log(MSG_CONSOLE, STOK, "id\t\t = %d\n", song->id);
+	pms->log(MSG_CONSOLE, STOK, "pos\t\t = %d\n", song->pos);
 	pms->log(MSG_CONSOLE, STOK, "file\t\t = %s%s\n", pms->options->get_string("libraryroot").c_str(), song->file.c_str());
 	pms->log(MSG_CONSOLE, STOK, "artist\t\t = %s\n", song->artist.c_str());
 	pms->log(MSG_CONSOLE, STOK, "albumartist\t = %s\n", song->albumartist.c_str());
