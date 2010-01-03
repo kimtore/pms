@@ -362,14 +362,21 @@ void		Songlist::filter_clear()
 void		Songlist::filter_scan()
 {
 	vector<Song *>::iterator	it;
+	song_t				pos = 0;
 
 	it = filtersongs.begin();
 	while (it != filtersongs.end())
 	{
 		if (filter_match(*it))
+		{
 			it = filtersongs.erase(it);
+		}
 		else
+		{
+			(*it)->pos = pos;
 			++it;
+		}
+		++pos;
 	}
 }
 
