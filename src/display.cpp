@@ -1334,7 +1334,7 @@ void		Display::set_xterm_title()
 	string		t;
 
 	/* the current xterm title exists under the WM_NAME property */
-	/* and can be retrieved with xprop -id $WINDOWID */
+	/* and can be retrieved with xprop -notype -id $WINDOWID WM_NAME */
 
 	if (pms->options->get_string("xtermtitle").size())
 	{
