@@ -1109,12 +1109,6 @@ int		Control::update(bool force)
 		st->last_playlist = st->playlist;
 	}
 
-	/* New library? */
-	if (_library->size() == 0)
-	{
-		update_library();
-	}
-
 	return 0;
 }
 

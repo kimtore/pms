@@ -27,6 +27,7 @@
 #include "list.h"
 #include "display.h"
 #include "message.h"
+#include "input.h"
 
 
 class Interface
@@ -58,6 +59,8 @@ public:
 	long			quit();
 	long			shell(string);
 	long			show_info();
+	void			clear_filters();
+	int			set_input_mode(Input_mode);
 
 	/*
 	 * MPD administrative
@@ -65,7 +68,6 @@ public:
 	long			password(string);
 	long			update_db(string);
 
-	long			set_input_mode(int); //command mode, jump mode, search mode
 
 	long			toggle();
 	long			escape();

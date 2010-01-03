@@ -320,18 +320,54 @@ void		Songlist::truncate(unsigned int maxsize)
 /*
  * Add a filter to the list
  */
-void		Songlist::filter_add(string param, long fields)
+Filter *	Songlist::filter_add(string param, long fields)
 {
 	Filter *	f;
 
 	f = new Filter();
 	if (f == NULL)
-		return;
+		return f;
 
 	f->param = param;
 	f->fields = fields;
 
-	this->filter_scan();
+	filters.push_back(f);
+	pms->log(MSG_DEBUG, STOK, "Adding new filter with address %p '%s' and mode %d\n", f, f->param.c_str(), f->fields);
+
+	if (f->param.size() > 0)
+		this->filter_scan();
+
+	return f;
+}
+
+/*
+ * Remove a filter from the list
+ */
+void		Songlist::filter_remove(Filter * f)
+{
+	vector<Filter *>::iterator	it;
+	unsigned int			i;
+
+	it = filters.begin();
+	while (it != filters.end())
+	{
+		if (*it == f)
+		{
+			pms->log(MSG_DEBUG, STOK, "Removing a filter %p\n", f);
+
+			delete f;
+			filters.erase(it);
+			filtersongs.clear();
+			for (i = 0; i < songs.size(); i++)
+			{
+				songs[i]->pos = i;
+				filtersongs.push_back(songs[i]);
+			}
+			filter_scan();
+			return;
+		}
+		++it;
+	}
 }
 
 /*
@@ -342,9 +378,14 @@ void		Songlist::filter_clear()
 	vector<Filter *>::iterator	it;
 	unsigned int			i;
 
+	pms->log(MSG_DEBUG, STOK, "Deleting all filters...\n");
+
 	it = filters.begin();
-	while (it++ != filters.end())
+	while (it != filters.end())
+	{
 		delete *it;
+		++it;
+	}
 	
 	filters.clear();
 	filtersongs.clear();
@@ -364,10 +405,12 @@ void		Songlist::filter_scan()
 	vector<Song *>::iterator	it;
 	song_t				pos = 0;
 
+	pms->log(MSG_DEBUG, STOK, "Rescanning all filters...\n");
+
 	it = filtersongs.begin();
 	while (it != filtersongs.end())
 	{
-		if (filter_match(*it))
+		if (!filter_match(*it))
 		{
 			it = filtersongs.erase(it);
 		}
@@ -392,13 +435,25 @@ bool		Songlist::filter_match(Song * s)
 		return true;
 	
 	it = filters.begin();
-	while (it++ != filters.end())
+	while (it != filters.end())
 	{
-		if (!match(s, (*it)->param, (*it)->fields));
+		if (!match(s, (*it)->param, (*it)->fields))
 			return false;
+		++it;
 	}
 
 	return true;
+}
+
+/*
+ * Returns the last used filter
+ */
+Filter *	Songlist::lastfilter()
+{
+	if (filters.size() == 0)
+		return NULL;
+	
+	return filters[filters.size() - 1];
 }
 
 
@@ -906,7 +961,7 @@ void		Songlist::movecursor(song_t offset)
 /*
  * Match a single song against criteria
  */
-bool			Songlist::match(Song * song, string & src, long mode)
+bool			Songlist::match(Song * song, string src, long mode)
 {
 	vector<string>			sources;
 	bool				matched;

@@ -112,7 +112,7 @@ public:
 
 	vector<song_t> *	matchall(string, long);
 	song_t			match(string, unsigned int, unsigned int, long);
-	bool			match(Song *, string &, long);
+	bool			match(Song *, string, long);
 #ifdef HAVE_LIBBOOST_REGEX
 	bool			regexmatch(string *, string *);
 #endif
@@ -145,18 +145,20 @@ public:
 	song_t			findentry(Item, bool);
 
 	/* Filter functions */
-	void			filter_add(string param, long fields);
+	Filter *		filter_add(string param, long fields);
+	void			filter_remove(Filter *);
 	void			filter_clear();
 	void			filter_scan();
 	bool			filter_match(Song *);
+	Filter *		lastfilter();
 
 	song_t			add(Song *);
 	song_t			add(Songlist *);
 	int			remove(Song *);
 	int			remove(int);
 	bool			move(unsigned int, unsigned int);
-	unsigned int		size() { return songs.size(); };
-	unsigned int		end() { return songs.size() - 1; };
+	unsigned int		size() { return filtersongs.size(); };
+	unsigned int		end() { return filtersongs.size() - 1; };
 	unsigned int		qlength();
 	unsigned int		qnumber() { return qnum; };
 };

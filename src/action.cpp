@@ -214,6 +214,21 @@ bool		Interface::check_events()
 		case PEND_SELECTALL:
 			select(win, SELECT_ALL, param);
 			break;
+
+
+
+		case PEND_SEARCHMODE:
+			set_input_mode(INPUT_SEARCH);
+			break;
+
+		case PEND_COMMANDMODE:
+			set_input_mode(INPUT_COMMAND);
+			break;
+
+		case PEND_CLEARFILTERS:
+			clear_filters();
+			break;
+
 	}
 
 	if (msg->code != 0 && msg->str.size() > 0)
@@ -399,6 +414,48 @@ long		Interface::show_info()
 
 	return STOK;
 }
+
+/*
+ * Clear the filter list
+ */
+
+void		Interface::clear_filters()
+{
+	Songlist *	list;
+
+	list = pms->disp->actwin()->plist();
+	if (!list) return;
+
+	set_input_mode(INPUT_NORMAL);
+	list->filter_clear();
+}
+
+
+/*
+ * Change input mode
+ */
+int		Interface::set_input_mode(Input_mode mode)
+{
+	Songlist *	list;
+
+	if (mode == INPUT_JUMP || mode == INPUT_SEARCH)
+	{
+		if (!pms->disp->actwin() || pms->disp->actwin()->type() != WIN_ROLE_PLAYLIST)
+		{
+			pms->log(MSG_STATUS, STERR, _("Can't search within this window."));
+			return pms->input->mode();
+		}
+	}
+	if (mode == INPUT_SEARCH)
+	{
+		list = pms->disp->actwin()->plist();
+		list->filter_add("", MATCH_ALL);
+	}
+	pms->input->mode(mode);
+	pms->drawstatus();
+	return pms->input->mode();
+}
+
 
 /*
  * Send a password to MPD
@@ -1295,12 +1352,6 @@ bool		handle_command(pms_pending_keys action)
 
 
 
-		/* Command-mode + searching*/
-		case PEND_COMMANDMODE:
-			pms->input->mode(INPUT_COMMAND);
-			pms->drawstatus();
-			break;
-
 		case PEND_TEXT_UPDATED:
 			pms->drawstatus();
 			if (pms->input->mode() == INPUT_JUMP)
@@ -1309,6 +1360,22 @@ bool		handle_command(pms_pending_keys action)
 				i = win->scursor();
 				if ((unsigned int)i >= win->size()) i = 0;
 				win->jumpto(pms->input->text, i);
+			}
+			else if (pms->input->mode() == INPUT_SEARCH)
+			{
+				if (!list) break;
+				if (!list->lastfilter()) break;
+				if (list->lastfilter()->param.size() > pms->input->text.size())
+				{
+					list->filter_remove(list->lastfilter());
+					list->filter_add(pms->input->text, MATCH_ALL);
+				}
+				else
+				{
+					list->lastfilter()->param = pms->input->text;
+					list->filter_scan();
+				}
+				pms->mediator->add("redraw");
 			}
 			break;
 
@@ -1967,9 +2034,11 @@ bool init_commandmap()
 	/* Searching */
 	pms->commands->add("next-result", "Jump to next result", PEND_JUMPNEXT);
 	pms->commands->add("prev-result", "Jump to previous result", PEND_JUMPPREV);
-	pms->commands->add("quick-find", "Go to quicksearch mode", PEND_JUMPMODE);
+	pms->commands->add("quick-find", "Go to jump mode", PEND_JUMPMODE);
 	pms->commands->add("next-of", "Jump to next of given field", PEND_NEXTOF);
 	pms->commands->add("prev-of", "Jump to previous of given field", PEND_PREVOF);
+	pms->commands->add("search", "Go to search/filtering mode", PEND_SEARCHMODE);
+	pms->commands->add("clear-filters", "Clear search filters", PEND_CLEARFILTERS);
 
 	/* Playback */
 	pms->commands->add("play", "Play song under cursor", PEND_PLAY);

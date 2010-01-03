@@ -41,6 +41,7 @@ typedef enum Input_mode
 {
 	INPUT_NORMAL,
 	INPUT_JUMP,
+	INPUT_SEARCH,
 	INPUT_COMMAND,
 	INPUT_LIST
 
