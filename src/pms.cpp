@@ -307,8 +307,6 @@ int			Pms::main()
 			disp->setmousemask();
 		else if (mediator->changed("redraw.topbar"))
 			disp->resized();
-		else if (mediator->changed("redraw"))
-			disp->resized();
 		else if (mediator->changed("topbarvisible"))
 			disp->resized();
 		else if (mediator->changed("topbarborders"))
@@ -325,7 +323,10 @@ int			Pms::main()
 
 		/* Draw */
 		disp->topbar->wantdraw = true;
-		disp->draw();
+		if (mediator->changed("redraw"))
+			disp->forcedraw();
+		else
+			disp->draw();
 		disp->refresh();
 
 	}

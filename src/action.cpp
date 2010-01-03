@@ -430,6 +430,7 @@ void		Interface::clear_filters()
 
 	set_input_mode(INPUT_NORMAL);
 	list->filter_clear();
+	pms->mediator->add("redraw");
 }
 
 
@@ -1378,6 +1379,7 @@ bool		handle_command(pms_pending_keys action)
 					list->filter_scan();
 				}
 				pms->mediator->add("redraw");
+				pms->drawstatus();
 			}
 			break;
 
