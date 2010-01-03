@@ -3,6 +3,8 @@ Changes in 0.42~git
 ---
 
 Kim Tore Jensen:
+2010-01-03: changed: the 'save' command now saves the current list view (with any filters applied) instead of the playlist.
+2010-01-03: added: 'search' command which adds a list filter, and the 'clear-filters' command.
 2009-10-11: fixed: the 'volume' command now correctly sets absolute values.
 2009-10-10: added: the update-library command now accepts more parameters: this, thisdir, current, currentdir, and any arbitrary file or directory.
 2009-10-10: dropped the 'follow' option.
