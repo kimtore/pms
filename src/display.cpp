@@ -593,13 +593,27 @@ string		pms_win_playlist::fulltitle()
 	string		t;
 
 	if (title.size() || !list)
-		return title;
-
-	t = "Playlist: ";
-	if (!list->filename.size())
-		t += "[Untitled]";
+	{
+		t = title;
+	}
 	else
-		t += list->filename;
+	{
+		t = "Playlist: ";
+		if (!list->filename.size())
+			t += "[Untitled]";
+		else
+			t += list->filename;
+	}
+
+	if (list != NULL && list->filtercount() > 0)
+	{
+		t += " <" + Pms::tostring(list->filtercount());
+		if (list->filtercount() > 1)
+			t += _(" filters enabled");
+		else
+			t += _(" filter enabled");
+		t += ">";
+	}
 
 	return t;
 }

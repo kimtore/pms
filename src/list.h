@@ -151,12 +151,14 @@ public:
 	void			filter_scan();
 	bool			filter_match(Song *);
 	Filter *		lastfilter();
+	unsigned int		filtercount() { return filters.size(); };
 
 	song_t			add(Song *);
 	song_t			add(Songlist *);
 	int			remove(Song *);
 	int			remove(int);
 	bool			move(unsigned int, unsigned int);
+	unsigned int		realsize() { return songs.size(); };
 	unsigned int		size() { return filtersongs.size(); };
 	unsigned int		end() { return filtersongs.size() - 1; };
 	unsigned int		qlength();
