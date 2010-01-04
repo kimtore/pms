@@ -412,6 +412,7 @@ void		Songlist::filter_scan()
 	{
 		if (!filter_match(*it))
 		{
+			selectsong(*it, false);
 			it = filtersongs.erase(it);
 		}
 		else
