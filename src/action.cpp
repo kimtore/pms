@@ -1534,8 +1534,15 @@ bool		handle_command(pms_pending_keys action)
 				win->setplist(list);
 				if (action == PEND_SAVEPLAYLIST)
 				{
+					/* if this is not the exact version of the playlist itself, remember to clear it out. */
+					if (tmpwin->plist() != pms->comm->playlist() || tmpwin->plist()->filtercount() > 0)
+					{
+						pms->comm->clear(list);
+					}
+
 					/* Save the current list with it's filters.
 					   Also clear out filters when done. */
+					pms->comm->add(tmpwin->plist(), list);
 					list->set(tmpwin->plist());
 					if (tmpwin->plist() != NULL)
 					{
