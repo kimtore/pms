@@ -607,7 +607,7 @@ string		pms_win_playlist::fulltitle()
 
 	if (list != NULL && list->filtercount() > 0)
 	{
-		t += " <" + Pms::tostring(list->filtercount());
+		t += " <" + Pms::tostring(static_cast<size_t>(list->filtercount()));
 		if (list->filtercount() > 1)
 			t += _(" filters enabled");
 		else
