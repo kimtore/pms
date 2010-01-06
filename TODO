@@ -1,6 +1,13 @@
+0.42:
 - Tag browser: genre, album, artist, etc.
-- Directory browsing
-- Extended search
-	narrows down the list view to only show the search results.
-	this list is automatically added as a new list, and can be saved into mpd's playlists.
+
+0.43:
+- Tab completion
+- Config system rewrite (bind, set accepted in the same function)
+- Command-line interface to filters
+- Idle support
+- Separate threads (timing, interface)
+
+Future:
 - better album detection, and also customizable through the 'albumclass' setting.
+- Display rewrite
