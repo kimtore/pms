@@ -367,11 +367,9 @@ int			Pms::init()
 	formatter = new Formatter();
 
 	/* Setup locales and internationalization */
-	setlocale(LC_TIME, "");
-	setlocale(LC_COLLATE, "");
+	setlocale(LC_ALL, "");
 	setlocale(LC_CTYPE, "");
 	g_get_charset(&charset);
-	setlocale(LC_MESSAGES, "");
 	bindtextdomain(GETTEXT_PACKAGE, LOCALE_DIR);
 	bind_textdomain_codeset(GETTEXT_PACKAGE, charset);
 	textdomain(GETTEXT_PACKAGE);
