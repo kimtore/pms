@@ -338,6 +338,9 @@ int			Pms::main()
 	delete comm;
 	delete conn;
 
+	/* Unclutter the prompt */
+	printf("\n");
+
 	return PMS_EXIT_SUCCESS;
 }
 
