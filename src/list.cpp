@@ -500,6 +500,8 @@ song_t		Songlist::add(Song * song)
 		i = songs.begin() + song->pos;
 		if (songs[song->pos]->pos == song->pos)	/* FIXME: random crash here? */
 		{
+			if (songs[song->pos]->time != MPD_SONG_NO_TIME)
+				length -= songs[song->pos]->time;
 			i = songs.erase(songs.begin() + song->pos);
 		}
 		songs.insert(i, song);
