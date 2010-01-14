@@ -44,7 +44,6 @@ void			Options::reset()
 	nextinterval		= 5;
 	crossfade		= 5;
 	mpd_timeout		= 30;
-	repeatonedelay		= 1;
 	stopdelay		= 1;
 	reconnectdelay		= 30;
 	debug			= false;

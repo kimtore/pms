@@ -38,6 +38,7 @@ Mpd_status::Mpd_status()
 	muted			= false;
 	volume			= 0;
 	repeat			= false;
+	single			= false;
 	random			= false;
 	playlist_length		= 0;
 	playlist		= -1;
@@ -93,6 +94,7 @@ void		Mpd_status::assign_status(mpd_Status * st)
 
 	volume			= status->volume;
 	repeat			= (status->repeat == 1 ? true : false);
+	single			= (status->single == 1 ? true : false);
 	random			= (status->random == 1 ? true : false);
 	playlist_length		= status->playlistLength;
 	playlist		= status->playlist;
@@ -370,6 +372,8 @@ void		Control::get_available_commands()
 			commands.rename = true;
 		else if (s == "repeat")
 			commands.repeat = true;
+		else if (s == "single")
+			commands.single = true;
 		else if (s == "rm")
 			commands.rm = true;
 		else if (s == "save")
@@ -494,6 +498,19 @@ bool		Control::repeat(bool on)
 	bool		r;
 	if (!alive())	return false;
 	mpd_sendRepeatCommand(conn->h(), on);
+	r = finish();
+	get_status();
+	return r;
+}
+
+/*
+ * Sets single mode
+ */
+bool		Control::single(bool on)
+{
+	bool		r;
+	if (!alive())	return false;
+	mpd_sendSingleCommand(conn->h(), on);
 	r = finish();
 	get_status();
 	return r;
@@ -1065,7 +1082,12 @@ bool		Control::get_status()
 	if (st->random)
 		pms->options->set_long("playmode", PLAYMODE_RANDOM);
 	if (st->repeat)
-		pms->options->set_long("repeat", REPEAT_LIST);
+	{
+		if (st->single)
+			pms->options->set_long("repeat", REPEAT_ONE);
+		else
+			pms->options->set_long("repeat", REPEAT_LIST);
+	}
 
 	if (st->db_update_time != st->last_db_update_time)
 	{
@@ -1449,7 +1471,8 @@ bool		Control::activatelist(Songlist * list)
 	/* Have MPD manage random inside playlist */
 	if (changed)
 	{
-		repeat(pms->options->get_long("repeat") == REPEAT_LIST && activelist() == playlist());
+		repeat((pms->options->get_long("repeat") == REPEAT_LIST || pms->options->get_long("repeat") == REPEAT_ONE) && activelist() == playlist());
+		single(pms->options->get_long("repeat") == REPEAT_ONE && activelist() == playlist());
 		random(pms->options->get_long("playmode") == PLAYMODE_RANDOM && activelist() == playlist());
 	}
 

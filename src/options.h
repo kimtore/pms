@@ -64,7 +64,6 @@ public:
 
 	int			nextinterval;		// Time before crossfade to add next song from library to queue
 	int			crossfade;		// Default crossfade time (for toggling)
-	int			repeatonedelay;		// How many seconds remaining in the song before playing it again in repeat-1 mode
 	int			stopdelay;		// How many seconds remaining in the song before stopping, when in manual progression mode
 	int			mpd_timeout;		// MPD server connection timeout
 	int			reconnectdelay;		// How many seconds to wait before retrying connection

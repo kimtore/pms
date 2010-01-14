@@ -95,7 +95,6 @@ void		Options::reset()
 	set_long("nextinterval", 5);
 	set_long("crossfade", 5);
 	set_long("mpd_timeout", 30);
-	set_long("repeatonedelay", 1);
 	set_long("stopdelay", 1);
 	set_long("reconnectdelay", 30);
 	set_long("directoryminlen", 30);

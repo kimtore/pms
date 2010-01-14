@@ -906,33 +906,20 @@ long		Interface::seek(int seconds)
 
 	/* Overflow handling */
 	if (pms->comm->status()->time_elapsed + seconds >= pms->comm->status()->time_total)
-	{
-		/* Skip forward or loop if repeat-one */
-		if (pms->options->get_long("repeat") == REPEAT_ONE)
-			pms->comm->playid(pms->cursong()->id);
-		else
-			playnext(pms->options->get_long("playmode"), true);
-	}
+		/* Skip forwards */
+		playnext(pms->options->get_long("playmode"), true);
 	else if (pms->comm->status()->time_elapsed + seconds < 0)
 	{
 		/* Skip backwards */
-		if (pms->options->get_long("repeat") == REPEAT_ONE)
+		if (prev() == STOK)
 		{
+			pms->comm->update(true);
 			if (pms->comm->seek(pms->cursong()->time + seconds))
 				return STOK;
 		}
 		else
 		{
-			if (prev() == STOK)
-			{
-				pms->comm->update(true);
-				if (pms->comm->seek(pms->cursong()->time + seconds))
-					return STOK;
-			}
-			else
-			{
-				stop();
-			}
+			stop();
 		}
 	}
 	else
@@ -1333,16 +1320,39 @@ bool		handle_command(pms_pending_keys action)
 				case REPEAT_ONE:
 					pms->options->set("repeat", "yes");
 					break;
-				default:
 				case REPEAT_LIST:
+				default:
 					pms->options->set("repeat", "no");
 					break;
 			}
 
 			pms->log(MSG_DEBUG, 0, "Repeatmode set to %d\n", pms->options->get_long("repeat"));
 
-			/* Have MPD manage repeat inside playlist */
-			pms->comm->repeat(pms->options->get_long("repeat") == REPEAT_LIST && pms->comm->activelist() == pms->comm->playlist());
+			/* Have MPD manage repeat inside playlist and repeat 
+			 * single song
+			 * Beware: value of the repeat option may change after 
+			 * either of these commands runs, hence not a single 
+			 * line each for repeat and single with checks for 
+			 * repeat mode within each */
+			if (pms->comm->activelist() == pms->comm->playlist())
+			{
+				switch (pms->options->get_long("repeat"))
+				{
+					case REPEAT_NONE:
+						pms->comm->repeat(false);
+						pms->comm->single(false);
+						break;
+					case REPEAT_ONE:
+						pms->comm->repeat(true);
+						pms->comm->single(true);
+						break;
+					case REPEAT_LIST:
+					default:
+						pms->comm->repeat(true);
+						pms->comm->single(false);
+						break;
+				}
+			}
 
 			pms->drawstatus();
 			break;

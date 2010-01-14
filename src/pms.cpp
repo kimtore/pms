@@ -1072,17 +1072,6 @@ bool			Pms::progress_nextsong()
 	repeatmode = options->get_long("repeat");
 	playmode = options->get_long("playmode");
 
-	/* Repeat-one hack */
-	if (repeatmode == REPEAT_ONE)
-	{
-		if (remaining <= options->get_long("repeatonedelay"))
-		{
-			comm->playid(cursong()->id);
-			return true;
-		}
-		return false;
-	}
-
 	/* Too early */
 	if (remaining > options->get_long("nextinterval") || lastid == cursong()->id)
 		return false;

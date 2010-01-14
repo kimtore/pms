@@ -105,6 +105,7 @@ typedef struct
 	bool		seekid;
 	bool		setvol;
 	bool		shuffle;
+	bool		single;
 	bool		stats;
 	bool		status;
 	bool		stop;
@@ -137,6 +138,7 @@ public:
 	bool		muted;
 	int		volume;
 	bool		repeat;
+	bool		single;
 	bool		random;
 	int		playlist_length;
 	long long	playlist;
@@ -275,6 +277,7 @@ public:
 	bool			seek(int);
 	bool			random(int);
 	bool			repeat(bool);
+	bool			single(bool);
 	bool			setvolume(int);
 	bool			volume(int);
 	bool			mute();
