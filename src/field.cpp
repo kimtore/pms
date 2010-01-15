@@ -705,7 +705,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 					}
 					else
 					{
-						sprintf(s, "%ld/%d %s (%s)",
+						sprintf(s, "%d/%d %s (%s)",
 								list->size(),
 								list->realsize(),
 								Pms::pluralformat(list->selection.size).c_str(),
