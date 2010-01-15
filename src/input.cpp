@@ -422,7 +422,7 @@ pms_pending_keys	Input::dispatch_normal()
 					pms->disp->actwin()->plist()->setcursor(mouselistindex);
 					if (mousemodctrl)
 						pms->disp->actwin()->plist()->selectsong(pms->disp->actwin()->plist()->song(mouselistindex), !pms->disp->actwin()->plist()->song(mouselistindex)->selected);
-					return PEND_REDRAW;
+					return PEND_NONE;
 				}
 			}
 			if (mousestatusbar)
@@ -500,7 +500,7 @@ pms_pending_keys	Input::dispatch_normal()
 				{
 					pms->disp->actwin()->plist()->setcursor(mouselistindex);
 					pms->disp->actwin()->plist()->selectsong(pms->disp->actwin()->plist()->song(mouselistindex), !pms->disp->actwin()->plist()->song(mouselistindex)->selected);
-					return PEND_REDRAW;
+					return PEND_NONE;
 				}
 			}
 			return PEND_NONE;
