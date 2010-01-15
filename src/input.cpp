@@ -494,6 +494,15 @@ pms_pending_keys	Input::dispatch_normal()
 		else if (mouseevent.bstate & BUTTON3_CLICKED)
 		{
 			pms->log(MSG_DEBUG, 0, "button 3 clicked\n");
+			if (mousecurwin)
+			{
+				if (mouselistindex >= 0) //song
+				{
+					pms->disp->actwin()->plist()->setcursor(mouselistindex);
+					pms->disp->actwin()->plist()->selectsong(pms->disp->actwin()->plist()->song(mouselistindex), !pms->disp->actwin()->plist()->song(mouselistindex)->selected);
+					return PEND_REDRAW;
+				}
+			}
 			return PEND_NONE;
 		}
 		else if (mouseevent.bstate & BUTTON3_DOUBLE_CLICKED)
