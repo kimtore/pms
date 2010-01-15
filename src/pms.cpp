@@ -282,7 +282,9 @@ int			Pms::main()
 				/* If a manual stop was issued, don't do anything */
 				if (comm->status()->state == MPD_STATUS_STATE_STOP && pending != PEND_STOP)
 				{
-					system(options->get_string("onplaylistfinish").c_str());
+					/* soak up return value to suppress 
+					 * warning */
+					int code = system(options->get_string("onplaylistfinish").c_str());
 				}
 			}
 		}
@@ -810,7 +812,10 @@ bool			Pms::run_shell(string cmd)
 
 	printf(_("\nPress ENTER to continue"));
 	fflush(stdout);
-	scanf("%c", &c);
+	{
+		/* soak up return value to suppress warning */
+		int key = scanf("%c", &c);
+	}
 
 	reset_prog_mode();
 	refresh();
@@ -1072,17 +1077,6 @@ bool			Pms::progress_nextsong()
 
 	repeatmode = options->get_long("repeat");
 	playmode = options->get_long("playmode");
-
-	/* Repeat-one hack */
-	if (repeatmode == REPEAT_ONE)
-	{
-		if (remaining <= options->get_long("repeatonedelay"))
-		{
-			comm->playid(cursong()->id);
-			return true;
-		}
-		return false;
-	}
 
 	/* Too early */
 	if (remaining > options->get_long("nextinterval") || lastid == cursong()->id)

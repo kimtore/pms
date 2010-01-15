@@ -740,6 +740,7 @@ mpd_Status * mpd_getStatus(mpd_Connection * connection) {
 	status = malloc(sizeof(mpd_Status));
 	status->volume = -1;
 	status->repeat = 0;
+	status->single = 0;
 	status->random = 0;
 	status->playlist = -1;
 	status->storedplaylist = -1;
@@ -768,6 +769,9 @@ mpd_Status * mpd_getStatus(mpd_Connection * connection) {
 		}
 		else if(strcmp(re->name,"repeat")==0) {
 			status->repeat = atoi(re->value);
+		}
+		else if(strcmp(re->name,"single")==0) {
+			status->single = atoi(re->value);
 		}
 		else if(strcmp(re->name,"random")==0) {
 			status->random = atoi(re->value);
@@ -1707,6 +1711,14 @@ void mpd_sendRepeatCommand(mpd_Connection * connection, int repeatMode) {
 	int len = strlen("repeat")+2+INTLEN+3;
 	char *string = malloc(len);
 	snprintf(string, len, "repeat \"%i\"\n", repeatMode);
+	mpd_executeCommand(connection,string);
+	free(string);
+}
+
+void mpd_sendSingleCommand(mpd_Connection * connection, int singleMode) {
+	int len = strlen("single")+2+INTLEN+3;
+	char *string = malloc(len);
+	snprintf(string, len, "single \"%i\"\n", singleMode);
 	mpd_executeCommand(connection,string);
 	free(string);
 }

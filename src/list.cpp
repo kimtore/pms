@@ -703,6 +703,9 @@ int		Songlist::setcursor(song_t pos)
 
 	position = pos;
 
+	if (pms->disp->actwin())
+		pms->disp->actwin()->wantdraw = true;
+
 	return position;
 }
 
