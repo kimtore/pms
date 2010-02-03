@@ -49,6 +49,8 @@ boost_regex (>= 1.36.0) to enable regular expression searches
 
 Consult the man page for configuration options.
 
+There are example configuration files in the "examples" directory.
+
 If there is no man page available on your system, you can read the manual page 
 online at <http://pms.sourceforge.net/pms.1.html>.
 

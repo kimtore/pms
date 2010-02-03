@@ -15,6 +15,7 @@ Kim Tore Jensen:
 2009-09-06: added: centre-cursor aliases center-cursor.
 
 Bart Nagel:
+2010-02-03: added: directory for example configuration files, currently containing my own
 2010-01-14: changed: removed repeat-1 hack in favour of MPD's own repeat-1 (repeat plus single)
 2009-11-27: added: function to return true if Unicode is available. changed default status strings to make use of that
 2009-11-26: fixed: removed some redundant colour setting lines which fixes using topbar fields in the xterm title, changed default xterm title to make use of it
