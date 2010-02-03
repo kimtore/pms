@@ -1,0 +1,3 @@
+This directory contains example rc files suitable for copying to 
+$HOME/.config/rc for per-user settings or /etc/xdg/pms/rc for system-wide 
+settings.
