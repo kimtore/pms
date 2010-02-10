@@ -56,4 +56,4 @@ set mouse
 
 bind y ! echo "#" | xsel
 bind ^T ! transcribe "#"
-bind ^W ! lyrics
+bind ^W ! lyrics | less
