@@ -378,8 +378,8 @@ void		Control::get_available_commands()
 			commands.rm = true;
 		else if (s == "save")
 			commands.save = true;
-		else if (s == "search")
-			commands.search = true;
+		else if (s == "filter")
+			commands.filter = true;
 		else if (s == "seek")
 			commands.seek = true;
 		else if (s == "seekid")

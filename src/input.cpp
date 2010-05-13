@@ -84,7 +84,7 @@ bool			Input::gonext()
 {
 	vector<string>::const_iterator	e;
 
-	if (_mode == INPUT_JUMP || _mode == INPUT_SEARCH)
+	if (_mode == INPUT_JUMP || _mode == INPUT_FILTER)
 		e = searchhistory.end();
 	else if (_mode == INPUT_COMMAND)
 		e = cmdhistory.end();
@@ -112,7 +112,7 @@ bool			Input::goprev()
 {
 	vector<string>::const_iterator	e;
 
-	if (_mode == INPUT_JUMP || _mode == INPUT_SEARCH)
+	if (_mode == INPUT_JUMP || _mode == INPUT_FILTER)
 		e = searchhistory.begin();
 	else if (_mode == INPUT_COMMAND)
 		e = cmdhistory.begin();
@@ -142,7 +142,7 @@ void			Input::mode(Input_mode m)
 			break;
 
 		case INPUT_JUMP:
-		case INPUT_SEARCH:
+		case INPUT_FILTER:
 			text.clear();
 			searchterm.clear();
 			historypos = searchhistory.end();
@@ -599,7 +599,7 @@ void		Input::savehistory()
 	switch(_mode)
 	{
 		case INPUT_JUMP:
-		case INPUT_SEARCH:
+		case INPUT_FILTER:
 			searchhistory.push_back(text);
 			historypos = searchhistory.end();
 			break;

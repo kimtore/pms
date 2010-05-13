@@ -100,7 +100,7 @@ typedef struct
 	bool		repeat;
 	bool		rm;
 	bool		save;
-	bool		search;
+	bool		filter;
 	bool		seek;
 	bool		seekid;
 	bool		setvol;

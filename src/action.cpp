@@ -217,8 +217,8 @@ bool		Interface::check_events()
 
 
 
-		case PEND_SEARCHMODE:
-			set_input_mode(INPUT_SEARCH);
+		case PEND_FILTERMODE:
+			set_input_mode(INPUT_FILTER);
 			break;
 
 		case PEND_COMMANDMODE:
@@ -441,7 +441,7 @@ int		Interface::set_input_mode(Input_mode mode)
 {
 	Songlist *	list;
 
-	if (mode == INPUT_JUMP || mode == INPUT_SEARCH)
+	if (mode == INPUT_JUMP || mode == INPUT_FILTER)
 	{
 		if (!pms->disp->actwin() || pms->disp->actwin()->type() != WIN_ROLE_PLAYLIST)
 		{
@@ -1394,7 +1394,7 @@ bool		handle_command(pms_pending_keys action)
 
 				//else do nothing so the search command is left visible
 			}
-			else if (mode == INPUT_SEARCH)
+			else if (mode == INPUT_FILTER)
 			{
 				if (!list) break;
 				list->filter_add(pms->input->text, MATCH_ALL);
@@ -2050,8 +2050,8 @@ bool init_commandmap()
 	pms->commands->add("quick-find", "Go to jump mode", PEND_JUMPMODE);
 	pms->commands->add("next-of", "Jump to next of given field", PEND_NEXTOF);
 	pms->commands->add("prev-of", "Jump to previous of given field", PEND_PREVOF);
-	pms->commands->add("search", "Go to search/filtering mode", PEND_SEARCHMODE);
-	pms->commands->add("clear-filters", "Clear search filters", PEND_CLEARFILTERS);
+	pms->commands->add("filter", "Go to filtering mode", PEND_FILTERMODE);
+	pms->commands->add("clear-filters", "Clear filters", PEND_CLEARFILTERS);
 
 	/* Playback */
 	pms->commands->add("play", "Play song under cursor", PEND_PLAY);

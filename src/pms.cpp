@@ -774,7 +774,7 @@ void			Pms::drawstatus()
 {
 	if (input->mode() == INPUT_JUMP)
 		log(MSG_STATUS, STOK, "/%s", formtext(input->text).c_str());
-	else if (input->mode() == INPUT_SEARCH)
+	else if (input->mode() == INPUT_FILTER)
 		log(MSG_STATUS, STOK, ":g/%s", formtext(input->text).c_str());
 	else if (input->mode() == INPUT_COMMAND)
 		log(MSG_STATUS, STOK, ":%s", formtext(input->text).c_str());
