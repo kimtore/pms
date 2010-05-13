@@ -508,6 +508,11 @@ song_t		Songlist::add(Song * song)
 		/* FIXME: filtersongs does not get updated because of ->pos mismatch, but do we need it anyway? */
 	}
 
+	if (song->pos == MPD_SONG_NO_NUM)
+	{
+		song->pos = static_cast<song_t>(songs.size() - 1);
+	}
+
 	if (song->time != MPD_SONG_NO_TIME)
 	{
 		length += song->time;
