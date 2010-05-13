@@ -59,10 +59,6 @@
 #include "input.h"
 #include "mediator.h"
 
-#ifdef __FreeBSD__
-	#include <sys/wait.h>
-#endif
-
 using namespace std;
 
 /*
