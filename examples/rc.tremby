@@ -20,6 +20,8 @@ bind ^B move-pgup
 bind + volume +3
 bind = volume -3
 bind ? help
+bind f filter
+bind F clear-filters
 
 set columns=artist year album trackshort title length
 set sort=track disc album date albumartistsort
