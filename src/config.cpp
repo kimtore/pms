@@ -683,6 +683,86 @@ bool			Configurator::readline(string buffer)
 }
 
 /*
+ * Load all configuration files
+ */
+bool			Configurator::loadconfigs()
+{
+	string			str;
+
+	char *			homedir;
+	char *			xdgconfighome;
+	char *			xdgconfigdirs;
+	string			next;
+	vector<string>		configfiles;
+
+	homedir = getenv("HOME");
+	xdgconfighome = getenv("XDG_CONFIG_HOME");
+	xdgconfigdirs = getenv("XDG_CONFIG_DIRS");
+
+	/* Make a list of possible configuration files */
+	// commandline argument
+	if (pms->options->get_string("configfile").length() > 0)
+		configfiles.push_back(pms->options->get_string("configfile"));
+
+	// XDG config home (usually $HOME/.config)
+	if (xdgconfighome == NULL || strlen(xdgconfighome) == 0)
+	{
+		if (homedir != NULL && strlen(homedir) > 0)
+		{
+			str = homedir;
+			configfiles.push_back(str + "/.config/pms/rc");
+		}
+	}
+	else
+	{
+		str = xdgconfighome;
+		configfiles.push_back(str + "/pms/rc");
+	}
+	// XDG config dirs (colon-separated priority list, defaults to just /etc/xdg)
+	if (xdgconfigdirs == NULL || strlen(xdgconfigdirs) == 0)
+	{
+		configfiles.push_back("/usr/local/etc/xdg/pms/rc");
+		configfiles.push_back("/etc/xdg/pms/rc");
+	}
+	else
+	{
+		next = "";
+		str = xdgconfigdirs;
+		for (string::const_iterator it = str.begin(); it != str.end(); it++)
+		{
+			if (*it == ':')
+			{
+				if (next.length() > 0)
+				{
+					configfiles.push_back(next + "/pms/rc");
+					next = "";
+				}
+			}
+			else
+				next += *it;
+		}
+		if (next.length() > 0)
+			configfiles.push_back(next + "/pms/rc");
+	}
+
+	/* Load configuration files in reverse order */
+	for (int i = configfiles.size() - 1; i >= 0; i--)
+	{
+		if (!source(configfiles[i]))
+		{
+			if (pms->msg->code != CERR_NO_FILE)
+			{
+				pms->log(MSG_CONSOLE, 0, _("\nConfiguration error in file %s:\n%s\n"), configfiles[i].c_str(), pms->msg->str.c_str());
+				return false;
+			}
+			pms->log(MSG_CONSOLE, 0, _("Didn't find configuration file %s\n"), configfiles[i].c_str());
+		}
+	}
+
+	return true;
+}
+
+/*
  * Set a color pair for a field
  */
 bool			Configurator::set_color(string name, string pairs)

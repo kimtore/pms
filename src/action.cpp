@@ -327,10 +327,10 @@ long		Interface::redraw()
 long		Interface::rehash()
 {
 	pms->options->reset();
-	msg->code = source(pms->options->get_string("configfile"));
+	msg->code = pms->config->loadconfigs();
 
 	if (msg->code == 0)
-		pms->log(MSG_STATUS, STOK, _("Reloaded configuration file."));
+		pms->log(MSG_STATUS, STOK, _("Reloaded configuration files."));
 
 	return msg->code;
 }

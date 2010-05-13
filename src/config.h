@@ -124,6 +124,7 @@ public:
 	/* Public members */
 	bool				source(string);
 	bool				readline(string);
+	bool				loadconfigs();
 };
 
 #endif

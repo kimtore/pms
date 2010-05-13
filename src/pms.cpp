@@ -355,15 +355,10 @@ int			Pms::init()
 	vector<string> *	tok;
 
 	int			exitcode = PMS_EXIT_SUCCESS;
-	char *			homedir;
 	char *			host;
 	char *			port;
 	char *			password;
 	const char *		charset = NULL;
-	char *			xdgconfighome;
-	char *			xdgconfigdirs;
-	string			next;
-	vector<string>		configfiles;
 	
 	/* Internal pointers */
 	msg = new Message();
@@ -383,12 +378,9 @@ int			Pms::init()
 	printf("%s v%s\n%s\n", PMS_NAME, PACKAGE_VERSION, PMS_COPYRIGHT);
 
 	/* Read important environment variables */
-	homedir = getenv("HOME");
 	host = getenv("MPD_HOST");
 	port = getenv("MPD_PORT");
 	password = getenv("MPD_PASSWORD");
-	xdgconfighome = getenv("XDG_CONFIG_HOME");
-	xdgconfigdirs = getenv("XDG_CONFIG_DIRS");
 
 	/* Set up field types */
 	fieldtypes = new Fieldtypes();
@@ -453,65 +445,8 @@ int			Pms::init()
 		return PMS_EXIT_BADARGS;
 	}
 
-	/* Make a list of possible configuration files */
-	// commandline argument
-	if (options->get_string("configfile").length() > 0)
-		configfiles.push_back(options->get_string("configfile"));
-
-	// XDG config home (usually $HOME/.config)
-	if (xdgconfighome == NULL || strlen(xdgconfighome) == 0)
-	{
-		if (homedir != NULL && strlen(homedir) > 0)
-		{
-			str = homedir;
-			configfiles.push_back(str + "/.config/pms/rc");
-		}
-	}
-	else
-	{
-		str = xdgconfighome;
-		configfiles.push_back(str + "/pms/rc");
-	}
-	// XDG config dirs (colon-separated priority list, defaults to just /etc/xdg)
-	if (xdgconfigdirs == NULL || strlen(xdgconfigdirs) == 0)
-	{
-		configfiles.push_back("/usr/local/etc/xdg/pms/rc");
-		configfiles.push_back("/etc/xdg/pms/rc");
-	}
-	else
-	{
-		next = "";
-		str = xdgconfigdirs;
-		for (string::const_iterator it = str.begin(); it != str.end(); it++)
-		{
-			if (*it == ':')
-			{
-				if (next.length() > 0)
-				{
-					configfiles.push_back(next + "/pms/rc");
-					next = "";
-				}
-			}
-			else
-				next += *it;
-		}
-		if (next.length() > 0)
-			configfiles.push_back(next + "/pms/rc");
-	}
-
-	/* Load configuration files in reverse order */
-	for (int i = configfiles.size() - 1; i >= 0; i--)
-	{
-		if (!config->source(configfiles[i]))
-		{
-			if (msg->code != CERR_NO_FILE)
-			{
-				pms->log(MSG_CONSOLE, 0, _("\nConfiguration error in file %s:\n%s\n"), configfiles[i].c_str(), msg->str.c_str());
-				return PMS_EXIT_CONFIGERR;
-			}
-			pms->log(MSG_CONSOLE, 0, _("Didn't find configuration file %s\n"), configfiles[i].c_str());
-		}
-	}
+	if (!config->loadconfigs())
+		return PMS_EXIT_CONFIGERR;
 
 	/* Seed random number generator */
 	srand(time(NULL));
