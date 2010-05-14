@@ -53,6 +53,7 @@ Songlist::Songlist()
 	filename = "";
 	selection.size = 0;
 	selection.length = 0;
+	role = LIST_ROLE_PLAYLIST;
 	ignorecase = pms->options->get_bool("ignorecase");
 }
 
@@ -93,7 +94,7 @@ Song *			Songlist::nextsong(song_t * id)
 	}
 
 	/* Find the current song in this list */
-	if (s->pos != MPD_SONG_NO_NUM)
+	if (s->pos != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN)
 		i = match(Pms::tostring(pms->cursong()->pos), 0, end(), MATCH_POS);
 
 	if (i == MATCH_FAILED)
@@ -494,6 +495,7 @@ song_t		Songlist::add(Song * song)
 		songs.push_back(song);
 		if (filter_match(song))
 			filtersongs.push_back(song);
+		song->pos = static_cast<song_t>(songs.size() - 1);
 	}
 	else
 	{
@@ -506,11 +508,6 @@ song_t		Songlist::add(Song * song)
 		}
 		songs.insert(i, song);
 		/* FIXME: filtersongs does not get updated because of ->pos mismatch, but do we need it anyway? */
-	}
-
-	if (song->pos == MPD_SONG_NO_NUM)
-	{
-		song->pos = static_cast<song_t>(songs.size() - 1);
 	}
 
 	if (song->time != MPD_SONG_NO_TIME)
@@ -723,7 +720,7 @@ bool		Songlist::gotocurrent()
 
 	if (!pms->cursong()) return false;
 
-	if (pms->cursong()->pos != MPD_SONG_NO_NUM)
+	if (pms->cursong()->pos != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN)
 		i = match(Pms::tostring(pms->cursong()->pos), 0, end(), MATCH_POS | MATCH_EXACT);
 	if (i == MATCH_FAILED)
 		i = match(pms->cursong()->file, 0, end(), MATCH_FILE | MATCH_EXACT);

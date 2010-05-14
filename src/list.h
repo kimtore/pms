@@ -70,6 +70,14 @@ enum
 	MATCH_GTE		= 1 << 25
 };
 
+typedef enum
+{
+	LIST_ROLE_MAIN,
+	LIST_ROLE_LIBRARY,
+	LIST_ROLE_PLAYLIST
+}
+List_role;
+
 struct Selection
 {
 	song_t				size;
@@ -99,6 +107,7 @@ public:
 
 	bool			ignorecase;
 	bool			wrap;
+	List_role		role;
 	string			filename;
 	
 	Song *			song(song_t);

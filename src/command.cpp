@@ -158,6 +158,8 @@ Control::Control(Connection * n_conn)
 	_has_new_library = false;
 	_playlist = new Songlist;
 	_library = new Songlist;
+	_playlist->role = LIST_ROLE_MAIN;
+	_library->role = LIST_ROLE_LIBRARY;
 	_active = NULL;
 	command_mode = 0;
 	mutevolume = 0;

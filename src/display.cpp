@@ -734,7 +734,7 @@ void		pms_win_playlist::draw()
 		}
 		else if (pms->cursong() && song->file == pms->cursong()->file)
 		{
-			if (song->pos == MPD_SONG_NO_NUM || pms->cursong()->pos == song->pos)
+			if (list->role != LIST_ROLE_MAIN || (list->role == LIST_ROLE_MAIN && pms->cursong()->pos == song->pos))
 			{
 				hilight = pms->options->colors->current;
 			}
