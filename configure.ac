@@ -6,7 +6,7 @@ if test x$HAVE_CURS != xyes; then
 	AC_MSG_ERROR([PMS requires the curses or ncurses library. Please install before compiling PMS.])
 fi
 LIBS="$LIBS $CURSES_LIB"
-AC_CHECK_LIB([boost_regex], [main])
+AC_ARG_ENABLE([regex], [AS_HELP_STRING([--enable-regex], [Support pattern matching through the boost regex library (default: disable)])], [AC_CHECK_LIB([boost_regex], [main])])
 AC_PREFIX_PROGRAM(man)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CXX
