@@ -1,7 +1,5 @@
-0.42:
-- Tag browser: genre, album, artist, etc.
-
 0.43:
+- Tag browser: genre, album, artist, etc.
 - Tab completion
 - Config system rewrite (bind, set accepted in the same function)
 - Command-line interface to filters

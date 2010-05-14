@@ -1,6 +1,6 @@
-#########################################
-README - Practical Music Search v0.42~git
-#########################################
+#####################################
+README - Practical Music Search v0.42
+#####################################
 
 Copyright (C) 2006-2010 Kim Tore Jensen <kimtjen@gmail.com>.
 
@@ -26,6 +26,8 @@ PMS aims to be accessible and highly configurable.
 
 $ ./configure && make && sudo make install
 
+See INSTALL file for detailed instructions.
+
 
 	2. Requirements
 ***********************
@@ -34,8 +36,7 @@ PMS is a client for the Music Player Daemon (http://musicpd.org). You need to
 have MPD installed and working before using PMS, but not neccessarily on the
 same machine.
 
-This client works best with recent MPD versions. MPD 0.15.0 supports the
-albumartist tag, which enables various artists to be sorted correctly.
+This client works best with recent MPD versions (>= 0.15.0).
 
 PMS depends on the following libraries:
 
@@ -63,4 +64,5 @@ bindings.
 
 Please use the bug tracker at this URL:
 
-http://sourceforge.net/tracker2/?group_id=97344&atid=617763
+http://sourceforge.net/apps/trac/pms
+
