@@ -1266,12 +1266,48 @@ bool		handle_command(pms_pending_keys action)
 		case PEND_PLAYRANDOM:
 		case PEND_ADDRANDOM:
 			if (!list) list = pms->comm->library();
-			song = list->randsong();
-			i = pms->comm->add(pms->comm->playlist(), song);
-			if (i == MPD_SONG_NO_NUM)
+
+			/* Don't re-add songs from playlist, but rather play them again. */
+			if (list->role == LIST_ROLE_MAIN)
+			{
+				if (action == PEND_PLAYRANDOM)
+				{
+					song = list->randsong();
+					pms->comm->playid(song->id);
+					if (win) win->wantdraw = true;
+					break;
+				}
+				/* Don't add songs from playlist, use library instead */
+				else
+				{
+					list = pms->comm->library();
+				}
+			}
+
+			/* Accept numeric parameter */
+			if (pms->input->param.size())
+			{
+				i = atoi(pms->input->param.c_str());
+				sn = MPD_SONG_NO_NUM;
+				for (l = 0; l < i; l++)
+				{
+					song = list->randsong();
+					if (sn == MPD_SONG_NO_NUM)
+						sn = pms->comm->add(pms->comm->playlist(), song);
+					else
+						pms->comm->add(pms->comm->playlist(), song);
+				}
+			}
+			else
+			{
+				song = list->randsong();
+				sn = pms->comm->add(pms->comm->playlist(), song);
+			}
+
+			if (sn == MPD_SONG_NO_NUM)
 				break;
 			if (action == PEND_PLAYRANDOM)
-				pms->comm->playid(i);
+				pms->comm->playid(sn);
 			if (win)
 				win->wantdraw = true;
 			pms->drawstatus();
