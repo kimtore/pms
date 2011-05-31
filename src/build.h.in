@@ -18,11 +18,6 @@
  *
  */
 
-#include "build.h"
-#include <glib.h>
-#include <stdio.h>
-
-int main(int argc, char *argv[])
-{
-	printf("%s %d.%d\n", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
-}
+#define PMS_APP_NAME		"@PROJECT_NAME@"
+#define PMS_VERSION_MAJOR	@PMS_VERSION_MAJOR@
+#define PMS_VERSION_MINOR	@PMS_VERSION_MINOR@
