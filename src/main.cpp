@@ -1,7 +1,7 @@
 /* vi:set ts=8 sts=8 sw=8:
  *
- * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2011  Kim Tore Jensen
+ * Practical Music Search
+ * Copyright (c) 2006-2011  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 	filter.h
- *	The filter class determines song visibility/selection parameters.
  */
 
+#include <glib.h>
 
-class Filter
+int main(int argc, char *argv[])
 {
-public:
-	string			param;
-	long			fields;
-};
+}
