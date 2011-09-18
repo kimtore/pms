@@ -22,14 +22,17 @@
 #include "debug.h"
 #include "curses.h"
 #include "config.h"
+#include "mpd.h"
 #include <glib.h>
 #include <stdio.h>
 
 Config		config;
+MPD		mpd;
 
 int main(int argc, char *argv[])
 {
 	printf("%s %d.%d\n", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
+	mpd.mpd_connect(config.host, config.port);
 	if (!init_curses())
 	{
 		perror("Fatal: failed to initialise ncurses.\n");

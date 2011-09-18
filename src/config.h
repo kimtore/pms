@@ -22,7 +22,6 @@
 #define _PMS_CONFIG_H_
 
 #include <string>
-#include <glib.h>
 
 using namespace std;
 
@@ -33,7 +32,7 @@ class Config
 
 	public:
 		string		host;
-		guint		port;
+		string		port;
 		string		password;
 
 		Config();

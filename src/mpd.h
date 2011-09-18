@@ -18,39 +18,28 @@
  *
  */
 
-#include "config.h"
-#include <stdlib.h>
+#ifndef _PMS_MPD_H_
+#define _PMS_MPD_H_
+
+#include <glib.h>
+#include <string>
 
 using namespace std;
 
-Config::Config()
+class MPD
 {
-	this->setup_default_connection_info();
-}
+	private:
+		string		host;
+		string		port;
+		string		password;
 
-void	Config::setup_default_connection_info()
-{
-	char *	env;
-	size_t	i;
+		int		sock;
+		bool		connected;
 
-	this->password = "";
+	public:
+		bool		mpd_connect(string host, string port);
+		void		mpd_disconnect();
+		bool		is_connected();
+};
 
-	if ((env = getenv("MPD_HOST")) == NULL)
-	{
-		this->host = "localhost";
-	}
-	else
-	{
-		this->host = env;
-		if ((i = this->host.rfind('@')) != string::npos)
-		{
-			this->password = this->host.substr(0, i);
-			this->host = this->host.substr(i + 1);
-		}
-	}
-
-	if ((env = getenv("MPD_PORT")) == NULL)
-		this->port = "6600";
-	else
-		this->port = env;
-}
+#endif /* _PMS_MPD_H_ */
