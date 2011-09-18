@@ -18,19 +18,32 @@
  *
  */
 
-#include "build.h"
-#include "curses.h"
-#include <glib.h>
-#include <stdio.h>
+#include <ncurses.h>
 
-int main(int argc, char *argv[])
+bool init_curses()
 {
-	printf("%s %d.%d\n", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
-	if (!init_curses())
+	if ((initscr()) == NULL)
+		return false;
+
+	raw();
+	noecho();
+	halfdelay(5);
+	keypad(stdscr, true);
+	curs_set(0);
+
+	if (has_colors())
 	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
+		start_color();
+		use_default_colors();
 	}
-	while(true);
-	shutdown_curses();
+
+	clear();
+	refresh();
+
+	return true;
+}
+
+void shutdown_curses()
+{
+	endwin();
 }

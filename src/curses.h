@@ -18,19 +18,13 @@
  *
  */
 
-#include "build.h"
-#include "curses.h"
-#include <glib.h>
-#include <stdio.h>
+#ifndef _PMS_CURSES_H_
+#define _PMS_CURSES_H_
 
-int main(int argc, char *argv[])
-{
-	printf("%s %d.%d\n", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
-	if (!init_curses())
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
-	while(true);
-	shutdown_curses();
-}
+/* Initialise ncurses */
+bool init_curses();
+
+/* Shutdown curses */
+void shutdown_curses();
+
+#endif /* _PMS_CURSES_H_ */

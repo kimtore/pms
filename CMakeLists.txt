@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project("Practical Music Search" C CXX)
 set(PMS_VERSION_MAJOR 0)
 set(PMS_VERSION_MINOR 50)
-add_executable(pms src/main.cpp)
+add_executable(pms src/main.cpp src/curses.cpp)
 
 configure_file(
 	"${PROJECT_SOURCE_DIR}/src/build.h.in"
@@ -15,3 +15,11 @@ if (NOT GLIB2_FOUND)
 endif(NOT GLIB2_FOUND)	
 include_directories(${GLIB2_INCLUDE_DIRS})
 target_link_libraries(pms ${GLIB2_LIBRARIES})
+
+set(CURSES_NEED_NCURSES, true)
+include(FindCurses.cmake)
+if (NOT CURSES_FOUND)
+	message(FATAL_ERROR "PMS requires ncurses to compile.")
+endif(NOT CURSES_FOUND)
+include_directories(${CURSES_INCLUDE_DIR})
+target_link_libraries(pms ${CURSES_LIBRARIES})
