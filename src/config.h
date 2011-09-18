@@ -18,23 +18,25 @@
  *
  */
 
-#include "build.h"
-#include "debug.h"
-#include "curses.h"
-#include "config.h"
+#ifndef _PMS_CONFIG_H_
+#define _PMS_CONFIG_H_
+
+#include <string>
 #include <glib.h>
-#include <stdio.h>
 
-Config		config;
+using namespace std;
 
-int main(int argc, char *argv[])
+class Config
 {
-	printf("%s %d.%d\n", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
-	if (!init_curses())
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
-	while(true);
-	shutdown_curses();
-}
+	private:
+		void		setup_default_connection_info();
+
+	public:
+		string		host;
+		guint		port;
+		string		password;
+
+		Config();
+};
+
+#endif /* _PMS_CONFIG_H_ */

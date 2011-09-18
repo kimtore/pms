@@ -18,23 +18,10 @@
  *
  */
 
-#include "build.h"
-#include "debug.h"
-#include "curses.h"
-#include "config.h"
-#include <glib.h>
-#include <stdio.h>
+#ifndef _PMS_DEBUG_H_
+#define _PMS_DEBUG_H_
 
-Config		config;
+/* Log a message to stderr */
+void debug(const char * format, ...);
 
-int main(int argc, char *argv[])
-{
-	printf("%s %d.%d\n", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
-	if (!init_curses())
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
-	while(true);
-	shutdown_curses();
-}
+#endif /* _PMS_DEBUG_H_ */

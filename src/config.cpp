@@ -18,23 +18,43 @@
  *
  */
 
-#include "build.h"
-#include "debug.h"
-#include "curses.h"
 #include "config.h"
-#include <glib.h>
-#include <stdio.h>
+#include <stdlib.h>
 
-Config		config;
+using namespace std;
 
-int main(int argc, char *argv[])
+Config::Config()
 {
-	printf("%s %d.%d\n", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
-	if (!init_curses())
+	this->setup_default_connection_info();
+}
+
+void	Config::setup_default_connection_info()
+{
+	char *	env;
+	size_t	i;
+
+	this->password = "";
+
+	if ((env = getenv("MPD_HOST")) == NULL)
 	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
+		this->host = "localhost";
 	}
-	while(true);
-	shutdown_curses();
+	else
+	{
+		this->host = env;
+		if ((i = this->host.rfind('@')) != string::npos)
+		{
+			this->password = this->host.substr(0, i);
+			this->host = this->host.substr(i + 1);
+		}
+	}
+
+	if ((env = getenv("MPD_PORT")) == NULL)
+	{
+		this->port = 6600;
+	}
+	else
+	{
+		this->port = atoi(env);
+	}
 }
