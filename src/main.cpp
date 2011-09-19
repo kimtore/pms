@@ -28,18 +28,25 @@
 
 Config		config;
 MPD		mpd;
+Curses		curses;
 
 int main(int argc, char *argv[])
 {
 	printf("%s %d.%d\n", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
-	mpd.mpd_connect(config.host, config.port);
-	mpd.set_password(config.password);
-	mpd.get_status();
-	return 0;
-	if (!init_curses())
+	if (!curses.ready)
 	{
 		perror("Fatal: failed to initialise ncurses.\n");
 		return 1;
 	}
-	shutdown_curses();
+
+	while(!config.quit)
+	{
+		if (!mpd.is_connected())
+		{
+			mpd.mpd_connect(config.host, config.port);
+			mpd.set_password(config.password);
+			mpd.get_status();
+		}
+		config.quit = true;
+	}
 }

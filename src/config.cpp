@@ -25,7 +25,9 @@ using namespace std;
 
 Config::Config()
 {
-	this->setup_default_connection_info();
+	setup_default_connection_info();
+
+	quit = false;
 }
 
 void	Config::setup_default_connection_info()
@@ -33,24 +35,24 @@ void	Config::setup_default_connection_info()
 	char *	env;
 	size_t	i;
 
-	this->password = "";
+	password = "";
 
 	if ((env = getenv("MPD_HOST")) == NULL)
 	{
-		this->host = "localhost";
+		host = "localhost";
 	}
 	else
 	{
-		this->host = env;
-		if ((i = this->host.rfind('@')) != string::npos)
+		host = env;
+		if ((i = host.rfind('@')) != string::npos)
 		{
-			this->password = this->host.substr(0, i);
-			this->host = this->host.substr(i + 1);
+			password = host.substr(0, i);
+			host = host.substr(i + 1);
 		}
 	}
 
 	if ((env = getenv("MPD_PORT")) == NULL)
-		this->port = "6600";
+		port = "6600";
 	else
-		this->port = env;
+		port = env;
 }

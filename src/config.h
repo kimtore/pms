@@ -35,6 +35,8 @@ class Config
 		string		port;
 		string		password;
 
+		bool		quit;
+
 		Config();
 };
 

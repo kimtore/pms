@@ -21,10 +21,35 @@
 #ifndef _PMS_CURSES_H_
 #define _PMS_CURSES_H_
 
-/* Initialise ncurses */
-bool init_curses();
+#include <ncurses.h>
 
-/* Shutdown curses */
-void shutdown_curses();
+typedef struct
+{
+	int	left;
+	int	top;
+	int	right;
+	int	bottom;
+}
+
+Rect;
+
+class Curses
+{
+	public:
+
+		Curses();
+		~Curses();
+
+		/* Set left/right/top/bottom for all panels */
+		void		detect_dimensions();
+
+		Rect		self;
+		Rect		topbar;
+		Rect		main;
+		Rect		statusbar;
+
+		bool		ready;
+		bool		hascolors;
+};
 
 #endif /* _PMS_CURSES_H_ */

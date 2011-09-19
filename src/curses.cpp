@@ -18,32 +18,60 @@
  *
  */
 
-#include <ncurses.h>
+#include "curses.h"
+#include <cstring>
 
-bool init_curses()
+Curses::Curses()
 {
 	if ((initscr()) == NULL)
-		return false;
+	{
+		ready = false;
+		return;
+	}
 
 	raw();
 	noecho();
-	halfdelay(5);
+	halfdelay(10);
 	keypad(stdscr, true);
 	curs_set(0);
 
-	if (has_colors())
+	if (has_colors() && start_color())
 	{
-		start_color();
 		use_default_colors();
+		hascolors = true;
 	}
 
+	detect_dimensions();
 	clear();
 	refresh();
 
-	return true;
+	ready = true;
 }
 
-void shutdown_curses()
+Curses::~Curses()
 {
 	endwin();
+}
+
+void Curses::detect_dimensions()
+{
+	memset(&self, 0, sizeof self);
+	memset(&topbar, 0, sizeof topbar);
+	memset(&main, 0, sizeof main);
+	memset(&statusbar, 0, sizeof statusbar);
+
+	self.right = COLS - 1;
+	self.bottom = LINES - 1;
+
+	topbar.top = 1;
+	topbar.bottom = topbar.top;
+	topbar.right = self.right;
+
+	main.top = topbar.bottom + 1;
+	main.bottom = self.bottom - 1;
+	main.right = self.right;
+
+	statusbar.top = self.bottom;
+	statusbar.bottom = self.bottom;
+	statusbar.right = self.right;
 }
