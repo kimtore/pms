@@ -33,11 +33,11 @@ int main(int argc, char *argv[])
 {
 	printf("%s %d.%d\n", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
 	mpd.mpd_connect(config.host, config.port);
+	return 0;
 	if (!init_curses())
 	{
 		perror("Fatal: failed to initialise ncurses.\n");
 		return 1;
 	}
-	while(true);
 	shutdown_curses();
 }

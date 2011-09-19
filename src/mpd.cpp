@@ -26,6 +26,7 @@
 #include <netdb.h>
 #include <cstring>
 #include <string>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -34,6 +35,7 @@ extern Config config;
 bool MPD::mpd_connect(string nhost, string nport)
 {
 	int			status;
+	char			buf[32];
 	struct addrinfo		hints;
 	struct addrinfo *	res;
 
@@ -68,9 +70,15 @@ bool MPD::mpd_connect(string nhost, string nport)
 	}
 
 	freeaddrinfo(res);
-	debug("Successful connection to %s:%s.", this->host.c_str(), this->port.c_str());
+	this->connected = true;
 
-	return true;
+	debug("Successful connection to %s:%s.", this->host.c_str(), this->port.c_str());
+	recv(this->sock, &buf, 32, 0);
+	this->set_protocol_version(buf);
+
+	send_and_recv("status\n");
+
+	return this->connected;
 }
 
 void MPD::mpd_disconnect()
@@ -83,4 +91,48 @@ void MPD::mpd_disconnect()
 bool MPD::is_connected()
 {
 	return this->connected;
+}
+
+bool MPD::set_protocol_version(string data)
+{
+	int i = 7;
+	int last = 7;
+	int pos = 0;
+
+	if (data.substr(0, 7) != "OK MPD ")
+		return false;
+
+	while (i <= data.size() && pos < 3)
+	{
+		if (data[i] == '.' || data[i] == '\n')
+		{
+			this->protocol_version[pos] = atoi(data.substr(last, i - last).c_str());
+			++pos;
+			last = i + 1;
+		}
+		++i;
+	}
+	debug("MPD server speaking protocol version %d.%d.%d", protocol_version[0], protocol_version[1], protocol_version[2]);
+
+	return true;
+}
+
+bool MPD::send_and_recv(string data)
+{
+	int sent;
+	char buf[1024];
+
+	if (!this->connected)
+		return false;
+
+	this->buffer = "";
+
+	sent = send(this->sock, data.c_str(), data.size(), 0);
+	while (sent < data.size())
+		sent += send(this->sock, data.substr(sent).c_str(), data.size() - sent, 0);
+
+	recv(this->sock, &buf, 1024, 0);
+	debug("data %d bytes: %s:", strlen(buf), buf);
+
+	return true;
 }

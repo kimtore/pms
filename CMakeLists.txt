@@ -3,6 +3,7 @@ project("Practical Music Search" C CXX)
 set(PMS_VERSION_MAJOR 0)
 set(PMS_VERSION_MINOR 50)
 add_executable(pms src/main.cpp src/curses.cpp src/config.cpp src/debug.cpp src/mpd.cpp)
+set(CMAKE_CXX_FLAGS, "-Wall -g -pedantic")
 
 configure_file(
 	"${PROJECT_SOURCE_DIR}/src/build.h.in"

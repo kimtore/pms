@@ -32,13 +32,26 @@ class MPD
 		string		host;
 		string		port;
 		string		password;
+		string		buffer;
 
 		int		sock;
 		bool		connected;
+		int		protocol_version[3];
+
+		/* Parse the initial connection string from MPD */
+		bool		set_protocol_version(string data);
+
+		/* Send an MPD command and wait for all data to return */
+		bool		send_and_recv(string data);
 
 	public:
+		/* Initialise a connection to an MPD server */
 		bool		mpd_connect(string host, string port);
+
+		/* Shut it down, houston. */
 		void		mpd_disconnect();
+
+		/* Returns true if there is an active connection. */
 		bool		is_connected();
 };
 
