@@ -24,6 +24,53 @@
 #include <glib.h>
 #include <string>
 
+/* MPD error codes */
+#define MPD_ERR_NONE 0
+#define MPD_ERR_CONNECTION 1
+#define MPD_ERR_NOTMPD 2
+#define MPD_ERR_ACK 3
+
+/* mpd_getline statuses */
+#define MPD_GETLINE_ERR -1
+#define MPD_GETLINE_ACK -1
+#define MPD_GETLINE_OK 0
+#define MPD_GETLINE_MORE 1
+
+/* MPD player states */
+#define MPD_STATE_UNKNOWN -1
+#define MPD_STATE_PLAY 0
+#define MPD_STATE_STOP 1
+#define MPD_STATE_PAUSE 2
+
+typedef long song_t;
+
+typedef struct
+{
+	int		volume;
+	bool		repeat;
+	bool		random;
+	bool		single;
+	bool		consume;
+	long		playlist;
+	int		playlistlength;
+	int		xfade;
+	double		mixrampdb;
+	int		mixrampdelay;
+	int		state;
+	song_t		song;
+	song_t		songid;
+	song_t		nextsong;
+	song_t		nextsongid;
+	int		length;
+	int		elapsed;
+	int		bitrate;
+	long		samplerate;
+	int		bits;
+	int		channels;
+}
+
+mpd_state;
+
 using namespace std;
 
 class MPD
@@ -34,17 +81,36 @@ class MPD
 		string		password;
 		string		buffer;
 
+		string		error;
+		int		errno;
+
+		/* Connection variables */
 		int		sock;
 		bool		connected;
+		bool		waiting;
 		int		protocol_version[3];
+
+		/* MPD state */
+		mpd_state	state;
+
+		/* Trigger an error. Always returns false. */
+		bool		trigerr(int nerrno, const char * format, ...);
 
 		/* Parse the initial connection string from MPD */
 		bool		set_protocol_version(string data);
 
-		/* Send an MPD command and wait for all data to return */
-		bool		send_and_recv(string data);
+		/* Send a command to MPD */
+		int		mpd_send(string data);
+
+		/* Get data from MPD and fetch next line. See MPD_GETLINE_* for return codes */
+		int		mpd_getline(string * nextline);
+
+		/* Split a "parameter: value" pair */
+		int		split_pair(string * line, string * param, string * value);
 
 	public:
+		MPD();
+
 		/* Initialise a connection to an MPD server */
 		bool		mpd_connect(string host, string port);
 
@@ -53,6 +119,9 @@ class MPD
 
 		/* Returns true if there is an active connection. */
 		bool		is_connected();
+
+		/* Retrieve MPD status */
+		int		get_status();
 };
 
 #endif /* _PMS_MPD_H_ */
