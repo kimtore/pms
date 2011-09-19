@@ -74,7 +74,8 @@ bool MPD::mpd_connect(string nhost, string nport)
 	host = nhost;
 	port = nport;
 
-	mpd_disconnect();
+	if (connected)
+		mpd_disconnect();
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
@@ -124,6 +125,24 @@ void MPD::mpd_disconnect()
 bool MPD::is_connected()
 {
 	return connected;
+}
+
+bool MPD::set_password(string password)
+{
+	if (!connected)
+		return false;
+
+	if (password.size() == 0)
+		return true;
+	
+	mpd_send("password \"" + password + "\"");
+	if (mpd_getline(NULL) == MPD_GETLINE_OK)
+	{
+		debug("Password '%s' accepted by server.", password.c_str());
+		return true;
+	}
+
+	return true;
 }
 
 bool MPD::set_protocol_version(string data)
@@ -213,7 +232,9 @@ int MPD::mpd_getline(string * nextline)
 		return MPD_GETLINE_ACK;
 	}
 
-	*nextline = line;
+	if (nextline != NULL)
+		*nextline = line;
+
 	return MPD_GETLINE_MORE;
 }
 

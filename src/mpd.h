@@ -29,6 +29,7 @@
 #define MPD_ERR_CONNECTION 1
 #define MPD_ERR_NOTMPD 2
 #define MPD_ERR_ACK 3
+#define MPD_ERR_BADPASS 4
 
 /* mpd_getline statuses */
 #define MPD_GETLINE_ERR -1
@@ -119,6 +120,9 @@ class MPD
 
 		/* Returns true if there is an active connection. */
 		bool		is_connected();
+
+		/* Change password */
+		bool		set_password(string password);
 
 		/* Retrieve MPD status */
 		int		get_status();
