@@ -18,18 +18,19 @@
  *
  */
 
-#include "debug.h"
-#include <stdarg.h>
-#include <stdio.h>
+#ifndef _PMS_CONSOLE_H_
+#define _PMS_CONSOLE_H_
 
-void debug(const char * format, ...)
-{
-	va_list		ap;
-	char		buffer[1024];
+#define MSG_LEVEL_ERR 0
+#define MSG_LEVEL_WARN 1
+#define MSG_LEVEL_INFO 2
+#define MSG_LEVEL_DEBUG 3
 
-	va_start(ap, format);
-	vsprintf(buffer, format, ap);
-	va_end(ap);
+/* Log a message to stderr */
+void console_log(int level, const char * format, ...);
 
-	fprintf(stderr, "%s\n", buffer);
-}
+#define debug(_fmt, ...)	console_log(MSG_LEVEL_DEBUG, _fmt, __VA_ARGS__)
+#define stinfo(_fmt, ...)	console_log(MSG_LEVEL_INFO, _fmt, __VA_ARGS__)
+#define sterr(_fmt, ...)	console_log(MSG_LEVEL_ERR, _fmt, __VA_ARGS__)
+
+#endif /* _PMS_CONSOLE_H_ */

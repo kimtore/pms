@@ -18,10 +18,32 @@
  *
  */
 
-#ifndef _PMS_DEBUG_H_
-#define _PMS_DEBUG_H_
+#include "console.h"
+#include "curses.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <string>
+#include <vector>
 
-/* Log a message to stderr */
-void debug(const char * format, ...);
+using namespace std;
 
-#endif /* _PMS_DEBUG_H_ */
+vector<string> logbuffer;
+extern Curses curses;
+
+void console_log(int level, const char * format, ...)
+{
+	va_list		ap;
+	char		buffer[1024];
+
+	va_start(ap, format);
+	vsprintf(buffer, format, ap);
+	va_end(ap);
+
+	logbuffer.push_back(buffer);
+	if (level <= MSG_LEVEL_INFO)
+	{
+		curses.wipe(&curses.statusbar);
+		curses.print(&curses.statusbar, 0, 0, buffer);
+		curses.draw();
+	}
+}

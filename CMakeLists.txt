@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project("Practical Music Search" C CXX)
 set(PMS_VERSION_MAJOR 0)
 set(PMS_VERSION_MINOR 50)
-add_executable(pms src/main.cpp src/curses.cpp src/config.cpp src/debug.cpp src/mpd.cpp)
+add_executable(pms src/main.cpp src/curses.cpp src/config.cpp src/console.cpp src/mpd.cpp)
 set(CMAKE_CXX_FLAGS, "-Wall -g -pedantic")
 
 configure_file(

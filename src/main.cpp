@@ -19,7 +19,7 @@
  */
 
 #include "build.h"
-#include "debug.h"
+#include "console.h"
 #include "curses.h"
 #include "config.h"
 #include "mpd.h"
@@ -32,7 +32,6 @@ Curses		curses;
 
 int main(int argc, char *argv[])
 {
-	printf("%s %d.%d\n", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
 	if (!curses.ready)
 	{
 		perror("Fatal: failed to initialise ncurses.\n");

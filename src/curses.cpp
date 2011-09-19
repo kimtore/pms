@@ -20,6 +20,11 @@
 
 #include "curses.h"
 #include <cstring>
+#include <string>
+#include <stdlib.h>
+#include <math.h>
+
+using namespace std;
 
 Curses::Curses()
 {
@@ -74,4 +79,155 @@ void Curses::detect_dimensions()
 	statusbar.top = self.bottom;
 	statusbar.bottom = self.bottom;
 	statusbar.right = self.right;
+}
+
+void Curses::draw()
+{
+	refresh();
+}
+
+void Curses::wipe(Rect * rect)
+{
+	int ix, yx;
+
+	if (!rect)
+		return;
+	
+	for (yx = rect->top; yx <= rect->bottom; yx++)
+	{
+		for (ix = rect->left; ix <= rect->right; ix++)
+		{
+			mvaddch(yx, ix, ' ');
+		}
+	}
+}
+
+void Curses::print(Rect * rect, int y, int x, const char * fmt, ...)
+{
+	va_list			ap;
+	unsigned int		i = 0;
+	double			f = 0;
+	string			output = "";
+	bool			parse = false;
+	bool			attr = false;
+	attr_t			attrval = 0;
+	char			buf[1024];
+	string			colorstr;
+	int			colorint;
+	int			pair = 0;
+	unsigned int		maxlen;		// max allowed characters printed on screen
+	unsigned int		printlen = 0;	// num characters printed on screen
+
+	if (!rect)
+		return;
+	
+	va_start(ap, fmt);
+
+	//pair = c->pair();
+	pair = 0;
+	maxlen = rect->right - rect->left + 1;
+	move(rect->top, rect->left);
+	attron(pair);
+
+	while(*fmt && printlen < maxlen)
+	{
+		if (*fmt == '%' && !parse)
+		{
+			if (*(fmt + 1) == '%')
+			{
+				fmt += 2;
+				output = "%%";
+				printw(output.c_str());
+				continue;
+			}
+			parse = true;
+			attr = true;
+			++fmt;
+		}
+
+		if (parse)
+		{
+			switch(*fmt)
+			{
+				case '/':
+				/* Turn off attribute, SGML style */
+					attr = false;
+					break;
+				case 'B':
+					if (attr)
+						attron(A_BOLD);
+					else
+						attroff(A_BOLD);
+					parse = false;
+					break;
+				case 'R':
+					if (attr)
+						attron(A_REVERSE);
+					else
+						attroff(A_REVERSE);
+					parse = false;
+					break;
+				case 'd':
+					parse = false;
+					i = va_arg(ap, int);
+					sprintf(buf, "%d", i);
+					printw(buf);
+					printlen += strlen(buf);
+					i = 0;
+					break;
+				case 'f':
+					parse = false;
+					f = va_arg(ap, double);
+					sprintf(buf, "%f", f);
+					printw(buf);
+					printlen += strlen(buf);
+					break;
+				case 's':
+					parse = false;
+					output = va_arg(ap, const char *);
+					if (output.size() >= (maxlen - printlen))
+					{
+						output = output.substr(0, (maxlen - printlen - 1));
+					}
+					sprintf(buf, "%s", output.c_str());
+					printw(buf);
+					printlen += strlen(buf);
+					break;
+				case 0:
+					parse = false;
+					continue;
+				default:
+					/* Use colors? */
+					i = atoi(fmt);
+					if (i >= 0)
+					{
+						if (attr)
+						{
+							attroff(pair);
+							attron(i);
+						}
+						else
+						{
+							attroff(i);
+							attron(pair);
+						}
+
+						/* Skip characters */
+						fmt += static_cast<int>(floor(log(i)) + 1);
+					}
+					parse = false;
+					break;
+			}
+		}
+		else
+		{
+			output = *fmt;
+			printw(output.c_str());
+			++printlen;
+		}
+		++fmt;
+	}
+
+	va_end(ap);
+	attroff(pair);
 }

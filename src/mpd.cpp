@@ -19,7 +19,7 @@
  */
 
 #include "mpd.h"
-#include "debug.h"
+#include "console.h"
 #include "config.h"
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -59,7 +59,7 @@ bool MPD::trigerr(int nerrno, const char * format, ...)
 	error = buffer;
 	errno = nerrno;
 
-	debug("MPD: %s", buffer);
+	sterr("MPD: %s", buffer);
 
 	return false;
 }
@@ -76,6 +76,8 @@ bool MPD::mpd_connect(string nhost, string nport)
 
 	if (connected)
 		mpd_disconnect();
+
+	stinfo("Connecting to server '%s' port '%s'...", host.c_str(), port.c_str());
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
@@ -107,7 +109,7 @@ bool MPD::mpd_connect(string nhost, string nport)
 	freeaddrinfo(res);
 	connected = true;
 
-	debug("Successful connection to %s:%s.", host.c_str(), port.c_str());
+	stinfo("Connected to server '%s' on port '%s'.", host.c_str(), port.c_str());
 	recv(sock, &buf, 32, 0);
 	set_protocol_version(buf);
 
@@ -138,7 +140,7 @@ bool MPD::set_password(string password)
 	mpd_send("password \"" + password + "\"");
 	if (mpd_getline(NULL) == MPD_GETLINE_OK)
 	{
-		debug("Password '%s' accepted by server.", password.c_str());
+		stinfo("Password '%s' accepted by server.", password.c_str());
 		return true;
 	}
 

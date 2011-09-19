@@ -40,6 +40,25 @@ class Curses
 		Curses();
 		~Curses();
 
+		/*
+		 * Prints formatted, color output onto a rectangle.
+		 *
+		 * %s		= char *
+		 * %d		= int
+		 * %f		= double
+		 * %B %/B	= bold on/off
+		 * %R %/R	= reverse on/off
+		 * %0-n% %/0-n%	= color on/off
+		 *
+		 */
+		void		print(Rect * rect, int y, int x, const char * fmt, ...);
+
+		/* Refresh the screen */
+		void		draw();
+
+		/* Clear the screen */
+		void		wipe(Rect * rect);
+
 		/* Set left/right/top/bottom for all panels */
 		void		detect_dimensions();
 
