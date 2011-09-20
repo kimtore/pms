@@ -86,7 +86,6 @@ bool MPD::mpd_connect(string nhost, string nport)
 	if ((status = getaddrinfo(host.c_str(), port.c_str(), &hints, &res)) != 0)
 	{
 		trigerr(MPD_ERR_CONNECTION, "getaddrinfo error: %s", gai_strerror(status));
-		freeaddrinfo(res);
 		return false;
 	}
 
@@ -210,6 +209,7 @@ int MPD::mpd_getline(string * nextline)
 		{
 			continue;
 		}
+		buf[received] = '\0';
 		buffer += buf;
 	}
 
