@@ -28,9 +28,15 @@
 
 using namespace std;
 
-vector<string> logbuffer;
+vector<Logline *> logbuffer;
 extern Curses curses;
 extern Windowmanager wm;
+
+Logline::Logline(int lvl, const char * ln)
+{
+	level = lvl;
+	line = ln;
+}
 
 void console_log(int level, const char * format, ...)
 {
@@ -41,7 +47,7 @@ void console_log(int level, const char * format, ...)
 	vsprintf(buffer, format, ap);
 	va_end(ap);
 
-	logbuffer.push_back(buffer);
+	logbuffer.push_back(new Logline(level, buffer));
 	if (level <= MSG_LEVEL_INFO)
 	{
 		wm.statusbar->draw();

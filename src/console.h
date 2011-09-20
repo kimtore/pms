@@ -21,10 +21,22 @@
 #ifndef _PMS_CONSOLE_H_
 #define _PMS_CONSOLE_H_
 
+#include <string>
+using namespace std;
+
 #define MSG_LEVEL_ERR 0
 #define MSG_LEVEL_WARN 1
 #define MSG_LEVEL_INFO 2
 #define MSG_LEVEL_DEBUG 3
+
+class Logline
+{
+	public:
+		Logline(int lvl, const char * ln);
+
+		int level;
+		string line;
+};
 
 /* Log a message to stderr */
 void console_log(int level, const char * format, ...);

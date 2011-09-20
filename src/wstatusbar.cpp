@@ -26,11 +26,20 @@
 
 using namespace std;
 
-extern vector<string> logbuffer;
+extern vector<Logline *> logbuffer;
 extern Curses curses;
 
 bool Wstatusbar::drawline(int rely)
 {
+	vector<Logline *>::reverse_iterator i;
+
 	curses.wipe(rect);
-	curses.print(rect, rely, 0, logbuffer[logbuffer.size()-1].c_str());
+	for (i = logbuffer.rbegin(); i != logbuffer.rend(); i++)
+	{
+		if ((*i)->level > MSG_LEVEL_INFO)
+			continue;
+
+		curses.print(rect, rely, 0, logbuffer[logbuffer.size()-1]->line.c_str());
+		break;
+	}
 }

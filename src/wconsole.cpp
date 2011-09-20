@@ -26,7 +26,7 @@
 
 using namespace std;
 
-extern vector<string> logbuffer;
+extern vector<Logline *> logbuffer;
 extern Curses curses;
 
 bool Wconsole::drawline(int rely)
@@ -35,5 +35,5 @@ bool Wconsole::drawline(int rely)
 		return false;
 
 	curses.clearline(rect, rely);
-	curses.print(rect, rely, 0, logbuffer[rely].c_str());
+	curses.print(rect, rely, 0, logbuffer[rely]->line.c_str());
 }
