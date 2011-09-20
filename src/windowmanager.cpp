@@ -18,38 +18,33 @@
  *
  */
 
-#include "build.h"
-#include "console.h"
-#include "curses.h"
-#include "config.h"
 #include "window.h"
-#include "mpd.h"
-#include <glib.h>
-#include <stdio.h>
+#include "curses.h"
+#include <vector>
 
-Config		config;
-MPD		mpd;
-Curses		curses;
-Windowmanager	wm;
+extern Curses curses;
 
-int main(int argc, char *argv[])
+Windowmanager::Windowmanager()
 {
-	if (!curses.ready)
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
+	Wconsole * wconsole;
 
-	while(!config.quit)
-	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-		}
-		wm.draw();
-		sleep(2);
-		config.quit = true;
-	}
+	/* Setup static windows that are not in the window list */
+	topbar = new Wtopbar;
+	topbar->set_rect(&curses.topbar);
+	statusbar = new Wstatusbar;
+	statusbar->set_rect(&curses.statusbar);
+
+	/* Setup static windows that appear in the window list */
+	wconsole = new Wconsole;
+	wconsole->set_rect(&curses.main);
+	windows.push_back(WWINDOW(wconsole));
+
+	active = WWINDOW(wconsole);
+}
+
+void Windowmanager::draw()
+{
+	topbar->draw();
+	statusbar->draw();
+	active->draw();
 }

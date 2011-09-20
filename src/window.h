@@ -22,6 +22,12 @@
 #define _PMS_WINDOW_H_
 
 #include "curses.h"
+#include <vector>
+
+using namespace std;
+
+#define WWINDOW(x)	dynamic_cast<Window *>(x)
+#define WCONSOLE(x)	dynamic_cast<Wconsole *>(x)
 
 class Window
 {
@@ -43,6 +49,34 @@ class Wconsole : public Window
 {
 	public:
 		bool		drawline(int rely);
+};
+
+class Wtopbar : public Window
+{
+	public:
+		bool		drawline(int rely) {};
+};
+
+class Wstatusbar : public Window
+{
+	public:
+		bool		drawline(int rely);
+};
+
+class Windowmanager
+{
+	private:
+		vector<Window *>	windows;
+	
+	public:
+		Windowmanager();
+
+		/* Redraw all visible windows */
+		void			draw();
+
+		Window *		active;
+		Wtopbar *		topbar;
+		Wstatusbar *		statusbar;
 };
 
 #endif /* _PMS_WINDOW_H_ */
