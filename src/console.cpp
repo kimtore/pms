@@ -19,6 +19,7 @@
  */
 
 #include "console.h"
+#include "window.h"
 #include "curses.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -29,6 +30,7 @@ using namespace std;
 
 vector<string> logbuffer;
 extern Curses curses;
+extern Windowmanager wm;
 
 void console_log(int level, const char * format, ...)
 {
@@ -42,8 +44,7 @@ void console_log(int level, const char * format, ...)
 	logbuffer.push_back(buffer);
 	if (level <= MSG_LEVEL_INFO)
 	{
-		curses.wipe(&curses.statusbar);
-		curses.print(&curses.statusbar, 0, 0, buffer);
-		curses.draw();
+		wm.statusbar->draw();
+		curses.draw(); // instant status updates
 	}
 }
