@@ -53,19 +53,23 @@ class Curses
 		 */
 		void		print(Rect * rect, int y, int x, const char * fmt, ...);
 
-		/* Refresh the screen */
+		/* Refresh the screen. */
 		void		draw();
 
-		/* Clear the screen */
+		/* Clear a line, relative to rect. */
+		void		clearline(Rect * rect, int line);
+
+		/* Clear the rectangle. */
 		void		wipe(Rect * rect);
 
-		/* Set left/right/top/bottom for all panels */
+		/* Set left/right/top/bottom layout for all panels */
 		void		detect_dimensions();
 
 		Rect		self;
 		Rect		topbar;
 		Rect		main;
 		Rect		statusbar;
+		Rect		position;
 
 		bool		ready;
 		bool		hascolors;

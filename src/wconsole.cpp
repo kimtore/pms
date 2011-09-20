@@ -18,40 +18,22 @@
  *
  */
 
-#include "build.h"
+#include "window.h"
 #include "console.h"
 #include "curses.h"
-#include "config.h"
-#include "window.h"
-#include "mpd.h"
-#include <glib.h>
-#include <stdio.h>
+#include <string>
+#include <vector>
 
-Config		config;
-MPD		mpd;
-Curses		curses;
+using namespace std;
 
-int main(int argc, char *argv[])
+extern vector<string> logbuffer;
+extern Curses curses;
+
+bool Wconsole::drawline(int rely)
 {
-	Wconsole *	console;
+	if (rely + rect->top > rect->bottom || rely >= logbuffer.size())
+		return false;
 
-	if (!curses.ready)
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
-
-	console = new Wconsole;
-	console->set_rect(&curses.main);
-
-	while(!config.quit)
-	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-		}
-		config.quit = true;
-	}
+	curses.clearline(rect, rely);
+	curses.print(rect, rely, 0, logbuffer[rely].c_str());
 }

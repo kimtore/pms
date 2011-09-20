@@ -18,40 +18,31 @@
  *
  */
 
-#include "build.h"
-#include "console.h"
+#ifndef _PMS_WINDOW_H_
+#define _PMS_WINDOW_H_
+
 #include "curses.h"
-#include "config.h"
-#include "window.h"
-#include "mpd.h"
-#include <glib.h>
-#include <stdio.h>
 
-Config		config;
-MPD		mpd;
-Curses		curses;
-
-int main(int argc, char *argv[])
+class Window
 {
-	Wconsole *	console;
+	protected:
+		Rect *		rect;
 
-	if (!curses.ready)
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
+	public:
+		void		set_rect(Rect * r) { rect = r; };
 
-	console = new Wconsole;
-	console->set_rect(&curses.main);
+		/* Draw all lines on rect */
+		void		draw();
 
-	while(!config.quit)
-	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-		}
-		config.quit = true;
-	}
-}
+		/* Draw one line on rect */
+		virtual bool	drawline(int y) = 0;
+
+};
+
+class Wconsole : public Window
+{
+	public:
+		bool		drawline(int rely);
+};
+
+#endif /* _PMS_WINDOW_H_ */

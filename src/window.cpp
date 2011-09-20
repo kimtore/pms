@@ -18,40 +18,15 @@
  *
  */
 
-#include "build.h"
-#include "console.h"
-#include "curses.h"
-#include "config.h"
 #include "window.h"
-#include "mpd.h"
-#include <glib.h>
-#include <stdio.h>
 
-Config		config;
-MPD		mpd;
-Curses		curses;
-
-int main(int argc, char *argv[])
+void Window::draw()
 {
-	Wconsole *	console;
+	int i;
 
-	if (!curses.ready)
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
+	if (!rect)
+		return;
 
-	console = new Wconsole;
-	console->set_rect(&curses.main);
-
-	while(!config.quit)
-	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-		}
-		config.quit = true;
-	}
+	for (i = 0; i <= rect->bottom - rect->top; i++)
+		drawline(i);
 }

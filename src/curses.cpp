@@ -64,6 +64,7 @@ void Curses::detect_dimensions()
 	memset(&topbar, 0, sizeof topbar);
 	memset(&main, 0, sizeof main);
 	memset(&statusbar, 0, sizeof statusbar);
+	memset(&position, 0, sizeof position);
 
 	self.right = COLS - 1;
 	self.bottom = LINES - 1;
@@ -78,12 +79,33 @@ void Curses::detect_dimensions()
 
 	statusbar.top = self.bottom;
 	statusbar.bottom = self.bottom;
-	statusbar.right = self.right;
+	statusbar.right = self.right - 3;
+
+	position.top = statusbar.top;
+	position.bottom = statusbar.bottom;
+	position.left = statusbar.right + 1;
+	position.right = self.right;
 }
 
 void Curses::draw()
 {
 	refresh();
+}
+
+void Curses::clearline(Rect * rect, int line)
+{
+	Rect r;
+
+	if (!rect)
+		return;
+
+	memcpy(&r, rect, sizeof r);
+	if ((r.top += line) > r.bottom)
+		return;
+	
+	r.bottom = r.top;
+
+	wipe(&r);
 }
 
 void Curses::wipe(Rect * rect)
@@ -95,9 +117,10 @@ void Curses::wipe(Rect * rect)
 	
 	for (yx = rect->top; yx <= rect->bottom; yx++)
 	{
+		move(yx, rect->left);
 		for (ix = rect->left; ix <= rect->right; ix++)
 		{
-			mvaddch(yx, ix, ' ');
+			addch(' ');
 		}
 	}
 }
@@ -126,7 +149,7 @@ void Curses::print(Rect * rect, int y, int x, const char * fmt, ...)
 	//pair = c->pair();
 	pair = 0;
 	maxlen = rect->right - rect->left + 1;
-	move(rect->top, rect->left);
+	move(rect->top + y, rect->left + x);
 	attron(pair);
 
 	while(*fmt && printlen < maxlen)
