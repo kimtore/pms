@@ -18,39 +18,39 @@
  *
  */
 
-#include "build.h"
-#include "console.h"
-#include "curses.h"
-#include "config.h"
-#include "window.h"
-#include "mpd.h"
 #include "input.h"
-#include <glib.h>
-#include <stdio.h>
+#include "curses.h"
 
-Config		config;
-MPD		mpd;
-Curses		curses;
-Windowmanager	wm;
-Input		input;
-
-int main(int argc, char *argv[])
+Input::Input()
 {
-	if (!curses.ready)
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
+	mode = INPUT_MODE_COMMAND;
+	chbuf = 0;
+	buffer = "";
+}
 
-	while(!config.quit)
+int Input::next()
+{
+	if ((chbuf = getch()) == INPUT_NOINPUT)
+		return chbuf;
+
+	switch(mode)
 	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-		}
-		wm.draw();
-		input.next();
+		default:
+		case INPUT_MODE_COMMAND:
+			return INPUT_NOINPUT; // FIXME
+		case INPUT_MODE_INPUT:
+		case INPUT_MODE_SEARCH:
+			buffer += chbuf;
+			return INPUT_BUFFERED;
 	}
+}
+
+void Input::setmode(int nmode)
+{
+	if (nmode == mode)
+		return;
+	
+	buffer = "";
+	chbuf = 0;
+	mode = nmode;
 }

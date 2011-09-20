@@ -18,39 +18,36 @@
  *
  */
 
-#include "build.h"
-#include "console.h"
-#include "curses.h"
-#include "config.h"
-#include "window.h"
-#include "mpd.h"
-#include "input.h"
-#include <glib.h>
-#include <stdio.h>
+#ifndef _PMS_INPUT_H_
+#define _PMS_INPUT_H_
 
-Config		config;
-MPD		mpd;
-Curses		curses;
-Windowmanager	wm;
-Input		input;
+#include <string>
+using namespace std;
 
-int main(int argc, char *argv[])
+#define INPUT_NOINPUT -1
+#define INPUT_BUFFERED 0
+#define INPUT_RUN 1
+
+#define INPUT_MODE_COMMAND 0
+#define INPUT_MODE_INPUT 1
+#define INPUT_MODE_SEARCH 2
+
+class Input
 {
-	if (!curses.ready)
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
+	private:
+		int		chbuf;
+		int		mode;
+		string		buffer;
 
-	while(!config.quit)
-	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-		}
-		wm.draw();
-		input.next();
-	}
-}
+	public:
+		Input();
+
+		/* Read next character from ncurses buffer */
+		int		next();
+
+		/* Setter and getter for mode */
+		void		setmode(int nmode);
+		int		getmode() { return mode; }
+};
+
+#endif /* _PMS_INPUT_H_ */
