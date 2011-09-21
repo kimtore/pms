@@ -18,25 +18,24 @@
  *
  */
 
-#ifndef _PMS_CONFIG_H_
-#define _PMS_CONFIG_H_
-
+#include "command.h"
 #include <string>
+#include <vector>
+
 using namespace std;
 
-class Config
+Commandlist::Commandlist()
 {
-	private:
-		void		setup_default_connection_info();
+	add(CONTEXT_ALL, ACT_QUIT, "quit");
+	add(CONTEXT_ALL, ACT_QUIT, "q");
+}
 
-	public:
-		string		host;
-		string		port;
-		string		password;
-
-		bool		quit;
-
-		Config();
-};
-
-#endif /* _PMS_CONFIG_H_ */
+Command * Commandlist::add(int context, action_t action, string name)
+{
+	Command * c = new Command;
+	c->context = context;
+	c->action = action;
+	c->name = name;
+	cmds.push_back(c);
+	return c;
+}

@@ -21,6 +21,7 @@
 #ifndef _PMS_INPUT_H_
 #define _PMS_INPUT_H_
 
+#include "command.h"
 #include <string>
 using namespace std;
 
@@ -32,14 +33,45 @@ using namespace std;
 #define INPUT_MODE_INPUT 1
 #define INPUT_MODE_SEARCH 2
 
+#define KEYBIND_FIND_NOMATCH -1
+#define KEYBIND_FIND_EXACT 0
+#define KEYBIND_FIND_BUFFERED 1
+
+class Keybinding
+{
+	public:
+		string		sequence;
+		action_t	action;
+		int		context;
+};
+
+class Keybindings
+{
+	private:
+		vector<Keybinding *>	bindings;
+	public:
+		Keybindings();
+
+		/* Add and check for duplicate sequences */
+		Keybinding *	add(int context, action_t action, string sequence);
+		Keybinding *	find_conflict(string sequence);
+
+		/* Find an action based on the key sequence */
+		int		find(int context, string sequence, action_t * action);
+};
+
 class Input
 {
 	private:
+
 		int		chbuf;
-		int		mode;
-		string		buffer;
 
 	public:
+
+		int		mode;
+		unsigned long	multiplier;
+		string		buffer;
+
 		Input();
 
 		/* Read next character from ncurses buffer */

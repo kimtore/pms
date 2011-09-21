@@ -25,6 +25,7 @@ Input::Input()
 {
 	mode = INPUT_MODE_COMMAND;
 	chbuf = 0;
+	multiplier = 1;
 	buffer = "";
 }
 
@@ -52,5 +53,6 @@ void Input::setmode(int nmode)
 	
 	buffer = "";
 	chbuf = 0;
+	multiplier = 1;
 	mode = nmode;
 }
