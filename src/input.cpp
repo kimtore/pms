@@ -20,6 +20,9 @@
 
 #include "input.h"
 #include "curses.h"
+#include "command.h"
+
+Keybindings keybindings;
 
 Input::Input()
 {
@@ -31,6 +34,9 @@ Input::Input()
 
 int Input::next()
 {
+	action_t action;
+	int m;
+
 	if ((chbuf = getch()) == INPUT_NOINPUT)
 		return chbuf;
 
@@ -38,7 +44,15 @@ int Input::next()
 	{
 		default:
 		case INPUT_MODE_COMMAND:
-			return INPUT_NOINPUT; // FIXME
+			buffer += chbuf;
+			m = keybindings.find(CONTEXT_ALL, buffer, &action);
+
+			if (m == KEYBIND_FIND_EXACT)
+				return INPUT_RUN;
+			else if (m == KEYBIND_FIND_NOMATCH)
+				buffer.clear();
+
+			return INPUT_NOINPUT;
 		case INPUT_MODE_INPUT:
 		case INPUT_MODE_SEARCH:
 			buffer += chbuf;
