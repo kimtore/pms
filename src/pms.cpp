@@ -18,42 +18,36 @@
  *
  */
 
-#include "build.h"
+#include "pms.h"
 #include "console.h"
 #include "curses.h"
 #include "config.h"
 #include "window.h"
 #include "mpd.h"
 #include "input.h"
-#include "pms.h"
-#include <glib.h>
-#include <stdio.h>
 
-Config		config;
-MPD		mpd;
-Curses		curses;
-Windowmanager	wm;
-Input		input;
-PMS		pms;
+extern Config		config;
+extern MPD		mpd;
+extern Curses		curses;
+extern Windowmanager	wm;
+extern Input		input;
 
-int main(int argc, char *argv[])
+int PMS::run_event(input_event * ev)
 {
-	if (!curses.ready)
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
+	if (!ev) return false;
 
-	wm.draw();
-	while(!config.quit)
+	switch(ev->action)
 	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-		}
-		pms.run_event(input.next());
-		wm.draw();
+		case ACT_QUIT:
+			return quit();
+
+		default:
+			return false;
 	}
+}
+
+int PMS::quit()
+{
+	config.quit = true;
+	return true;
 }

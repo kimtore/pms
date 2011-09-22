@@ -25,9 +25,9 @@
 #include <string>
 using namespace std;
 
-#define INPUT_NOINPUT -1
-#define INPUT_BUFFERED 0
-#define INPUT_RUN 1
+#define INPUT_RESULT_NOINPUT 0
+#define INPUT_RESULT_BUFFERED 1
+#define INPUT_RESULT_RUN 2
 
 #define INPUT_MODE_COMMAND 0
 #define INPUT_MODE_INPUT 1
@@ -36,6 +36,22 @@ using namespace std;
 #define KEYBIND_FIND_NOMATCH -1
 #define KEYBIND_FIND_EXACT 0
 #define KEYBIND_FIND_BUFFERED 1
+
+/* This struct is returned by Input::next(), defining what to do next */
+typedef struct
+{
+	/* Which context are we in? */
+	int context;
+
+	/* What kind of action to run */
+	action_t action;
+
+	/* one of INPUT_RESULT_* */
+	int result;
+}
+
+input_event;
+
 
 class Keybinding
 {
@@ -65,6 +81,7 @@ class Input
 	private:
 
 		int		chbuf;
+		input_event	ev;
 
 	public:
 
@@ -75,7 +92,7 @@ class Input
 		Input();
 
 		/* Read next character from ncurses buffer */
-		int		next();
+		input_event *	next();
 
 		/* Setter and getter for mode */
 		void		setmode(int nmode);

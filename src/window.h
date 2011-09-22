@@ -71,6 +71,9 @@ class Windowmanager
 	public:
 		Windowmanager();
 
+		/* What kind of input events are accepted right now */
+		int			context;
+
 		/* Redraw all visible windows */
 		void			draw();
 

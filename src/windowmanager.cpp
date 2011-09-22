@@ -20,6 +20,7 @@
 
 #include "window.h"
 #include "curses.h"
+#include "command.h"
 #include <vector>
 
 extern Curses curses;
@@ -40,6 +41,7 @@ Windowmanager::Windowmanager()
 	windows.push_back(WWINDOW(wconsole));
 
 	active = WWINDOW(wconsole);
+	context = CONTEXT_CONSOLE;
 }
 
 void Windowmanager::draw()

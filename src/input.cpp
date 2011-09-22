@@ -21,8 +21,11 @@
 #include "input.h"
 #include "curses.h"
 #include "command.h"
+#include "window.h"
+#include <cstring>
 
 Keybindings keybindings;
+extern Windowmanager wm;
 
 Input::Input()
 {
@@ -32,32 +35,41 @@ Input::Input()
 	buffer = "";
 }
 
-int Input::next()
+input_event * Input::next()
 {
-	action_t action;
 	int m;
 
-	if ((chbuf = getch()) == INPUT_NOINPUT)
-		return chbuf;
+	if ((chbuf = getch()) == INPUT_RESULT_NOINPUT)
+		return NULL;
 
+	memset(&ev, 0, sizeof ev);
 	switch(mode)
 	{
+		/* Command-mode */
 		default:
 		case INPUT_MODE_COMMAND:
 			buffer += chbuf;
-			m = keybindings.find(CONTEXT_ALL, buffer, &action);
+			m = keybindings.find(wm.context, buffer, &ev.action);
 
 			if (m == KEYBIND_FIND_EXACT)
-				return INPUT_RUN;
+				ev.result = INPUT_RESULT_RUN;
 			else if (m == KEYBIND_FIND_NOMATCH)
 				buffer.clear();
 
-			return INPUT_NOINPUT;
+			break;
+
+		/* Text input of some sorts */
 		case INPUT_MODE_INPUT:
 		case INPUT_MODE_SEARCH:
 			buffer += chbuf;
-			return INPUT_BUFFERED;
+			ev.result = INPUT_RESULT_BUFFERED;
+			break;
 	}
+
+	if (ev.result != INPUT_RESULT_NOINPUT)
+		return &ev;
+	
+	return NULL;
 }
 
 void Input::setmode(int nmode)

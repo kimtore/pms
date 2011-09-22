@@ -18,42 +18,25 @@
  *
  */
 
-#include "build.h"
-#include "console.h"
-#include "curses.h"
-#include "config.h"
-#include "window.h"
-#include "mpd.h"
+#ifndef _PMS_PMS_H_
+#define _PMS_PMS_H_
+
 #include "input.h"
-#include "pms.h"
-#include <glib.h>
-#include <stdio.h>
 
-Config		config;
-MPD		mpd;
-Curses		curses;
-Windowmanager	wm;
-Input		input;
-PMS		pms;
-
-int main(int argc, char *argv[])
+/*
+ * This class contains all user interface actions,
+ * and could probably be used for plugin interfacing
+ * in the future.
+ */
+class PMS
 {
-	if (!curses.ready)
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
+	public:
+		/* This function handles input events from main(). */
+		int		run_event(input_event * ev);
 
-	wm.draw();
-	while(!config.quit)
-	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-		}
-		pms.run_event(input.next());
-		wm.draw();
-	}
-}
+		/* Quit the program. */
+		int		quit();
+};
+
+
+#endif /* _PMS_PMS_H_ */
