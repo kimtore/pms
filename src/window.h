@@ -50,7 +50,26 @@ class Window
 
 class Wmain : public Window
 {
+	protected:
+
+		/* Scroll position */
+		unsigned int	position;
+
+		/* Cursor position */
+		unsigned int	cursor;
+
 	public:
+
+		/* Scroll window */
+		virtual void	scroll_window(int offset);
+
+		/* Move cursor inside window */
+		virtual void	move_cursor(int offset);
+
+		/* List size */
+		virtual unsigned int content_size() = 0;
+
+		/* Is this window visible? */
 		bool		visible();
 };
 
@@ -58,6 +77,7 @@ class Wconsole : public Wmain
 {
 	public:
 		void		drawline(int rely);
+		unsigned int	content_size();
 };
 
 class Wtopbar : public Window

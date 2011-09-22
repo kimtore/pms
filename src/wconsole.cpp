@@ -31,9 +31,16 @@ extern Curses curses;
 
 void Wconsole::drawline(int rely)
 {
-	if (rely + rect->top > rect->bottom || (unsigned int)rely >= logbuffer.size())
+	unsigned int linepos = rely + position;
+
+	if (rely + rect->top > rect->bottom || linepos >= logbuffer.size())
 		return;
 
 	curses.clearline(rect, rely);
-	curses.print(rect, rely, 0, logbuffer[rely]->line.c_str());
+	curses.print(rect, rely, 0, logbuffer[linepos]->line.c_str());
+}
+
+unsigned int Wconsole::content_size()
+{
+	return logbuffer.size();
 }

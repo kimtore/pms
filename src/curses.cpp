@@ -69,7 +69,7 @@ void Curses::detect_dimensions()
 	self.right = COLS - 1;
 	self.bottom = LINES - 1;
 
-	topbar.top = 1;
+	topbar.top = 0;
 	topbar.bottom = topbar.top;
 	topbar.right = self.right;
 

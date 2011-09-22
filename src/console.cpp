@@ -51,7 +51,7 @@ void console_log(int level, const char * format, ...)
 	if (level <= MSG_LEVEL_INFO || wm.console->visible())
 	{
 		wm.statusbar->draw();
-		wm.console->draw();
+		wm.console->scroll_window(1);
 		curses.flush();
 	}
 }

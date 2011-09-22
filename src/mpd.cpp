@@ -216,6 +216,7 @@ int MPD::mpd_send(string data)
 
 	waiting = true;
 
+	// Raw traffic dump
 	//debug("-> %s", data.c_str());
 
 	return sent;
@@ -259,6 +260,7 @@ int MPD::mpd_getline(string * nextline)
 	if (line.size() == 0)
 		return MPD_GETLINE_ERR;
 
+	// Raw traffic dump
 	//debug("<- %s", line.c_str());
 
 	if (line == "OK")

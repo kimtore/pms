@@ -33,6 +33,36 @@ void Window::draw()
 		drawline(i);
 }
 
+void Wmain::scroll_window(int offset)
+{
+	int limit;
+
+	offset = position + offset;
+	limit = static_cast<int>(content_size() - rect->bottom - rect->top + 1);
+
+	if (offset > limit);
+		offset = limit;
+
+	if (offset < 0)
+		offset = 0;
+	
+	position = offset;
+
+	if (visible()) draw();
+}
+
+void Wmain::move_cursor(int offset)
+{
+	cursor += offset;
+
+	if (cursor < 0)
+		cursor = 0;
+	else if (cursor > content_size() - 1)
+		cursor = content_size() - 1;
+	
+	if (visible()) draw();
+}
+
 bool Wmain::visible()
 {
 	return wm.active == this;
