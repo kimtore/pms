@@ -87,7 +87,7 @@ void Curses::detect_dimensions()
 	position.right = self.right;
 }
 
-void Curses::draw()
+void Curses::flush()
 {
 	refresh();
 }

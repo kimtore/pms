@@ -20,13 +20,20 @@
 
 #include "window.h"
 
+extern Windowmanager wm;
+
 void Window::draw()
 {
 	int i;
 
-	if (!rect)
+	if (!rect || !visible())
 		return;
 
 	for (i = 0; i <= rect->bottom - rect->top; i++)
 		drawline(i);
+}
+
+bool Wmain::visible()
+{
+	return wm.active == this;
 }

@@ -48,9 +48,10 @@ void console_log(int level, const char * format, ...)
 	va_end(ap);
 
 	logbuffer.push_back(new Logline(level, buffer));
-	if (level <= MSG_LEVEL_INFO)
+	if (level <= MSG_LEVEL_INFO || wm.console->visible())
 	{
 		wm.statusbar->draw();
-		curses.draw(); // instant status updates
+		wm.console->draw();
+		curses.flush();
 	}
 }

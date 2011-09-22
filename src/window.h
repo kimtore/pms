@@ -40,12 +40,21 @@ class Window
 		/* Draw all lines on rect */
 		void		draw();
 
+		/* Is this window visible? */
+		virtual bool	visible() { return true; };
+
 		/* Draw one line on rect */
 		virtual bool	drawline(int y) = 0;
 
 };
 
-class Wconsole : public Window
+class Wmain : public Window
+{
+	public:
+		bool		visible();
+};
+
+class Wconsole : public Wmain
 {
 	public:
 		bool		drawline(int rely);
@@ -77,6 +86,7 @@ class Windowmanager
 		/* Redraw all visible windows */
 		void			draw();
 
+		Wconsole *		console;
 		Window *		active;
 		Wtopbar *		topbar;
 		Wstatusbar *		statusbar;

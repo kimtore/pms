@@ -54,7 +54,7 @@ class Curses
 		void		print(Rect * rect, int y, int x, const char * fmt, ...);
 
 		/* Refresh the screen. */
-		void		draw();
+		void		flush();
 
 		/* Clear a line, relative to rect. */
 		void		clearline(Rect * rect, int line);

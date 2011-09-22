@@ -45,6 +45,8 @@ int main(int argc, char *argv[])
 	}
 
 	wm.draw();
+	stinfo("%s %d.%d", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
+
 	while(!config.quit)
 	{
 		if (!mpd.is_connected())
@@ -57,7 +59,6 @@ int main(int argc, char *argv[])
 		{
 			mpd.poll();
 		}
-		wm.draw();
 		pms.run_event(input.next());
 	}
 }

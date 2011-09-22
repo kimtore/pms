@@ -204,7 +204,7 @@ int MPD::mpd_send(string data)
 
 	waiting = true;
 
-	debug("-> %s", data.c_str());
+	//debug("-> %s", data.c_str());
 
 	return sent;
 }
@@ -247,7 +247,7 @@ int MPD::mpd_getline(string * nextline)
 	if (line.size() == 0)
 		return MPD_GETLINE_ERR;
 
-	debug("<- %s", line.c_str());
+	//debug("<- %s", line.c_str());
 
 	if (line == "OK")
 		return MPD_GETLINE_OK;

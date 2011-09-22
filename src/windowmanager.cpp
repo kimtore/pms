@@ -27,8 +27,6 @@ extern Curses curses;
 
 Windowmanager::Windowmanager()
 {
-	Wconsole * wconsole;
-
 	/* Setup static windows that are not in the window list */
 	topbar = new Wtopbar;
 	topbar->set_rect(&curses.topbar);
@@ -36,11 +34,11 @@ Windowmanager::Windowmanager()
 	statusbar->set_rect(&curses.statusbar);
 
 	/* Setup static windows that appear in the window list */
-	wconsole = new Wconsole;
-	wconsole->set_rect(&curses.main);
-	windows.push_back(WWINDOW(wconsole));
+	console = new Wconsole;
+	console->set_rect(&curses.main);
+	windows.push_back(WWINDOW(console));
 
-	active = WWINDOW(wconsole);
+	active = WWINDOW(console);
 	context = CONTEXT_CONSOLE;
 }
 

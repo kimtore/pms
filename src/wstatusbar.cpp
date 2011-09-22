@@ -39,7 +39,9 @@ bool Wstatusbar::drawline(int rely)
 		if ((*i)->level > MSG_LEVEL_INFO)
 			continue;
 
-		curses.print(rect, rely, 0, logbuffer[logbuffer.size()-1]->line.c_str());
+		curses.print(rect, rely, 0, (*i)->line.c_str());
 		break;
 	}
+
+	return true;
 }
