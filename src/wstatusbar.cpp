@@ -29,7 +29,7 @@ using namespace std;
 extern vector<Logline *> logbuffer;
 extern Curses curses;
 
-bool Wstatusbar::drawline(int rely)
+void Wstatusbar::drawline(int rely)
 {
 	vector<Logline *>::reverse_iterator i;
 
@@ -42,6 +42,4 @@ bool Wstatusbar::drawline(int rely)
 		curses.print(rect, rely, 0, (*i)->line.c_str());
 		break;
 	}
-
-	return true;
 }

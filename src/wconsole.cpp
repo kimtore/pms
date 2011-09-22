@@ -29,10 +29,10 @@ using namespace std;
 extern vector<Logline *> logbuffer;
 extern Curses curses;
 
-bool Wconsole::drawline(int rely)
+void Wconsole::drawline(int rely)
 {
-	if (rely + rect->top > rect->bottom || rely >= logbuffer.size())
-		return false;
+	if (rely + rect->top > rect->bottom || (unsigned int)rely >= logbuffer.size())
+		return;
 
 	curses.clearline(rect, rely);
 	curses.print(rect, rely, 0, logbuffer[rely]->line.c_str());

@@ -65,6 +65,8 @@ bool MPD::set_idle(bool nidle)
 	mpd_send("noidle");
 	mpd_getline(NULL);
 	is_idle = false;
+
+	return true;
 }
 
 bool MPD::trigerr(int nerrno, const char * format, ...)
@@ -168,8 +170,8 @@ bool MPD::set_password(string password)
 
 bool MPD::set_protocol_version(string data)
 {
-	int i = 7;
-	int last = 7;
+	unsigned int i = 7;
+	unsigned int last = 7;
 	int pos = 0;
 
 	if (data.substr(0, 7) != "OK MPD ")
@@ -192,15 +194,25 @@ bool MPD::set_protocol_version(string data)
 
 int MPD::mpd_send(string data)
 {
-	int sent;
+	unsigned int sent;
+	int s;
 
 	if (!connected)
 		return -1;
 
 	data += '\n';
-	sent = send(sock, data.c_str(), data.size(), 0);
+	if ((s = send(sock, data.c_str(), data.size(), 0)) == -1)
+		return s;
+
+	sent = s;
+
 	while (sent < data.size())
-		sent += send(sock, data.substr(sent).c_str(), data.size() - sent, 0);
+	{
+		if ((s = send(sock, data.substr(sent).c_str(), data.size() - sent, 0)) == -1)
+			return -1;
+
+		sent += s;
+	}
 
 	waiting = true;
 

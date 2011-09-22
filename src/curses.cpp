@@ -133,10 +133,8 @@ void Curses::print(Rect * rect, int y, int x, const char * fmt, ...)
 	string			output = "";
 	bool			parse = false;
 	bool			attr = false;
-	attr_t			attrval = 0;
 	char			buf[1024];
 	string			colorstr;
-	int			colorint;
 	int			pair = 0;
 	unsigned int		maxlen;		// max allowed characters printed on screen
 	unsigned int		printlen = 0;	// num characters printed on screen

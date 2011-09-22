@@ -44,7 +44,7 @@ class Window
 		virtual bool	visible() { return true; };
 
 		/* Draw one line on rect */
-		virtual bool	drawline(int y) = 0;
+		virtual void	drawline(int y) = 0;
 
 };
 
@@ -57,19 +57,19 @@ class Wmain : public Window
 class Wconsole : public Wmain
 {
 	public:
-		bool		drawline(int rely);
+		void		drawline(int rely);
 };
 
 class Wtopbar : public Window
 {
 	public:
-		bool		drawline(int rely) {};
+		void		drawline(int rely) {};
 };
 
 class Wstatusbar : public Window
 {
 	public:
-		bool		drawline(int rely);
+		void		drawline(int rely);
 };
 
 class Windowmanager
