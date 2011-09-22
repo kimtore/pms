@@ -43,6 +43,9 @@ typedef struct
 	/* Which context are we in? */
 	int context;
 
+	/* How many? */
+	unsigned int multiplier;
+
 	/* What kind of action to run */
 	action_t action;
 

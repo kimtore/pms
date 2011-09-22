@@ -81,6 +81,7 @@ class Wconsole : public Wmain
 	public:
 		void		drawline(int rely);
 		unsigned int	content_size();
+		void		move_cursor(int offset);
 };
 
 class Wtopbar : public Window

@@ -44,3 +44,8 @@ unsigned int Wconsole::content_size()
 {
 	return logbuffer.size();
 }
+
+void Wconsole::move_cursor(int offset)
+{
+	return scroll_window(offset);
+}

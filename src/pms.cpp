@@ -42,10 +42,16 @@ int PMS::run_event(input_event * ev)
 			return quit();
 
 		case ACT_SCROLL_UP:
-			return scroll_window(-1);
+			return scroll_window(-ev->multiplier);
 
 		case ACT_SCROLL_DOWN:
-			return scroll_window(1);
+			return scroll_window(ev->multiplier);
+
+		case ACT_CURSOR_UP:
+			return move_cursor(-ev->multiplier);
+
+		case ACT_CURSOR_DOWN:
+			return move_cursor(ev->multiplier);
 
 		default:
 			return false;
@@ -62,8 +68,14 @@ int PMS::scroll_window(int offset)
 {
 	Wmain * window;
 	window = WMAIN(wm.active);
-	//debug("Scroll %d from %d", offset, window->position);
 	window->scroll_window(offset);
-	//debug("End up at %d", window->position);
+	return true;
+}
+
+int PMS::move_cursor(int offset)
+{
+	Wmain * window;
+	window = WMAIN(wm.active);
+	window->move_cursor(offset);
 	return true;
 }

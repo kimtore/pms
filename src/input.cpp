@@ -68,7 +68,10 @@ input_event * Input::next()
 
 	if (ev.result != INPUT_RESULT_NOINPUT)
 	{
-		buffer.clear();
+		if (ev.result != INPUT_RESULT_BUFFERED)
+			buffer.clear();
+
+		ev.multiplier = multiplier;
 		return &ev;
 	}
 	

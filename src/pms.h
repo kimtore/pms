@@ -37,6 +37,9 @@ class PMS
 		/* Quit the program. */
 		int		quit();
 
+		/* Move cursor in current window*/
+		int		move_cursor(int offset);
+
 		/* Scroll the current window */
 		int		scroll_window(int offset);
 };
