@@ -28,6 +28,14 @@ Commandlist::Commandlist()
 {
 	add(CONTEXT_ALL, ACT_QUIT, "quit");
 	add(CONTEXT_ALL, ACT_QUIT, "q");
+	add(CONTEXT_LIST, ACT_SCROLL_UP, "scroll-up");
+	add(CONTEXT_LIST, ACT_SCROLL_DOWN, "scroll-down");
+	add(CONTEXT_LIST, ACT_CURSOR_UP, "cursor-up");
+	add(CONTEXT_LIST, ACT_CURSOR_DOWN, "cursor-down");
+	add(CONTEXT_LIST, ACT_CURSOR_HOME, "cursor-home");
+	add(CONTEXT_LIST, ACT_CURSOR_END, "cursor-end");
+	add(CONTEXT_LIST, ACT_CURSOR_TOP, "cursor-top");
+	add(CONTEXT_LIST, ACT_CURSOR_BOTTOM, "cursor-bottom");
 }
 
 Command * Commandlist::add(int context, action_t action, string name)

@@ -42,6 +42,12 @@ class PMS
 
 		/* Scroll the current window */
 		int		scroll_window(int offset);
+
+		/* Set scroll absolute position */
+		int		set_cursor_home();
+		int		set_cursor_end();
+		int		set_cursor_top();
+		int		set_cursor_bottom();
 };
 
 

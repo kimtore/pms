@@ -69,6 +69,10 @@ class Wmain : public Window
 		/* Move cursor inside window */
 		virtual void	move_cursor(int offset);
 
+		/* Set absolute window/cursor position */
+		virtual void	set_position(unsigned int absolute);
+		virtual void	set_cursor(unsigned int absolute);
+
 		/* List size */
 		virtual unsigned int content_size() = 0;
 

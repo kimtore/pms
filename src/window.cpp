@@ -41,18 +41,31 @@ Wmain::Wmain()
 
 void Wmain::scroll_window(int offset)
 {
-	int limit;
+	int limit = static_cast<int>(content_size() - rect->bottom - rect->top + 1);
 
 	offset = position + offset;
-	limit = static_cast<int>(content_size() - rect->bottom - rect->top + 1);
 
 	if (offset > limit)
 		offset = limit;
-
 	if (offset < 0)
 		offset = 0;
 	
 	position = offset;
+
+	if (visible()) draw();
+}
+
+void Wmain::set_position(unsigned int absolute)
+{
+	int limit = static_cast<int>(content_size() - rect->bottom - rect->top + 1);
+	int abs = absolute;
+
+	if (limit < 0)
+		abs = 0;
+	else if (abs > limit || abs < 0)
+		abs = limit;
+
+	position = abs;
 
 	if (visible()) draw();
 }
@@ -67,6 +80,11 @@ void Wmain::move_cursor(int offset)
 		cursor = content_size() - 1;
 	
 	if (visible()) draw();
+}
+
+void Wmain::set_cursor(unsigned int absolute)
+{
+	set_position(absolute);
 }
 
 bool Wmain::visible()

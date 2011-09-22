@@ -53,6 +53,12 @@ int PMS::run_event(input_event * ev)
 		case ACT_CURSOR_DOWN:
 			return move_cursor(ev->multiplier);
 
+		case ACT_CURSOR_HOME:
+			return set_cursor_home();
+
+		case ACT_CURSOR_END:
+			return set_cursor_end();
+
 		default:
 			return false;
 	}
@@ -77,5 +83,21 @@ int PMS::move_cursor(int offset)
 	Wmain * window;
 	window = WMAIN(wm.active);
 	window->move_cursor(offset);
+	return true;
+}
+
+int PMS::set_cursor_home()
+{
+	Wmain * window;
+	window = WMAIN(wm.active);
+	window->set_cursor(0);
+	return true;
+}
+
+int PMS::set_cursor_end()
+{
+	Wmain * window;
+	window = WMAIN(wm.active);
+	window->set_cursor(-1);
 	return true;
 }

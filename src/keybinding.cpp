@@ -30,6 +30,8 @@ Keybindings::Keybindings()
 	add(CONTEXT_ALL, ACT_QUIT, "q");
 	add(CONTEXT_LIST, ACT_CURSOR_UP, "k");
 	add(CONTEXT_LIST, ACT_CURSOR_DOWN, "j");
+	add(CONTEXT_LIST, ACT_CURSOR_HOME, "gg");
+	add(CONTEXT_LIST, ACT_CURSOR_END, "G");
 }
 
 Keybinding * Keybindings::add(int context, action_t action, string sequence)
