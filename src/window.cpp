@@ -33,6 +33,12 @@ void Window::draw()
 		drawline(i);
 }
 
+Wmain::Wmain()
+{
+	position = 0;
+	cursor = 0;
+}
+
 void Wmain::scroll_window(int offset)
 {
 	int limit;
@@ -40,7 +46,7 @@ void Wmain::scroll_window(int offset)
 	offset = position + offset;
 	limit = static_cast<int>(content_size() - rect->bottom - rect->top + 1);
 
-	if (offset > limit);
+	if (offset > limit)
 		offset = limit;
 
 	if (offset < 0)

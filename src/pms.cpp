@@ -41,6 +41,12 @@ int PMS::run_event(input_event * ev)
 		case ACT_QUIT:
 			return quit();
 
+		case ACT_SCROLL_UP:
+			return scroll_window(-1);
+
+		case ACT_SCROLL_DOWN:
+			return scroll_window(1);
+
 		default:
 			return false;
 	}
@@ -49,5 +55,15 @@ int PMS::run_event(input_event * ev)
 int PMS::quit()
 {
 	config.quit = true;
+	return true;
+}
+
+int PMS::scroll_window(int offset)
+{
+	Wmain * window;
+	window = WMAIN(wm.active);
+	//debug("Scroll %d from %d", offset, window->position);
+	window->scroll_window(offset);
+	//debug("End up at %d", window->position);
 	return true;
 }

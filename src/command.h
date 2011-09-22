@@ -28,12 +28,18 @@ using namespace std;
 enum
 {
 	CONTEXT_CONSOLE	= 1 << 0,
+
+	CONTEXT_LIST	= (1 << 0),
 	CONTEXT_ALL	= (1 << 1) - 1
 };
 
 typedef enum
 {
-	ACT_QUIT
+	ACT_QUIT,
+	ACT_SCROLL_UP,
+	ACT_SCROLL_DOWN,
+	ACT_CURSOR_UP,
+	ACT_CURSOR_DOWN
 }
 
 action_t;

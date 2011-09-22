@@ -28,6 +28,7 @@ using namespace std;
 
 #define WWINDOW(x)	dynamic_cast<Window *>(x)
 #define WCONSOLE(x)	dynamic_cast<Wconsole *>(x)
+#define WMAIN(x)	dynamic_cast<Wmain *>(x)
 
 class Window
 {
@@ -59,6 +60,8 @@ class Wmain : public Window
 		unsigned int	cursor;
 
 	public:
+
+		Wmain();
 
 		/* Scroll window */
 		virtual void	scroll_window(int offset);

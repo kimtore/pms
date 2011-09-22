@@ -55,10 +55,7 @@ int main(int argc, char *argv[])
 			mpd.set_password(config.password);
 			mpd.get_status();
 		}
-		else
-		{
-			mpd.poll();
-		}
+		mpd.poll();
 		pms.run_event(input.next());
 	}
 }

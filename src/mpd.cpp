@@ -230,7 +230,7 @@ int MPD::mpd_raw_send(string data)
 	waiting = true;
 
 	// Raw traffic dump
-	//debug("-> %s", data.c_str());
+	debug("-> %s", data.c_str());
 
 	return sent;
 }
@@ -274,7 +274,7 @@ int MPD::mpd_getline(string * nextline)
 		return MPD_GETLINE_ERR;
 
 	// Raw traffic dump
-	//debug("<- %s", line.c_str());
+	debug("<- %s", line.c_str());
 
 	if (line == "OK")
 		return MPD_GETLINE_OK;
@@ -414,6 +414,7 @@ int MPD::poll()
 	}
 	else if (s == 0)
 	{
+		// no data ready to recv(), but TODO: we still might have to update time elapsed somewhere.
 		return false;
 	}
 

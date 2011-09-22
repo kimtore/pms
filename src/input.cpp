@@ -67,7 +67,10 @@ input_event * Input::next()
 	}
 
 	if (ev.result != INPUT_RESULT_NOINPUT)
+	{
+		buffer.clear();
 		return &ev;
+	}
 	
 	return NULL;
 }
