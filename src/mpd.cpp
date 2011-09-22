@@ -21,8 +21,11 @@
 #include "mpd.h"
 #include "console.h"
 #include "config.h"
+#include <sys/select.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #include <netdb.h>
 #include <cstring>
 #include <string>
@@ -45,6 +48,21 @@ MPD::MPD()
 	sock = 0;
 	connected = false;
 	memset(&state, 0, sizeof state);
+}
+
+bool MPD::set_idle(bool nidle)
+{
+	if (nidle == is_idle)
+		return false;
+	
+	if (nidle)
+	{
+		mpd_send("idle");
+		return true;
+	}
+
+	mpd_send("noidle");
+	mpd_getline(NULL);
 }
 
 bool MPD::trigerr(int nerrno, const char * format, ...)
@@ -262,6 +280,7 @@ int MPD::get_status()
 	int status;
 	size_t pos;
 
+	set_idle(false);
 	mpd_send("status");
 
 	while((status = mpd_getline(&buf)) == MPD_GETLINE_MORE)
@@ -336,6 +355,40 @@ int MPD::get_status()
 			}
 		}
 	}
+
+	set_idle(true);
+	return true;
+}
+
+int MPD::poll()
+{
+	string line;
+	struct timeval timeout;
+	fd_set set;
+	int s;
+
+	FD_ZERO(&set);
+	FD_SET(sock, &set);
+
+	memset(&timeout, 0, sizeof timeout);
+	if ((s = select(sock+1, &set, NULL, NULL, &timeout)) == -1)
+	{
+		mpd_disconnect();
+		return false;
+	}
+	else if (s == 0)
+	{
+		return false;
+	}
+
+	is_idle = false;
+
+	while((s = mpd_getline(&line)) == MPD_GETLINE_MORE)
+	{
+		debug("IDLE returned %s", line.c_str());
+	}
+
+	set_idle(true);
 
 	return true;
 }

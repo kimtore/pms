@@ -90,9 +90,13 @@ class MPD
 		bool		connected;
 		bool		waiting;
 		int		protocol_version[3];
+		bool		is_idle;
 
 		/* MPD state */
 		mpd_state	state;
+
+		/* Set/unset idle status */
+		bool		set_idle(bool nidle);
 
 		/* Trigger an error. Always returns false. */
 		bool		trigerr(int nerrno, const char * format, ...);
@@ -126,6 +130,10 @@ class MPD
 
 		/* Retrieve MPD status */
 		int		get_status();
+
+		/* Polls the socket to see if there is any IDLE data to collect. */
+		int		poll();
+
 };
 
 #endif /* _PMS_MPD_H_ */
