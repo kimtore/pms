@@ -111,8 +111,11 @@ class MPD
 		/* Parse the initial connection string from MPD */
 		bool		set_protocol_version(string data);
 
-		/* Send a command to MPD */
+		/* Send a command to MPD, turning IDLE off if needed */
 		int		mpd_send(string data);
+
+		/* Send a command to MPD */
+		int		mpd_raw_send(string data);
 
 		/* Get data from MPD and fetch next line. See MPD_GETLINE_* for return codes */
 		int		mpd_getline(string * nextline);

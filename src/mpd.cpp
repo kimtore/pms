@@ -57,14 +57,14 @@ bool MPD::set_idle(bool nidle)
 	
 	if (nidle)
 	{
-		mpd_send("idle");
+		mpd_raw_send("idle");
 		is_idle = true;
 		return true;
 	}
 
-	mpd_send("noidle");
-	mpd_getline(NULL);
+	mpd_raw_send("noidle");
 	is_idle = false;
+	mpd_getline(NULL);
 
 	return true;
 }
@@ -194,6 +194,19 @@ bool MPD::set_protocol_version(string data)
 
 int MPD::mpd_send(string data)
 {
+	int r;
+
+	if (!connected)
+		return -1;
+
+	set_idle(false);
+	r = mpd_raw_send(data);
+
+	return r;
+}
+
+int MPD::mpd_raw_send(string data)
+{
 	unsigned int sent;
 	int s;
 
@@ -300,7 +313,6 @@ int MPD::get_status()
 	int status;
 	size_t pos;
 
-	set_idle(false);
 	mpd_send("status");
 
 	while((status = mpd_getline(&buf)) == MPD_GETLINE_MORE)
@@ -376,7 +388,6 @@ int MPD::get_status()
 		}
 	}
 
-	set_idle(true);
 	return true;
 }
 
@@ -389,6 +400,8 @@ int MPD::poll()
 	struct timeval timeout;
 	fd_set set;
 	int s;
+
+	set_idle(true);
 
 	FD_ZERO(&set);
 	FD_SET(sock, &set);
