@@ -58,11 +58,13 @@ bool MPD::set_idle(bool nidle)
 	if (nidle)
 	{
 		mpd_send("idle");
+		is_idle = true;
 		return true;
 	}
 
 	mpd_send("noidle");
 	mpd_getline(NULL);
+	is_idle = false;
 }
 
 bool MPD::trigerr(int nerrno, const char * format, ...)
@@ -202,6 +204,8 @@ int MPD::mpd_send(string data)
 
 	waiting = true;
 
+	debug("-> %s", data.c_str());
+
 	return sent;
 }
 
@@ -242,6 +246,8 @@ int MPD::mpd_getline(string * nextline)
 
 	if (line.size() == 0)
 		return MPD_GETLINE_ERR;
+
+	debug("<- %s", line.c_str());
 
 	if (line == "OK")
 		return MPD_GETLINE_OK;
@@ -363,6 +369,9 @@ int MPD::get_status()
 int MPD::poll()
 {
 	string line;
+	string param;
+	string value;
+	int updates;
 	struct timeval timeout;
 	fd_set set;
 	int s;
@@ -382,11 +391,68 @@ int MPD::poll()
 	}
 
 	is_idle = false;
+	updates = MPD_UPDATE_NONE;
 
 	while((s = mpd_getline(&line)) == MPD_GETLINE_MORE)
 	{
-		debug("IDLE returned %s", line.c_str());
+		if (!split_pair(&line, &param, &value))
+			continue;
+
+		if (param != "changed")
+			continue;
+
+		if (value == "database")
+		{
+			// the song database has been modified after update. 
+		}
+		else if (value == "update")
+		{
+			// a database update has started or finished. If the database was modified during the update, the database event is also emitted. 
+		}
+		else if (value == "stored_playlist")
+		{
+			// a stored playlist has been modified, renamed, created or deleted 
+		}
+		else if (value == "playlist")
+		{
+			// the current playlist has been modified 
+			updates |= MPD_UPDATE_STATUS;
+		}
+		else if (value == "player")
+		{
+			// the player has been started, stopped or seeked
+			updates |= MPD_UPDATE_STATUS;
+		}
+		else if (value == "mixer")
+		{
+			// the volume has been changed 
+			updates |= MPD_UPDATE_STATUS;
+		}
+		else if (value == "output")
+		{
+			// an audio output has been enabled or disabled 
+		}
+		else if (value == "options")
+		{
+			// options like repeat, random, crossfade, replay gain
+			updates |= MPD_UPDATE_STATUS;
+		}
+		else if (value == "sticker")
+		{
+			// the sticker database has been modified.
+		}
+		else if (value == "subscription")
+		{
+			// a client has subscribed or unsubscribed to a channel
+		}
+		else if (value == "message")
+		{
+			// a message was received on a channel this client is subscribed to; this event is only emitted when the queue is empty
+		}
 	}
+
+	if (updates & MPD_UPDATE_STATUS)
+		get_status();
 
 	set_idle(true);
 

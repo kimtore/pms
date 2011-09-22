@@ -43,6 +43,13 @@
 #define MPD_STATE_STOP 1
 #define MPD_STATE_PAUSE 2
 
+/* IDLE command updates */
+enum
+{
+	MPD_UPDATE_NONE = 0,
+	MPD_UPDATE_STATUS = 1 << 0
+};
+
 typedef long song_t;
 
 typedef struct
