@@ -32,6 +32,9 @@ Colortable::Colortable()
 	console = new Color(COLOR_WHITE, -1, 0);
 	error = new Color(COLOR_WHITE, COLOR_RED, A_BOLD);
 	readout = new Color(COLOR_WHITE, -1, 0);
+
+	cursor = new Color(COLOR_BLACK, COLOR_WHITE, 0);
+	playing = new Color(COLOR_BLACK, COLOR_YELLOW, 0);
 }
 
 Colortable::~Colortable()
@@ -41,6 +44,9 @@ Colortable::~Colortable()
 	delete console;
 	delete error;
 	delete readout;
+
+	delete cursor;
+	delete playing;
 }
 
 Color::Color(short nfront, short nback, int nattr)

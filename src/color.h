@@ -59,6 +59,10 @@ class Colortable
 		Color *		error;
 		Color *		readout;
 
+		/* List colors */
+		Color *		cursor;
+		Color *		playing;
+
 };
 
 

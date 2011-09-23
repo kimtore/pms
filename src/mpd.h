@@ -99,9 +99,6 @@ class MPD
 		int		protocol_version[3];
 		bool		is_idle;
 
-		/* MPD state */
-		mpd_state	state;
-
 		/* Set/unset idle status */
 		bool		set_idle(bool nidle);
 
@@ -125,6 +122,9 @@ class MPD
 
 	public:
 		MPD();
+
+		/* MPD state */
+		mpd_state	state;
 
 		/* Server-side lists */
 		Songlist	playlist;
