@@ -121,6 +121,22 @@ int PMS::move_cursor(int offset)
 	return true;
 }
 
+int PMS::set_cursor_top()
+{
+	Wmain * window;
+	window = WMAIN(wm.active);
+	window->set_cursor(window->position);
+	return true;
+}
+
+int PMS::set_cursor_bottom()
+{
+	Wmain * window;
+	window = WMAIN(wm.active);
+	window->set_cursor(window->position + window->height());
+	return true;
+}
+
 int PMS::set_cursor_home()
 {
 	Wmain * window;
