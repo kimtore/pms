@@ -21,7 +21,8 @@
 #ifndef _PMS_MPD_H_
 #define _PMS_MPD_H_
 
-#include <glib.h>
+#include "songlist.h"
+#include "song.h"
 #include <string>
 
 /* MPD error codes */
@@ -47,10 +48,9 @@
 enum
 {
 	MPD_UPDATE_NONE = 0,
-	MPD_UPDATE_STATUS = 1 << 0
+	MPD_UPDATE_STATUS = 1 << 0,
+	MPD_UPDATE_PLAYLIST = 1 << 1
 };
-
-typedef long song_t;
 
 typedef struct
 {
@@ -112,7 +112,7 @@ class MPD
 		bool		set_protocol_version(string data);
 
 		/* Send a command to MPD, turning IDLE off if needed */
-		int		mpd_send(string data);
+		int		mpd_send(const char * data, ...);
 
 		/* Send a command to MPD */
 		int		mpd_raw_send(string data);
@@ -126,6 +126,10 @@ class MPD
 	public:
 		MPD();
 
+		/* Server-side lists */
+		Songlist	playlist;
+		Songlist	library;
+
 		/* Initialise a connection to an MPD server */
 		bool		mpd_connect(string host, string port);
 
@@ -137,6 +141,9 @@ class MPD
 
 		/* Change password */
 		bool		set_password(string password);
+
+		/* Fetch MPD playlist updates since last time */
+		int		get_playlist();
 
 		/* Retrieve MPD status */
 		int		get_status();

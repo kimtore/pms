@@ -158,7 +158,7 @@ bool MPD::set_password(string password)
 	if (password.size() == 0)
 		return true;
 	
-	mpd_send("password \"" + password + "\"");
+	mpd_send("password \"%s\"", password.c_str());
 	if (mpd_getline(NULL) == MPD_GETLINE_OK)
 	{
 		stinfo("Password '%s' accepted by server.", password.c_str());
@@ -192,17 +192,20 @@ bool MPD::set_protocol_version(string data)
 	return true;
 }
 
-int MPD::mpd_send(string data)
+int MPD::mpd_send(const char * data, ...)
 {
-	int r;
+	va_list		ap;
+	char		buffer[1024];
+
+	va_start(ap, data);
+	vsprintf(buffer, data, ap);
+	va_end(ap);
 
 	if (!connected)
 		return -1;
 
 	set_idle(false);
-	r = mpd_raw_send(data);
-
-	return r;
+	return mpd_raw_send(buffer);
 }
 
 int MPD::mpd_raw_send(string data)
@@ -230,7 +233,7 @@ int MPD::mpd_raw_send(string data)
 	waiting = true;
 
 	// Raw traffic dump
-	debug("-> %s", data.c_str());
+	//debug("-> %s", data.c_str());
 
 	return sent;
 }
@@ -274,7 +277,7 @@ int MPD::mpd_getline(string * nextline)
 		return MPD_GETLINE_ERR;
 
 	// Raw traffic dump
-	debug("<- %s", line.c_str());
+	//debug("<- %s", line.c_str());
 
 	if (line == "OK")
 		return MPD_GETLINE_OK;
@@ -303,6 +306,65 @@ int MPD::split_pair(string * line, string * param, string * value)
 	}
 
 	return false;
+}
+
+int MPD::get_playlist()
+{
+	Song * song = NULL;
+	string buf;
+	string param;
+	string value;
+	int status;
+
+	/* Ignore duplicate update messages */
+	if (playlist.version == state.playlist)
+		return false;
+
+	playlist.truncate(state.playlistlength);
+	if (playlist.version == -1)
+		mpd_send("playlistinfo");
+	else
+		mpd_send("plchanges %d", playlist.version);
+
+	while((status = mpd_getline(&buf)) == MPD_GETLINE_MORE)
+	{
+		if (!split_pair(&buf, &param, &value))
+			continue;
+
+		if (param == "file")
+		{
+			if (song != NULL)
+				playlist.add(song);
+
+			song = new Song;
+			song->file = value;
+		}
+		else if (param == "Pos")
+			song->pos = atol(value.c_str());
+		else if (param == "Id")
+			song->id = atol(value.c_str());
+		else if (param == "Time")
+			song->length = atoi(value.c_str());
+		else if (param == "Name")
+			song->name = value;
+		else if (param == "Artist")
+			song->artist = value;
+		else if (param == "Title")
+			song->title = value;
+		else if (param == "Album")
+			song->album = value;
+		else if (param == "Track")
+			song->track = value;
+		else if (param == "Date")
+			song->date = value;
+		else if (param == "Genre")
+			song->genre = value;
+	}
+	playlist.add(song);
+	playlist.version = state.playlist;
+	debug("Playlist has been updated to version %d", playlist.version);
+
+	return status;
 }
 
 int MPD::get_status()
@@ -388,7 +450,7 @@ int MPD::get_status()
 		}
 	}
 
-	return true;
+	return status;
 }
 
 int MPD::poll()
@@ -445,6 +507,7 @@ int MPD::poll()
 		{
 			// the current playlist has been modified 
 			updates |= MPD_UPDATE_STATUS;
+			updates |= MPD_UPDATE_PLAYLIST;
 		}
 		else if (value == "player")
 		{
@@ -481,6 +544,8 @@ int MPD::poll()
 
 	if (updates & MPD_UPDATE_STATUS)
 		get_status();
+	if (updates & MPD_UPDATE_PLAYLIST)
+		get_playlist();
 
 	set_idle(true);
 

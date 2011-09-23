@@ -18,45 +18,38 @@
  *
  */
 
-#include "build.h"
-#include "console.h"
-#include "curses.h"
-#include "config.h"
-#include "window.h"
-#include "mpd.h"
-#include "input.h"
-#include "pms.h"
-#include <glib.h>
-#include <stdio.h>
+#include "songlist.h"
 
-Curses		curses;
-Config		config;
-MPD		mpd;
-Windowmanager	wm;
-Input		input;
-PMS		pms;
-
-int main(int argc, char *argv[])
+Songlist::Songlist()
 {
-	if (!curses.ready)
+	readonly = false;
+	version = -1;
+}
+
+void Songlist::add(Song * song)
+{
+	if (!song)
+		return;
+
+	/* Replace a song within this list */
+	if (song->pos != -1 && song->pos < (long)songs.size())
 	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
+		delete songs[song->pos];
+		songs[song->pos] = song;
+	}
+	else
+	{
+		songs.push_back(song);
+	}
+}
+
+void Songlist::truncate(unsigned long length)
+{
+	while (songs.size() > length)
+	{
+		delete songs[songs.size()-1];
+		songs.pop_back();
 	}
 
-	wm.draw();
-	stinfo("%s %d.%d", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
-
-	while(!config.quit)
-	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-			mpd.get_playlist();
-		}
-		mpd.poll();
-		pms.run_event(input.next());
-	}
+	songs.resize(length);
 }

@@ -18,45 +18,33 @@
  *
  */
 
-#include "build.h"
-#include "console.h"
-#include "curses.h"
-#include "config.h"
-#include "window.h"
-#include "mpd.h"
-#include "input.h"
-#include "pms.h"
-#include <glib.h>
-#include <stdio.h>
+#ifndef _PMS_SONGLIST_H_
+#define _PMS_SONGLIST_H_
 
-Curses		curses;
-Config		config;
-MPD		mpd;
-Windowmanager	wm;
-Input		input;
-PMS		pms;
+#include "song.h"
+#include <string>
+#include <vector>
 
-int main(int argc, char *argv[])
+using namespace std;
+
+class Songlist
 {
-	if (!curses.ready)
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
+	public:
+		Songlist();
 
-	wm.draw();
-	stinfo("%s %d.%d", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
+		vector<Song *>	songs;
 
-	while(!config.quit)
-	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-			mpd.get_playlist();
-		}
-		mpd.poll();
-		pms.run_event(input.next());
-	}
-}
+		/* Add or replace a song */
+		void		add(Song * song);
+
+		/* Truncate the list and resize the vector */
+		void		truncate(unsigned long length);
+
+		/* Can we make local modifications? */
+		bool		readonly;
+
+		/* Playlist version at MPD side */
+		long		version;
+};
+
+#endif /* _PMS_SONGLIST_H_ */
