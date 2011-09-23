@@ -32,7 +32,7 @@ Input::Input()
 	mode = INPUT_MODE_COMMAND;
 	chbuf = 0;
 	multiplier = 1;
-	buffer = "";
+	buffer.clear();
 	keybindings = new Keybindings();
 }
 
@@ -49,8 +49,8 @@ input_event * Input::next()
 		/* Command-mode */
 		default:
 		case INPUT_MODE_COMMAND:
-			buffer += chbuf;
-			m = keybindings->find(wm.context, buffer, &ev.action);
+			buffer.push_back(chbuf);
+			m = keybindings->find(wm.context, &buffer, &ev.action);
 
 			if (m == KEYBIND_FIND_EXACT)
 				ev.result = INPUT_RESULT_RUN;
@@ -62,7 +62,7 @@ input_event * Input::next()
 		/* Text input of some sorts */
 		case INPUT_MODE_INPUT:
 		case INPUT_MODE_SEARCH:
-			buffer += chbuf;
+			buffer.push_back(chbuf);
 			ev.result = INPUT_RESULT_BUFFERED;
 			break;
 	}
@@ -84,7 +84,7 @@ void Input::setmode(int nmode)
 	if (nmode == mode)
 		return;
 	
-	buffer = "";
+	buffer.clear();
 	chbuf = 0;
 	multiplier = 1;
 	mode = nmode;

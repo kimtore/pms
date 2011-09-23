@@ -59,7 +59,8 @@ input_event;
 class Keybinding
 {
 	public:
-		string		sequence;
+		string		seqstr;
+		vector<int>	sequence;
 		action_t	action;
 		int		context;
 };
@@ -73,13 +74,13 @@ class Keybindings
 
 		/* Add and check for duplicate sequences */
 		Keybinding *	add(int context, action_t action, string sequence);
-		Keybinding *	find_conflict(string sequence);
+		Keybinding *	find_conflict(vector<int> * sequence);
 
-		/* Convert a string sequence to a binary sequence */
-		string		conv_sequence(string seq);
+		/* Convert a string sequence to an int sequence */
+		vector<int> *	conv_sequence(string seq);
 
 		/* Find an action based on the key sequence */
-		int		find(int context, string sequence, action_t * action);
+		int		find(int context, vector<int> * sequence, action_t * action);
 };
 
 class Input
@@ -93,7 +94,7 @@ class Input
 
 		int		mode;
 		unsigned long	multiplier;
-		string		buffer;
+		vector<int> 	buffer;
 
 		Input();
 
