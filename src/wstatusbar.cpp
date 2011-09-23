@@ -21,6 +21,7 @@
 #include "window.h"
 #include "console.h"
 #include "curses.h"
+#include "input.h"
 #include <cstring>
 #include <string>
 #include <vector>
@@ -30,19 +31,31 @@ using namespace std;
 extern vector<Logline *> logbuffer;
 extern Curses curses;
 extern Windowmanager wm;
+extern Input input;
 
 void Wstatusbar::drawline(int rely)
 {
 	vector<Logline *>::reverse_iterator i;
 
 	curses.wipe(rect);
-	for (i = logbuffer.rbegin(); i != logbuffer.rend(); i++)
-	{
-		if ((*i)->level > MSG_LEVEL_INFO)
-			continue;
 
-		curses.print(rect, rely, 0, (*i)->line.c_str());
-		break;
+	switch(input.mode)
+	{
+		case INPUT_MODE_COMMAND:
+			for (i = logbuffer.rbegin(); i != logbuffer.rend(); i++)
+			{
+				if ((*i)->level > MSG_LEVEL_INFO)
+					continue;
+
+				curses.print(rect, rely, 0, (*i)->line.c_str());
+				break;
+			}
+			break;
+
+		case INPUT_MODE_INPUT:
+			curses.print(rect, rely, 0, ":");
+			curses.print(rect, rely, 1, input.strbuf.c_str());
+			break;
 	}
 }
 

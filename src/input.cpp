@@ -32,6 +32,7 @@ Input::Input()
 	mode = INPUT_MODE_COMMAND;
 	chbuf = 0;
 	multiplier = 1;
+	strbuf.clear();
 	buffer.clear();
 	keybindings = new Keybindings();
 }
@@ -40,16 +41,26 @@ input_event * Input::next()
 {
 	int m;
 
-	if ((chbuf = getch()) == INPUT_RESULT_NOINPUT)
+	if ((chbuf = getch()) == -1)
 		return NULL;
 
 	memset(&ev, 0, sizeof ev);
+
+	/* This is a global signal/event non-dependant on anything else. */
+	if (chbuf == KEY_RESIZE)
+	{
+		ev.result = INPUT_RESULT_RUN;
+		ev.action = ACT_RESIZE;
+		return &ev;
+	}
+
 	switch(mode)
 	{
 		/* Command-mode */
 		default:
 		case INPUT_MODE_COMMAND:
 			buffer.push_back(chbuf);
+			strbuf.push_back(chbuf);
 			m = keybindings->find(wm.context, &buffer, &ev.action);
 
 			if (m == KEYBIND_FIND_EXACT)
@@ -62,15 +73,58 @@ input_event * Input::next()
 		/* Text input of some sorts */
 		case INPUT_MODE_INPUT:
 		case INPUT_MODE_SEARCH:
-			buffer.push_back(chbuf);
-			ev.result = INPUT_RESULT_BUFFERED;
+			switch(chbuf)
+			{
+				case 10:
+				case KEY_ENTER:
+					if (mode == INPUT_MODE_INPUT)
+						ev.action = ACT_RUN_CMD;
+
+					ev.result = INPUT_RESULT_RUN;
+					break;
+
+				case 21:		/* ^U */
+					buffer.clear();
+					strbuf.clear();
+					ev.result = INPUT_RESULT_BUFFERED;
+					break;
+
+				case 27:		/* Escape */
+					ev.result = INPUT_RESULT_RUN;
+					ev.action = ACT_MODE_COMMAND;
+					break;
+
+				case 8:			/* ^H -- backspace */
+				case 127:		/* ^? -- delete */
+				case KEY_BACKSPACE:
+					if (buffer.size() > 0)
+					{
+						buffer.pop_back();
+						strbuf.erase(--string::iterator(strbuf.end()));
+						ev.result = INPUT_RESULT_BUFFERED;
+					}
+					else
+					{
+						ev.result = INPUT_RESULT_RUN;
+						ev.action = ACT_MODE_COMMAND;
+					}
+					break;
+
+				default:
+					buffer.push_back(chbuf);
+					strbuf.push_back(chbuf);
+					ev.result = INPUT_RESULT_BUFFERED;
+			}
 			break;
 	}
 
 	if (ev.result != INPUT_RESULT_NOINPUT)
 	{
 		if (ev.result != INPUT_RESULT_BUFFERED)
+		{
 			buffer.clear();
+			strbuf.clear();
+		}
 
 		ev.multiplier = multiplier;
 		return &ev;
@@ -84,8 +138,14 @@ void Input::setmode(int nmode)
 	if (nmode == mode)
 		return;
 	
+	strbuf.clear();
 	buffer.clear();
 	chbuf = 0;
 	multiplier = 1;
 	mode = nmode;
+
+	if (mode == INPUT_MODE_COMMAND)
+		curs_set(0);
+	else
+		curs_set(1);
 }

@@ -95,6 +95,7 @@ class Input
 		int		mode;
 		unsigned long	multiplier;
 		vector<int> 	buffer;
+		string		strbuf;
 
 		Input();
 

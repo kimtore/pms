@@ -110,18 +110,14 @@ void Curses::clearline(Rect * rect, int line)
 
 void Curses::wipe(Rect * rect)
 {
-	int ix, yx;
+	int y;
 
 	if (!rect)
 		return;
 	
-	for (yx = rect->top; yx <= rect->bottom; yx++)
+	for (y = rect->top; y <= rect->bottom; y++)
 	{
-		move(yx, rect->left);
-		for (ix = rect->left; ix <= rect->right; ix++)
-		{
-			addch(' ');
-		}
+		mvhline(y, rect->left, ' ', rect->right - rect->left);
 	}
 }
 

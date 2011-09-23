@@ -36,10 +36,36 @@ int PMS::run_event(input_event * ev)
 {
 	if (!ev) return false;
 
+	if (ev->result == INPUT_RESULT_RUN)
 	switch(ev->action)
 	{
+		case ACT_MODE_INPUT:
+			input.setmode(INPUT_MODE_INPUT);
+			wm.statusbar->draw();
+			curses.flush();
+			return true;
+
+		case ACT_MODE_COMMAND:
+			input.setmode(INPUT_MODE_COMMAND);
+			wm.statusbar->draw();
+			curses.flush();
+			return true;
+
+		case ACT_RUN_CMD:
+			/* TODO: add a command parser */
+			input.setmode(INPUT_MODE_COMMAND);
+			wm.statusbar->draw();
+			curses.flush();
+			return true;
+
 		case ACT_QUIT:
 			return quit();
+
+		case ACT_RESIZE:
+			curses.detect_dimensions();
+			wm.draw();
+			curses.flush();
+			return true;
 
 		case ACT_SCROLL_UP:
 			return scroll_window(-ev->multiplier);
@@ -62,6 +88,15 @@ int PMS::run_event(input_event * ev)
 		default:
 			return false;
 	}
+
+	else if (ev->result == INPUT_RESULT_BUFFERED)
+	{
+		wm.statusbar->draw();
+		curses.flush();
+	}
+
+
+	return false;
 }
 
 int PMS::quit()
