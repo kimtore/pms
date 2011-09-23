@@ -38,6 +38,9 @@ class Window
 	public:
 		void		set_rect(Rect * r) { rect = r; };
 
+		/* Window height */
+		unsigned int	height();
+
 		/* Draw all lines on rect */
 		void		draw();
 
@@ -53,13 +56,14 @@ class Wmain : public Window
 {
 	protected:
 
+	public:
+
 		/* Scroll position */
 		unsigned int	position;
 
 		/* Cursor position */
 		unsigned int	cursor;
 
-	public:
 
 		Wmain();
 
@@ -100,6 +104,12 @@ class Wstatusbar : public Window
 		void		drawline(int rely);
 };
 
+class Wreadout : public Window
+{
+	public:
+		void		drawline(int rely);
+};
+
 class Windowmanager
 {
 	private:
@@ -118,6 +128,7 @@ class Windowmanager
 		Window *		active;
 		Wtopbar *		topbar;
 		Wstatusbar *		statusbar;
+		Wreadout *		readout;
 };
 
 #endif /* _PMS_WINDOW_H_ */

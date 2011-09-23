@@ -33,6 +33,12 @@ void Window::draw()
 		drawline(i);
 }
 
+unsigned int Window::height()
+{
+	if (!rect) return 0;
+	return rect->bottom - rect->top;
+}
+
 Wmain::Wmain()
 {
 	position = 0;
@@ -52,6 +58,7 @@ void Wmain::scroll_window(int offset)
 	
 	position = offset;
 
+	wm.readout->draw();
 	if (visible()) draw();
 }
 
@@ -67,6 +74,7 @@ void Wmain::set_position(unsigned int absolute)
 
 	position = abs;
 
+	wm.readout->draw();
 	if (visible()) draw();
 }
 
@@ -79,6 +87,7 @@ void Wmain::move_cursor(int offset)
 	else if (cursor > content_size() - 1)
 		cursor = content_size() - 1;
 	
+	wm.readout->draw();
 	if (visible()) draw();
 }
 

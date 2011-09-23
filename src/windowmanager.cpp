@@ -32,6 +32,8 @@ Windowmanager::Windowmanager()
 	topbar->set_rect(&curses.topbar);
 	statusbar = new Wstatusbar;
 	statusbar->set_rect(&curses.statusbar);
+	readout = new Wreadout;
+	readout->set_rect(&curses.readout);
 
 	/* Setup static windows that appear in the window list */
 	console = new Wconsole;
@@ -46,5 +48,6 @@ void Windowmanager::draw()
 {
 	topbar->draw();
 	statusbar->draw();
+	readout->draw();
 	active->draw();
 }

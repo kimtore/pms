@@ -21,6 +21,7 @@
 #include "window.h"
 #include "console.h"
 #include "curses.h"
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -28,6 +29,7 @@ using namespace std;
 
 extern vector<Logline *> logbuffer;
 extern Curses curses;
+extern Windowmanager wm;
 
 void Wstatusbar::drawline(int rely)
 {
@@ -42,4 +44,23 @@ void Wstatusbar::drawline(int rely)
 		curses.print(rect, rely, 0, (*i)->line.c_str());
 		break;
 	}
+}
+
+void Wreadout::drawline(int rely)
+{
+	char		buf[4];
+	Wmain *		win;
+
+	win = WMAIN(wm.active);
+
+	if (win->content_size() <= win->height())
+		strcpy(buf, "All");
+	else if (win->position == 0)
+		strcpy(buf, "Top");
+	else if (win->position >= win->content_size() - win->height() - 1)
+		strcpy(buf, "Bot");
+	else
+		sprintf(buf, "%2d%%%%", 100 * win->position / (win->content_size() - win->height() - 1));
+
+	curses.print(rect, 0, 0, buf);
 }

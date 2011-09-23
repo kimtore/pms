@@ -69,7 +69,7 @@ class Curses
 		Rect		topbar;
 		Rect		main;
 		Rect		statusbar;
-		Rect		position;
+		Rect		readout;
 
 		bool		ready;
 		bool		hascolors;

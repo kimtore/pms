@@ -64,7 +64,7 @@ void Curses::detect_dimensions()
 	memset(&topbar, 0, sizeof topbar);
 	memset(&main, 0, sizeof main);
 	memset(&statusbar, 0, sizeof statusbar);
-	memset(&position, 0, sizeof position);
+	memset(&readout, 0, sizeof readout);
 
 	self.right = COLS - 1;
 	self.bottom = LINES - 1;
@@ -81,10 +81,10 @@ void Curses::detect_dimensions()
 	statusbar.bottom = self.bottom;
 	statusbar.right = self.right - 3;
 
-	position.top = statusbar.top;
-	position.bottom = statusbar.bottom;
-	position.left = statusbar.right + 1;
-	position.right = self.right;
+	readout.top = statusbar.top;
+	readout.bottom = statusbar.bottom;
+	readout.left = statusbar.right + 1;
+	readout.right = self.right;
 }
 
 void Curses::flush()
