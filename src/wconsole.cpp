@@ -51,3 +51,8 @@ void Wconsole::move_cursor(int offset)
 {
 	return scroll_window(offset);
 }
+
+void Wconsole::set_cursor(unsigned int absolute)
+{
+	return set_position(absolute);
+}

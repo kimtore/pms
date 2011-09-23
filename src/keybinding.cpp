@@ -32,13 +32,16 @@ Keybindings::Keybindings()
 {
 	add(CONTEXT_ALL, ACT_MODE_INPUT, ":");
 	add(CONTEXT_ALL, ACT_QUIT, "q");
-	add(CONTEXT_ALL, ACT_QUIT, "<q");
 	add(CONTEXT_LIST, ACT_SCROLL_UP, "<C-y>");
 	add(CONTEXT_LIST, ACT_SCROLL_DOWN, "<C-e>");
 	add(CONTEXT_LIST, ACT_CURSOR_UP, "k");
+	add(CONTEXT_LIST, ACT_CURSOR_UP, "<Up>");
 	add(CONTEXT_LIST, ACT_CURSOR_DOWN, "j");
+	add(CONTEXT_LIST, ACT_CURSOR_DOWN, "<Down>");
 	add(CONTEXT_LIST, ACT_CURSOR_HOME, "gg");
+	add(CONTEXT_LIST, ACT_CURSOR_HOME, "<home>");
 	add(CONTEXT_LIST, ACT_CURSOR_END, "G");
+	add(CONTEXT_LIST, ACT_CURSOR_END, "<end>");
 }
 
 Keybinding * Keybindings::add(int context, action_t action, string sequence)
@@ -170,9 +173,9 @@ vector<int> * Keybindings::conv_sequence(string seq)
 				r->push_back(KEY_LEFT);
 			else if (subseq == "right")
 				r->push_back(KEY_RIGHT);
-			else if (subseq == "pageup")
+			else if (subseq == "pgup")
 				r->push_back(KEY_PPAGE);
-			else if (subseq == "pagedown")
+			else if (subseq == "pgdn")
 				r->push_back(KEY_NPAGE);
 			else if (subseq == "home")
 				r->push_back(KEY_HOME);
@@ -184,7 +187,7 @@ vector<int> * Keybindings::conv_sequence(string seq)
 				r->push_back(KEY_DC);
 			else if (subseq == "insert")
 				r->push_back(KEY_IC);
-			else if (subseq == "cr" || subseq == "return")
+			else if (subseq == "cr" || subseq == "return" || subseq == "enter")
 				r->push_back(10);
 			else if (subseq == "kpenter")
 				r->push_back(343);
@@ -195,7 +198,7 @@ vector<int> * Keybindings::conv_sequence(string seq)
 
 			else
 			{
-				sterr("Bind: invalid identifier '%s', declaration dropped.", subseq.c_str());
+				sterr("Bind: invalid identifier '<%s>', declaration dropped.", subseq.c_str());
 				delete r;
 				return NULL;
 			}

@@ -93,7 +93,8 @@ void Wmain::move_cursor(int offset)
 
 void Wmain::set_cursor(unsigned int absolute)
 {
-	set_position(absolute);
+	cursor = absolute;
+	move_cursor(0);
 }
 
 bool Wmain::visible()

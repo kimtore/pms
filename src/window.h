@@ -90,6 +90,7 @@ class Wconsole : public Wmain
 		void		drawline(int rely);
 		unsigned int	content_size();
 		void		move_cursor(int offset);
+		void		set_cursor(unsigned int absolute);
 };
 
 class Wtopbar : public Window
