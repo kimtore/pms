@@ -1,0 +1,239 @@
+---
+Changes in 0.42, released on 2010-05-14
+---
+
+Kim Tore Jensen:
+2010-05-14: changed: the 'add-random' and 'play-random' commands now accepts a numeric parameter of how many songs to add.
+2010-01-03: changed: the 'save' command now saves the current list view (with any filters applied) instead of the playlist.
+2010-01-03: added: 'filter' command which adds a list filter, and the 'clear-filters' command.
+2009-10-11: fixed: the 'volume' command now correctly sets absolute values.
+2009-10-10: added: the update-library command now accepts more parameters: this, thisdir, current, currentdir, and any arbitrary file or directory.
+2009-10-10: dropped the 'follow' option.
+2009-10-07: added: 'nextinterval' option to control when PMS auto-adds songs to playlist.
+2009-10-06: added: XTerm window title is now set with option 'xtermtitle', behaving the same way as topbar.
+2009-10-03: added: case-insensitive sorts. Enabled by default with option 'ignorecase' (or alias 'ic').
+2009-09-18: changed: default sort mode adds sort by release date before album name.
+2009-09-06: added: centre-cursor aliases center-cursor.
+
+Bart Nagel:
+2010-02-03: added: directory for example configuration files, currently containing my own
+2010-01-14: changed: removed repeat-1 hack in favour of MPD's own repeat-1 (repeat plus single)
+2009-11-27: added: function to return true if Unicode is available. changed default status strings to make use of that
+2009-11-26: fixed: removed some redundant colour setting lines which fixes using topbar fields in the xterm title, changed default xterm title to make use of it
+2009-11-26: added: ifstopped and ifpaused conditionals, changed the default xterm title string to use them
+2009-11-24: changed: added a couple of lines to the INSTALL file
+2009-11-24: fixed: literal percent signs in fields (eg song titles) are now handled properly
+2009-11-12: changed: implemented XDG Base Directory Specification, with a slight modification to the default for XDG_CONFIG_DIRS (see manpage), closing #14
+2009-11-12: fixed: :stop wasn't working, fixed #15
+2009-09-22: changed: search now matches trackshort rather than track
+2009-09-19: added: columnspace option, default true, which when unset takes away the extra space on fixed-width columns
+2009-09-19: added: trackshort field, which is track truncated at the first slash and with leading zeros removed
+2009-09-19: changed: updated the INSTALL file to be a bit more descriptive
+
+---
+Changes in 0.41, released on 2009-09-06
+---
+
+Kim Tore Jensen:
+2009-08-24: fixed: playstring would report playing random songs even if playlist had more songs queued.
+2009-08-21: fixed: #2841277, collapse of spaces and separation of equals signs in topbar lines.
+2009-08-18: changed: default colors made less obtrusive: borders are black, switched topbar borders off by default.
+2009-08-18: fixed: in centered scroll mode, songs were invisible until window was filled completely.
+2009-07-16: fixed: crash when pressing 'next' in random mode with no current song.
+2009-07-02: added: 'topbar.clear' option in config file, works as 'cleartopbar'.
+2009-07-01: fixed: scroll mode 'relative' was not working correctly.
+2009-07-01: added: options are now displayed using 'set option'.
+2009-07-01: fixed: cleaned up some errors in the man page.
+2009-06-30: added: 'bright' colors now aliased by 'light'.
+2009-06-14: added: 'reconnectdelay' option controls how long pms waits before reconnecting to a lost server.
+2009-06-14: fixed: pms would not start if the configuration file was missing.
+2009-06-14: fixed: pms crashed if the connection was reset.
+2009-06-04: removed: ghost window introduced in 0.40.6.
+
+Bart Nagel:
+2009-08-30: added: add-all command, which adds all songs on the currently visible list to the playlist
+2009-08-24: fixed: when changing volume, ensure we're asking for a volume in 0~100
+2009-08-23: added: system bells when trying to scroll or move off the edges of the list
+2009-08-23: added/changed: boolean options are now set with :set <option>, unset with :set no<option>, toggled with :set <option>! or :set inv<option> (:toggle <option> command was removed). all options can be queried with :set <option>?, non-booleans can still be queried with :set <option>
+2009-08-23: changed: when setting options, : is accepted in place of =, as in vim
+2009-08-23: changed: took dots out of topbar option names -- now topbarclear, topbarspace, topbarborders and topbarvisible
+2009-08-21: added: boolean topbar.space option which when true leaves a blank row between the topbar and playlist windows
+2009-08-01: changed: added hyphens to certain commands for uniformity: quick-find, add-to, toggle-play, clear-topbar, clear-selection
+2009-08-01: added: center-cursor command, default binding z (like vim's zz command)
+2009-07-29: added: scroll position readout as in vim
+2009-07-26: added: more mouse actions (see manpage)
+2009-07-24: added: scroll-up and scroll-down commands (do the same as move-up and move-down unless in "normal" scroll mode), bound to ^Y and ^E
+2009-07-24: added: "normal" vim-like scroll mode, which scrolls only when the cursor would go off the top or bottom of the window, and added "scrolloff" option as in vim to customize this. "normal" scroll mode is now default
+2009-07-16: added: (poor) mousewheel support
+2009-07-15: added: clicking header line ("Library"/"Playlist") switches to next window
+2009-07-14: added: some functional mouse support. click in topbar to toggle play/pause. in playlist, click to place cursor, control-click to additionally toggle selection, double click to place cursor and play
+2009-07-14: changed: values for boolean options are now case-insensitive
+2009-07-14: changed: nextafterselect option is renamed to nextafteraction and also affects adding to playlist.
+2009-07-09: added: :!shellcommand output is shown until a key is pressed
+2009-07-09: fixed: sort names now imported from MPD properly
+2009-07-09: changed: artistsortname and albumartistsortname are now artistsort and albumartistsort for code and config uniformity
+2009-07-08: added: ^L binding for redraw
+2009-07-06: added: :!shellcommand support and libraryroot config var
+
+---
+Changes in 0.40.6, released on 2009-05-23
+---
+
+Kim Tore Jensen:
+2009-04-25: changed: rewrite of the configuration system, now reports cleaner errors.
+2009-04-25: added: 'addtoreturns' option to decide whether to return focus to the original window or not.
+2009-04-25: fixed: after using the 'create' command in reply to 'addto', addto lost some of its functionality.
+2009-04-25: changed: major code rewrite.
+2009-04-25: added: 'f' and 'F' bindings for toggle followcursor and followplayback.
+2009-04-25: added: 'toggle' command toggles boolean variables on or off.
+2009-04-25: changed: 'toggle' command renamed to 'toggleplay'.
+2009-04-25: changed: top-right topbar string now contains the short variables in addition to a volume indicator.
+2009-04-25: added: %manual% and %manualshort% variables to topbar shows manual progression off or on.
+2009-04-25: added: playmode now also supports no progression through 'manual'.
+2009-04-24: added: 'onplaylistfinish' option to specify a shell command to run when the playlist finishes.
+2009-04-23: fixed: library is now by default sorted also by disc number.
+2009-04-20: fixed: better password handling at startup.
+2009-04-20: added: 'repeatonedelay' option to control how many seconds to skip of the last song in repeat-1 mode.
+2009-04-20: fixed: lots of memory leaks while retrieving the library.
+2009-04-19: added: default sort mode can be used with 'set sort=default'
+2009-04-19: removed: the 'sort' command no longer exists, use set sort=FIELDS; closes #2773599.
+2009-04-19: fixed: weird error message when trying to move songs in the library; closes #2774806.
+2009-04-19: fixed: seeking through end of songs could repeat the same song again; closes #2773525.
+2009-04-19: fixed: next-of did not jump to year, artistsortname or albumartistsortname; closes #2771886.
+2009-04-16: fixed: text leaked to next line if it was too long, closes bug #2766958.
+2009-04-15: added: bitrate, samplerate, channels and bits can be used in the topbar.
+2009-04-15: changed: much of the command interface has been cleaned up.
+2009-04-15: changed: rewired some internal routines to be less bug-prone.
+2009-04-13: added: 'next-of <FIELD>' keyword jumps to next entry of any field.
+2009-04-13: removed: next-artist, prev-artist, next-album and prev-album is no longer available.
+2009-04-13: fixed: unable to switch to next song immediately after having switched to previous song.
+2009-04-11: changed: no longer possible to move up and down while in quicksearch mode.
+2009-04-11: added: quicksearch now have search history.
+2009-04-11: added: option 'topbar.borders' turns topbar borders on and off.
+2009-04-11: fixed: topbar could not display consecutive values without characters between them.
+2009-04-11: fixed: topbar did not display the '%' character.
+2009-04-11: added: topbar can now have short mute, random and repeat status letters.
+2009-04-11: fixed: 'performer' was sorted as 'composer'.
+2009-04-11: fixed: 'name' and 'genre' fields displayed date.
+2009-04-11: fixed: set columns now updates view immediately.
+2009-04-10: changed: different coloring scheme by hierarchy.
+2009-04-10: added: topbar can now have %volume%.
+2009-04-08: added: can now color topbar standard text separately from other standard text.
+2009-04-08: fixed: commands starting with 'set' was not saved in command-line history.
+2009-04-08: fixed: move-pgup and move-pgdown might have moved one step too far.
+2009-04-08: fixed: did not return from command or quicksearch mode when backspacing over all the characters.
+2009-04-08: fixed: next-result and prev-result searched for the last command _OR_ search term.
+2009-04-08: fixed: typing the character '%' into the statusbar was displaying weird results.
+2009-04-08: added: the topbar can now be switched off entirely by the 'topbar.visible' option.
+2009-04-08: added: support for fully customizable topbar layout.
+2009-04-08: changed: default last sort item has been changed from 'artist' to 'albumartistsortname'.
+2009-04-08: fixed: configure script looked for wrong symbol in libboost_regex.
+
+Bart Nagel:
+2009-04-23: changed: draw centre fields of topbar last, since they usually contain the most important information
+2009-04-22: added: support for kpenter key, which acts in the same way as return in text entry modes but can be bound to a different function from return.
+2009-04-20: added: conditional syntax for the topbar
+2009-04-19: added: clearselection command
+2009-04-18: fixed: livequeuesize readout was wrong for the first redraw
+2009-04-17: changed: current song is set to null when playlist is emptied or playlist finishes to more accurately reflect MPD's status
+2009-04-17: added: alternative spellings "lightgrey" and "grey" for "lightgray" and "gray"
+2009-04-17: fixed: livequeuesize readout was wrong when stopped with no current song
+2009-04-15: fixed: binding backspace to commands did not work on certain terminals
+2009-04-15: fixed: infinite loop when all columns had fixed widths
+2009-04-15: added: topbar can now have progresspercentage, a short song progress indicator
+2009-04-15: added: field 'year', which is the first four characters of 'date' if date exists
+2009-04-15: fixed: search failed after matching the first part of the needle even if the whole needle was present later in the haystack
+2009-04-13: tidied up the man page
+2009-04-13: added: vi-like aliases for commands: 'se' for set, 'map' for bind, 'unmap' and 'unm' for unbind, plus 'colour' for color.
+2009-04-10: fixed: 'trans' only allowed as background colour
+2009-04-10: fixed: a few colour ommissions are inaccuracies, both in manpage and program
+2009-04-10: added: status_{unknown,play,pause,stop} option strings to customize status readout
+2009-04-10: added: %livequeuelength% to show queue's remaining time including currently playing song
+2009-04-08: added: status messages when running next/previous-result and when completing a search to be more like Vim
+2009-04-08: fixed: Unicode character display issue. Now using ncursesw library rather than ncurses
+2009-04-08: fixed: virtual functions declared as non-void but not returning anything
+2009-04-08: fixed: reset status message after using commandline for commands which don't update status bar
+2009-04-08: added: missing commands to manpage
+2009-04-08: fixed: crash in help window when running 'next-result' or 'prev-result'
+2009-04-08: added: progress bar is now possible to use in topbar
+2009-04-08: added: 'nextafterselect' option -- switch off to disable moving cursor when track is selected/unselected.
+2009-04-07: added: default binding 'v' for 'version' command.
+2009-04-07: fixed: some commands' output was immediately overwritten including 'version'.
+
+---
+Changes in 0.40.5 released on 2009-04-07
+---
+
+Kim Tore Jensen:
+2009-04-07: added the 'version' command to show program version in statusbar.
+2009-04-07: Added the fields 'artistsortname' and 'albumartistsortname' to achieve intelligent sorting by artist.
+2009-04-07: fixed: sorting by 'artist' and 'albumartist' now yields different results.
+2009-04-07: Added a command 'goto-random' with default binding 'R' to move cursor to a random song.
+2009-04-07: fixed: crash when using the addto command from the windowlist.
+2009-04-07: fixed: escape key now exits from keyboard bindings window.
+2009-04-07: fixed: escape key in command mode no longer executes command, but returns from command mode.
+2009-04-07: fixed: cosmetic bug when terminal can't hide cursor.
+2009-04-07: Several default key bindings have been re-mapped to more intuitive values.
+2009-04-07: fixed: both delete (^?) and backspace (^H) can now be used to remove text.
+2009-04-06: fixed: text leaks to beginning of line in key bindings window.
+2009-04-06: fixed: prev-album and prev-artist now jumps to first entry instead of last.
+2009-04-06: Added default bindings: C-up and C-down now moves songs up or down.
+2009-04-05: Added support for transparent terminals.
+2009-04-05: fixed: errors was not cleared after receiving ACK from the mpd server, causing strange behavior.
+2009-04-05: MPD_PASSWORD environment variable can now be used.
+2009-04-05: Password can now be specified in MPD_HOST as password@hostname.
+2009-04-05: fixed: crash in help window when list was smaller than window.
+
+Bart Nagel:
+2009-04-07: added: q command -- alias of quit
+2009-04-07: changed: rejigged half and full page up/down bindings again to match vi
+2009-04-06: added: move-pgdn and move-pgup which move a full page down or up. Renamed old move-pgdn and move-pgup to move-halfpgdn and move-halfpgup
+2009-04-06: added: toggle command which works as pause, but plays if stopped. Default binding 'space' now toggles rather than pauses.
+2009-04-06: fixed: add-artist and add-album was not working properly.
+2009-04-05: added: prev-result command, bound to 'N'.
+2009-04-05: fixed: hang on jumping to previous artist.
+2009-04-05: fixed: default bindings 'j' and 'k' are now correct 'down' and 'up'.
+
+---
+Changes in 0.40.4 released on 2009-03-22
+---
+2009-03-22: Now requires glib-2.0 >= 2.0 to compile.
+2009-03-22: UTF-8 and native language support through gettext.
+2009-03-21: Windowlist now supports the 'add' command.
+2009-03-21: Statusbar text is properly reset after searching.
+2009-03-21: Added crop and cropsel commands to crop to current song or selection.
+2009-03-21: fixed: didn't update playlist properly if songs were removed in other clients.
+2009-03-21: Disconnects from MPD server are now handled more gracefully.
+2009-03-21: Support for albumartist tag, available in future MPD versions.
+2009-03-21: libmpdclient is now compiled-in instead of a external library.
+2009-03-20: Added more default key bindings.
+2009-03-20: Program version info is not printed double when using the -v option.
+2009-03-20: Statusbar is now properly updated on stop and pause.
+2009-03-20: Arbitrary windows now allowed by change-window command.
+2009-03-19: Added default key binding for 'u' to update library
+
+---
+Changes in 0.40.3 released on 2009-03-19
+---
+2009-03-19: fixed: running commands in windowlist disabled the return key.
+2009-03-19: Statusbar and windowlist are now properly updated when using the activate-list command.
+2009-03-19: Two new colors: lastlist and playinglist, both used in windowlist.
+2009-03-19: Default startup list changed from library to playlist.
+2009-03-19: Added startuplist configuration option.
+2009-03-15: Improved add-album; now adds the remainder of the album.
+2009-03-14: fixed: song progression in random mode now works properly
+
+---
+Changes in 0.40.2 released on 2009-03-13
+---
+2009-03-13: Last window is now highlighted in window list.
+2009-03-13: Added function to move songs up and down within a playlist.
+2009-03-12: fixed: crash on deleting a playlist, then changing playmode.
+2009-03-11: Added cursor follows playback feature.
+2009-03-10: Added check for MPD_HOST and MPD_PORT environment variables.
+2009-03-08: Major improvements to random and repeat modes.
+2009-03-08: Playback follows cursor feature now works as expected.
+
+---
+PMS 0.40.1, initial release on 2009-03-07
+---
