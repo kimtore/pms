@@ -26,6 +26,14 @@ Songlist::Songlist()
 	version = -1;
 }
 
+Song * Songlist::operator[] (unsigned int spos)
+{
+	if (spos >= songs.size())
+		return NULL;
+	
+	return songs[spos];
+}
+
 void Songlist::add(Song * song)
 {
 	if (!song)

@@ -32,6 +32,8 @@ class Songlist
 	public:
 		Songlist();
 
+		Song *		operator[] (unsigned int spos);
+
 		vector<Song *>	songs;
 
 		/* Add or replace a song */
@@ -39,6 +41,9 @@ class Songlist
 
 		/* Truncate the list and resize the vector */
 		void		truncate(unsigned long length);
+
+		/* Size */
+		unsigned int	size() { return songs.size(); };
 
 		/* Can we make local modifications? */
 		bool		readonly;

@@ -38,9 +38,13 @@ Windowmanager::Windowmanager()
 	/* Setup static windows that appear in the window list */
 	console = new Wconsole;
 	console->set_rect(&curses.main);
+	playlist = new Wsonglist;
+	playlist->set_rect(&curses.main);
 	windows.push_back(WWINDOW(console));
+	windows.push_back(WWINDOW(playlist));
 
-	active = WWINDOW(console);
+	//active = WWINDOW(console);
+	active = WWINDOW(playlist);
 	context = CONTEXT_CONSOLE;
 }
 

@@ -20,6 +20,7 @@
 
 #include "mpd.h"
 #include "console.h"
+#include "window.h"
 #include "config.h"
 #include <sys/select.h>
 #include <sys/time.h>
@@ -36,6 +37,7 @@
 using namespace std;
 
 extern Config config;
+extern Windowmanager wm;
 
 MPD::MPD()
 {
@@ -362,6 +364,8 @@ int MPD::get_playlist()
 	}
 	playlist.add(song);
 	playlist.version = state.playlist;
+	wm.playlist->draw();
+
 	debug("Playlist has been updated to version %d", playlist.version);
 
 	return status;

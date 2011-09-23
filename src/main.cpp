@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	wm.playlist->songlist = &mpd.playlist;
 	wm.draw();
 	stinfo("%s %d.%d", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
 

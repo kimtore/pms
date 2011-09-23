@@ -22,6 +22,7 @@
 #define _PMS_WINDOW_H_
 
 #include "curses.h"
+#include "songlist.h"
 #include <vector>
 
 using namespace std;
@@ -93,6 +94,16 @@ class Wconsole : public Wmain
 		void		set_cursor(unsigned int absolute);
 };
 
+class Wsonglist : public Wmain
+{
+	public:
+		void		drawline(int rely);
+		unsigned int	content_size();
+
+		/* Pointer to connected songlist */
+		Songlist *	songlist;
+};
+
 class Wtopbar : public Window
 {
 	public:
@@ -126,6 +137,8 @@ class Windowmanager
 		void			draw();
 
 		Wconsole *		console;
+		Wsonglist *		playlist;
+
 		Window *		active;
 		Wtopbar *		topbar;
 		Wstatusbar *		statusbar;
