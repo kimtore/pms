@@ -20,7 +20,10 @@
 
 #include "input.h"
 #include "command.h"
+#include "console.h"
+#include "curses.h"
 #include <string>
+#include <algorithm>
 #include <vector>
 
 using namespace std;
@@ -28,6 +31,7 @@ using namespace std;
 Keybindings::Keybindings()
 {
 	add(CONTEXT_ALL, ACT_QUIT, "q");
+	add(CONTEXT_ALL, ACT_QUIT, "<C-d<>");
 	add(CONTEXT_LIST, ACT_CURSOR_UP, "k");
 	add(CONTEXT_LIST, ACT_CURSOR_DOWN, "j");
 	add(CONTEXT_LIST, ACT_CURSOR_HOME, "gg");
@@ -38,7 +42,8 @@ Keybinding * Keybindings::add(int context, action_t action, string sequence)
 {
 	Keybinding * c;
 
-	if (find_conflict(sequence))
+	sequence = conv_sequence(sequence);
+	if (sequence.size() == 0 || find_conflict(sequence))
 		return NULL;
 
 	c = new Keybinding();
@@ -47,6 +52,112 @@ Keybinding * Keybindings::add(int context, action_t action, string sequence)
 	c->sequence = sequence;
 	bindings.push_back(c);
 	return c;
+}
+
+string Keybindings::conv_sequence(string seq)
+{
+	string r = "";
+	string subseq;
+	size_t i;
+	size_t epos;
+	int escape = false;
+	int ex = false;
+	int ctrl = false;
+
+	for (i = 0; i < seq.size(); i++)
+	{
+		/* Escape sequence */
+		if (seq[i] == '\\')
+		{
+			if (escape)
+				r += seq[i];
+			escape = !escape;
+			continue;
+		}
+		/* Start a special key */
+		else if (seq[i] == '<')
+		{
+			if (escape)
+			{
+				escape = false;
+				r += seq[i];
+				continue;
+			}
+			if (ex)
+			{
+				sterr("Bind: unexpected '%c' near ...%s", seq[i], seq.substr(i - 1).c_str());
+				return "";
+			}
+			ex = true;
+		}
+		/* End a special key */
+		else if (seq[i] == '>')
+		{
+			if (escape)
+			{
+				escape = false;
+				r += seq[i];
+				continue;
+			}
+			if (!ex)
+			{
+				sterr("Bind: unexpected '%c' near ...%s", seq[i], seq.substr(i).c_str());
+				return "";
+			}
+		}
+		else
+		{
+			/* Just a normal character */
+			if (!ex)
+			{
+				r += seq[i];
+				continue;
+			}
+			else if (ctrl)
+			{
+				seq[i] = ::toupper(seq[i]);
+				if (!(seq[i] >= 'A' || seq[i] <= 'Z'))
+				{
+					sterr("Bind: unexpected %c, expected one letter between A-Z near ...%s", seq[i], seq.substr(i - 3).c_str());
+					return "";
+				}
+				r += (seq[i] - 64);
+				ctrl = false;
+				continue;
+			}
+
+			/* Switch on Ctrl-mode */
+			if (seq.substr(i, 2) == "C-")
+			{
+				ctrl = true;
+				++i;
+				continue;
+			}
+
+			epos = seq.find('>', i);
+			if (epos == string::npos)
+			{
+				sterr("Bind: unclosed tag near ...%s", seq[i], seq.substr(i).c_str());
+				return "";
+			}
+
+			subseq = seq.substr(i, epos - i);
+			std::transform(subseq.begin(), subseq.end(), subseq.begin(), ::tolower);
+			if (subseq == "cr")
+				r += 13;
+
+			else
+			{
+				sterr("Bind: invalid identifier '%s'", subseq.c_str());
+				return "";
+			}
+
+			sterr("Bind: unexpected '%c' near ...%s", seq[i], seq.substr(i - 1).c_str());
+			return "";
+		}
+	}
+
+	return r;
 }
 
 Keybinding * Keybindings::find_conflict(string sequence)

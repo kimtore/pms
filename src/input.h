@@ -75,6 +75,9 @@ class Keybindings
 		Keybinding *	add(int context, action_t action, string sequence);
 		Keybinding *	find_conflict(string sequence);
 
+		/* Convert a string sequence to a binary sequence */
+		string		conv_sequence(string seq);
+
 		/* Find an action based on the key sequence */
 		int		find(int context, string sequence, action_t * action);
 };

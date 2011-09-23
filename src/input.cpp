@@ -24,7 +24,7 @@
 #include "window.h"
 #include <cstring>
 
-Keybindings keybindings;
+Keybindings * keybindings;
 extern Windowmanager wm;
 
 Input::Input()
@@ -33,6 +33,7 @@ Input::Input()
 	chbuf = 0;
 	multiplier = 1;
 	buffer = "";
+	keybindings = new Keybindings();
 }
 
 input_event * Input::next()
@@ -49,7 +50,7 @@ input_event * Input::next()
 		default:
 		case INPUT_MODE_COMMAND:
 			buffer += chbuf;
-			m = keybindings.find(wm.context, buffer, &ev.action);
+			m = keybindings->find(wm.context, buffer, &ev.action);
 
 			if (m == KEYBIND_FIND_EXACT)
 				ev.result = INPUT_RESULT_RUN;
