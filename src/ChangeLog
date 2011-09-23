@@ -1,4 +1,13 @@
 ---
+Changes in git
+---
+
+Added:
+ * support for MPD's «IDLE» mode
+ * support for complex key bindings
+
+
+---
 Changes in 0.42, released on 2010-05-14
 ---
 
