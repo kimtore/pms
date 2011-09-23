@@ -32,6 +32,7 @@ Keybindings::Keybindings()
 {
 	add(CONTEXT_ALL, ACT_MODE_INPUT, ":");
 	add(CONTEXT_ALL, ACT_QUIT, "q");
+	add(CONTEXT_ALL, ACT_QUIT, "<q");
 	add(CONTEXT_LIST, ACT_SCROLL_UP, "<C-y>");
 	add(CONTEXT_LIST, ACT_SCROLL_DOWN, "<C-e>");
 	add(CONTEXT_LIST, ACT_CURSOR_UP, "k");
@@ -154,7 +155,7 @@ vector<int> * Keybindings::conv_sequence(string seq)
 			epos = seq.find('>', i);
 			if (epos == string::npos)
 			{
-				sterr("Bind: unclosed tag near ...%s, declaration dropped.", seq[i], seq.substr(i).c_str());
+				sterr("Bind: unclosed tag near ...%s, declaration dropped.", seq.substr(i - 1).c_str());
 				delete r;
 				return NULL;
 			}

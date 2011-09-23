@@ -19,6 +19,7 @@
  */
 
 #include "curses.h"
+#include "color.h"
 #include <cstring>
 #include <string>
 #include <stdlib.h>
@@ -40,8 +41,9 @@ Curses::Curses()
 	keypad(stdscr, true);
 	curs_set(0);
 
-	if (has_colors() && start_color())
+	if (has_colors())
 	{
+		start_color();
 		use_default_colors();
 		hascolors = true;
 	}
@@ -119,11 +121,13 @@ void Curses::wipe(Rect * rect)
 	
 	for (y = rect->top; y <= rect->bottom; y++)
 	{
-		mvhline(y, rect->left, ' ', rect->right - rect->left);
+		mvwhline(stdscr, y, rect->left, ' ', rect->right - rect->left);
 	}
+
+	flush();
 }
 
-void Curses::print(Rect * rect, int y, int x, const char * fmt, ...)
+void Curses::print(Rect * rect, Color * c, int y, int x, const char * fmt, ...)
 {
 	va_list			ap;
 	unsigned int		i = 0;
@@ -133,20 +137,17 @@ void Curses::print(Rect * rect, int y, int x, const char * fmt, ...)
 	bool			attr = false;
 	char			buf[1024];
 	string			colorstr;
-	int			pair = 0;
 	unsigned int		maxlen;		// max allowed characters printed on screen
 	unsigned int		printlen = 0;	// num characters printed on screen
 
-	if (!rect)
+	if (!rect || !c)
 		return;
 	
 	va_start(ap, fmt);
 
-	//pair = c->pair();
-	pair = 0;
 	maxlen = rect->right - rect->left + 1;
 	move(rect->top + y, rect->left + x);
-	attron(pair);
+	attron(c->pair);
 
 	while(*fmt && printlen < maxlen)
 	{
@@ -222,13 +223,13 @@ void Curses::print(Rect * rect, int y, int x, const char * fmt, ...)
 					{
 						if (attr)
 						{
-							attroff(pair);
+							attroff(c->pair);
 							attron(i);
 						}
 						else
 						{
 							attroff(i);
-							attron(pair);
+							attron(c->pair);
 						}
 
 						/* Skip characters */
@@ -248,5 +249,5 @@ void Curses::print(Rect * rect, int y, int x, const char * fmt, ...)
 	}
 
 	va_end(ap);
-	attroff(pair);
+	attroff(c->pair);
 }

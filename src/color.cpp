@@ -18,44 +18,43 @@
  *
  */
 
-#include "build.h"
-#include "console.h"
+#include "color.h"
 #include "curses.h"
-#include "config.h"
-#include "window.h"
-#include "mpd.h"
-#include "input.h"
-#include "pms.h"
-#include <glib.h>
-#include <stdio.h>
 
-Curses		curses;
-Config		config;
-MPD		mpd;
-Windowmanager	wm;
-Input		input;
-PMS		pms;
+short Color::color_count = 0;
 
-int main(int argc, char *argv[])
+Colortable::Colortable()
 {
-	if (!curses.ready)
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
+	pair_content(-1, &dfront, &dback);
 
-	wm.draw();
-	stinfo("%s %d.%d", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
+	standard = new Color(dfront, dback, 0);
+	statusbar = new Color(COLOR_WHITE, -1, 0);
+	console = new Color(COLOR_WHITE, -1, 0);
+	error = new Color(COLOR_WHITE, COLOR_RED, A_BOLD);
+	readout = new Color(COLOR_WHITE, -1, 0);
+}
 
-	while(!config.quit)
-	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-		}
-		mpd.poll();
-		pms.run_event(input.next());
-	}
+Colortable::~Colortable()
+{
+	delete standard;
+	delete statusbar;
+	delete console;
+	delete error;
+	delete readout;
+}
+
+Color::Color(short nfront, short nback, int nattr)
+{
+	id = Color::color_count;
+	set(nfront, nback, nattr);
+	Color::color_count++;
+}
+
+void Color::set(short nfront, short nback, int nattr)
+{
+	front = nfront;
+	back = nback;
+	attr = nattr;
+	init_pair(id, front, back);
+	pair = COLOR_PAIR(id) | attr;
 }

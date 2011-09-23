@@ -22,6 +22,7 @@
 #include "console.h"
 #include "curses.h"
 #include "input.h"
+#include "config.h"
 #include <cstring>
 #include <string>
 #include <vector>
@@ -32,6 +33,7 @@ extern vector<Logline *> logbuffer;
 extern Curses curses;
 extern Windowmanager wm;
 extern Input input;
+extern Config config;
 
 void Wstatusbar::drawline(int rely)
 {
@@ -47,14 +49,14 @@ void Wstatusbar::drawline(int rely)
 				if ((*i)->level > MSG_LEVEL_INFO)
 					continue;
 
-				curses.print(rect, rely, 0, (*i)->line.c_str());
+				curses.print(rect, config.colors.statusbar, rely, 0, (*i)->line.c_str());
 				break;
 			}
 			break;
 
 		case INPUT_MODE_INPUT:
-			curses.print(rect, rely, 0, ":");
-			curses.print(rect, rely, 1, input.strbuf.c_str());
+			curses.print(rect, config.colors.statusbar, rely, 0, ":");
+			curses.print(rect, config.colors.statusbar, rely, 1, input.strbuf.c_str());
 			break;
 	}
 }
@@ -75,5 +77,5 @@ void Wreadout::drawline(int rely)
 	else
 		sprintf(buf, "%2d%%%%", 100 * win->position / (win->content_size() - win->height() - 1));
 
-	curses.print(rect, 0, 0, buf);
+	curses.print(rect, config.colors.readout, 0, 0, buf);
 }

@@ -21,6 +21,7 @@
 #include "window.h"
 #include "console.h"
 #include "curses.h"
+#include "config.h"
 #include <string>
 #include <vector>
 
@@ -28,6 +29,7 @@ using namespace std;
 
 extern vector<Logline *> logbuffer;
 extern Curses curses;
+extern Config config;
 
 void Wconsole::drawline(int rely)
 {
@@ -37,7 +39,7 @@ void Wconsole::drawline(int rely)
 		return;
 
 	curses.clearline(rect, rely);
-	curses.print(rect, rely, 0, logbuffer[linepos]->line.c_str());
+	curses.print(rect, logbuffer[linepos]->level == MSG_LEVEL_ERR ? config.colors.error : config.colors.console, rely, 0, logbuffer[linepos]->line.c_str());
 }
 
 unsigned int Wconsole::content_size()

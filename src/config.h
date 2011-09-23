@@ -22,6 +22,7 @@
 #define _PMS_CONFIG_H_
 
 #include <string>
+#include "color.h"
 using namespace std;
 
 class Config
@@ -35,6 +36,8 @@ class Config
 		string		password;
 
 		bool		quit;
+
+		Colortable	colors;
 
 		Config();
 };

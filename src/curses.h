@@ -22,6 +22,7 @@
 #define _PMS_CURSES_H_
 
 #include <ncurses.h>
+#include "color.h"
 
 typedef struct
 {
@@ -51,7 +52,7 @@ class Curses
 		 * %0-n% %/0-n%	= color on/off
 		 *
 		 */
-		void		print(Rect * rect, int y, int x, const char * fmt, ...);
+		void		print(Rect * rect, Color * c, int y, int x, const char * fmt, ...);
 
 		/* Refresh the screen. */
 		void		flush();

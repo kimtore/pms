@@ -18,44 +18,48 @@
  *
  */
 
-#include "build.h"
-#include "console.h"
-#include "curses.h"
-#include "config.h"
-#include "window.h"
-#include "mpd.h"
-#include "input.h"
-#include "pms.h"
-#include <glib.h>
-#include <stdio.h>
+#ifndef _PMS_COLOR_H_
+#define _PMS_COLOR_H_
 
-Curses		curses;
-Config		config;
-MPD		mpd;
-Windowmanager	wm;
-Input		input;
-PMS		pms;
-
-int main(int argc, char *argv[])
+class Color
 {
-	if (!curses.ready)
-	{
-		perror("Fatal: failed to initialise ncurses.\n");
-		return 1;
-	}
+	private:
 
-	wm.draw();
-	stinfo("%s %d.%d", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
+		short			id;
 
-	while(!config.quit)
-	{
-		if (!mpd.is_connected())
-		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-		}
-		mpd.poll();
-		pms.run_event(input.next());
-	}
-}
+	public:
+
+					Color(short nfront, short nback, int nattr);
+
+		void			set(short nfront, short nback, int nattr);
+
+		static short		color_count;
+
+		int			pair;
+		int			attr;
+		short			front;
+		short			back;
+};
+
+class Colortable
+{
+	private:
+		
+		short		dback;
+		short		dfront;
+
+	public:
+				Colortable();
+				~Colortable();
+
+		/* Main colors */
+		Color *		standard;
+		Color *		statusbar;
+		Color *		console;
+		Color *		error;
+		Color *		readout;
+
+};
+
+
+#endif /* _PMS_COLOR_H_ */
