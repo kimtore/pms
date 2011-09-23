@@ -55,6 +55,8 @@ Curses::Curses()
 
 Curses::~Curses()
 {
+	clear();
+	refresh();
 	endwin();
 }
 
