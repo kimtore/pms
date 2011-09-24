@@ -110,6 +110,9 @@ class Commandlist
 
 		/* Search for a command, used for tab completion */
 		vector<Command *> *	grep(int context, string name);
+
+		/* Exact match for command */
+		Command *		find(int context, string name);
 };
 
 #endif /* _PMS_COMMAND_H_ */

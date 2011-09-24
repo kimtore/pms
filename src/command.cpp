@@ -62,7 +62,7 @@ vector<Command *> * Commandlist::grep(int context, string name)
 
 	for (i = cmds.begin(); i != cmds.end(); i++)
 	{
-		if (name.size() > (*i)->name.size())
+		if (name.size() > (*i)->name.size() || context != (*i)->context)
 			continue;
 
 		if (name == (*i)->name.substr(0, name.size()))
@@ -70,4 +70,17 @@ vector<Command *> * Commandlist::grep(int context, string name)
 	}
 
 	return &grepcmds;
+}
+
+Command * Commandlist::find(int context, string name)
+{
+	vector<Command *>::iterator i;
+
+	for (i = cmds.begin(); i != cmds.end(); i++)
+	{
+		if (context == (*i)->context && name == (*i)->name)
+			return *i;
+	}
+
+	return NULL;
 }

@@ -37,7 +37,7 @@ void Inputevent::clear()
 {
 
 	context = 0;
-	multiplier = 0;
+	multiplier = 1;
 	action = ACT_NOACTION;
 	context = 0;
 	text.clear();

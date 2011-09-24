@@ -34,6 +34,9 @@ class PMS
 		/* This function handles input events from main(). */
 		int		run_event(Inputevent * ev);
 
+		/* Run a text command */
+		int		run_cmd(string cmd);
+
 		/* Quit the program. */
 		int		quit();
 

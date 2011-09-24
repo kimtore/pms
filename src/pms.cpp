@@ -23,6 +23,7 @@
 #include "curses.h"
 #include "config.h"
 #include "window.h"
+#include "command.h"
 #include "mpd.h"
 #include "input.h"
 
@@ -31,6 +32,7 @@ extern MPD		mpd;
 extern Curses		curses;
 extern Windowmanager	wm;
 extern Input		input;
+extern Commandlist 	commandlist;
 
 int PMS::run_event(Inputevent * ev)
 {
@@ -52,7 +54,7 @@ int PMS::run_event(Inputevent * ev)
 			return true;
 
 		case ACT_RUN_CMD:
-			/* TODO: add a command parser */
+			run_cmd(ev->text);
 			input.setmode(INPUT_MODE_COMMAND);
 			wm.statusbar->draw();
 			curses.flush();
@@ -109,6 +111,24 @@ int PMS::run_event(Inputevent * ev)
 
 
 	return false;
+}
+
+int PMS::run_cmd(string cmd)
+{
+	Inputevent ev;
+	Command * c;
+	c = commandlist.find(wm.context, cmd);
+	if (!c)
+	{
+		sterr("Undefined command '%s'", cmd.c_str());
+		return false;
+	}
+
+	ev.action = c->action;
+	ev.context = wm.context;
+	ev.text = c->name;
+	ev.result = INPUT_RESULT_RUN;
+	return run_event(&ev);
 }
 
 int PMS::quit()
