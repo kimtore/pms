@@ -32,6 +32,7 @@ Keybindings::Keybindings()
 {
 	add(CONTEXT_ALL, ACT_MODE_INPUT, ":");
 	add(CONTEXT_ALL, ACT_QUIT, "q");
+
 	add(CONTEXT_LIST, ACT_SCROLL_UP, "<C-y>");
 	add(CONTEXT_LIST, ACT_SCROLL_DOWN, "<C-e>");
 	add(CONTEXT_LIST, ACT_CURSOR_UP, "k");

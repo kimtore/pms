@@ -79,6 +79,12 @@ int PMS::run_event(input_event * ev)
 		case ACT_CURSOR_DOWN:
 			return move_cursor(ev->multiplier);
 
+		case ACT_CURSOR_TOP:
+			return set_cursor_top();
+
+		case ACT_CURSOR_BOTTOM:
+			return set_cursor_bottom();
+
 		case ACT_CURSOR_HOME:
 			return set_cursor_home();
 
