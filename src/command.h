@@ -36,9 +36,11 @@ enum
 typedef enum
 {
 	ACT_NOACTION = 0,
-	ACT_QUIT,
 	ACT_RESIZE,
 	ACT_RUN_CMD,
+	ACT_SET,
+
+	ACT_QUIT,
 	ACT_MODE_INPUT,
 	ACT_MODE_COMMAND,
 	ACT_SCROLL_UP,
@@ -92,11 +94,16 @@ class Commandlist
 {
 	private:
 		vector<Command *>	cmds;
+		vector<Command *>	grepcmds;
+		
 		Command *		add(int context, action_t action, string name);
 
 	public:
 		/* Set up all available pms commands */
 		Commandlist();
+
+		/* Search for a command, used for tab completion */
+		vector<Command *> *	grep(int context, string name);
 };
 
 #endif /* _PMS_COMMAND_H_ */

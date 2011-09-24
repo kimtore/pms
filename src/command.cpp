@@ -26,6 +26,9 @@ using namespace std;
 
 Commandlist::Commandlist()
 {
+	add(CONTEXT_ALL, ACT_SET, "se");
+	add(CONTEXT_ALL, ACT_SET, "set");
+
 	add(CONTEXT_ALL, ACT_QUIT, "quit");
 	add(CONTEXT_ALL, ACT_QUIT, "q");
 
@@ -47,4 +50,22 @@ Command * Commandlist::add(int context, action_t action, string name)
 	c->name = name;
 	cmds.push_back(c);
 	return c;
+}
+
+vector<Command *> * Commandlist::grep(int context, string name)
+{
+	vector<Command *>::iterator i;
+
+	grepcmds.clear();
+
+	for (i = cmds.begin(); i != cmds.end(); i++)
+	{
+		if (name.size() > (*i)->name.size())
+			continue;
+
+		if (name == (*i)->name.substr(0, name.size()))
+			grepcmds.push_back(*i);
+	}
+
+	return &grepcmds;
 }

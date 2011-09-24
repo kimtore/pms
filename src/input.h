@@ -93,6 +93,8 @@ class Input
 
 		int		chbuf;
 		bool		is_tab_completing;
+		unsigned int	tab_complete_index;
+		vector<Command *> * tab_results;
 		Inputevent	ev;
 
 		void		handle_text_input();

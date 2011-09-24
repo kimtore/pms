@@ -25,6 +25,7 @@
 #include <cstring>
 
 Keybindings * keybindings;
+Commandlist commandlist;
 extern Windowmanager wm;
 
 Inputevent::Inputevent()
@@ -49,6 +50,8 @@ Input::Input()
 	multiplier = 1;
 	strbuf.clear();
 	buffer.clear();
+	is_tab_completing = false;
+	tab_complete_index = 0;
 	keybindings = new Keybindings();
 }
 
@@ -117,6 +120,8 @@ Inputevent * Input::next()
 
 void Input::handle_text_input()
 {
+	string::iterator si;
+
 	if (chbuf != 9)
 		is_tab_completing = false;
 
@@ -158,7 +163,29 @@ void Input::handle_text_input()
 			return;
 
 		case 9:			/* TODO: Tab-completion */
-			is_tab_completing = true;
+			if (is_tab_completing)
+			{
+				if (++tab_complete_index >= tab_results->size())
+					tab_complete_index = 0;
+			}
+			else
+			{
+				tab_results = commandlist.grep(wm.context, strbuf);
+				if (tab_results->size() > 0)
+				{
+					is_tab_completing = true;
+					tab_complete_index = 0;
+				}
+			}
+
+			if (is_tab_completing)
+			{
+				strbuf = tab_results->at(tab_complete_index)->name;
+				buffer.clear();
+				for (si = strbuf.begin(); si != strbuf.end(); ++si)
+					buffer.push_back(*si);
+			}
+			ev.result = INPUT_RESULT_BUFFERED;
 			return;
 
 		default:
