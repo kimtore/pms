@@ -19,8 +19,10 @@
  */
 
 #include "window.h"
+#include "curses.h"
 
 extern Windowmanager wm;
+extern Curses curses;
 
 void Window::draw()
 {
@@ -31,6 +33,11 @@ void Window::draw()
 
 	for (i = 0; i <= rect->bottom - rect->top; i++)
 		drawline(i);
+}
+
+void Window::clear()
+{
+	curses.wipe(rect);
 }
 
 unsigned int Window::height()

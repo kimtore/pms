@@ -162,7 +162,7 @@ void Input::handle_text_input()
 			}
 			return;
 
-		case 9:			/* TODO: Tab-completion */
+		case 9:			/* Tab */
 			if (is_tab_completing)
 			{
 				if (++tab_complete_index >= tab_results->size())
@@ -181,6 +181,8 @@ void Input::handle_text_input()
 			if (is_tab_completing)
 			{
 				strbuf = tab_results->at(tab_complete_index)->name;
+
+				/* Sync binary input buffer with string buffer */
 				buffer.clear();
 				for (si = strbuf.begin(); si != strbuf.end(); ++si)
 					buffer.push_back(*si);

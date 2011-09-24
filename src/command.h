@@ -35,14 +35,20 @@ enum
 
 typedef enum
 {
+	/* Configuration and internals */
 	ACT_NOACTION = 0,
 	ACT_RESIZE,
 	ACT_RUN_CMD,
 	ACT_SET,
 
+	/* Global commands */
 	ACT_QUIT,
 	ACT_MODE_INPUT,
 	ACT_MODE_COMMAND,
+	ACT_NEXT_WINDOW,
+	ACT_PREVIOUS_WINDOW,
+
+	/* List actions */
 	ACT_SCROLL_UP,
 	ACT_SCROLL_DOWN,
 	ACT_CURSOR_UP,

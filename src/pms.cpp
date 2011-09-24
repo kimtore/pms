@@ -67,6 +67,12 @@ int PMS::run_event(Inputevent * ev)
 			curses.flush();
 			return true;
 
+		case ACT_NEXT_WINDOW:
+			return cycle_windows(ev->multiplier);
+
+		case ACT_PREVIOUS_WINDOW:
+			return cycle_windows(-ev->multiplier);
+
 		case ACT_SCROLL_UP:
 			return scroll_window(-ev->multiplier);
 
@@ -156,5 +162,11 @@ int PMS::set_cursor_end()
 	Wmain * window;
 	window = WMAIN(wm.active);
 	window->set_cursor(window->content_size());
+	return true;
+}
+
+int PMS::cycle_windows(int offset)
+{
+	wm.cycle(offset);
 	return true;
 }

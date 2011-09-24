@@ -48,6 +48,9 @@ class PMS
 		int		set_cursor_end();
 		int		set_cursor_top();
 		int		set_cursor_bottom();
+
+		/* Change windows */
+		int		cycle_windows(int offset);
 };
 
 

@@ -45,6 +45,9 @@ class Window
 		/* Draw all lines on rect */
 		void		draw();
 
+		/* Clear this window */
+		void		clear();
+
 		/* Is this window visible? */
 		virtual bool	visible() { return true; };
 
@@ -126,6 +129,9 @@ class Windowmanager
 {
 	private:
 		vector<Window *>	windows;
+
+		/* Active window index */
+		unsigned int		active_index;
 	
 	public:
 		Windowmanager();
@@ -136,8 +142,15 @@ class Windowmanager
 		/* Redraw all visible windows */
 		void			draw();
 
+		/* Cycle window list */
+		void			cycle(int offset);
+
+		/* Activate a window */
+		bool			activate(Window * nactive);
+
 		Wconsole *		console;
 		Wsonglist *		playlist;
+		Wsonglist *		library;
 
 		Window *		active;
 		Wtopbar *		topbar;
