@@ -32,7 +32,7 @@ extern Curses		curses;
 extern Windowmanager	wm;
 extern Input		input;
 
-int PMS::run_event(input_event * ev)
+int PMS::run_event(Inputevent * ev)
 {
 	if (!ev) return false;
 

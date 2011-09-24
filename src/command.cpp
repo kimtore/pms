@@ -28,6 +28,7 @@ Commandlist::Commandlist()
 {
 	add(CONTEXT_ALL, ACT_QUIT, "quit");
 	add(CONTEXT_ALL, ACT_QUIT, "q");
+
 	add(CONTEXT_LIST, ACT_SCROLL_UP, "scroll-up");
 	add(CONTEXT_LIST, ACT_SCROLL_DOWN, "scroll-down");
 	add(CONTEXT_LIST, ACT_CURSOR_UP, "cursor-up");

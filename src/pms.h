@@ -32,7 +32,7 @@ class PMS
 {
 	public:
 		/* This function handles input events from main(). */
-		int		run_event(input_event * ev);
+		int		run_event(Inputevent * ev);
 
 		/* Quit the program. */
 		int		quit();

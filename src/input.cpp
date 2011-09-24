@@ -27,6 +27,21 @@
 Keybindings * keybindings;
 extern Windowmanager wm;
 
+Inputevent::Inputevent()
+{
+	clear();
+}
+
+void Inputevent::clear()
+{
+
+	context = 0;
+	multiplier = 0;
+	action = ACT_NOACTION;
+	context = 0;
+	text.clear();
+}
+
 Input::Input()
 {
 	mode = INPUT_MODE_COMMAND;
@@ -37,14 +52,14 @@ Input::Input()
 	keybindings = new Keybindings();
 }
 
-input_event * Input::next()
+Inputevent * Input::next()
 {
 	int m;
 
 	if ((chbuf = getch()) == -1)
 		return NULL;
 
-	memset(&ev, 0, sizeof ev);
+	ev.clear();
 
 	/* This is a global signal/event non-dependant on anything else. */
 	if (chbuf == KEY_RESIZE)
@@ -65,72 +80,92 @@ input_event * Input::next()
 
 			if (m == KEYBIND_FIND_EXACT)
 				ev.result = INPUT_RESULT_RUN;
+			else if (m == KEYBIND_FIND_BUFFERED)
+				ev.result = INPUT_RESULT_BUFFERED;
 			else if (m == KEYBIND_FIND_NOMATCH)
+			{
 				buffer.clear();
+				strbuf.clear();
+			}
 
 			break;
 
 		/* Text input of some sorts */
 		case INPUT_MODE_INPUT:
 		case INPUT_MODE_SEARCH:
-			switch(chbuf)
-			{
-				case 10:
-				case KEY_ENTER:
-					if (mode == INPUT_MODE_INPUT)
-						ev.action = ACT_RUN_CMD;
-
-					ev.result = INPUT_RESULT_RUN;
-					break;
-
-				case 21:		/* ^U */
-					buffer.clear();
-					strbuf.clear();
-					ev.result = INPUT_RESULT_BUFFERED;
-					break;
-
-				case 27:		/* Escape */
-					ev.result = INPUT_RESULT_RUN;
-					ev.action = ACT_MODE_COMMAND;
-					break;
-
-				case 8:			/* ^H -- backspace */
-				case 127:		/* ^? -- delete */
-				case KEY_BACKSPACE:
-					if (buffer.size() > 0)
-					{
-						buffer.pop_back();
-						strbuf.erase(--string::iterator(strbuf.end()));
-						ev.result = INPUT_RESULT_BUFFERED;
-					}
-					else
-					{
-						ev.result = INPUT_RESULT_RUN;
-						ev.action = ACT_MODE_COMMAND;
-					}
-					break;
-
-				default:
-					buffer.push_back(chbuf);
-					strbuf.push_back(chbuf);
-					ev.result = INPUT_RESULT_BUFFERED;
-			}
+			handle_text_input();
 			break;
 	}
 
 	if (ev.result != INPUT_RESULT_NOINPUT)
 	{
+		ev.context = wm.context;
+		ev.text = strbuf;
+		ev.multiplier = multiplier;
+
 		if (ev.result != INPUT_RESULT_BUFFERED)
 		{
 			buffer.clear();
 			strbuf.clear();
 		}
 
-		ev.multiplier = multiplier;
 		return &ev;
 	}
 	
 	return NULL;
+}
+
+void Input::handle_text_input()
+{
+	if (chbuf != 9)
+		is_tab_completing = false;
+
+	switch(chbuf)
+	{
+		case 10:
+		case KEY_ENTER:
+			if (mode == INPUT_MODE_INPUT)
+				ev.action = ACT_RUN_CMD;
+
+			ev.result = INPUT_RESULT_RUN;
+			return;
+
+		case 21:		/* ^U */
+			buffer.clear();
+			strbuf.clear();
+			ev.result = INPUT_RESULT_BUFFERED;
+			return;
+
+		case 27:		/* Escape */
+			ev.result = INPUT_RESULT_RUN;
+			ev.action = ACT_MODE_COMMAND;
+			return;
+
+		case 8:			/* ^H -- backspace */
+		case 127:		/* ^? -- delete */
+		case KEY_BACKSPACE:
+			if (buffer.size() > 0)
+			{
+				buffer.pop_back();
+				strbuf.erase(--string::iterator(strbuf.end()));
+				ev.result = INPUT_RESULT_BUFFERED;
+			}
+			else
+			{
+				ev.result = INPUT_RESULT_RUN;
+				ev.action = ACT_MODE_COMMAND;
+			}
+			return;
+
+		case 9:			/* TODO: Tab-completion */
+			is_tab_completing = true;
+			return;
+
+		default:
+			buffer.push_back(chbuf);
+			strbuf.push_back(chbuf);
+			ev.result = INPUT_RESULT_BUFFERED;
+	}
 }
 
 void Input::setmode(int nmode)

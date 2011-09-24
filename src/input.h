@@ -37,24 +37,28 @@ using namespace std;
 #define KEYBIND_FIND_EXACT 0
 #define KEYBIND_FIND_BUFFERED 1
 
-/* This struct is returned by Input::next(), defining what to do next */
-typedef struct
+/* This class is returned by Input::next(), defining what to do next */
+class Inputevent
 {
-	/* Which context are we in? */
-	int context;
+	public:
+		Inputevent();
+		void clear();
 
-	/* How many? */
-	unsigned int multiplier;
+		/* Which context are we in? */
+		int context;
 
-	/* What kind of action to run */
-	action_t action;
+		/* How many? */
+		unsigned int multiplier;
 
-	/* one of INPUT_RESULT_* */
-	int result;
-}
+		/* What kind of action to run */
+		action_t action;
 
-input_event;
+		/* one of INPUT_RESULT_* */
+		int result;
 
+		/* The full character buffer or command/input */
+		string text;
+};
 
 class Keybinding
 {
@@ -88,7 +92,10 @@ class Input
 	private:
 
 		int		chbuf;
-		input_event	ev;
+		bool		is_tab_completing;
+		Inputevent	ev;
+
+		void		handle_text_input();
 
 	public:
 
@@ -100,7 +107,7 @@ class Input
 		Input();
 
 		/* Read next character from ncurses buffer */
-		input_event *	next();
+		Inputevent *	next();
 
 		/* Setter and getter for mode */
 		void		setmode(int nmode);
