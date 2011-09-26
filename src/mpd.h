@@ -70,7 +70,7 @@ typedef struct
 	song_t		nextsong;
 	song_t		nextsongid;
 	int		length;
-	int		elapsed;
+	float		elapsed;
 	int		bitrate;
 	long		samplerate;
 	int		bits;
@@ -107,7 +107,12 @@ class MPD
 		bool		connected;
 		bool		waiting;
 		int		protocol_version[3];
+		struct timeval	last_update;
+		struct timeval	last_clock;
 		bool		is_idle;
+
+		/* Advance clock in IDLE mode */
+		void		run_clock();
 
 		/* Set/unset idle status */
 		bool		set_idle(bool nidle);

@@ -49,6 +49,8 @@ MPD::MPD()
 	buffer = "";
 	sock = 0;
 	connected = false;
+	memset(&last_update, 0, sizeof last_update);
+	memset(&last_clock, 0, sizeof last_clock);
 	memset(&state, 0, sizeof state);
 }
 
@@ -411,7 +413,7 @@ int MPD::get_status()
 		else if (param == "songid")
 			state.songid = atol(value.c_str());
 		else if (param == "elapsed")
-			state.elapsed = atoi(value.c_str());
+			state.elapsed = atof(value.c_str());
 		else if (param == "bitrate")
 			state.bitrate = atoi(value.c_str());
 		else if (param == "nextsong")
@@ -435,7 +437,7 @@ int MPD::get_status()
 		{
 			if ((pos = value.find(':')) != string::npos)
 			{
-				state.elapsed = atoi(value.substr(0, pos).c_str());
+				state.elapsed = atof(value.substr(0, pos).c_str());
 				state.length = atoi(value.substr(pos + 1).c_str());
 			}
 		}
@@ -454,7 +456,23 @@ int MPD::get_status()
 		}
 	}
 
+	gettimeofday(&last_update, NULL);
+	memcpy(&last_clock, &last_update, sizeof last_clock);
+
 	return status;
+}
+
+void MPD::run_clock()
+{
+	struct timeval tm;
+	gettimeofday(&tm, NULL);
+
+	state.elapsed += (tm.tv_sec - last_clock.tv_sec);
+	state.elapsed += (tm.tv_usec - last_clock.tv_usec) / 1000000.000000;
+
+	debug("Elapsed: %f", state.elapsed);
+
+	memcpy(&last_clock, &tm, sizeof last_clock);
 }
 
 int MPD::poll()
@@ -474,7 +492,7 @@ int MPD::poll()
 	FD_SET(STDIN_FILENO, &set);
 
 	memset(&timeout, 0, sizeof timeout);
-	timeout.tv_usec = 750000;
+	timeout.tv_usec = 1000000;
 	if ((s = select(sock+1, &set, NULL, NULL, &timeout)) == -1)
 	{
 		mpd_disconnect();
@@ -482,7 +500,8 @@ int MPD::poll()
 	}
 	else if (s == 0)
 	{
-		// no data ready to recv(), but TODO: we still might have to update time elapsed somewhere.
+		// no data ready to recv(), but let's update our clock
+		run_clock();
 		return false;
 	}
 
