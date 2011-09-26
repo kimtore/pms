@@ -26,6 +26,7 @@
 #include "command.h"
 #include "mpd.h"
 #include "input.h"
+#include <stdlib.h>
 
 extern Config		config;
 extern MPD		mpd;
@@ -99,6 +100,24 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_CURSOR_END:
 			return set_cursor_end();
 
+		case ACT_CONSUME:
+			return set_consume(!mpd.state.consume);
+
+		case ACT_CROSSFADE:
+			return set_crossfade(ev->text);
+
+		case ACT_RANDOM:
+			return set_random(!mpd.state.random);
+
+		case ACT_REPEAT:
+			return set_repeat(!mpd.state.repeat);
+
+		case ACT_SETVOL:
+			return set_volume(ev->text);
+
+		case ACT_SINGLE:
+			return set_single(!mpd.state.single);
+
 		default:
 			return false;
 	}
@@ -117,6 +136,14 @@ int PMS::run_cmd(string cmd)
 {
 	Inputevent ev;
 	Command * c;
+	size_t i;
+
+	if ((i = cmd.find(' ')) != string::npos)
+	{
+		cmd = cmd.substr(0, i);
+		ev.text = cmd.size() > i ? cmd.substr(i + 1) : "";
+	}
+
 	c = commandlist.find(wm.context, cmd);
 	if (!c)
 	{
@@ -126,7 +153,6 @@ int PMS::run_cmd(string cmd)
 
 	ev.action = c->action;
 	ev.context = wm.context;
-	ev.text = c->name;
 	ev.result = INPUT_RESULT_RUN;
 	return run_event(&ev);
 }
@@ -189,4 +215,42 @@ int PMS::cycle_windows(int offset)
 {
 	wm.cycle(offset);
 	return true;
+}
+
+int PMS::set_consume(bool consume)
+{
+	return mpd.set_consume(consume);
+}
+
+int PMS::set_crossfade(string crossfade)
+{
+	return mpd.set_crossfade(atoi(crossfade.c_str()));
+}
+
+int PMS::set_random(bool random)
+{
+	return mpd.set_random(random);
+}
+
+int PMS::set_repeat(bool repeat)
+{
+	return mpd.set_repeat(repeat);
+}
+
+int PMS::set_volume(string volume)
+{
+	if (volume.size() == 0)
+		return false;
+	
+	if (volume[0] == '+')
+		return mpd.set_volume(mpd.state.volume + atoi(volume.substr(1).c_str()));
+	else if (volume[0] == '-')
+		return mpd.set_volume(mpd.state.volume - atoi(volume.substr(1).c_str()));
+	else
+		return mpd.set_volume(atoi(volume.c_str()));
+}
+
+int PMS::set_single(bool single)
+{
+	return mpd.set_single(single);
 }

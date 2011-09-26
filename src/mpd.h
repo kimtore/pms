@@ -79,6 +79,16 @@ typedef struct
 
 mpd_state;
 
+typedef enum
+{
+	REPLAYGAIN_OFF,
+	REPLAYGAIN_TRACK,
+	REPLAYGAIN_ALBUM
+}
+
+replay_gain_mode;
+
+
 using namespace std;
 
 class MPD
@@ -150,6 +160,17 @@ class MPD
 
 		/* Polls the socket to see if there is any IDLE data to collect. */
 		int		poll();
+
+		/* Playback options */
+		int		set_consume(bool nconsume);
+		int		set_crossfade(unsigned int nseconds);
+		int		set_mixrampdb(int ndecibels);
+		int		set_mixrampdelay(int nseconds);
+		int		set_random(bool nrandom);
+		int		set_repeat(bool nrepeat);
+		int		set_volume(unsigned int nvol);
+		int		set_single(bool nsingle);
+		int		set_replay_gain_mode(replay_gain_mode nrgm);
 
 };
 

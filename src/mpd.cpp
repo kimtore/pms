@@ -235,7 +235,7 @@ int MPD::mpd_raw_send(string data)
 	waiting = true;
 
 	// Raw traffic dump
-	//debug("-> %s", data.c_str());
+	debug("-> %s", data.c_str());
 
 	return sent;
 }
@@ -279,7 +279,7 @@ int MPD::mpd_getline(string * nextline)
 		return MPD_GETLINE_ERR;
 
 	// Raw traffic dump
-	//debug("<- %s", line.c_str());
+	debug("<- %s", line.c_str());
 
 	if (line == "OK")
 		return MPD_GETLINE_OK;
@@ -554,4 +554,55 @@ int MPD::poll()
 	set_idle(true);
 
 	return true;
+}
+
+int MPD::set_consume(bool nconsume)
+{
+	mpd_send("consume %d", nconsume);
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
+}
+
+int MPD::set_crossfade(unsigned int nseconds)
+{
+	mpd_send("crossfade %d", nseconds);
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
+}
+
+int MPD::set_mixrampdb(int ndecibels)
+{
+	return false;
+}
+
+int MPD::set_mixrampdelay(int nseconds)
+{
+	return false;
+}
+
+int MPD::set_random(bool nrandom)
+{
+	mpd_send("random %d", nrandom);
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
+}
+
+int MPD::set_repeat(bool nrepeat)
+{
+	mpd_send("repeat %d", nrepeat);
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
+}
+
+int MPD::set_volume(unsigned int nvol)
+{
+	mpd_send("setvol %d", nvol);
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
+}
+
+int MPD::set_single(bool nsingle)
+{
+	mpd_send("single %d", nsingle);
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
+}
+
+int MPD::set_replay_gain_mode(replay_gain_mode nrgm)
+{
+	return false;
 }

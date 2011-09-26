@@ -48,6 +48,11 @@ Keybindings::Keybindings()
 	add(CONTEXT_LIST, ACT_CURSOR_HOME, "<home>");
 	add(CONTEXT_LIST, ACT_CURSOR_END, "G");
 	add(CONTEXT_LIST, ACT_CURSOR_END, "<end>");
+
+	add(CONTEXT_ALL, ACT_CONSUME, "c");
+	add(CONTEXT_ALL, ACT_RANDOM, "R");
+	add(CONTEXT_ALL, ACT_REPEAT, "r");
+	add(CONTEXT_ALL, ACT_SINGLE, "s");
 }
 
 Keybinding * Keybindings::add(int context, action_t action, string sequence)

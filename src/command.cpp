@@ -42,6 +42,13 @@ Commandlist::Commandlist()
 	add(CONTEXT_LIST, ACT_CURSOR_END, "cursor-end");
 	add(CONTEXT_LIST, ACT_CURSOR_TOP, "cursor-top");
 	add(CONTEXT_LIST, ACT_CURSOR_BOTTOM, "cursor-bottom");
+
+	add(CONTEXT_ALL, ACT_CONSUME, "consume");
+	add(CONTEXT_ALL, ACT_CROSSFADE, "crossfade");
+	add(CONTEXT_ALL, ACT_RANDOM, "random");
+	add(CONTEXT_ALL, ACT_REPEAT, "repeat");
+	add(CONTEXT_ALL, ACT_SETVOL, "volume");
+	add(CONTEXT_ALL, ACT_SINGLE, "single");
 }
 
 Command * Commandlist::add(int context, action_t action, string name)

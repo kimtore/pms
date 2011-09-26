@@ -54,6 +54,14 @@ class PMS
 
 		/* Change windows */
 		int		cycle_windows(int offset);
+
+		/* MPD options */
+		int		set_consume(bool consume);
+		int		set_crossfade(string secs);
+		int		set_random(bool random);
+		int		set_repeat(bool repeat);
+		int		set_volume(string volume);
+		int		set_single(bool single);
 };
 
 
