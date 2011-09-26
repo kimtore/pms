@@ -237,7 +237,7 @@ int MPD::mpd_raw_send(string data)
 	waiting = true;
 
 	// Raw traffic dump
-	debug("-> %s", data.c_str());
+	//debug("-> %s", data.c_str());
 
 	return sent;
 }
@@ -281,7 +281,7 @@ int MPD::mpd_getline(string * nextline)
 		return MPD_GETLINE_ERR;
 
 	// Raw traffic dump
-	debug("<- %s", line.c_str());
+	//debug("<- %s", line.c_str());
 
 	if (line == "OK")
 		return MPD_GETLINE_OK;
@@ -467,10 +467,11 @@ void MPD::run_clock()
 	struct timeval tm;
 	gettimeofday(&tm, NULL);
 
-	state.elapsed += (tm.tv_sec - last_clock.tv_sec);
-	state.elapsed += (tm.tv_usec - last_clock.tv_usec) / 1000000.000000;
-
-	debug("Elapsed: %f", state.elapsed);
+	if (state.state == MPD_STATE_PLAY)
+	{
+		state.elapsed += (tm.tv_sec - last_clock.tv_sec);
+		state.elapsed += (tm.tv_usec - last_clock.tv_usec) / 1000000.000000;
+	}
 
 	memcpy(&last_clock, &tm, sizeof last_clock);
 }
