@@ -471,8 +471,10 @@ int MPD::poll()
 
 	FD_ZERO(&set);
 	FD_SET(sock, &set);
+	FD_SET(STDIN_FILENO, &set);
 
 	memset(&timeout, 0, sizeof timeout);
+	timeout.tv_usec = 750000;
 	if ((s = select(sock+1, &set, NULL, NULL, &timeout)) == -1)
 	{
 		mpd_disconnect();
@@ -483,6 +485,9 @@ int MPD::poll()
 		// no data ready to recv(), but TODO: we still might have to update time elapsed somewhere.
 		return false;
 	}
+
+	if (!FD_ISSET(sock, &set))
+		return true;
 
 	is_idle = false;
 	updates = MPD_UPDATE_NONE;
