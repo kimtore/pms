@@ -82,12 +82,14 @@ void Wmain::set_position(unsigned int absolute)
 
 void Wmain::move_cursor(int offset)
 {
-	cursor += offset;
+	offset = cursor + offset;
 
-	if (cursor < 0)
-		cursor = 0;
-	else if (cursor > content_size() - 1)
-		cursor = content_size() - 1;
+	if (offset < 0)
+		offset = 0;
+	else if (offset > (int)content_size() - 1)
+		offset = content_size() - 1;
+
+	cursor = offset;
 
 	if (cursor < position)
 		set_position(cursor);
