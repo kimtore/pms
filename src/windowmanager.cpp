@@ -47,7 +47,7 @@ Windowmanager::Windowmanager()
 	windows.push_back(WWINDOW(library));
 
 	/* Activate playlist window */
-	activate(WWINDOW(playlist));
+	activate(WWINDOW(console));
 	context = CONTEXT_CONSOLE;
 }
 

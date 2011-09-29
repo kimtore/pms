@@ -284,8 +284,11 @@ int MPD::mpd_getline(string * nextline)
 
 	is_idle = false;
 
-	while(buffer.find('\n') == string::npos)
+	do
 	{
+		if (!FD_ISSET(sock, &set))
+			break;
+
 		received = recv(sock, &buf, 65535, 0);
 		if (received == 0)
 		{
@@ -294,11 +297,14 @@ int MPD::mpd_getline(string * nextline)
 		}
 		else if (received == -1)
 		{
-			continue;
+			debug("---------------------------------------", NULL);
+			break;
 		}
 		buf[received] = '\0';
 		buffer += buf;
+		debug("put %d bytes into buffer", strlen(buf));
 	}
+	while(buffer.find('\n') == string::npos);
 
 	if ((pos = buffer.find('\n')) != string::npos)
 	{
@@ -428,14 +434,21 @@ int MPD::get_library()
 		return MPD_GETLINE_OK;
 	}
 
+	library.songs.clear();
+	library.version = -1;
 	library.truncate(stats.songs);
 
 	mpd_send("listallinfo");
-	s = recv_songs_to_list(&library, update_library_statusbar);
-	library.version = stats.db_update;
+	if ((s = recv_songs_to_list(&library, update_library_statusbar)) == MPD_GETLINE_OK)
+	{
+		library.version = stats.db_update;
+		debug("Library has been received, total %d songs.", library.size());
+	}
+	else
+	{
+		sterr("Library update terminated, got total %d/%d songs.", library.size(), stats.songs);
+	}
 	wm.library->draw();
-
-	debug("Library has been received, total %d songs.", library.size());
 
 	return s;
 }
