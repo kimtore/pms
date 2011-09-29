@@ -46,7 +46,7 @@ void Wsonglist::drawline(int rely)
 	song = songlist->songs[linepos];
 	if (linepos == cursor)
 		color = config.colors.cursor;
-	else if (song->pos == mpd.state.song)
+	else if (song->pos == mpd.status.song)
 		color = config.colors.playing;
 	else
 		color = config.colors.standard;

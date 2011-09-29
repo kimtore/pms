@@ -28,6 +28,7 @@ using namespace std;
 typedef enum
 {
 	/* These fields come directly from MPD. */
+	FIELD_DIRECTORY,
 	FIELD_FILE,
 	FIELD_POS,
 	FIELD_ID,
@@ -39,6 +40,7 @@ typedef enum
 	FIELD_TITLE,
 	FIELD_TRACK,
 	FIELD_DATE,
+	FIELD_DISC,
 	FIELD_GENRE,
 	FIELD_ALBUMARTIST,
 	FIELD_ALBUMARTISTSORT,
@@ -50,7 +52,7 @@ typedef enum
 
 field_t;
 
-#define FIELD_TOTAL_VALUES 16
+#define FIELD_TOTAL_VALUES 18
 
 
 /*

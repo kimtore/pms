@@ -53,7 +53,8 @@ MPD::MPD()
 	connected = false;
 	memset(&last_update, 0, sizeof last_update);
 	memset(&last_clock, 0, sizeof last_clock);
-	memset(&state, 0, sizeof state);
+	memset(&status, 0, sizeof status);
+	memset(&stats, 0, sizeof stats);
 }
 
 bool MPD::set_idle(bool nidle)
@@ -314,7 +315,7 @@ int MPD::split_pair(string * line, string * param, string * value)
 	return false;
 }
 
-int MPD::get_playlist()
+int MPD::recv_songs_to_list(Songlist * slist)
 {
 	Song * song = NULL;
 	Field * field;
@@ -322,16 +323,6 @@ int MPD::get_playlist()
 	string param;
 	string value;
 	int status;
-
-	/* Ignore duplicate update messages */
-	if (playlist.version == state.playlist)
-		return false;
-
-	playlist.truncate(state.playlistlength);
-	if (playlist.version == -1)
-		mpd_send("playlistinfo");
-	else
-		mpd_send("plchanges %d", playlist.version);
 
 	while((status = mpd_getline(&buf)) == MPD_GETLINE_MORE)
 	{
@@ -341,7 +332,7 @@ int MPD::get_playlist()
 		field = fieldtypes.find_mpd(param);
 		if (field == NULL)
 		{
-			debug("Unhandled song metadata field '%s' in response from MPD", value.c_str());
+			//debug("Unhandled song metadata field '%s' in response from MPD", param.c_str());
 			continue;
 		}
 
@@ -350,7 +341,7 @@ int MPD::get_playlist()
 			if (song != NULL)
 			{
 				song->init();
-				playlist.add(song);
+				slist->add(song);
 			}
 
 			song = new Song;
@@ -363,14 +354,91 @@ int MPD::get_playlist()
 	if (song != NULL)
 	{
 		song->init();
-		playlist.add(song);
+		slist->add(song);
 	}
-	playlist.version = state.playlist;
+
+	return status;
+}
+
+int MPD::get_playlist()
+{
+	int s;
+
+	/* Ignore duplicate update messages */
+	if (playlist.version == status.playlist)
+		return false;
+
+	playlist.truncate(status.playlistlength);
+	if (playlist.version == -1)
+		mpd_send("playlistinfo");
+	else
+		mpd_send("plchanges %d", playlist.version);
+
+	s = recv_songs_to_list(&playlist);
+
+	playlist.version = status.playlist;
 	wm.playlist->draw();
 
 	debug("Playlist has been updated to version %d", playlist.version);
 
-	return status;
+	return s;
+}
+
+int MPD::get_library()
+{
+	int s;
+
+	get_stats();
+
+	if ((unsigned long long)library.version == stats.db_update)
+	{
+		debug("Request for library update, but local copy is the same as server.", NULL);
+		return MPD_GETLINE_OK;
+	}
+
+	library.truncate(stats.songs);
+
+	mpd_send("listallinfo");
+	s = recv_songs_to_list(&library);
+	library.version = stats.db_update;
+	wm.library->draw();
+
+	debug("Library has been received, total %d songs.", library.size());
+
+	return s;
+}
+
+int MPD::get_stats()
+{
+	string buf;
+	string param;
+	string value;
+	int s;
+
+	mpd_send("stats");
+
+	while((s = mpd_getline(&buf)) == MPD_GETLINE_MORE)
+	{
+		if (!split_pair(&buf, &param, &value))
+			continue;
+
+		if (param == "artists")
+			stats.songs = atol(value.c_str());
+		else if (param == "albums")
+			stats.albums = atoll(value.c_str());
+		else if (param == "songs")
+			stats.songs = atoll(value.c_str());
+		else if (param == "uptime")
+			stats.uptime = atoll(value.c_str());
+		else if (param == "playtime")
+			stats.playtime = atoll(value.c_str());
+		else if (param == "db_playtime")
+			stats.db_playtime = atoll(value.c_str());
+		else if (param == "db_update")
+			stats.db_update = atoll(value.c_str());
+	}
+
+	return s;
 }
 
 int MPD::get_status()
@@ -378,67 +446,67 @@ int MPD::get_status()
 	string buf;
 	string param;
 	string value;
-	int status;
+	int s;
 	size_t pos;
 
 	mpd_send("status");
 
-	while((status = mpd_getline(&buf)) == MPD_GETLINE_MORE)
+	while((s = mpd_getline(&buf)) == MPD_GETLINE_MORE)
 	{
 		if (!split_pair(&buf, &param, &value))
 			continue;
 
 		if (param == "volume")
-			state.volume = atoi(value.c_str());
+			status.volume = atoi(value.c_str());
 		else if (param == "repeat")
-			state.repeat = atoi(value.c_str());
+			status.repeat = atoi(value.c_str());
 		else if (param == "random")
-			state.random = atoi(value.c_str());
+			status.random = atoi(value.c_str());
 		else if (param == "single")
-			state.single = atoi(value.c_str());
+			status.single = atoi(value.c_str());
 		else if (param == "consume")
-			state.consume = atoi(value.c_str());
+			status.consume = atoi(value.c_str());
 		else if (param == "playlist")
-			state.playlist = atoi(value.c_str());
+			status.playlist = atoi(value.c_str());
 		else if (param == "playlistlength")
-			state.playlistlength = atoi(value.c_str());
+			status.playlistlength = atoi(value.c_str());
 		else if (param == "xfade")
-			state.xfade = atoi(value.c_str());
+			status.xfade = atoi(value.c_str());
 		else if (param == "mixrampdb")
-			state.mixrampdb = atof(value.c_str());
+			status.mixrampdb = atof(value.c_str());
 		else if (param == "mixrampdelay")
-			state.mixrampdelay = atoi(value.c_str());
+			status.mixrampdelay = atoi(value.c_str());
 		else if (param == "song")
-			state.song = atol(value.c_str());
+			status.song = atol(value.c_str());
 		else if (param == "songid")
-			state.songid = atol(value.c_str());
+			status.songid = atol(value.c_str());
 		else if (param == "elapsed")
-			state.elapsed = atof(value.c_str());
+			status.elapsed = atof(value.c_str());
 		else if (param == "bitrate")
-			state.bitrate = atoi(value.c_str());
+			status.bitrate = atoi(value.c_str());
 		else if (param == "nextsong")
-			state.nextsong = atol(value.c_str());
+			status.nextsong = atol(value.c_str());
 		else if (param == "nextsongid")
-			state.nextsongid = atol(value.c_str());
+			status.nextsongid = atol(value.c_str());
 
 		else if (param == "state")
 		{
 			if (value == "play")
-				state.state = MPD_STATE_PLAY;
+				status.state = MPD_STATE_PLAY;
 			else if (value == "stop")
-				state.state = MPD_STATE_STOP;
+				status.state = MPD_STATE_STOP;
 			else if (value == "pause")
-				state.state = MPD_STATE_PAUSE;
+				status.state = MPD_STATE_PAUSE;
 			else
-				state.state = MPD_STATE_UNKNOWN;
+				status.state = MPD_STATE_UNKNOWN;
 		}
 
 		else if (param == "time")
 		{
 			if ((pos = value.find(':')) != string::npos)
 			{
-				state.elapsed = atof(value.substr(0, pos).c_str());
-				state.length = atoi(value.substr(pos + 1).c_str());
+				status.elapsed = atof(value.substr(0, pos).c_str());
+				status.length = atoi(value.substr(pos + 1).c_str());
 			}
 		}
 
@@ -446,11 +514,11 @@ int MPD::get_status()
 		{
 			if ((pos = value.find(':')) != string::npos)
 			{
-				state.samplerate = atoi(value.substr(0, pos).c_str());
-				state.bits = atoi(value.substr(pos + 1).c_str());
+				status.samplerate = atoi(value.substr(0, pos).c_str());
+				status.bits = atoi(value.substr(pos + 1).c_str());
 				if ((pos = value.find(':', pos + 1)) != string::npos)
 				{
-					state.channels = atoi(value.substr(pos + 1).c_str());
+					status.channels = atoi(value.substr(pos + 1).c_str());
 				}
 			}
 		}
@@ -459,7 +527,7 @@ int MPD::get_status()
 	gettimeofday(&last_update, NULL);
 	memcpy(&last_clock, &last_update, sizeof last_clock);
 
-	return status;
+	return s;
 }
 
 void MPD::run_clock()
@@ -467,10 +535,10 @@ void MPD::run_clock()
 	struct timeval tm;
 	gettimeofday(&tm, NULL);
 
-	if (state.state == MPD_STATE_PLAY)
+	if (status.state == MPD_STATE_PLAY)
 	{
-		state.elapsed += (tm.tv_sec - last_clock.tv_sec);
-		state.elapsed += (tm.tv_usec - last_clock.tv_usec) / 1000000.000000;
+		status.elapsed += (tm.tv_sec - last_clock.tv_sec);
+		status.elapsed += (tm.tv_usec - last_clock.tv_usec) / 1000000.000000;
 	}
 
 	memcpy(&last_clock, &tm, sizeof last_clock);

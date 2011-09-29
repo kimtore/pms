@@ -77,7 +77,20 @@ typedef struct
 	int		channels;
 }
 
-mpd_state;
+mpd_status;
+
+typedef struct
+{
+	song_t			artists;
+	song_t			albums;
+	song_t			songs;
+	unsigned long		uptime;
+	unsigned long		playtime;
+	unsigned long		db_playtime;
+	unsigned long long	db_update;
+}
+
+mpd_stats;
 
 typedef enum
 {
@@ -123,6 +136,9 @@ class MPD
 		/* Parse the initial connection string from MPD */
 		bool		set_protocol_version(string data);
 
+		/* Retrieve a songlist from MPD after a command has been sent, and store it in a Songlist */
+		int		recv_songs_to_list(Songlist * slist);
+
 		/* Send a command to MPD, turning IDLE off if needed */
 		int		mpd_send(const char * data, ...);
 
@@ -139,7 +155,8 @@ class MPD
 		MPD();
 
 		/* MPD state */
-		mpd_state	state;
+		mpd_status	status;
+		mpd_stats	stats;
 
 		/* Server-side lists */
 		Songlist	playlist;
@@ -157,10 +174,14 @@ class MPD
 		/* Change password */
 		bool		set_password(string password);
 
+		/* Fetch the entire MPD library */
+		int		get_library();
+
 		/* Fetch MPD playlist updates since last time */
 		int		get_playlist();
 
-		/* Retrieve MPD status */
+		/* Retrieve MPD stats and status */
+		int		get_stats();
 		int		get_status();
 
 		/* Polls the socket to see if there is any IDLE data to collect. */

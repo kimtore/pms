@@ -35,15 +35,19 @@ Fieldtypes::Fieldtypes()
 	fields.push_back(new Field(FIELD_POS, "pos", "Pos"));
 	fields.push_back(new Field(FIELD_ID, "id", "Id"));
 	fields.push_back(new Field(FIELD_TIME, "time", "Time"));
+	fields.push_back(new Field(FIELD_DIRECTORY, "directory", "directory"));
 	fields.push_back(new Field(FIELD_FILE, "file", "file"));
 	fields.push_back(new Field(FIELD_NAME, "name", "Name"));
 	fields.push_back(new Field(FIELD_ARTIST, "artist", "Artist"));
+	fields.push_back(new Field(FIELD_ARTISTSORT, "artist", "ArtistSort"));
 	fields.push_back(new Field(FIELD_ALBUM, "album", "Album"));
 	fields.push_back(new Field(FIELD_TITLE, "title", "Title"));
 	fields.push_back(new Field(FIELD_TRACK, "track", "Track"));
 	fields.push_back(new Field(FIELD_DATE, "date", "Date"));
 	fields.push_back(new Field(FIELD_GENRE, "genre", "Genre"));
+	fields.push_back(new Field(FIELD_DISC, "disc", "Disc"));
 	fields.push_back(new Field(FIELD_ALBUMARTIST, "albumartist", "AlbumArtist"));
+	fields.push_back(new Field(FIELD_ALBUMARTISTSORT, "albumartistsort", "AlbumArtistSort"));
 }
 
 Fieldtypes::~Fieldtypes()

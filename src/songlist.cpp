@@ -59,5 +59,5 @@ void Songlist::truncate(unsigned long length)
 		songs.pop_back();
 	}
 
-	songs.resize(length);
+	songs.reserve(length);
 }

@@ -27,9 +27,9 @@ using namespace std;
 
 Song::Song()
 {
-	time	= -1;
-	pos	= -1;
-	id	= -1;
+	f[FIELD_TIME]	= "-1";
+	f[FIELD_POS]	= "-1";
+	f[FIELD_ID]	= "-1";
 }
 
 void Song::init()

@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 	}
 
 	wm.playlist->songlist = &mpd.playlist;
+	wm.library->songlist = &mpd.library;
 	wm.draw();
 	stinfo("%s %d.%d", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
 
@@ -57,6 +58,7 @@ int main(int argc, char *argv[])
 			mpd.mpd_connect(config.host, config.port);
 			mpd.set_password(config.password);
 			mpd.get_status();
+			mpd.get_library();
 			mpd.get_playlist();
 		}
 		mpd.poll();

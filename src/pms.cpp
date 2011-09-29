@@ -101,22 +101,22 @@ int PMS::run_event(Inputevent * ev)
 			return set_cursor_end();
 
 		case ACT_CONSUME:
-			return set_consume(!mpd.state.consume);
+			return set_consume(!mpd.status.consume);
 
 		case ACT_CROSSFADE:
 			return set_crossfade(ev->text);
 
 		case ACT_RANDOM:
-			return set_random(!mpd.state.random);
+			return set_random(!mpd.status.random);
 
 		case ACT_REPEAT:
-			return set_repeat(!mpd.state.repeat);
+			return set_repeat(!mpd.status.repeat);
 
 		case ACT_SETVOL:
 			return set_volume(ev->text);
 
 		case ACT_SINGLE:
-			return set_single(!mpd.state.single);
+			return set_single(!mpd.status.single);
 
 		default:
 			return false;
@@ -243,9 +243,9 @@ int PMS::set_volume(string volume)
 		return false;
 	
 	if (volume[0] == '+')
-		return mpd.set_volume(mpd.state.volume + atoi(volume.substr(1).c_str()));
+		return mpd.set_volume(mpd.status.volume + atoi(volume.substr(1).c_str()));
 	else if (volume[0] == '-')
-		return mpd.set_volume(mpd.state.volume - atoi(volume.substr(1).c_str()));
+		return mpd.set_volume(mpd.status.volume - atoi(volume.substr(1).c_str()));
 	else
 		return mpd.set_volume(atoi(volume.c_str()));
 }

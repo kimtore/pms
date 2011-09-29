@@ -49,7 +49,7 @@ class Songlist
 		bool		readonly;
 
 		/* Playlist version at MPD side */
-		long		version;
+		long long	version;
 };
 
 #endif /* _PMS_SONGLIST_H_ */
