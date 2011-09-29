@@ -35,7 +35,11 @@ class Config
 		string		port;
 		string		password;
 
+		/* Main loop variable */
 		bool		quit;
+
+		/* Autoconnect timeout */
+		unsigned int	reconnect_delay;
 
 		Colortable	colors;
 

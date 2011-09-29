@@ -29,6 +29,9 @@
 #include "field.h"
 #include <glib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <cstring>
+#include <sys/time.h>
 
 Fieldtypes	fieldtypes;
 Curses		curses;
@@ -40,11 +43,16 @@ PMS		pms;
 
 int main(int argc, char *argv[])
 {
+	struct timeval cl;
+	struct timeval conn;
+
 	if (!curses.ready)
 	{
 		perror("Fatal: failed to initialise ncurses.\n");
 		return 1;
 	}
+
+	memset(&conn, 0, sizeof conn);
 
 	wm.playlist->songlist = &mpd.playlist;
 	wm.library->songlist = &mpd.library;
@@ -55,11 +63,16 @@ int main(int argc, char *argv[])
 	{
 		if (!mpd.is_connected())
 		{
-			mpd.mpd_connect(config.host, config.port);
-			mpd.set_password(config.password);
-			mpd.get_status();
-			mpd.get_library();
-			mpd.get_playlist();
+			gettimeofday(&cl, NULL);
+			if (cl.tv_sec - conn.tv_sec >= config.reconnect_delay)
+			{
+				mpd.mpd_connect(config.host, config.port);
+				mpd.set_password(config.password);
+				mpd.get_status();
+				mpd.get_library();
+				mpd.get_playlist();
+				gettimeofday(&conn, NULL);
+			}
 		}
 		mpd.poll();
 		pms.run_event(input.next());

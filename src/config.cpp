@@ -28,6 +28,7 @@ Config::Config()
 	setup_default_connection_info();
 
 	quit = false;
+	reconnect_delay = 5;
 }
 
 void	Config::setup_default_connection_info()
