@@ -46,7 +46,7 @@ extern MPD mpd;
 void update_library_statusbar()
 {
 	unsigned int percent;
-	percent = round((mpd.library.size() / mpd.stats.songs) * 100);
+	percent = round(((float)mpd.library.size() / mpd.stats.songs) * 100.00);
 	stinfo("Retrieving library %d%%%% ...", percent);
 }
 
@@ -260,7 +260,7 @@ int MPD::mpd_raw_send(string data)
 
 int MPD::mpd_getline(string * nextline)
 {
-	char buf[1025];
+	char buf[65536];
 	int received = 0;
 	int s;
 	size_t pos;
@@ -284,9 +284,9 @@ int MPD::mpd_getline(string * nextline)
 
 	is_idle = false;
 
-	while(buffer.size() == 0 || buffer.find('\n') == string::npos)
+	while(buffer.find('\n') == string::npos)
 	{
-		received = recv(sock, &buf, 1024, 0);
+		received = recv(sock, &buf, 65535, 0);
 		if (received == 0)
 		{
 			mpd_disconnect();
@@ -372,7 +372,7 @@ int MPD::recv_songs_to_list(Songlist * slist, void (*func) ())
 			{
 				song->init();
 				slist->add(song);
-				if (++count % 100 == 0)
+				if (++count % 1000 == 0)
 					func();
 			}
 
