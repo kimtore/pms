@@ -591,6 +591,7 @@ int MPD::poll()
 		if (value == "database")
 		{
 			// the song database has been modified after update. 
+			updates |= MPD_UPDATE_LIBRARY;
 		}
 		else if (value == "update")
 		{
@@ -643,6 +644,8 @@ int MPD::poll()
 		get_status();
 	if (updates & MPD_UPDATE_PLAYLIST)
 		get_playlist();
+	if (updates & MPD_UPDATE_LIBRARY)
+		get_library();
 
 	set_idle(true);
 

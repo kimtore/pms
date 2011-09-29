@@ -49,7 +49,8 @@ enum
 {
 	MPD_UPDATE_NONE = 0,
 	MPD_UPDATE_STATUS = 1 << 0,
-	MPD_UPDATE_PLAYLIST = 1 << 1
+	MPD_UPDATE_PLAYLIST = 1 << 1,
+	MPD_UPDATE_LIBRARY = 1 << 2
 };
 
 typedef struct
