@@ -23,6 +23,7 @@
 #include "curses.h"
 #include "config.h"
 #include "mpd.h"
+#include "field.h"
 #include <string>
 #include <vector>
 
@@ -50,7 +51,7 @@ void Wsonglist::drawline(int rely)
 	else
 		color = config.colors.standard;
 
-	curses.print(rect, color, rely, 0, song->file.c_str());
+	curses.print(rect, color, rely, 0, song->f[FIELD_FILE].c_str());
 }
 
 unsigned int Wsonglist::content_size()

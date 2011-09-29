@@ -21,91 +21,75 @@
 #include "song.h"
 #include <string>
 #include <vector>
+#include <stdlib.h>
 
 using namespace std;
 
 Song::Song()
 {
-	file			= "";
-	artist			= "";
-	albumartist		= "";
-	artistsort		= "";
-	albumartistsort		= "";
-	title			= "";
-	album			= "";
-	track			= "";
-	trackshort		= "";
-	name			= "";
-	date			= "";
-	year			= "";
-
-	genre			= "";
-	composer		= "";
-	performer		= "";
-	disc			= "";
-	comment			= "";
-
-	length			= -1;
-	pos			= -1;
-	id			= -1;
+	time	= -1;
+	pos	= -1;
+	id	= -1;
 }
 
 void Song::init()
 {
-	unsigned int		i;
+	size_t			s, e;
 	string			src;
 	string			tmp;
 	vector<string *>	original;
 	vector<string *>	rewritten;
 
+	time = atoi(f[FIELD_TIME].c_str());
+	pos = atoi(f[FIELD_POS].c_str());
+	id = atoi(f[FIELD_ID].c_str());
+
 	/* year from date */
-	if (date.size() >= 4)
-		year = date.substr(0, 4);
+	if (f[FIELD_DATE].size() >= 4)
+		f[FIELD_YEAR] = f[FIELD_DATE].substr(0, 4);
 
 	/* trackshort from track */
-	trackshort = track;
-	while (trackshort[0] == '0')
-		trackshort = trackshort.substr(1);
-	if ((i = trackshort.find('/')) != string::npos)
-		trackshort = trackshort.substr(0, i);
-
-	/* sort names if none available */
-	if (artistsort.size() == 0)
+	if ((s = f[FIELD_TRACK].find_first_not_of('0')) != string::npos)
 	{
-		original.push_back(&artist);
-		rewritten.push_back(&artistsort);
+		if ((e = f[FIELD_TRACK].find('/', s)) != string::npos)
+			f[FIELD_TRACKSHORT] = f[FIELD_TRACK].substr(s, e - s);
+		else
+			f[FIELD_TRACKSHORT] = f[FIELD_TRACK].substr(s);
 	}
-	if (albumartistsort.size() == 0)
+	else
 	{
-		original.push_back(&albumartist);
-		rewritten.push_back(&albumartistsort);
+		f[FIELD_TRACKSHORT] = f[FIELD_TRACK];
+	}
+
+	/* generate sort names if there are none available */
+	if (f[FIELD_ARTISTSORT].size() == 0)
+	{
+		original.push_back(&f[FIELD_ARTIST]);
+		rewritten.push_back(&f[FIELD_ARTISTSORT]);
+	}
+	if (f[FIELD_ALBUMARTISTSORT].size() == 0)
+	{
+		original.push_back(&f[FIELD_ALBUMARTIST]);
+		rewritten.push_back(&f[FIELD_ALBUMARTISTSORT]);
 	}
 
 	tmp = "the ";
-
-	for (i = 0; i < original.size(); i++)
+	e = tmp.size();
+	for (s = 0; s < original.size(); s++)
 	{
 		/* Too small */
-		if (original[i]->size() > 4)
+		if (original[s]->size() <= e)
 		{
-			src = original[i]->substr(0, 4);
-		}
-		else
-		{
-			*(rewritten[i]) = *(original[i]);
+			*(rewritten[s]) = *(original[s]);
 			continue;
 		}
-	
-		/* Artist name consists of "the ..." */
+
+		src = original[s]->substr(0, e);
+		/* Artist name consists of "the ...", place "The" at the end */
 		if (cistrcmp(src, tmp) == true)
-		{
-			*(rewritten[i]) = original[i]->substr(4) + ", " + original[i]->substr(0, 3);
-		}
-		/* Revert to default */
+			*(rewritten[s]) = original[s]->substr(e) + ", " + original[s]->substr(0, e - 1);
 		else
-		{
-			*(rewritten[i]) = *(original[i]);
-		}
+			*(rewritten[s]) = *(original[s]);
 	}
 }
 
@@ -114,14 +98,14 @@ string Song::dirname()
 	string		ret = "";
 	size_t		p;
 
-	if (file.size() == 0)
+	if (f[FIELD_FILE].size() == 0)
 		return ret;
 
-	p = file.find_last_of("/\\");
+	p = f[FIELD_FILE].find_last_of("/\\");
 	if (p == string::npos)
 		return ret;
 
-	return file.substr(0, p);
+	return f[FIELD_FILE].substr(0, p);
 }
 
 bool cistrcmp(string &a, string &b)

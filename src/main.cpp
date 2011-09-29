@@ -26,9 +26,11 @@
 #include "mpd.h"
 #include "input.h"
 #include "pms.h"
+#include "field.h"
 #include <glib.h>
 #include <stdio.h>
 
+Fieldtypes	fieldtypes;
 Curses		curses;
 Config		config;
 MPD		mpd;

@@ -21,6 +21,7 @@
 #ifndef _PMS_SONG_H_
 #define _PMS_SONG_H_
 
+#include "field.h"
 #include <string>
 using namespace std;
 
@@ -30,37 +31,18 @@ class Song
 {
 	public:
 		Song();
-		
-		/* Common function to initialize special fields that MPD don't return */
 
+		/* Song fields, see field.h */
+		string		f[FIELD_TOTAL_VALUES];
+
+		/* Fields that are not strings */
+		int		pos;
+		int		id;
+		int		time;
+
+		/* Common function to initialize special fields that MPD don't return */
 		void		init();
 		string		dirname();
-
-		/* Custom parameters only used by PMS */
-		
-		string		trackshort;
-
-		string		file;
-		string		artist;
-		string		albumartist;
-		string		albumartistsort;
-		string		artistsort;
-		string		title;
-		string		album;
-		string		track;
-		string		name;
-		string		date;
-		string		year;
-
-		string		genre;
-		string		composer;
-		string		performer;
-		string		disc;
-		string		comment;
-
-		int		length;
-		song_t		pos;
-		song_t		id;
 };
 
 /* Case insensitive string comparison */

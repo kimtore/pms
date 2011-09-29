@@ -22,6 +22,7 @@
 #include "console.h"
 #include "window.h"
 #include "config.h"
+#include "field.h"
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -38,6 +39,7 @@ using namespace std;
 
 extern Config config;
 extern Windowmanager wm;
+extern Fieldtypes fieldtypes;
 
 MPD::MPD()
 {
@@ -315,6 +317,7 @@ int MPD::split_pair(string * line, string * param, string * value)
 int MPD::get_playlist()
 {
 	Song * song = NULL;
+	Field * field;
 	string buf;
 	string param;
 	string value;
@@ -335,36 +338,33 @@ int MPD::get_playlist()
 		if (!split_pair(&buf, &param, &value))
 			continue;
 
-		if (param == "file")
+		field = fieldtypes.find_mpd(param);
+		if (field == NULL)
+		{
+			debug("Unhandled song metadata field '%s' in response from MPD", value.c_str());
+			continue;
+		}
+
+		if (field->type == FIELD_FILE)
 		{
 			if (song != NULL)
+			{
+				song->init();
 				playlist.add(song);
+			}
 
 			song = new Song;
-			song->file = value;
 		}
-		else if (param == "Pos")
-			song->pos = atol(value.c_str());
-		else if (param == "Id")
-			song->id = atol(value.c_str());
-		else if (param == "Time")
-			song->length = atoi(value.c_str());
-		else if (param == "Name")
-			song->name = value;
-		else if (param == "Artist")
-			song->artist = value;
-		else if (param == "Title")
-			song->title = value;
-		else if (param == "Album")
-			song->album = value;
-		else if (param == "Track")
-			song->track = value;
-		else if (param == "Date")
-			song->date = value;
-		else if (param == "Genre")
-			song->genre = value;
+
+		if (song != NULL)
+			song->f[field->type] = value;
 	}
-	playlist.add(song);
+
+	if (song != NULL)
+	{
+		song->init();
+		playlist.add(song);
+	}
 	playlist.version = state.playlist;
 	wm.playlist->draw();
 
