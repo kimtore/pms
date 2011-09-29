@@ -59,6 +59,7 @@ MPD::MPD()
 	buffer = "";
 	sock = 0;
 	connected = false;
+	is_idle = false;
 	memset(&last_update, 0, sizeof last_update);
 	memset(&last_clock, 0, sizeof last_clock);
 	memset(&status, 0, sizeof status);
@@ -78,7 +79,6 @@ bool MPD::set_idle(bool nidle)
 	}
 
 	mpd_raw_send("noidle");
-	is_idle = false;
 	mpd_getline(NULL);
 
 	return true;
@@ -145,9 +145,14 @@ bool MPD::mpd_connect(string nhost, string nport)
 	freeaddrinfo(res);
 	connected = true;
 
+	FD_ZERO(&fdset);
+	FD_SET(sock, &fdset);
+	FD_SET(STDIN_FILENO, &fdset);
+
 	stinfo("Connected to server '%s' on port '%s'.", host.c_str(), port.c_str());
 	recv(sock, &buf, 32, 0);
 	set_protocol_version(buf);
+	is_idle = false;
 
 	return connected;
 }
@@ -255,17 +260,33 @@ int MPD::mpd_raw_send(string data)
 
 int MPD::mpd_getline(string * nextline)
 {
-	char buf[1024];
+	char buf[1025];
 	int received = 0;
+	int s;
 	size_t pos;
+	struct timeval timeout;
+	fd_set set;
 	string line = "";
 
 	if (!connected)
 		return MPD_GETLINE_ERR;
 
-	while(buffer.size() == 0 || buffer[buffer.size()-1] != '\n')
+	memset(&timeout, 0, sizeof timeout);
+	timeout.tv_usec = 10;
+	FD_ZERO(&set);
+	FD_SET(sock, &set);
+
+	if ((s = select(sock+1, &set, NULL, NULL, &timeout)) == -1)
 	{
-		received = recv(sock, &buf, 1023, 0);
+		debug("Oops! mpd_getline() called, but select() returns an error.", NULL);
+		return MPD_GETLINE_ERR;
+	}
+
+	is_idle = false;
+
+	while(buffer.size() == 0 || buffer.find('\n') == string::npos)
+	{
+		received = recv(sock, &buf, 1024, 0);
 		if (received == 0)
 		{
 			mpd_disconnect();
@@ -561,18 +582,15 @@ int MPD::poll()
 	string param;
 	string value;
 	int updates;
-	struct timeval timeout;
 	fd_set set;
+	struct timeval timeout;
 	int s;
 
 	set_idle(true);
 
-	FD_ZERO(&set);
-	FD_SET(sock, &set);
-	FD_SET(STDIN_FILENO, &set);
-
 	memset(&timeout, 0, sizeof timeout);
-	timeout.tv_usec = 1000000;
+	memcpy(&set, &fdset, sizeof set);
+	timeout.tv_sec = 1;
 	if ((s = select(sock+1, &set, NULL, NULL, &timeout)) == -1)
 	{
 		mpd_disconnect();
@@ -588,7 +606,6 @@ int MPD::poll()
 	if (!FD_ISSET(sock, &set))
 		return true;
 
-	is_idle = false;
 	updates = MPD_UPDATE_NONE;
 
 	while((s = mpd_getline(&line)) == MPD_GETLINE_MORE)

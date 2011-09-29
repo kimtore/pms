@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
 				mpd.set_password(config.password);
 				mpd.get_status();
 				mpd.get_playlist();
+				mpd.get_library();
 				gettimeofday(&conn, NULL);
 			}
 		}

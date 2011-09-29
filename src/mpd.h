@@ -24,6 +24,7 @@
 #include "songlist.h"
 #include "song.h"
 #include <string>
+#include <sys/select.h>
 
 /* MPD error codes */
 #define MPD_ERR_NONE 0
@@ -119,6 +120,7 @@ class MPD
 		/* Connection variables */
 		int		sock;
 		bool		connected;
+		fd_set		fdset;
 		int		protocol_version[3];
 		struct timeval	last_update;
 		struct timeval	last_clock;
