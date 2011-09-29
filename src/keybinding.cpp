@@ -53,6 +53,8 @@ Keybindings::Keybindings()
 	add(CONTEXT_ALL, ACT_RANDOM, "R");
 	add(CONTEXT_ALL, ACT_REPEAT, "r");
 	add(CONTEXT_ALL, ACT_SINGLE, "s");
+
+	add(CONTEXT_ALL, ACT_TOGGLEPLAY, "<Space>");
 }
 
 Keybinding * Keybindings::add(int context, action_t action, string sequence)

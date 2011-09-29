@@ -49,6 +49,8 @@ Commandlist::Commandlist()
 	add(CONTEXT_ALL, ACT_REPEAT, "repeat");
 	add(CONTEXT_ALL, ACT_SETVOL, "volume");
 	add(CONTEXT_ALL, ACT_SINGLE, "single");
+
+	add(CONTEXT_ALL, ACT_TOGGLEPLAY, "toggle-play");
 }
 
 Command * Commandlist::add(int context, action_t action, string name)

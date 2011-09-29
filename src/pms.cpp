@@ -118,6 +118,9 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_SINGLE:
 			return set_single(!mpd.status.single);
 
+		case ACT_TOGGLEPLAY:
+			return toggle_play();
+
 		default:
 			return false;
 	}
@@ -253,4 +256,9 @@ int PMS::set_volume(string volume)
 int PMS::set_single(bool single)
 {
 	return mpd.set_single(single);
+}
+
+int PMS::toggle_play()
+{
+	return mpd.pause(mpd.status.state == MPD_STATE_PLAY ? true : false);
 }

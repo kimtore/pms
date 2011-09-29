@@ -69,7 +69,6 @@ int main(int argc, char *argv[])
 				mpd.mpd_connect(config.host, config.port);
 				mpd.set_password(config.password);
 				mpd.get_status();
-				mpd.get_library();
 				mpd.get_playlist();
 				gettimeofday(&conn, NULL);
 			}

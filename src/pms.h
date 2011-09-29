@@ -62,6 +62,9 @@ class PMS
 		int		set_repeat(bool repeat);
 		int		set_volume(string volume);
 		int		set_single(bool single);
+		
+		/* Playback */
+		int		toggle_play();
 };
 
 

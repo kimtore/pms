@@ -34,18 +34,26 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <math.h>
 
 using namespace std;
 
 extern Config config;
 extern Windowmanager wm;
 extern Fieldtypes fieldtypes;
+extern MPD mpd;
+
+void update_library_statusbar()
+{
+	unsigned int percent;
+	percent = round((mpd.library.size() / mpd.stats.songs) * 100);
+	stinfo("Retrieving library %d%%%% ...", percent);
+}
 
 MPD::MPD()
 {
 	errno = 0;
 	error = "";
-	waiting = false;
 	host = "";
 	port = "";
 	buffer = "";
@@ -149,7 +157,9 @@ void MPD::mpd_disconnect()
 	close(sock);
 	sock = 0;
 	connected = false;
-	trigerr(MPD_ERR_CONNECTION, "connection closed");
+	is_idle = false;
+	buffer.clear();
+	trigerr(MPD_ERR_CONNECTION, "Connection to MPD server closed.");
 }
 
 bool MPD::is_connected()
@@ -237,8 +247,6 @@ int MPD::mpd_raw_send(string data)
 		sent += s;
 	}
 
-	waiting = true;
-
 	// Raw traffic dump
 	//debug("-> %s", data.c_str());
 
@@ -315,7 +323,7 @@ int MPD::split_pair(string * line, string * param, string * value)
 	return false;
 }
 
-int MPD::recv_songs_to_list(Songlist * slist)
+int MPD::recv_songs_to_list(Songlist * slist, void (*func) ())
 {
 	Song * song = NULL;
 	Field * field;
@@ -323,6 +331,7 @@ int MPD::recv_songs_to_list(Songlist * slist)
 	string param;
 	string value;
 	int status;
+	unsigned int count = 0;
 
 	while((status = mpd_getline(&buf)) == MPD_GETLINE_MORE)
 	{
@@ -342,6 +351,8 @@ int MPD::recv_songs_to_list(Songlist * slist)
 			{
 				song->init();
 				slist->add(song);
+				if (++count % 100 == 0)
+					func();
 			}
 
 			song = new Song;
@@ -374,7 +385,7 @@ int MPD::get_playlist()
 	else
 		mpd_send("plchanges %d", playlist.version);
 
-	s = recv_songs_to_list(&playlist);
+	s = recv_songs_to_list(&playlist, NULL);
 
 	playlist.version = status.playlist;
 	wm.playlist->draw();
@@ -399,7 +410,7 @@ int MPD::get_library()
 	library.truncate(stats.songs);
 
 	mpd_send("listallinfo");
-	s = recv_songs_to_list(&library);
+	s = recv_songs_to_list(&library, update_library_statusbar);
 	library.version = stats.db_update;
 	wm.library->draw();
 
@@ -701,4 +712,10 @@ int MPD::set_single(bool nsingle)
 int MPD::set_replay_gain_mode(replay_gain_mode nrgm)
 {
 	return false;
+}
+
+int MPD::pause(bool npause)
+{
+	mpd_send("pause %d", npause);
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
 }

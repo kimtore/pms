@@ -64,7 +64,10 @@ typedef enum
 	ACT_RANDOM,
 	ACT_REPEAT,
 	ACT_SETVOL,
-	ACT_SINGLE
+	ACT_SINGLE,
+
+	/* Playback */
+	ACT_TOGGLEPLAY
 }
 
 action_t;

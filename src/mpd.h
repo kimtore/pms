@@ -119,7 +119,6 @@ class MPD
 		/* Connection variables */
 		int		sock;
 		bool		connected;
-		bool		waiting;
 		int		protocol_version[3];
 		struct timeval	last_update;
 		struct timeval	last_clock;
@@ -138,7 +137,7 @@ class MPD
 		bool		set_protocol_version(string data);
 
 		/* Retrieve a songlist from MPD after a command has been sent, and store it in a Songlist */
-		int		recv_songs_to_list(Songlist * slist);
+		int		recv_songs_to_list(Songlist * slist, void (*) ());
 
 		/* Send a command to MPD, turning IDLE off if needed */
 		int		mpd_send(const char * data, ...);
@@ -199,6 +198,11 @@ class MPD
 		int		set_single(bool nsingle);
 		int		set_replay_gain_mode(replay_gain_mode nrgm);
 
+		/* Player control */
+		int		pause(bool npause);
+
 };
+
+void update_library_statusbar();
 
 #endif /* _PMS_MPD_H_ */
