@@ -71,6 +71,9 @@ class Wmain : public Window
 
 		Wmain();
 
+		/* Draw all lines and update readout */
+		void		draw();
+
 		/* Scroll window */
 		virtual void	scroll_window(int offset);
 

@@ -48,10 +48,15 @@ void console_log(int level, const char * format, ...)
 	va_end(ap);
 
 	logbuffer.push_back(new Logline(level, buffer));
-	if (level <= MSG_LEVEL_INFO || wm.console->visible())
+
+	if (wm.console->position == wm.console->content_size() - wm.console->height() - 2)
+		wm.console->scroll_window(1);
+	else if (wm.console->visible())
+		wm.readout->draw();
+
+	if (level <= MSG_LEVEL_INFO)
 	{
 		wm.statusbar->draw();
-		wm.console->scroll_window(1);
 		curses.flush();
 	}
 }

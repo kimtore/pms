@@ -95,5 +95,6 @@ void Windowmanager::cycle(int offset)
 	active_index = (unsigned int)offset;
 	active = windows[active_index];
 	active->draw();
+	readout->draw();
 	curses.flush();
 }
