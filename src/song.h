@@ -48,4 +48,13 @@ class Song
 /* Case insensitive string comparison */
 bool cistrcmp(string &a, string &b);
 
+/* Format time into "[n D ][H:]MM:SS" */
+string time_format(int seconds);
+
+/* Pad an int with zeroes */
+string zeropad(int i, unsigned int target);
+
+/* Convert number to string */
+string tostring(int number);
+
 #endif /* _PMS_SONG_H_ */

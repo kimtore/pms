@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 #include <stdlib.h>
+#include <sstream>
 
 using namespace std;
 
@@ -43,6 +44,7 @@ void Song::init()
 	time = atoi(f[FIELD_TIME].c_str());
 	pos = atoi(f[FIELD_POS].c_str());
 	id = atoi(f[FIELD_ID].c_str());
+	f[FIELD_TIME] = time_format(time);
 
 	/* year from date */
 	if (f[FIELD_DATE].size() >= 4)
@@ -124,4 +126,63 @@ bool cistrcmp(string &a, string &b)
 	}
 
 	return true;
+}
+
+string time_format(int seconds)
+{
+	static const int	day	= (60 * 60 * 24);
+	static const int	hour	= (60 * 60);
+	static const int	minute	= 60;
+
+	int		i;
+	string		s = "";
+
+	/* No time */
+	if (seconds < 0)
+	{
+		s = "--:--";
+		return s;
+	}
+
+	/* days */
+	if (seconds >= day)
+	{
+		i = seconds / day;
+		s = tostring(i) + "d ";
+		seconds %= day;
+	}
+
+	/* hours */
+	if (seconds >= hour)
+	{
+		i = seconds / hour;
+		s += zeropad(i, 1) + ":";
+		seconds %= hour;
+	}
+
+	/* minutes */
+	i = seconds / minute;
+	s = s + zeropad(i, 2) + ":";
+	seconds %= minute;
+
+	/* seconds */
+	s += zeropad(seconds, 2);
+
+	return s;
+}
+
+string zeropad(int i, unsigned int target)
+{
+	string s;
+	s = tostring(i);
+	while(s.size() < target)
+		s = '0' + s;
+	return s;
+}
+
+string tostring(int number)
+{
+	ostringstream s;
+	s << number;
+	return s.str();
 }
