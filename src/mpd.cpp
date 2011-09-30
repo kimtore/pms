@@ -261,39 +261,24 @@ int MPD::mpd_raw_send(string data)
 int MPD::mpd_getline(string * nextline)
 {
 	int received = 0;
-	int s;
 	char *pos = NULL;
-	struct timeval timeout;
-	fd_set set;
 	string line = "";
 
 	if (!connected)
 		return MPD_GETLINE_ERR;
 
-	memset(&timeout, 0, sizeof timeout);
-	timeout.tv_usec = 10;
-	FD_ZERO(&set);
-	FD_SET(sock, &set);
-
-	if ((s = select(sock+1, &set, NULL, NULL, &timeout)) == -1)
-	{
-		debug("Oops! mpd_getline() called, but select() returns an error.", NULL);
-		return MPD_GETLINE_ERR;
-	}
-
 	while(!(pos = strchr(buffer, '\n')))
 	{
-		if (!FD_ISSET(sock, &set))
-			break;
-
-		received = recv(sock, buffer+bufstart, PMS_RECV_BUFLEN-bufstart, MSG_DONTWAIT);
+		received = recv(sock, buffer+bufstart, PMS_RECV_BUFLEN-bufstart, 0);
 		if (received == 0)
 		{
 			mpd_disconnect();
 			return MPD_GETLINE_ERR;
 		}
 		else if (received == -1)
-			break;
+		{
+			return MPD_GETLINE_ERR;
+		}
 
 		bufstart += received;
 	}
@@ -369,7 +354,7 @@ int MPD::recv_songs_to_list(Songlist * slist, void (*func) ())
 			{
 				song->init();
 				slist->add(song);
-				if (++count % 1000 == 0)
+				if (func != NULL && ++count % 1000 == 0)
 					func();
 			}
 
