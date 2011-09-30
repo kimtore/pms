@@ -23,6 +23,7 @@
 
 #include "curses.h"
 #include "songlist.h"
+#include "command.h"
 #include <vector>
 
 using namespace std;
@@ -62,6 +63,8 @@ class Wmain : public Window
 	protected:
 
 	public:
+		/* Which context should commands be accepted in */
+		int		context;
 
 		/* Scroll position */
 		unsigned int	position;
@@ -95,6 +98,8 @@ class Wmain : public Window
 class Wconsole : public Wmain
 {
 	public:
+		Wconsole() { context = CONTEXT_CONSOLE; };
+
 		void		drawline(int rely);
 		unsigned int	content_size();
 		void		move_cursor(int offset);
@@ -105,12 +110,18 @@ class Wsonglist : public Wmain
 {
 	private:
 		vector<unsigned int>	column_len;
+
 	public:
+		Wsonglist() { context = CONTEXT_SONGLIST; };
+
 		void		drawline(int rely);
 		unsigned int	content_size();
 
 		/* Pointer to connected songlist */
 		Songlist *	songlist;
+
+		/* Pointer to song beneath cursor */
+		Song *		cursorsong();
 
 		/* Update column lengths */
 		void		update_column_length();
@@ -137,7 +148,7 @@ class Wreadout : public Window
 class Windowmanager
 {
 	private:
-		vector<Window *>	windows;
+		vector<Wmain *>		windows;
 
 		/* Active window index */
 		unsigned int		active_index;
@@ -158,13 +169,13 @@ class Windowmanager
 		void			cycle(int offset);
 
 		/* Activate a window */
-		bool			activate(Window * nactive);
+		bool			activate(Wmain * nactive);
 
 		Wconsole *		console;
 		Wsonglist *		playlist;
 		Wsonglist *		library;
 
-		Window *		active;
+		Wmain *			active;
 		Wtopbar *		topbar;
 		Wstatusbar *		statusbar;
 		Wreadout *		readout;

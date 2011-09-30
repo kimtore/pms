@@ -116,7 +116,6 @@ class MPD
 		string		password;
 		string		buffer;
 		char		getbuf[1025];
-		unsigned long	bufstart;
 
 		string		error;
 		int		errno;
@@ -206,6 +205,8 @@ class MPD
 
 		/* Player control */
 		int		pause(bool npause);
+		int		addid(string uri);
+		int		playid(int id);
 
 };
 

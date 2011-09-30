@@ -55,6 +55,7 @@ Keybindings::Keybindings()
 	add(CONTEXT_ALL, ACT_SINGLE, "s");
 
 	add(CONTEXT_ALL, ACT_TOGGLEPLAY, "<Space>");
+	add(CONTEXT_SONGLIST, ACT_PLAY, "<Enter>");
 }
 
 Keybinding * Keybindings::add(int context, action_t action, string sequence)

@@ -59,7 +59,6 @@ MPD::MPD()
 	error = "";
 	host = "";
 	port = "";
-	bufstart = 0;
 	sock = 0;
 	connected = false;
 	is_idle = false;
@@ -166,7 +165,6 @@ void MPD::mpd_disconnect()
 	sock = 0;
 	connected = false;
 	is_idle = false;
-	bufstart = 0;
 	trigerr(MPD_ERR_CONNECTION, "Connection to MPD server closed.");
 }
 
@@ -736,5 +734,28 @@ int MPD::set_replay_gain_mode(replay_gain_mode nrgm)
 int MPD::pause(bool npause)
 {
 	mpd_send("pause %d", npause);
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
+}
+
+int MPD::addid(string uri)
+{
+	string buf;
+	string param;
+	string value;
+	int status;
+
+	mpd_send("addid \"%s\"", uri.c_str());
+
+	while ((status = mpd_getline(&buf)) == MPD_GETLINE_MORE);
+
+	if (!split_pair(&buf, &param, &value))
+		return -1;
+
+	return atoi(value.c_str());
+}
+
+int MPD::playid(int id)
+{
+	mpd_send("playid %d", id);
 	return (mpd_getline(NULL) == MPD_GETLINE_OK);
 }

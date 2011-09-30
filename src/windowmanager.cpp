@@ -42,13 +42,12 @@ Windowmanager::Windowmanager()
 	playlist->set_rect(&curses.main);
 	library = new Wsonglist;
 	library->set_rect(&curses.main);
-	windows.push_back(WWINDOW(console));
-	windows.push_back(WWINDOW(playlist));
-	windows.push_back(WWINDOW(library));
+	windows.push_back(WMAIN(console));
+	windows.push_back(WMAIN(playlist));
+	windows.push_back(WMAIN(library));
 
 	/* Activate playlist window */
-	activate(WWINDOW(console));
-	context = CONTEXT_CONSOLE;
+	activate(WMAIN(console));
 }
 
 void Windowmanager::draw()
@@ -64,7 +63,7 @@ void Windowmanager::flush()
 	curses.flush();
 }
 
-bool Windowmanager::activate(Window * nactive)
+bool Windowmanager::activate(Wmain * nactive)
 {
 	unsigned int i;
 
@@ -74,6 +73,7 @@ bool Windowmanager::activate(Window * nactive)
 		{
 			active_index = i;
 			active = nactive;
+			context = active->context;
 			active->clear();
 			active->draw();
 			readout->draw();
@@ -100,6 +100,7 @@ void Windowmanager::cycle(int offset)
 
 	active_index = (unsigned int)offset;
 	active = windows[active_index];
+	context = active->context;
 	active->draw();
 	readout->draw();
 	curses.flush();

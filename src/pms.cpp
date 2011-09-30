@@ -123,6 +123,9 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_TOGGLEPLAY:
 			return toggle_play();
 
+		case ACT_PLAY:
+			return play();
+
 		default:
 			return false;
 	}
@@ -263,4 +266,28 @@ int PMS::set_single(bool single)
 int PMS::toggle_play()
 {
 	return mpd.pause(mpd.status.state == MPD_STATE_PLAY ? true : false);
+}
+
+int PMS::play()
+{
+	Song * s;
+	if ((s = cursorsong()) == NULL)
+		return false;
+
+	if (s->id != -1)
+		return (mpd.playid(s->id) == MPD_GETLINE_OK);
+	else
+		return (mpd.playid(mpd.addid(s->f[FIELD_FILE])) == MPD_GETLINE_OK);
+}
+
+
+
+
+Song * cursorsong()
+{
+	Wsonglist * win;
+	win = WSONGLIST(wm.active);
+	if (win == NULL)
+		return NULL;
+	return win->cursorsong();
 }

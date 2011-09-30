@@ -27,10 +27,13 @@ using namespace std;
 
 enum
 {
-	CONTEXT_CONSOLE	= 1 << 0,
+	CONTEXT_CONSOLE		= (1 << 0),
+	CONTEXT_SONGLIST	= (1 << 1),
 
-	CONTEXT_LIST	= (1 << 0),
-	CONTEXT_ALL	= (1 << 1) - 1
+	CONTEXT_LIST		= (1 << 1) |
+				  (1 << 0),
+
+	CONTEXT_ALL		= (1 << 2) - 1
 };
 
 typedef enum
@@ -67,7 +70,8 @@ typedef enum
 	ACT_SINGLE,
 
 	/* Playback */
-	ACT_TOGGLEPLAY
+	ACT_TOGGLEPLAY,
+	ACT_PLAY
 }
 
 action_t;

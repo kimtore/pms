@@ -24,6 +24,7 @@
 #include "config.h"
 #include "mpd.h"
 #include "field.h"
+#include "song.h"
 #include <string>
 #include <vector>
 
@@ -62,6 +63,15 @@ void Wsonglist::drawline(int rely)
 		curses.print(rect, color ? color : config.colors.field[config.songlist_columns[it]->type], rely, x, song->f[config.songlist_columns[it]->type].c_str());
 		x += column_len[it] + 1;
 	}
+}
+
+Song * Wsonglist::cursorsong()
+{
+	if (songlist->size() == 0)
+		return NULL;
+	
+	move_cursor(0);
+	return songlist->songs[cursor];
 }
 
 unsigned int Wsonglist::content_size()

@@ -22,6 +22,7 @@
 #define _PMS_PMS_H_
 
 #include "input.h"
+#include "song.h"
 
 /*
  * This class contains all user interface actions,
@@ -65,7 +66,10 @@ class PMS
 		
 		/* Playback */
 		int		toggle_play();
+		int		play();
 };
 
+/* Return the song pointed to by the cursor, otherwise NULL */
+Song * cursorsong();
 
 #endif /* _PMS_PMS_H_ */
