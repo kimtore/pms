@@ -57,4 +57,7 @@ string zeropad(int i, unsigned int target);
 /* Convert number to string */
 string tostring(int number);
 
+/* Correctly escape a string so that it can be printed */
+void escape_printf(string &src);
+
 #endif /* _PMS_SONG_H_ */

@@ -26,6 +26,11 @@ Songlist::Songlist()
 	version = -1;
 }
 
+Songlist::~Songlist()
+{
+	clear();
+}
+
 Song * Songlist::operator[] (unsigned int spos)
 {
 	if (spos >= songs.size())
@@ -49,6 +54,14 @@ void Songlist::add(Song * song)
 	{
 		songs.push_back(song);
 	}
+}
+
+void Songlist::clear()
+{
+	vector<Song *>::iterator i;
+	for (i = songs.begin(); i != songs.end(); ++i)
+		delete *i;
+	songs.clear();
 }
 
 void Songlist::truncate(unsigned long length)

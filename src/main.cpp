@@ -77,4 +77,6 @@ int main(int argc, char *argv[])
 		mpd.poll();
 		pms.run_event(input.next());
 	}
+
+	mpd.mpd_disconnect();
 }

@@ -41,13 +41,16 @@ using namespace std;
 extern Config config;
 extern Windowmanager wm;
 extern Fieldtypes fieldtypes;
+extern Curses curses;
 extern MPD mpd;
 
 void update_library_statusbar()
 {
 	unsigned int percent;
 	percent = round(((float)mpd.library.size() / mpd.stats.songs) * 100.00);
-	stinfo("Retrieving library %d%%%% ...", percent);
+	curses.wipe(&curses.statusbar, config.colors.statusbar);
+	curses.print(&curses.statusbar, config.colors.statusbar, 0, 0, "Retrieving library: %d%%", percent);
+	curses.flush();
 }
 
 MPD::MPD()
@@ -320,6 +323,8 @@ int MPD::split_pair(string * line, string * param, string * value)
 
 	if ((pos = line->find(':')) != string::npos)
 	{
+		if (pos + 2 >= line->size())
+			return false;
 		*param = line->substr(0, pos);
 		*value = line->substr(pos + 2);
 		return true;
@@ -357,7 +362,7 @@ int MPD::recv_songs_to_list(Songlist * slist, void (*func) ())
 				song->init();
 				slist->add(song);
 				//debug(song->f[FIELD_FILE].c_str(), NULL);
-				if (func != NULL && ++count % 1000 == 0)
+				if (func != NULL && ++count % 500 == 0)
 					func();
 			}
 
@@ -414,7 +419,7 @@ int MPD::get_library()
 		return MPD_GETLINE_OK;
 	}
 
-	library.songs.clear();
+	library.clear();
 	library.version = -1;
 	library.truncate(stats.songs);
 
@@ -422,11 +427,14 @@ int MPD::get_library()
 	if ((s = recv_songs_to_list(&library, update_library_statusbar)) == MPD_GETLINE_OK)
 	{
 		library.version = stats.db_update;
-		debug("Library has been received, total %d songs.", library.size());
+		stinfo("Successfully received library, total %d songs.", library.size());
 	}
 	else
 	{
-		sterr("Library update terminated, got total %d/%d songs.", library.size(), stats.songs);
+		sterr("Library update terminated!", NULL);
+		debug("Library update was terminated by MPD. We got %d of a total of %d songs.", library.size(), stats.songs);
+		debug("This is due to the large volume of data transferred by PMS.", NULL);
+		debug("If this happens often, you might need to increase MPD's `max_output_buffer_size' setting.", NULL);
 	}
 	wm.library->update_column_length();
 	wm.library->draw();

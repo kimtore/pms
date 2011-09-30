@@ -31,6 +31,9 @@ Song::Song()
 	f[FIELD_TIME]	= "-1";
 	f[FIELD_POS]	= "-1";
 	f[FIELD_ID]	= "-1";
+	time = -1;
+	pos = -1;
+	id = -1;
 }
 
 void Song::init()
@@ -62,6 +65,10 @@ void Song::init()
 	{
 		f[FIELD_TRACKSHORT] = f[FIELD_TRACK];
 	}
+
+	/* replace % with %% for fast printing */
+	for (s = 0; s < FIELD_TOTAL_VALUES; ++s)
+		escape_printf(f[s]);
 
 	/* generate sort names if there are none available */
 	if (f[FIELD_ARTISTSORT].size() == 0)
@@ -185,4 +192,12 @@ string tostring(int number)
 	ostringstream s;
 	s << number;
 	return s.str();
+}
+
+void escape_printf(string &src)
+{
+	size_t pos = -2;
+
+	while ((pos = src.find('%', pos + 2)) != string::npos)
+		src.replace(pos, 1, "%%");
 }
