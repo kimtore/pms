@@ -38,8 +38,7 @@ extern Config config;
 void Wstatusbar::drawline(int rely)
 {
 	vector<Logline *>::reverse_iterator i;
-
-	curses.wipe(rect);
+	Color * c;
 
 	switch(input.mode)
 	{
@@ -48,13 +47,15 @@ void Wstatusbar::drawline(int rely)
 			{
 				if ((*i)->level > MSG_LEVEL_INFO)
 					continue;
-
-				curses.print(rect, config.colors.statusbar, rely, 0, (*i)->line.c_str());
+				c = (*i)->level == MSG_LEVEL_ERR ? config.colors.error : config.colors.statusbar;
+				curses.wipe(rect, c);
+				curses.print(rect, c, rely, 0, (*i)->line.c_str());
 				break;
 			}
 			break;
 
 		case INPUT_MODE_INPUT:
+			curses.wipe(rect, config.colors.standard);
 			curses.print(rect, config.colors.statusbar, rely, 0, ":");
 			curses.print(rect, config.colors.statusbar, rely, 1, input.strbuf.c_str());
 			break;

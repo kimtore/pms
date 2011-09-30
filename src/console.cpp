@@ -49,10 +49,20 @@ void console_log(int level, const char * format, ...)
 
 	logbuffer.push_back(new Logline(level, buffer));
 
+	/* Make it possible to log stuff before window system is brought up */
+	if (wm.console == NULL)
+		return;
+
 	if (wm.console->position == wm.console->content_size() - wm.console->height() - 2)
 		wm.console->scroll_window(1);
 	else if (wm.console->visible())
-		wm.readout->draw();
+	{
+		if (wm.console->content_size() < wm.console->height())
+			wm.console->draw();
+		else
+			wm.readout->draw();
+
+	}
 
 	if (level <= MSG_LEVEL_INFO)
 	{

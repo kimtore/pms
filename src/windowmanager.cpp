@@ -59,6 +59,11 @@ void Windowmanager::draw()
 	active->draw();
 }
 
+void Windowmanager::flush()
+{
+	curses.flush();
+}
+
 bool Windowmanager::activate(Window * nactive)
 {
 	unsigned int i;

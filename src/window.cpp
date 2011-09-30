@@ -20,9 +20,11 @@
 
 #include "window.h"
 #include "curses.h"
+#include "config.h"
 
 extern Windowmanager wm;
 extern Curses curses;
+extern Config config;
 
 void Window::draw()
 {
@@ -37,7 +39,7 @@ void Window::draw()
 
 void Window::clear()
 {
-	curses.wipe(rect);
+	curses.wipe(rect, config.colors.standard);
 }
 
 unsigned int Window::height()

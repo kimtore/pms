@@ -35,13 +35,17 @@ extern MPD mpd;
 
 void Wsonglist::drawline(int rely)
 {
+	vector<Field *>::iterator column;
 	Song * song;
 	Color * color;
 	unsigned int linepos = rely + position;
+	int x = 0;
 
-	curses.clearline(rect, rely);
 	if (!songlist || rely + rect->top > rect->bottom || linepos >= songlist->size())
+	{
+		curses.clearline(rect, rely, config.colors.standard);
 		return;
+	}
 
 	song = songlist->songs[linepos];
 	if (linepos == cursor)
@@ -51,7 +55,13 @@ void Wsonglist::drawline(int rely)
 	else
 		color = config.colors.standard;
 
-	curses.print(rect, color, rely, 0, song->f[FIELD_FILE].c_str());
+	curses.clearline(rect, rely, color);
+
+	for (column = config.songlist_columns.begin(); column != config.songlist_columns.end(); ++column)
+	{
+		curses.print(rect, color, rely, x, song->f[(*column)->type].c_str());
+		x += 30;
+	}
 }
 
 unsigned int Wsonglist::content_size()

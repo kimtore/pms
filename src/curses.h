@@ -58,10 +58,10 @@ class Curses
 		void		flush();
 
 		/* Clear a line, relative to rect. */
-		void		clearline(Rect * rect, int line);
+		void		clearline(Rect * rect, int line, Color * c);
 
 		/* Clear the rectangle. */
-		void		wipe(Rect * rect);
+		void		wipe(Rect * rect, Color * c);
 
 		/* Set left/right/top/bottom layout for all panels */
 		void		detect_dimensions();

@@ -19,9 +19,13 @@
  */
 
 #include "config.h"
+#include "field.h"
+#include "console.h"
 #include <stdlib.h>
 
 using namespace std;
+
+extern Fieldtypes fieldtypes;
 
 Config::Config()
 {
@@ -31,9 +35,40 @@ Config::Config()
 	reconnect_delay = 5;
 	use_bell = true;
 	visual_bell = false;
+	set_column_headers("artist track title album year length");
 }
 
-void	Config::setup_default_connection_info()
+void Config::set_column_headers(string hdr)
+{
+	size_t start = 0;
+	size_t pos;
+	string f;
+	Field * field;
+
+	songlist_columns.clear();
+
+	while (start + 1 < hdr.size())
+	{
+		if (pos == string::npos)
+			break;
+
+		if ((pos = hdr.find(' ', start)) != string::npos)
+			f = hdr.substr(start, pos - start);
+		else
+			f = hdr.substr(start);
+
+		if ((field = fieldtypes.find(f)) == NULL)
+		{
+			sterr("Ignoring invalid header field '%s'.", f.c_str());
+			continue;
+		}
+		songlist_columns.push_back(field);
+
+		start = pos + 1;
+	}
+}
+
+void Config::setup_default_connection_info()
 {
 	char *	env;
 	size_t	i;

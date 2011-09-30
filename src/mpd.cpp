@@ -356,7 +356,7 @@ int MPD::recv_songs_to_list(Songlist * slist, void (*func) ())
 			{
 				song->init();
 				slist->add(song);
-				debug(song->f[FIELD_FILE].c_str(), NULL);
+				//debug(song->f[FIELD_FILE].c_str(), NULL);
 				if (func != NULL && ++count % 1000 == 0)
 					func();
 			}
@@ -550,6 +550,7 @@ int MPD::get_status()
 
 	gettimeofday(&last_update, NULL);
 	memcpy(&last_clock, &last_update, sizeof last_clock);
+	wm.playlist->draw();
 
 	return s;
 }

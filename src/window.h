@@ -145,6 +145,9 @@ class Windowmanager
 		/* Redraw all visible windows */
 		void			draw();
 
+		/* Flush ncurses buffer */
+		void			flush();
+
 		/* Cycle window list */
 		void			cycle(int offset);
 

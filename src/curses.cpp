@@ -99,7 +99,7 @@ void Curses::flush()
 	refresh();
 }
 
-void Curses::clearline(Rect * rect, int line)
+void Curses::clearline(Rect * rect, int line, Color * c)
 {
 	Rect r;
 
@@ -112,21 +112,22 @@ void Curses::clearline(Rect * rect, int line)
 	
 	r.bottom = r.top;
 
-	wipe(&r);
+	wipe(&r, c);
 }
 
-void Curses::wipe(Rect * rect)
+void Curses::wipe(Rect * rect, Color * c)
 {
 	int y;
 
 	if (!rect)
 		return;
-	
+
+	attron(c->pair | A_INVIS);
 	for (y = rect->top; y <= rect->bottom; y++)
 	{
-		mvwhline(stdscr, y, rect->left, ' ', rect->right - rect->left);
+		mvhline(y, rect->left, ' ', rect->right - rect->left);
 	}
-
+	attroff(c->pair | A_INVIS);
 	flush();
 }
 

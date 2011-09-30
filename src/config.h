@@ -23,17 +23,22 @@
 
 #include <string>
 #include "color.h"
+#include "field.h"
 using namespace std;
 
 class Config
 {
 	private:
 		void		setup_default_connection_info();
+		void		set_column_headers(string hdr);
 
 	public:
 		string		host;
 		string		port;
 		string		password;
+
+		/* Default songlist column headers */
+		vector<Field *>	songlist_columns;
 
 		/* Main loop variable */
 		bool		quit;
