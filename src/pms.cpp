@@ -210,7 +210,7 @@ int PMS::set_cursor_end()
 {
 	Wmain * window;
 	window = WMAIN(wm.active);
-	window->set_cursor(window->content_size());
+	window->set_cursor(window->content_size() - 1);
 	return true;
 }
 

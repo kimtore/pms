@@ -59,9 +59,15 @@ void Wmain::scroll_window(int offset)
 	offset = position + offset;
 
 	if (offset < 0)
+	{
 		offset = 0;
+		curses.bell();
+	}
 	if (offset > limit)
+	{
 		offset = limit;
+		curses.bell();
+	}
 	
 	position = offset;
 
@@ -77,7 +83,10 @@ void Wmain::scroll_window(int offset)
 
 void Wmain::set_position(unsigned int absolute)
 {
-	position = absolute;
+	if (position > content_size() - height())
+		position = 0;
+	else
+		position = absolute;
 	scroll_window(0);
 }
 
@@ -86,9 +95,15 @@ void Wmain::move_cursor(int offset)
 	offset = cursor + offset;
 
 	if (offset < 0)
+	{
 		offset = 0;
+		curses.bell();
+	}
 	else if (offset > (int)content_size() - 1)
+	{
 		offset = content_size() - 1;
+		curses.bell();
+	}
 
 	cursor = offset;
 

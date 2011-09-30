@@ -20,12 +20,15 @@
 
 #include "curses.h"
 #include "color.h"
+#include "config.h"
 #include <cstring>
 #include <string>
 #include <stdlib.h>
 #include <math.h>
 
 using namespace std;
+
+extern Config config;
 
 Curses::Curses()
 {
@@ -125,6 +128,23 @@ void Curses::wipe(Rect * rect)
 	}
 
 	flush();
+}
+
+void Curses::bell()
+{
+	if (!config.use_bell)
+		return;
+	
+	if (config.visual_bell)
+	{
+		if (flash() == ERR)
+			beep();
+	}
+	else
+	{
+		if (beep() == ERR)
+			flash();
+	}
 }
 
 void Curses::print(Rect * rect, Color * c, int y, int x, const char * fmt, ...)

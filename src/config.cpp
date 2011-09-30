@@ -29,6 +29,8 @@ Config::Config()
 
 	quit = false;
 	reconnect_delay = 5;
+	use_bell = true;
+	visual_bell = false;
 }
 
 void	Config::setup_default_connection_info()

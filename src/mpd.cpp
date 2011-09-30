@@ -79,7 +79,7 @@ bool MPD::set_idle(bool nidle)
 	}
 
 	mpd_raw_send("noidle");
-	mpd_getline(NULL);
+	is_idle = (mpd_getline(NULL) == MPD_GETLINE_OK);
 
 	return true;
 }
@@ -293,6 +293,8 @@ int MPD::mpd_getline(string * nextline)
 
 	if (line.size() == 0)
 		return MPD_GETLINE_ERR;
+
+	is_idle = false;
 
 	// Raw traffic dump
 	//debug("<- %s", line.c_str());

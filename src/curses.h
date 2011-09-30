@@ -66,6 +66,9 @@ class Curses
 		/* Set left/right/top/bottom layout for all panels */
 		void		detect_dimensions();
 
+		/* Trigger the bell */
+		void		bell();
+
 		Rect		self;
 		Rect		topbar;
 		Rect		main;

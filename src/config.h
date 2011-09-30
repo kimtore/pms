@@ -41,6 +41,11 @@ class Config
 		/* Autoconnect timeout */
 		unsigned int	reconnect_delay;
 
+		/* System bell */
+		bool		use_bell;
+		bool		visual_bell;
+
+		/* The entire color collection */
 		Colortable	colors;
 
 		Config();
