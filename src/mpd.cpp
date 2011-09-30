@@ -264,15 +264,15 @@ int MPD::mpd_raw_send(string data)
 int MPD::mpd_getline(string * nextline)
 {
 	int received = 0;
-	char *pos = NULL;
+	size_t pos;
 	string line = "";
 
 	if (!connected)
 		return MPD_GETLINE_ERR;
 
-	while(!(pos = strchr(buffer, '\n')))
+	while((pos = buffer.find('\n')) == string::npos)
 	{
-		received = recv(sock, buffer+bufstart, PMS_RECV_BUFLEN-bufstart, 0);
+		received = recv(sock, getbuf, 1024, 0);
 		if (received == 0)
 		{
 			mpd_disconnect();
@@ -283,16 +283,15 @@ int MPD::mpd_getline(string * nextline)
 			return MPD_GETLINE_ERR;
 		}
 
-		bufstart += received;
+		getbuf[received] = '\0';
+		buffer += getbuf;
 	}
 
-	if (pos == NULL)
+	if (pos == string::npos)
 		return MPD_GETLINE_ERR;
 
-	*pos = '\0';
-	line = buffer;
-	memmove(buffer, pos+1, PMS_RECV_BUFLEN - line.size());
-	bufstart = bufstart - line.size() - 1;
+	line = buffer.substr(0, pos);
+	buffer = buffer.substr(pos + 1);
 
 	if (line.size() == 0)
 		return MPD_GETLINE_ERR;
@@ -307,7 +306,7 @@ int MPD::mpd_getline(string * nextline)
 
 	if (line.size() >= 3 && line.substr(0, 3) == "ACK")
 	{
-		trigerr(MPD_ERR_ACK, buffer);
+		trigerr(MPD_ERR_ACK, line.c_str());
 		return MPD_GETLINE_ACK;
 	}
 

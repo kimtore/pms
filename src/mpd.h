@@ -114,7 +114,8 @@ class MPD
 		string		host;
 		string		port;
 		string		password;
-		char		buffer[PMS_RECV_BUFLEN];
+		string		buffer;
+		char		getbuf[1025];
 		unsigned long	bufstart;
 
 		string		error;
