@@ -53,13 +53,13 @@ void Wsonglist::drawline(int rely)
 	else if (song->pos == mpd.status.song)
 		color = config.colors.playing;
 	else
-		color = config.colors.standard;
+		color = NULL;
 
-	curses.clearline(rect, rely, color);
+	curses.clearline(rect, rely, color ? color : config.colors.standard);
 
 	for (column = config.songlist_columns.begin(); column != config.songlist_columns.end(); ++column)
 	{
-		curses.print(rect, color, rely, x, song->f[(*column)->type].c_str());
+		curses.print(rect, color ? color : config.colors.field[(*column)->type], rely, x, song->f[(*column)->type].c_str());
 		x += 30;
 	}
 }

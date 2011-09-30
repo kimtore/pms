@@ -21,6 +21,8 @@
 #ifndef _PMS_COLOR_H_
 #define _PMS_COLOR_H_
 
+#include "field.h"
+
 class Color
 {
 	private:
@@ -62,6 +64,9 @@ class Colortable
 		/* List colors */
 		Color *		cursor;
 		Color *		playing;
+
+		/* Field colors */
+		Color *		field[FIELD_TOTAL_VALUES];
 
 };
 

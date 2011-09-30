@@ -20,6 +20,7 @@
 
 #include "color.h"
 #include "curses.h"
+#include "field.h"
 
 short Color::color_count = 0;
 
@@ -35,6 +36,26 @@ Colortable::Colortable()
 
 	cursor = new Color(COLOR_BLACK, COLOR_WHITE, 0);
 	playing = new Color(COLOR_BLACK, COLOR_YELLOW, 0);
+
+	field[FIELD_DIRECTORY] = new Color(COLOR_WHITE, -1, 0);
+	field[FIELD_FILE] = new Color(COLOR_WHITE, -1, 0);
+	field[FIELD_POS] = new Color(COLOR_WHITE, -1, 0);
+	field[FIELD_ID] = new Color(COLOR_WHITE, -1, 0);
+	field[FIELD_TIME] = new Color(COLOR_MAGENTA, -1, 0);
+	field[FIELD_NAME] = new Color(COLOR_WHITE, -1, A_BOLD);
+	field[FIELD_ARTIST] = new Color(COLOR_YELLOW, -1, 0);
+	field[FIELD_ARTISTSORT] = new Color(COLOR_YELLOW, -1, 0);
+	field[FIELD_ALBUM] = new Color(COLOR_CYAN, -1, 0);
+	field[FIELD_TITLE] = new Color(COLOR_WHITE, -1, A_BOLD);
+	field[FIELD_TRACK] = new Color(COLOR_CYAN, -1, 0);
+	field[FIELD_DATE] = new Color(COLOR_YELLOW, -1, 0);
+	field[FIELD_DISC] = new Color(COLOR_WHITE, -1, 0);
+	field[FIELD_GENRE] = new Color(COLOR_WHITE, -1, 0);
+	field[FIELD_ALBUMARTIST] = new Color(COLOR_YELLOW, -1, 0);
+	field[FIELD_ALBUMARTISTSORT] = new Color(COLOR_YELLOW, -1, 0);
+
+	field[FIELD_YEAR] = new Color(COLOR_YELLOW, -1, 0);
+	field[FIELD_TRACKSHORT] = new Color(COLOR_CYAN, -1, 0);
 }
 
 Colortable::~Colortable()
