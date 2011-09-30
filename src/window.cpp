@@ -71,7 +71,8 @@ void Wmain::scroll_window(int offset)
 		cursor = position + height();
 	
 	wm.readout->draw();
-	if (visible()) draw();
+	draw();
+	curses.flush();
 }
 
 void Wmain::set_position(unsigned int absolute)
@@ -97,7 +98,8 @@ void Wmain::move_cursor(int offset)
 		set_position(cursor - height());
 	
 	wm.readout->draw();
-	if (visible()) draw();
+	draw();
+	curses.flush();
 }
 
 void Wmain::set_cursor(unsigned int absolute)

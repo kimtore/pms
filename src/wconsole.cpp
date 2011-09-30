@@ -35,10 +35,10 @@ void Wconsole::drawline(int rely)
 {
 	unsigned int linepos = rely + position;
 
+	curses.clearline(rect, rely);
 	if (rely + rect->top > rect->bottom || linepos >= logbuffer.size())
 		return;
 
-	curses.clearline(rect, rely);
 	curses.print(rect, logbuffer[linepos]->level == MSG_LEVEL_ERR ? config.colors.error : config.colors.console, rely, 0, logbuffer[linepos]->line.c_str());
 }
 

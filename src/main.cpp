@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 		if (!mpd.is_connected())
 		{
 			gettimeofday(&cl, NULL);
-			if (cl.tv_sec - conn.tv_sec >= config.reconnect_delay)
+			if (cl.tv_sec - conn.tv_sec >= (int)config.reconnect_delay)
 			{
 				mpd.mpd_connect(config.host, config.port);
 				mpd.set_password(config.password);
