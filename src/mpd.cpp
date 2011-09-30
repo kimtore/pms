@@ -56,7 +56,7 @@ MPD::MPD()
 	error = "";
 	host = "";
 	port = "";
-	buffer = "";
+	bufstart = 0;
 	sock = 0;
 	connected = false;
 	is_idle = false;
@@ -87,16 +87,16 @@ bool MPD::set_idle(bool nidle)
 bool MPD::trigerr(int nerrno, const char * format, ...)
 {
 	va_list		ap;
-	char		buffer[1024];
+	char		buf[1024];
 
 	va_start(ap, format);
-	vsprintf(buffer, format, ap);
+	vsprintf(buf, format, ap);
 	va_end(ap);
 
-	error = buffer;
+	error = buf;
 	errno = nerrno;
 
-	sterr("MPD: %s", buffer);
+	sterr("MPD: %s", buf);
 
 	return false;
 }
@@ -163,7 +163,7 @@ void MPD::mpd_disconnect()
 	sock = 0;
 	connected = false;
 	is_idle = false;
-	buffer.clear();
+	bufstart = 0;
 	trigerr(MPD_ERR_CONNECTION, "Connection to MPD server closed.");
 }
 
@@ -217,17 +217,17 @@ bool MPD::set_protocol_version(string data)
 int MPD::mpd_send(const char * data, ...)
 {
 	va_list		ap;
-	char		buffer[1024];
+	char		buf[1024];
 
 	va_start(ap, data);
-	vsprintf(buffer, data, ap);
+	vsprintf(buf, data, ap);
 	va_end(ap);
 
 	if (!connected)
 		return -1;
 
 	set_idle(false);
-	return mpd_raw_send(buffer);
+	return mpd_raw_send(buf);
 }
 
 int MPD::mpd_raw_send(string data)
@@ -260,10 +260,9 @@ int MPD::mpd_raw_send(string data)
 
 int MPD::mpd_getline(string * nextline)
 {
-	char buf[65536];
 	int received = 0;
 	int s;
-	size_t pos;
+	char *pos = NULL;
 	struct timeval timeout;
 	fd_set set;
 	string line = "";
@@ -282,38 +281,30 @@ int MPD::mpd_getline(string * nextline)
 		return MPD_GETLINE_ERR;
 	}
 
-	is_idle = false;
-
-	do
+	while(!(pos = strchr(buffer, '\n')))
 	{
 		if (!FD_ISSET(sock, &set))
 			break;
 
-		received = recv(sock, &buf, 65535, 0);
+		received = recv(sock, buffer+bufstart, PMS_RECV_BUFLEN-bufstart, MSG_DONTWAIT);
 		if (received == 0)
 		{
 			mpd_disconnect();
 			return MPD_GETLINE_ERR;
 		}
 		else if (received == -1)
-		{
-			debug("---------------------------------------", NULL);
 			break;
-		}
-		buf[received] = '\0';
-		buffer += buf;
-		debug("put %d bytes into buffer", strlen(buf));
-	}
-	while(buffer.find('\n') == string::npos);
 
-	if ((pos = buffer.find('\n')) != string::npos)
-	{
-		line = buffer.substr(0, pos);
-		if (buffer.size() == pos + 1)
-			buffer = "";
-		else
-			buffer = buffer.substr(pos + 1);
+		bufstart += received;
 	}
+
+	if (pos == NULL)
+		return MPD_GETLINE_ERR;
+
+	*pos = '\0';
+	line = buffer;
+	memmove(buffer, pos+1, PMS_RECV_BUFLEN - line.size());
+	bufstart = bufstart - line.size() - 1;
 
 	if (line.size() == 0)
 		return MPD_GETLINE_ERR;
@@ -326,7 +317,7 @@ int MPD::mpd_getline(string * nextline)
 
 	if (line.size() >= 3 && line.substr(0, 3) == "ACK")
 	{
-		trigerr(MPD_ERR_ACK, buf);
+		trigerr(MPD_ERR_ACK, buffer);
 		return MPD_GETLINE_ACK;
 	}
 

@@ -103,6 +103,8 @@ typedef enum
 
 replay_gain_mode;
 
+#define PMS_RECV_BUFLEN 50000
+
 
 using namespace std;
 
@@ -112,7 +114,8 @@ class MPD
 		string		host;
 		string		port;
 		string		password;
-		string		buffer;
+		char		buffer[PMS_RECV_BUFLEN];
+		unsigned long	bufstart;
 
 		string		error;
 		int		errno;
