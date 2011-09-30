@@ -30,6 +30,7 @@ using namespace std;
 #define WWINDOW(x)	dynamic_cast<Window *>(x)
 #define WCONSOLE(x)	dynamic_cast<Wconsole *>(x)
 #define WMAIN(x)	dynamic_cast<Wmain *>(x)
+#define WSONGLIST(x)	dynamic_cast<Wsonglist *>(x)
 
 class Window
 {
@@ -102,12 +103,17 @@ class Wconsole : public Wmain
 
 class Wsonglist : public Wmain
 {
+	private:
+		vector<unsigned int>	column_len;
 	public:
 		void		drawline(int rely);
 		unsigned int	content_size();
 
 		/* Pointer to connected songlist */
 		Songlist *	songlist;
+
+		/* Update column lengths */
+		void		update_column_length();
 };
 
 class Wtopbar : public Window

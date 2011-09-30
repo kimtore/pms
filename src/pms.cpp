@@ -66,6 +66,8 @@ int PMS::run_event(Inputevent * ev)
 
 		case ACT_RESIZE:
 			curses.detect_dimensions();
+			wm.playlist->update_column_length();
+			wm.library->update_column_length();
 			wm.draw();
 			curses.flush();
 			return true;

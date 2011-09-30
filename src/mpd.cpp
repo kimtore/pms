@@ -394,6 +394,7 @@ int MPD::get_playlist()
 	s = recv_songs_to_list(&playlist, NULL);
 
 	playlist.version = status.playlist;
+	wm.playlist->update_column_length();
 	wm.playlist->draw();
 
 	debug("Playlist has been updated to version %d", playlist.version);
@@ -427,6 +428,7 @@ int MPD::get_library()
 	{
 		sterr("Library update terminated, got total %d/%d songs.", library.size(), stats.songs);
 	}
+	wm.library->update_column_length();
 	wm.library->draw();
 
 	return s;

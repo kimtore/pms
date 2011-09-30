@@ -35,7 +35,7 @@ extern MPD mpd;
 
 void Wsonglist::drawline(int rely)
 {
-	vector<Field *>::iterator column;
+	unsigned int it;
 	Song * song;
 	Color * color;
 	unsigned int linepos = rely + position;
@@ -57,14 +57,49 @@ void Wsonglist::drawline(int rely)
 
 	curses.clearline(rect, rely, color ? color : config.colors.standard);
 
-	for (column = config.songlist_columns.begin(); column != config.songlist_columns.end(); ++column)
+	for (it = 0; it < column_len.size(); ++it)
 	{
-		curses.print(rect, color ? color : config.colors.field[(*column)->type], rely, x, song->f[(*column)->type].c_str());
-		x += 30;
+		curses.print(rect, color ? color : config.colors.field[config.songlist_columns[it]->type], rely, x, song->f[config.songlist_columns[it]->type].c_str());
+		x += column_len[it] + 1;
 	}
 }
 
 unsigned int Wsonglist::content_size()
 {
 	return songlist ? songlist->size() : 0;
+}
+
+void Wsonglist::update_column_length()
+{
+	vector<Field *>::iterator column;
+	unsigned int it;
+	unsigned int max;
+	unsigned int len = 0;
+
+	column_len.clear();
+
+	if (!rect || !songlist)
+		return;
+
+	max = rect->right - rect->left - config.songlist_columns.size() + 1;
+
+	for (column = config.songlist_columns.begin(); column != config.songlist_columns.end(); ++column)
+	{
+		column_len.push_back((*column)->minlen);
+		len += (*column)->minlen;
+	}
+
+	while (len < max)
+	{
+		for (it = 0; it < column_len.size(); ++it)
+		{
+			if (len == max)
+				break;
+			if (config.songlist_columns[it]->maxlen > 0 && column_len[it] >= config.songlist_columns[it]->maxlen)
+				continue;
+
+			column_len[it]++;
+			++len;
+		}
+	}
 }
