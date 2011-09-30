@@ -71,6 +71,7 @@ bool Windowmanager::activate(Window * nactive)
 			active = nactive;
 			active->clear();
 			active->draw();
+			readout->draw();
 			curses.flush();
 			return true;
 		}

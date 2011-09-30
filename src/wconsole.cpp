@@ -54,5 +54,8 @@ void Wconsole::move_cursor(int offset)
 
 void Wconsole::set_cursor(unsigned int absolute)
 {
+	if (absolute + height() > content_size())
+		return set_position(content_size() - height() - 1);
+
 	return set_position(absolute);
 }

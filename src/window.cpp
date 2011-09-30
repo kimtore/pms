@@ -78,6 +78,9 @@ void Wmain::scroll_window(int offset)
 		curses.bell();
 	}
 	
+	if ((int)position == offset)
+		return;
+
 	position = offset;
 
 	if (cursor < position)
@@ -91,8 +94,7 @@ void Wmain::scroll_window(int offset)
 
 void Wmain::set_position(unsigned int absolute)
 {
-	position = absolute;
-	scroll_window(0);
+	scroll_window(absolute - position);
 }
 
 void Wmain::move_cursor(int offset)
@@ -110,6 +112,9 @@ void Wmain::move_cursor(int offset)
 		curses.bell();
 	}
 
+	if ((int)cursor == offset)
+		return;
+
 	cursor = offset;
 
 	if (cursor < position)
@@ -123,8 +128,7 @@ void Wmain::move_cursor(int offset)
 
 void Wmain::set_cursor(unsigned int absolute)
 {
-	cursor = absolute;
-	move_cursor(0);
+	move_cursor(absolute - cursor);
 }
 
 bool Wmain::visible()
