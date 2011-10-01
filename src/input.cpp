@@ -47,12 +47,21 @@ Input::Input()
 {
 	mode = INPUT_MODE_COMMAND;
 	chbuf = 0;
-	multiplier = 1;
+	multiplier = 0;
 	strbuf.clear();
 	buffer.clear();
 	is_tab_completing = false;
 	tab_complete_index = 0;
 	keybindings = new Keybindings();
+}
+
+bool Input::run_multiplier(int ch)
+{
+	if (ch < '0' || ch > '9')
+		return false;
+	
+	multiplier = (multiplier * 10) + ch - 48;
+	return true;
 }
 
 Inputevent * Input::next()
@@ -64,7 +73,7 @@ Inputevent * Input::next()
 
 	ev.clear();
 
-	/* This is a global signal/event non-dependant on anything else. */
+	/* This is a global signal/event not dependant on anything else. */
 	if (chbuf == KEY_RESIZE)
 	{
 		ev.result = INPUT_RESULT_RUN;
@@ -77,6 +86,12 @@ Inputevent * Input::next()
 		/* Command-mode */
 		default:
 		case INPUT_MODE_COMMAND:
+			if (run_multiplier(chbuf))
+			{
+				ev.result = INPUT_RESULT_MULTIPLIER;
+				break;
+			}
+
 			buffer.push_back(chbuf);
 			strbuf.push_back(chbuf);
 			m = keybindings->find(wm.context, &buffer, &ev.action);
@@ -104,12 +119,13 @@ Inputevent * Input::next()
 	{
 		ev.context = wm.context;
 		ev.text = strbuf;
-		ev.multiplier = multiplier;
+		ev.multiplier = multiplier > 0 ? multiplier : 1;
 
-		if (ev.result != INPUT_RESULT_BUFFERED)
+		if (ev.result != INPUT_RESULT_BUFFERED && ev.result != INPUT_RESULT_MULTIPLIER)
 		{
 			buffer.clear();
 			strbuf.clear();
+			multiplier = 0;
 		}
 
 		return &ev;
@@ -205,7 +221,7 @@ void Input::setmode(int nmode)
 	strbuf.clear();
 	buffer.clear();
 	chbuf = 0;
-	multiplier = 1;
+	multiplier = 0;
 	mode = nmode;
 
 	if (mode == INPUT_MODE_COMMAND)

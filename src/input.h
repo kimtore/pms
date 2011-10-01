@@ -27,7 +27,8 @@ using namespace std;
 
 #define INPUT_RESULT_NOINPUT 0
 #define INPUT_RESULT_BUFFERED 1
-#define INPUT_RESULT_RUN 2
+#define INPUT_RESULT_MULTIPLIER 2
+#define INPUT_RESULT_RUN 3
 
 #define INPUT_MODE_COMMAND 0
 #define INPUT_MODE_INPUT 1
@@ -90,7 +91,6 @@ class Keybindings
 class Input
 {
 	private:
-
 		int		chbuf;
 		bool		is_tab_completing;
 		unsigned int	tab_complete_index;
@@ -98,6 +98,9 @@ class Input
 		Inputevent	ev;
 
 		void		handle_text_input();
+
+		/* Check if input event is a number, and apply multiplier */
+		bool run_multiplier(int ch);
 
 	public:
 
