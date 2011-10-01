@@ -65,6 +65,7 @@ class PMS
 		int		set_crossfade(string secs);
 		int		set_random(bool random);
 		int		set_repeat(bool repeat);
+		int		change_volume(int offset);
 		int		set_volume(string volume);
 		int		set_single(bool single);
 		

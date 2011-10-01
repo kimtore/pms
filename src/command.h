@@ -70,6 +70,8 @@ typedef enum
 	ACT_RANDOM,
 	ACT_REPEAT,
 	ACT_SETVOL,
+	ACT_VOLUME_UP,
+	ACT_VOLUME_DOWN,
 	ACT_SINGLE,
 
 	/* Playback */

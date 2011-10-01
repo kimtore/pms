@@ -126,6 +126,12 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_SETVOL:
 			return set_volume(ev->text);
 
+		case ACT_VOLUME_UP:
+			return change_volume(ev->multiplier);
+
+		case ACT_VOLUME_DOWN:
+			return change_volume(-ev->multiplier);
+
 		case ACT_SINGLE:
 			return set_single(!mpd.status.single);
 
@@ -334,6 +340,14 @@ int PMS::set_volume(string volume)
 		return mpd.set_volume(mpd.status.volume - atoi(volume.substr(1).c_str()));
 	else
 		return mpd.set_volume(atoi(volume.c_str()));
+}
+
+int PMS::change_volume(int offset)
+{
+	offset = mpd.status.volume + offset;
+	if (offset < 0) offset = 0;
+	if (offset > 100) offset = 100;
+	return mpd.set_volume(offset);
 }
 
 int PMS::set_single(bool single)

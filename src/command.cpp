@@ -51,6 +51,8 @@ Commandlist::Commandlist()
 	add(CONTEXT_ALL, ACT_RANDOM, "random");
 	add(CONTEXT_ALL, ACT_REPEAT, "repeat");
 	add(CONTEXT_ALL, ACT_SETVOL, "volume");
+	add(CONTEXT_ALL, ACT_VOLUME_UP, "volume-up");
+	add(CONTEXT_ALL, ACT_VOLUME_DOWN, "volume-down");
 	add(CONTEXT_ALL, ACT_SINGLE, "single");
 
 	add(CONTEXT_ALL, ACT_TOGGLEPLAY, "toggle-play");

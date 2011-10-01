@@ -34,7 +34,9 @@ Keybindings::Keybindings()
 	add(CONTEXT_ALL, ACT_QUIT, "q");
 
 	add(CONTEXT_ALL, ACT_NEXT_WINDOW, "t");
+	add(CONTEXT_ALL, ACT_NEXT_WINDOW, "gt");
 	add(CONTEXT_ALL, ACT_PREVIOUS_WINDOW, "T");
+	add(CONTEXT_ALL, ACT_PREVIOUS_WINDOW, "gT");
 
 	add(CONTEXT_LIST, ACT_SCROLL_UP, "<C-y>");
 	add(CONTEXT_LIST, ACT_SCROLL_DOWN, "<C-e>");
@@ -57,6 +59,8 @@ Keybindings::Keybindings()
 	add(CONTEXT_ALL, ACT_RANDOM, "R");
 	add(CONTEXT_ALL, ACT_REPEAT, "r");
 	add(CONTEXT_ALL, ACT_SINGLE, "s");
+	add(CONTEXT_ALL, ACT_VOLUME_UP, "+");
+	add(CONTEXT_ALL, ACT_VOLUME_DOWN, "-");
 
 	add(CONTEXT_ALL, ACT_TOGGLEPLAY, "<Space>");
 	add(CONTEXT_SONGLIST, ACT_PLAY, "<Enter>");
