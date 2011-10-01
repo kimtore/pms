@@ -55,7 +55,7 @@ int PMS::run_event(Inputevent * ev)
 			return true;
 
 		case ACT_RUN_CMD:
-			run_cmd(ev->text);
+			run_cmd(ev->text, ev->multiplier);
 			input.setmode(INPUT_MODE_COMMAND);
 			wm.statusbar->draw();
 			curses.flush();
@@ -170,7 +170,7 @@ int PMS::run_event(Inputevent * ev)
 	return false;
 }
 
-int PMS::run_cmd(string cmd)
+int PMS::run_cmd(string cmd, unsigned int multiplier)
 {
 	Inputevent ev;
 	Command * c;
@@ -192,6 +192,7 @@ int PMS::run_cmd(string cmd)
 	ev.action = c->action;
 	ev.context = wm.context;
 	ev.result = INPUT_RESULT_RUN;
+	ev.multiplier = multiplier > 0 ? multiplier : 1;
 	return run_event(&ev);
 }
 

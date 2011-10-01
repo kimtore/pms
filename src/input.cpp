@@ -104,6 +104,7 @@ Inputevent * Input::next()
 			{
 				buffer.clear();
 				strbuf.clear();
+				multiplier = 0;
 			}
 
 			break;
@@ -125,7 +126,8 @@ Inputevent * Input::next()
 		{
 			buffer.clear();
 			strbuf.clear();
-			multiplier = 0;
+			if (ev.action != ACT_MODE_INPUT)
+				multiplier = 0;
 		}
 
 		return &ev;
@@ -221,7 +223,6 @@ void Input::setmode(int nmode)
 	strbuf.clear();
 	buffer.clear();
 	chbuf = 0;
-	multiplier = 0;
 	mode = nmode;
 
 	if (mode == INPUT_MODE_COMMAND)
