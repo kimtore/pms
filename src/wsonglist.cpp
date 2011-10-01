@@ -53,6 +53,8 @@ void Wsonglist::drawline(int rely)
 		color = config.colors.cursor;
 	else if (song->pos == mpd.status.song)
 		color = config.colors.playing;
+	else if (song->pos == -1 && mpd.currentsong && song->fhash == mpd.currentsong->fhash)
+		color = config.colors.playing;
 	else
 		color = NULL;
 
