@@ -36,6 +36,9 @@ void Wconsole::drawline(int rely)
 	Color * c;
 	unsigned int linepos = rely + position;
 
+	if (config.show_window_title)
+		++rely;
+
 	if (rely + rect->top > rect->bottom || linepos >= logbuffer.size())
 	{
 		curses.clearline(rect, rely, config.colors.console);

@@ -42,6 +42,9 @@ void Wsonglist::drawline(int rely)
 	unsigned int linepos = rely + position;
 	int x = 0;
 
+	if (config.show_window_title)
+		++rely;
+
 	if (!songlist || rely + rect->top > rect->bottom || linepos >= songlist->size())
 	{
 		curses.clearline(rect, rely, config.colors.standard);

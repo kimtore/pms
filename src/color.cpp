@@ -30,6 +30,7 @@ Colortable::Colortable()
 
 	standard = new Color(dfront, dback, 0);
 	statusbar = new Color(COLOR_WHITE, -1, 0);
+	windowtitle = new Color(COLOR_CYAN, -1, A_BOLD);
 	console = new Color(COLOR_WHITE, -1, 0);
 	error = new Color(COLOR_WHITE, COLOR_RED, A_BOLD);
 	readout = new Color(COLOR_WHITE, -1, 0);

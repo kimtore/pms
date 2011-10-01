@@ -72,8 +72,12 @@ class Wmain : public Window
 		/* Cursor position */
 		unsigned int	cursor;
 
+		/* Window title */
+		string		title;
+
 
 		Wmain();
+		unsigned int	height();
 
 		/* Draw all lines and update readout */
 		void		draw();

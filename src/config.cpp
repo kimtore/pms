@@ -35,6 +35,8 @@ Config::Config()
 	reconnect_delay = 5;
 	use_bell = true;
 	visual_bell = false;
+	show_column_headers = true;
+	show_window_title = true;
 	set_column_headers("artist track title album year length");
 }
 

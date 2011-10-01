@@ -38,10 +38,13 @@ Windowmanager::Windowmanager()
 	/* Setup static windows that appear in the window list */
 	console = new Wconsole;
 	console->set_rect(&curses.main);
+	console->title = "Console";
 	playlist = new Wsonglist;
 	playlist->set_rect(&curses.main);
+	playlist->title = "Playlist";
 	library = new Wsonglist;
 	library->set_rect(&curses.main);
+	library->title = "Library";
 	windows.push_back(WMAIN(console));
 	windows.push_back(WMAIN(playlist));
 	windows.push_back(WMAIN(library));

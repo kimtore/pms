@@ -28,12 +28,20 @@ extern Config config;
 
 void Window::draw()
 {
-	int i;
+	int i = 0;
+	int h = height();
+	Wmain * w = WMAIN(this);
 
 	if (!rect || !visible())
 		return;
 
-	for (i = 0; i <= rect->bottom - rect->top; i++)
+	if (w && config.show_window_title)
+	{
+		curses.clearline(rect, 0, config.colors.windowtitle);
+		curses.print(rect, config.colors.windowtitle, 0, 0, w->title.c_str());
+	}
+
+	for (; i <= h; i++)
 		drawline(i);
 }
 
@@ -54,6 +62,12 @@ Wmain::Wmain()
 	cursor = 0;
 }
 
+unsigned int Wmain::height()
+{
+	if (!rect) return 0;
+	return rect->bottom - rect->top - (config.show_window_title ? 1 : 0);
+}
+
 void Wmain::draw()
 {
 	Window::draw();
@@ -62,7 +76,7 @@ void Wmain::draw()
 
 void Wmain::scroll_window(int offset)
 {
-	int limit = static_cast<int>(content_size() - rect->bottom - rect->top + 1);
+	int limit = static_cast<int>(content_size() - height() + 1);
 
 	if (limit < 0)
 		limit = 0;

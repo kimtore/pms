@@ -33,6 +33,10 @@ class Config
 		void		set_column_headers(string hdr);
 
 	public:
+
+		Config();
+
+		/* Connection parameters */
 		string		host;
 		string		port;
 		string		password;
@@ -50,10 +54,12 @@ class Config
 		bool		use_bell;
 		bool		visual_bell;
 
+		/* Use column headers */
+		bool		show_column_headers;
+		bool		show_window_title;
+
 		/* The entire color collection */
 		Colortable	colors;
-
-		Config();
 };
 
 #endif /* _PMS_CONFIG_H_ */
