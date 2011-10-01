@@ -55,6 +55,11 @@ Commandlist::Commandlist()
 
 	add(CONTEXT_ALL, ACT_TOGGLEPLAY, "toggle-play");
 	add(CONTEXT_SONGLIST, ACT_PLAY, "play");
+	add(CONTEXT_ALL, ACT_STOP, "stop");
+	add(CONTEXT_ALL, ACT_NEXT, "next");
+	add(CONTEXT_ALL, ACT_PREVIOUS, "previous");
+	add(CONTEXT_ALL, ACT_SEEK_FORWARD, "seek-forward");
+	add(CONTEXT_ALL, ACT_SEEK_BACK, "seek-back");
 }
 
 Command * Commandlist::add(int context, action_t action, string name)
@@ -75,7 +80,7 @@ vector<Command *> * Commandlist::grep(int context, string name)
 
 	for (i = cmds.begin(); i != cmds.end(); i++)
 	{
-		if (name.size() > (*i)->name.size() || context != (*i)->context)
+		if (name.size() > (*i)->name.size() || !(context & (*i)->context))
 			continue;
 
 		if (name == (*i)->name.substr(0, name.size()))
@@ -91,7 +96,7 @@ Command * Commandlist::find(int context, string name)
 
 	for (i = cmds.begin(); i != cmds.end(); i++)
 	{
-		if (context == (*i)->context && name == (*i)->name)
+		if (context & (*i)->context && name == (*i)->name)
 			return *i;
 	}
 

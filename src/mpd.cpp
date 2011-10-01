@@ -777,3 +777,55 @@ int MPD::playid(int id)
 	mpd_send("playid %d", id);
 	return (mpd_getline(NULL) == MPD_GETLINE_OK);
 }
+
+int MPD::stop()
+{
+	mpd_send("stop");
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
+}
+
+int MPD::next()
+{
+	mpd_send("next");
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
+}
+
+int MPD::previous()
+{
+	mpd_send("previous");
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
+}
+
+int MPD::seek(int seconds)
+{
+	Song * song;
+	int pos;
+
+	if (status.state != MPD_STATE_PLAY || !currentsong)
+	{
+		sterr("Cannot seek when not playing anything.", NULL);
+		return false;
+	}
+
+	if (currentsong->time == -1)
+	{
+		sterr("Cannot seek in this song. It might be a stream.", NULL);
+		return false;
+	}
+
+	song = currentsong;
+	pos = round(status.elapsed) + seconds;
+	while (pos < 0 && song->pos > 0)
+	{
+		song = playlist.songs[song->pos - 1];
+		pos = song->time - pos;
+	}
+	while (pos > song->time && song->pos + 1 < (int)playlist.size())
+	{
+		pos = pos - song->time;
+		song = playlist.songs[song->pos + 1];
+	}
+
+	mpd_send("seek %d %d", song->pos, pos);
+	return (mpd_getline(NULL) == MPD_GETLINE_OK);
+}

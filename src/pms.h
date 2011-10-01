@@ -71,6 +71,9 @@ class PMS
 		/* Playback */
 		int		toggle_play();
 		int		play();
+		int		stop();
+		int		change_song(int steps);
+		int		seek(int seconds);
 };
 
 /* Return the song pointed to by the cursor, otherwise NULL */

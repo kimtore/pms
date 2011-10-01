@@ -135,6 +135,21 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_PLAY:
 			return play();
 
+		case ACT_STOP:
+			return stop();
+
+		case ACT_NEXT:
+			return change_song(ev->multiplier);
+
+		case ACT_PREVIOUS:
+			return change_song(-ev->multiplier);
+
+		case ACT_SEEK_FORWARD:
+			return seek(ev->multiplier);
+
+		case ACT_SEEK_BACK:
+			return seek(-ev->multiplier);
+
 		default:
 			return false;
 	}
@@ -343,6 +358,26 @@ int PMS::play()
 		return (mpd.playid(mpd.addid(s->f[FIELD_FILE])) == MPD_GETLINE_OK);
 }
 
+int PMS::stop()
+{
+	return mpd.stop();
+}
+
+int PMS::change_song(int steps)
+{
+	int s;
+	while (steps < 0 && (s = mpd.previous()))
+		++steps;
+	while (steps > 0 && (s = mpd.next()))
+		--steps;
+
+	return s;
+}
+
+int PMS::seek(int seconds)
+{
+	return mpd.seek(seconds);
+}
 
 
 

@@ -214,6 +214,10 @@ class MPD
 		int		pause(bool npause);
 		int		addid(string uri);
 		int		playid(int id);
+		int		stop();
+		int		next();
+		int		previous();
+		int		seek(int seconds);
 
 };
 

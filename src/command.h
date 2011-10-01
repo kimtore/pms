@@ -74,7 +74,12 @@ typedef enum
 
 	/* Playback */
 	ACT_TOGGLEPLAY,
-	ACT_PLAY
+	ACT_PLAY,
+	ACT_STOP,
+	ACT_NEXT,
+	ACT_PREVIOUS,
+	ACT_SEEK_FORWARD,
+	ACT_SEEK_BACK
 }
 
 action_t;

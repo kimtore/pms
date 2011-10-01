@@ -60,6 +60,11 @@ Keybindings::Keybindings()
 
 	add(CONTEXT_ALL, ACT_TOGGLEPLAY, "<Space>");
 	add(CONTEXT_SONGLIST, ACT_PLAY, "<Enter>");
+	add(CONTEXT_ALL, ACT_STOP, "<Backspace>");
+	add(CONTEXT_ALL, ACT_NEXT, "<Right>");
+	add(CONTEXT_ALL, ACT_PREVIOUS, "<Left>");
+	add(CONTEXT_ALL, ACT_SEEK_FORWARD, "\\>");
+	add(CONTEXT_ALL, ACT_SEEK_BACK, "\\<");
 }
 
 Keybinding * Keybindings::add(int context, action_t action, string sequence)
