@@ -156,8 +156,12 @@ class MPD
 		/* Split a "parameter: value" pair */
 		int		split_pair(string * line, string * param, string * value);
 
+		/* Update the current song pointer */
+		Song *		update_currentsong();
+
 	public:
 		MPD();
+		~MPD();
 
 		/* MPD state */
 		mpd_status	status;
@@ -166,6 +170,9 @@ class MPD
 		/* Server-side lists */
 		Songlist	playlist;
 		Songlist	library;
+
+		/* Current song. May be NULL. */
+		Song *		currentsong;
 
 		/* Initialise a connection to an MPD server */
 		bool		mpd_connect(string host, string port);

@@ -60,12 +60,19 @@ MPD::MPD()
 	host = "";
 	port = "";
 	sock = 0;
+	currentsong = NULL;
 	connected = false;
 	is_idle = false;
+	playlist.playlist = true;
 	memset(&last_update, 0, sizeof last_update);
 	memset(&last_clock, 0, sizeof last_clock);
 	memset(&status, 0, sizeof status);
 	memset(&stats, 0, sizeof stats);
+}
+
+MPD::~MPD()
+{
+	if (connected) close(sock);
 }
 
 bool MPD::set_idle(bool nidle)
@@ -155,6 +162,7 @@ bool MPD::mpd_connect(string nhost, string nport)
 	recv(sock, &buf, 32, 0);
 	set_protocol_version(buf);
 	is_idle = false;
+	currentsong = NULL;
 
 	return connected;
 }
@@ -165,6 +173,9 @@ void MPD::mpd_disconnect()
 	sock = 0;
 	connected = false;
 	is_idle = false;
+	currentsong = NULL;
+	memset(&status, 0, sizeof status);
+	memset(&stats, 0, sizeof stats);
 	trigerr(MPD_ERR_CONNECTION, "Connection to MPD server closed.");
 }
 
@@ -396,6 +407,7 @@ int MPD::get_playlist()
 	s = recv_songs_to_list(&playlist, NULL);
 
 	playlist.version = status.playlist;
+	update_currentsong();
 	wm.playlist->update_column_length();
 	wm.playlist->draw();
 
@@ -557,6 +569,7 @@ int MPD::get_status()
 
 	gettimeofday(&last_update, NULL);
 	memcpy(&last_clock, &last_update, sizeof last_clock);
+	update_currentsong();
 	wm.playlist->draw();
 
 	return s;
@@ -678,6 +691,11 @@ int MPD::poll()
 	set_idle(true);
 
 	return true;
+}
+
+Song * MPD::update_currentsong()
+{
+	return (currentsong = playlist.size() > status.song ? playlist.songs[status.song] : NULL);
 }
 
 int MPD::set_consume(bool nconsume)

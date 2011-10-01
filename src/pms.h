@@ -52,6 +52,7 @@ class PMS
 		int		set_cursor_end();
 		int		set_cursor_top();
 		int		set_cursor_bottom();
+		int		set_cursor_currentsong();
 
 		/* Change windows */
 		int		cycle_windows(int offset);

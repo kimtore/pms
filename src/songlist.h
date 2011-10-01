@@ -37,6 +37,9 @@ class Songlist
 
 		vector<Song *>	songs;
 
+		/* Find by hash value */
+		size_t		find(long hash, size_t pos = string::npos);
+
 		/* Add or replace a song */
 		void		add(Song * song);
 
@@ -51,6 +54,9 @@ class Songlist
 
 		/* Can we make local modifications? */
 		bool		readonly;
+
+		/* Is this the main playlist? */
+		bool		playlist;
 
 		/* Playlist version at MPD side */
 		long long	version;

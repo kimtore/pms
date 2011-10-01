@@ -23,6 +23,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <sstream>
+#include <locale>
 
 using namespace std;
 
@@ -48,6 +49,9 @@ void Song::init()
 	pos = atoi(f[FIELD_POS].c_str());
 	id = atoi(f[FIELD_ID].c_str());
 	f[FIELD_TIME] = time_format(time);
+
+	/* hash filename */
+	fhash = songhash(f[FIELD_FILE]);
 
 	/* year from date */
 	if (f[FIELD_DATE].size() >= 4)
@@ -200,4 +204,11 @@ void escape_printf(string &src)
 
 	while ((pos = src.find('%', pos + 2)) != string::npos)
 		src.replace(pos, 1, "%%");
+}
+
+long songhash(string const &str)
+{
+	static locale loc;
+	static const collate<char>& coll = use_facet<collate<char> >(loc);
+	return coll.hash(str.data(), str.data() + str.size());
 }

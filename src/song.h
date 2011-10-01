@@ -23,6 +23,7 @@
 
 #include "field.h"
 #include <string>
+#include <locale>
 using namespace std;
 
 typedef long song_t;
@@ -39,6 +40,9 @@ class Song
 		int		pos;
 		int		id;
 		int		time;
+
+		/* For quick lookup through filename */
+		long			fhash;
 
 		/* Common function to initialize special fields that MPD don't return */
 		void		init();
@@ -59,5 +63,8 @@ string tostring(int number);
 
 /* Correctly escape a string so that it can be printed */
 void escape_printf(string &src);
+
+/* Hash a string */
+long songhash(string const &str);
 
 #endif /* _PMS_SONG_H_ */

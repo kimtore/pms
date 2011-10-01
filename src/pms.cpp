@@ -102,6 +102,9 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_CURSOR_END:
 			return set_cursor_end();
 
+		case ACT_CURSOR_CURRENTSONG:
+			return set_cursor_currentsong();
+
 		case ACT_CONSUME:
 			return set_consume(!mpd.status.consume);
 
@@ -216,6 +219,41 @@ int PMS::set_cursor_end()
 	Wmain * window;
 	window = WMAIN(wm.active);
 	window->set_cursor(window->content_size() - 1);
+	return true;
+}
+
+int PMS::set_cursor_currentsong()
+{
+	Wsonglist * window;
+	Song * song;
+	size_t pos;
+
+	/* Silently ignore if there is no song playing. */
+	if ((song = mpd.currentsong) == NULL)
+		return false;
+
+	/* Get current window */
+	window = WSONGLIST(wm.active);
+	if (window == NULL)
+	{
+		sterr("Current window is not a playlist, so cannot locate any songs here.", NULL);
+		return false;
+	}
+
+	/* If the song has a position, and we are in the playlist, jump to that spot. */
+	if (song->pos != -1 && window->songlist->playlist && song->pos < (int)window->songlist->size())
+	{
+		pos = song->pos;
+	}
+
+	/* Use song hash to look it up. */
+	else if ((pos = window->songlist->find(song->fhash)) == string::npos)
+	{
+		sterr("Currently playing song is not in this songlist.", NULL);
+		return false;
+	}
+
+	window->set_cursor(pos);
 	return true;
 }
 

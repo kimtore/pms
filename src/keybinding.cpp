@@ -48,6 +48,7 @@ Keybindings::Keybindings()
 	add(CONTEXT_LIST, ACT_CURSOR_HOME, "<home>");
 	add(CONTEXT_LIST, ACT_CURSOR_END, "G");
 	add(CONTEXT_LIST, ACT_CURSOR_END, "<end>");
+	add(CONTEXT_LIST, ACT_CURSOR_CURRENTSONG, "C");
 
 	add(CONTEXT_ALL, ACT_CONSUME, "c");
 	add(CONTEXT_ALL, ACT_RANDOM, "R");

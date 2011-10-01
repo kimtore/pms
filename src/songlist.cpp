@@ -23,6 +23,7 @@
 Songlist::Songlist()
 {
 	readonly = false;
+	playlist = false;
 	version = -1;
 }
 
@@ -73,4 +74,14 @@ void Songlist::truncate(unsigned long length)
 	}
 
 	songs.reserve(length);
+}
+
+size_t Songlist::find(long hash, size_t pos)
+{
+	size_t it;
+	for (it = 0; it < songs.size(); ++it)
+		if (songs[it]->fhash == hash)
+			return it;
+
+	return string::npos;
 }
