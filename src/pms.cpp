@@ -90,6 +90,12 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_CURSOR_DOWN:
 			return move_cursor(ev->multiplier);
 
+		case ACT_CURSOR_PGUP:
+			return move_cursor_page(-ev->multiplier);
+
+		case ACT_CURSOR_PGDOWN:
+			return move_cursor_page(ev->multiplier);
+
 		case ACT_CURSOR_TOP:
 			return set_cursor_top();
 
@@ -187,6 +193,25 @@ int PMS::move_cursor(int offset)
 	Wmain * window;
 	window = WMAIN(wm.active);
 	window->move_cursor(offset);
+	return true;
+}
+
+int PMS::move_cursor_page(int offset)
+{
+	bool beep;
+	Wmain * window;
+	window = WMAIN(wm.active);
+
+	beep = config.use_bell;
+	config.use_bell = false;
+	window->move_cursor(offset * window->height());
+
+	if (offset < 0)
+		window->set_position(window->cursor - window->height());
+	else
+		window->set_position(window->cursor);
+
+	config.use_bell = beep;
 	return true;
 }
 

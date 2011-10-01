@@ -38,6 +38,8 @@ Commandlist::Commandlist()
 	add(CONTEXT_LIST, ACT_SCROLL_DOWN, "scroll-down");
 	add(CONTEXT_LIST, ACT_CURSOR_UP, "cursor-up");
 	add(CONTEXT_LIST, ACT_CURSOR_DOWN, "cursor-down");
+	add(CONTEXT_LIST, ACT_CURSOR_PGUP, "cursor-pageup");
+	add(CONTEXT_LIST, ACT_CURSOR_PGDOWN, "cursor-pagedown");
 	add(CONTEXT_LIST, ACT_CURSOR_HOME, "cursor-home");
 	add(CONTEXT_LIST, ACT_CURSOR_END, "cursor-end");
 	add(CONTEXT_LIST, ACT_CURSOR_TOP, "cursor-top");
