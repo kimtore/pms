@@ -23,36 +23,37 @@
 #include <string>
 using namespace std;
 
-Field::Field(field_t nfield, string name, string mpd_name, unsigned int minl, unsigned int maxl)
+Field::Field(field_t nfield, string name, string mpd_name, string tit, unsigned int minl, unsigned int maxl)
 {
 	type = nfield;
 	str = name;
 	cstr = mpd_name;
+	title = tit;
 	minlen = minl;
 	maxlen = maxl;
 }
 
 Fieldtypes::Fieldtypes()
 {
-	fields.push_back(new Field(FIELD_POS, "pos", "Pos", 0, 0));
-	fields.push_back(new Field(FIELD_ID, "id", "Id", 0, 0));
-	fields.push_back(new Field(FIELD_TIME, "length", "Time", 5, 7));
-	fields.push_back(new Field(FIELD_DIRECTORY, "directory", "directory", 0, 0));
-	fields.push_back(new Field(FIELD_FILE, "file", "file", 0, 0));
-	fields.push_back(new Field(FIELD_NAME, "name", "Name", 0, 0));
-	fields.push_back(new Field(FIELD_ARTIST, "artist", "Artist", 0, 0));
-	fields.push_back(new Field(FIELD_ARTISTSORT, "artist", "ArtistSort", 0, 0));
-	fields.push_back(new Field(FIELD_ALBUM, "album", "Album", 0, 0));
-	fields.push_back(new Field(FIELD_TITLE, "title", "Title", 0, 0));
-	fields.push_back(new Field(FIELD_TRACK, "track", "Track", 5, 5));
-	fields.push_back(new Field(FIELD_DATE, "date", "Date", 4, 10));
-	fields.push_back(new Field(FIELD_GENRE, "genre", "Genre", 0, 0));
-	fields.push_back(new Field(FIELD_DISC, "disc", "Disc", 4, 4));
-	fields.push_back(new Field(FIELD_ALBUMARTIST, "albumartist", "AlbumArtist", 0, 0));
-	fields.push_back(new Field(FIELD_ALBUMARTISTSORT, "albumartistsort", "AlbumArtistSort", 0, 0));
+	fields.push_back(new Field(FIELD_POS, "pos", "Pos", "Pos", 0, 0));
+	fields.push_back(new Field(FIELD_ID, "id", "Id", "ID", 0, 0));
+	fields.push_back(new Field(FIELD_TIME, "length", "Time", "Length", 5, 7));
+	fields.push_back(new Field(FIELD_DIRECTORY, "directory", "directory", "Directory", 0, 0));
+	fields.push_back(new Field(FIELD_FILE, "file", "file", "Filename", 0, 0));
+	fields.push_back(new Field(FIELD_NAME, "name", "Name", "Name", 0, 0));
+	fields.push_back(new Field(FIELD_ARTIST, "artist", "Artist", "Artist", 0, 0));
+	fields.push_back(new Field(FIELD_ARTISTSORT, "artist", "ArtistSort", "Artist", 0, 0));
+	fields.push_back(new Field(FIELD_ALBUM, "album", "Album", "Album", 0, 0));
+	fields.push_back(new Field(FIELD_TITLE, "title", "Title", "Title", 0, 0));
+	fields.push_back(new Field(FIELD_TRACK, "track", "Track", "Track", 5, 5));
+	fields.push_back(new Field(FIELD_DATE, "date", "Date", "Date", 4, 10));
+	fields.push_back(new Field(FIELD_GENRE, "genre", "Genre", "Genre", 0, 0));
+	fields.push_back(new Field(FIELD_DISC, "disc", "Disc", "Disc", 4, 4));
+	fields.push_back(new Field(FIELD_ALBUMARTIST, "albumartist", "AlbumArtist", "Album artist", 0, 0));
+	fields.push_back(new Field(FIELD_ALBUMARTISTSORT, "albumartistsort", "AlbumArtistSort", "Album artist", 0, 0));
 
-	fields.push_back(new Field(FIELD_YEAR, "year", "", 4, 4));
-	fields.push_back(new Field(FIELD_TRACKSHORT, "trackshort", "", 2, 2));
+	fields.push_back(new Field(FIELD_YEAR, "year", "", "Year", 4, 4));
+	fields.push_back(new Field(FIELD_TRACKSHORT, "trackshort", "", "#", 2, 2));
 }
 
 Fieldtypes::~Fieldtypes()

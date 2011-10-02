@@ -34,6 +34,25 @@ extern Curses curses;
 extern Config config;
 extern MPD mpd;
 
+void Wsonglist::draw()
+{
+	unsigned int x = 0, i, it;
+
+	if (!rect || !visible())
+		return;
+
+	if (config.show_column_headers)
+	{
+		i = config.show_window_title ? 1 : 0;
+		curses.clearline(rect, i, config.colors.columnheader);
+		for (it = 0; it < column_len.size(); ++it)
+		{
+			curses.print(rect, config.colors.columnheader, i, x, config.songlist_columns[it]->title.c_str());
+			x += column_len[it] + 1;
+		}
+	}
+}
+
 void Wsonglist::drawline(int rely)
 {
 	unsigned int it;
@@ -43,6 +62,8 @@ void Wsonglist::drawline(int rely)
 	int x = 0;
 
 	if (config.show_window_title)
+		++rely;
+	if (config.show_column_headers)
 		++rely;
 
 	if (!songlist || rely + rect->top > rect->bottom || linepos >= songlist->size())
@@ -77,6 +98,12 @@ Song * Wsonglist::cursorsong()
 	
 	move_cursor(0);
 	return songlist->songs[cursor];
+}
+
+unsigned int Wsonglist::height()
+{
+	if (!rect) return 0;
+	return rect->bottom - rect->top - (config.show_window_title ? 1 : 0) - (config.show_column_headers ? 1 : 0);
 }
 
 unsigned int Wsonglist::content_size()

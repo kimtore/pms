@@ -58,6 +58,7 @@ class Colortable
 		Color *		standard;
 		Color *		statusbar;
 		Color *		windowtitle;
+		Color *		columnheader;
 		Color *		console;
 		Color *		error;
 		Color *		readout;

@@ -28,20 +28,14 @@ extern Config config;
 
 void Window::draw()
 {
-	int i = 0;
-	int h = height();
-	Wmain * w = WMAIN(this);
+	unsigned int i, h;
 
 	if (!rect || !visible())
 		return;
 
-	if (w && config.show_window_title)
-	{
-		curses.clearline(rect, 0, config.colors.windowtitle);
-		curses.print(rect, config.colors.windowtitle, 0, 0, w->title.c_str());
-	}
+	h = height();
 
-	for (; i <= h; i++)
+	for (i = 0; i <= h; i++)
 		drawline(i);
 }
 
@@ -70,7 +64,18 @@ unsigned int Wmain::height()
 
 void Wmain::draw()
 {
+	Wsonglist * ws;
+
+	if (config.show_window_title)
+	{
+		curses.clearline(rect, 0, config.colors.windowtitle);
+		curses.print(rect, config.colors.windowtitle, 0, 0, title.c_str());
+	}
+	if ((ws = WSONGLIST(this)) != NULL)
+		ws->draw();
+
 	Window::draw();
+
 	wm.readout->draw();
 }
 

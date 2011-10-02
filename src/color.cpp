@@ -31,6 +31,7 @@ Colortable::Colortable()
 	standard = new Color(dfront, dback, 0);
 	statusbar = new Color(COLOR_WHITE, -1, 0);
 	windowtitle = new Color(COLOR_CYAN, -1, A_BOLD);
+	columnheader = new Color(COLOR_WHITE, -1, 0);
 	console = new Color(COLOR_WHITE, -1, 0);
 	error = new Color(COLOR_WHITE, COLOR_RED, A_BOLD);
 	readout = new Color(COLOR_WHITE, -1, 0);
@@ -61,14 +62,6 @@ Colortable::Colortable()
 
 Colortable::~Colortable()
 {
-	delete standard;
-	delete statusbar;
-	delete console;
-	delete error;
-	delete readout;
-
-	delete cursor;
-	delete playing;
 }
 
 Color::Color(short nfront, short nback, int nattr)

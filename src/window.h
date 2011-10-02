@@ -118,7 +118,9 @@ class Wsonglist : public Wmain
 	public:
 		Wsonglist() { context = CONTEXT_SONGLIST; };
 
+		void		draw();
 		void		drawline(int rely);
+		unsigned int	height();
 		unsigned int	content_size();
 
 		/* Pointer to connected songlist */

@@ -61,7 +61,7 @@ field_t;
 class Field
 {
 	public:
-		Field(field_t nfield, string name, string mpd_name, unsigned int minl, unsigned int maxl);
+		Field(field_t nfield, string name, string mpd_name, string tit, unsigned int minl, unsigned int maxl);
 
 		/* Which kind of field is this? */
 		field_t		type;
@@ -71,6 +71,9 @@ class Field
 
 		/* Lowercase string representation */
 		string		str;
+
+		/* Title for column headers */
+		string		title;
 
 		/* Minimum and maximum length in column view */
 		unsigned int	minlen;
