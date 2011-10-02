@@ -51,6 +51,8 @@ void Wsonglist::draw()
 			x += column_len[it] + 1;
 		}
 	}
+
+	Wmain::draw();
 }
 
 void Wsonglist::drawline(int rely)
@@ -103,7 +105,7 @@ Song * Wsonglist::cursorsong()
 unsigned int Wsonglist::height()
 {
 	if (!rect) return 0;
-	return rect->bottom - rect->top - (config.show_window_title ? 1 : 0) - (config.show_column_headers ? 1 : 0);
+	return Wmain::height() - (config.show_column_headers ? 1 : 0);
 }
 
 unsigned int Wsonglist::content_size()

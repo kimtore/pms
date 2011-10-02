@@ -77,10 +77,10 @@ class Wmain : public Window
 
 
 		Wmain();
-		unsigned int	height();
+		virtual unsigned int	height();
 
 		/* Draw all lines and update readout */
-		void		draw();
+		virtual void	draw();
 
 		/* Scroll window */
 		virtual void	scroll_window(int offset);
