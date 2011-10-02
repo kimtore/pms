@@ -53,6 +53,21 @@ void Song::init()
 	/* hash filename */
 	fhash = songhash(f[FIELD_FILE]);
 
+	/* replace title on no-title songs */
+	if (f[FIELD_TITLE].size() == 0)
+	{
+		if (f[FIELD_NAME].size() > 0)
+			f[FIELD_TITLE] = f[FIELD_NAME];
+		else
+			f[FIELD_TITLE] = f[FIELD_FILE];
+	}
+
+	/* show <Unknown ...> */
+	if (f[FIELD_ARTIST].size() == 0)
+		f[FIELD_ARTIST] = "<Unknown artist>";
+	if (f[FIELD_ALBUM].size() == 0)
+		f[FIELD_ALBUM] = "<Unknown album>";
+
 	/* year from date */
 	if (f[FIELD_DATE].size() >= 4)
 		f[FIELD_YEAR] = f[FIELD_DATE].substr(0, 4);
