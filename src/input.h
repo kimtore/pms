@@ -22,6 +22,7 @@
 #define _PMS_INPUT_H_
 
 #include "command.h"
+#include "config.h"
 #include <string>
 using namespace std;
 
@@ -91,16 +92,20 @@ class Keybindings
 class Input
 {
 	private:
-		int		chbuf;
-		bool		is_tab_completing;
-		unsigned int	tab_complete_index;
-		vector<Command *> * tab_results;
-		Inputevent	ev;
+		int			chbuf;
+		bool			is_tab_completing;
+		bool			is_option_tab_completing;
+		bool			option_tab_negate;
+		unsigned int		tab_complete_index;
+		unsigned int		option_tab_complete_index;
+		vector<Command *> *	tab_results;
+		vector<option_t *> 	option_tab_results;
+		Inputevent		ev;
 
-		void		handle_text_input();
+		void			handle_text_input();
 
 		/* Check if input event is a number, and apply multiplier */
-		bool run_multiplier(int ch);
+		bool			run_multiplier(int ch);
 
 	public:
 

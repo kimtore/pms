@@ -210,7 +210,7 @@ string Config::get_opt_str(option_t * opt)
 		case OPTION_TYPE_COLUMNHEADERS:
 			for (field_it = songlist_columns.begin(); field_it != songlist_columns.end(); ++field_it)
 				str = str + (*field_it)->str + " ";
-			std::remove(str.end() - 1, str.end(), ' ');
+			str = str.substr(0, str.size() - 1);
 			break;
 
 		default:
@@ -268,6 +268,38 @@ option_t * Config::get_opt_ptr(string opt)
 			return *i;
 	
 	return NULL;
+}
+
+unsigned int Config::grep_opt(string opt, vector<option_t *> * list, bool * negate)
+{
+	vector<option_t *>::const_iterator i;
+
+	if (!list) return 0;
+	list->clear();
+
+	*negate = false;
+	if (opt.size() >= 2 && opt.substr(0, 2) == "no")
+	{
+		if (opt.size() == 2)
+			opt.clear();
+		else
+			opt = opt.substr(2);
+		*negate = true;
+	}
+
+	for (i = options.begin(); i != options.end(); i++)
+	{
+		if (opt.size() > (*i)->name.size())
+			continue;
+
+		if (opt == (*i)->name.substr(0, opt.size()))
+		{
+			if (!(*negate) || (*i)->type == OPTION_TYPE_BOOL || ((*i)->name.size() > 2 && (*i)->name.substr(0, 2) == "no"))
+				list->push_back(*i);
+		}
+	}
+
+	return list->size();
 }
 
 void Config::print_option(option_t * opt)

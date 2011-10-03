@@ -67,9 +67,10 @@ class Config
 
 		Config();
 
-		/* Parse "set option=value" */
-		int		source(string file);
+		/* Parse "option=value" */
 		int		readline(string line);
+
+		/* Option string getter and setter */
 		int		set_opt_str(option_t * opt, string value);
 		string		get_opt_str(option_t * opt);
 
@@ -79,6 +80,9 @@ class Config
 
 		/* Return the option_t struct of the option in question. */
 		option_t *	get_opt_ptr(string opt);
+
+		/* Tab-complete search, return a list of option_t */
+		unsigned int	grep_opt(string opt, vector<option_t *> * list, bool * negate);
 
 
 		/* Connection parameters */

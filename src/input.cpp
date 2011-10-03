@@ -22,11 +22,13 @@
 #include "curses.h"
 #include "command.h"
 #include "window.h"
+#include "config.h"
 #include <cstring>
 
 Keybindings * keybindings;
 Commandlist commandlist;
 extern Windowmanager wm;
+extern Config config;
 
 Inputevent::Inputevent()
 {
@@ -51,7 +53,10 @@ Input::Input()
 	strbuf.clear();
 	buffer.clear();
 	is_tab_completing = false;
+	is_option_tab_completing = false;
+	option_tab_negate = false;
 	tab_complete_index = 0;
+	option_tab_complete_index = 0;
 	keybindings = new Keybindings();
 }
 
@@ -138,10 +143,16 @@ Inputevent * Input::next()
 
 void Input::handle_text_input()
 {
+	option_t * opt;
 	string::iterator si;
+	size_t fpos;
+	size_t pos;
 
 	if (chbuf != 9)
+	{
 		is_tab_completing = false;
+		is_option_tab_completing = false;
+	}
 
 	switch(chbuf)
 	{
@@ -181,30 +192,82 @@ void Input::handle_text_input()
 			return;
 
 		case 9:			/* Tab */
-			if (is_tab_completing)
+			/* Tabcomplete options instead of commands */
+			if ((strbuf.size() >= 3 && strbuf.substr(0, 3) == "se ") ||
+				(strbuf.size() >= 4 && strbuf.substr(0, 4) == "set "))
 			{
-				if (++tab_complete_index >= tab_results->size())
-					tab_complete_index = 0;
+				fpos = strbuf.find(' ') + 1;
+
+				/* No equal sign given, cycle through options */
+				if ((pos = strbuf.find('=', fpos)) == string::npos)
+				{
+					if (is_option_tab_completing)
+					{
+						if (++option_tab_complete_index >= option_tab_results.size())
+							option_tab_complete_index = 0;
+					}
+					else
+					{
+						config.grep_opt(strbuf.substr(fpos), &option_tab_results, &option_tab_negate);
+						if (option_tab_results.size() > 0)
+						{
+							is_option_tab_completing = true;
+							option_tab_complete_index = 0;
+						}
+					}
+
+					if (is_option_tab_completing)
+					{
+						opt = option_tab_results[option_tab_complete_index];
+						if (opt)
+						{
+							if (opt->type == OPTION_TYPE_BOOL && option_tab_negate)
+								strbuf = strbuf.substr(0, fpos) + "no" + opt->name;
+							else
+								strbuf = strbuf.substr(0, fpos) + opt->name;
+						}
+					}
+				}
+
+				/* Equal sign found, print option if none given. */
+				else if (pos + 1 == strbuf.size())
+				{
+					opt = config.get_opt_ptr(strbuf.substr(fpos, pos - fpos));
+					if (opt->type != OPTION_TYPE_BOOL)
+						strbuf = strbuf + config.get_opt_str(opt);
+				}
+
 			}
+
+			/* Tabcomplete commands */
 			else
 			{
-				tab_results = commandlist.grep(wm.context, strbuf);
-				if (tab_results->size() > 0)
+				if (is_tab_completing)
 				{
-					is_tab_completing = true;
-					tab_complete_index = 0;
+					if (++tab_complete_index >= tab_results->size())
+						tab_complete_index = 0;
+				}
+				else
+				{
+					tab_results = commandlist.grep(wm.context, strbuf);
+					if (tab_results->size() > 0)
+					{
+						is_tab_completing = true;
+						tab_complete_index = 0;
+					}
+				}
+
+				if (is_tab_completing)
+				{
+					strbuf = tab_results->at(tab_complete_index)->name;
 				}
 			}
 
-			if (is_tab_completing)
-			{
-				strbuf = tab_results->at(tab_complete_index)->name;
+			/* Sync binary input buffer with string buffer */
+			buffer.clear();
+			for (si = strbuf.begin(); si != strbuf.end(); ++si)
+				buffer.push_back(*si);
 
-				/* Sync binary input buffer with string buffer */
-				buffer.clear();
-				for (si = strbuf.begin(); si != strbuf.end(); ++si)
-					buffer.push_back(*si);
-			}
 			ev.result = INPUT_RESULT_BUFFERED;
 			return;
 
