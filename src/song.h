@@ -60,6 +60,7 @@ string zeropad(int i, unsigned int target);
 
 /* Convert number to string */
 string tostring(int number);
+string tostring(unsigned int number);
 
 /* Correctly escape a string so that it can be printed */
 void escape_printf(string &src);

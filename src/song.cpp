@@ -213,6 +213,13 @@ string tostring(int number)
 	return s.str();
 }
 
+string tostring(unsigned int number)
+{
+	ostringstream s;
+	s << number;
+	return s.str();
+}
+
 void escape_printf(string &src)
 {
 	size_t pos = -2;

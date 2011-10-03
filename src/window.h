@@ -177,6 +177,9 @@ class Windowmanager
 		/* Activate a window */
 		bool			activate(Wmain * nactive);
 
+		/* Update column lengths in all windows */
+		void			update_column_length();
+
 		Wconsole *		console;
 		Wsonglist *		playlist;
 		Wsonglist *		library;

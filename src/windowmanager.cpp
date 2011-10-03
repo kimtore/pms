@@ -108,3 +108,14 @@ void Windowmanager::cycle(int offset)
 	readout->draw();
 	curses.flush();
 }
+
+void Windowmanager::update_column_length()
+{
+	Wsonglist * w;
+	vector<Wmain *>::iterator i;
+	for (i = windows.begin(); i != windows.end(); ++i)
+	{
+		if ((w = WSONGLIST(*i)) != NULL)
+			w->update_column_length();
+	}
+}

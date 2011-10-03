@@ -26,15 +26,60 @@
 #include "field.h"
 using namespace std;
 
+/* Standard option types */
+typedef enum
+{
+	OPTION_TYPE_INVALID,
+	OPTION_TYPE_BOOL,
+	OPTION_TYPE_UINT,
+	OPTION_TYPE_INT,
+	OPTION_TYPE_STRING,
+
+	/* More exotic stuff */
+	OPTION_TYPE_COLUMNHEADERS
+}
+
+option_type_t;
+
+typedef struct
+{
+	string name;
+	option_type_t type;
+	void * ptr;
+}
+
+option_t;
+
+
+
 class Config
 {
 	private:
-		void		setup_default_connection_info();
-		void		set_column_headers(string hdr);
+		void			setup_default_connection_info();
+		void			set_column_headers(string hdr);
+
+		vector<option_t *>	options;
+		
+		/* Add an option to the options vector. */
+		option_t *		add_option(string name, option_type_t type, void * ptr);
 
 	public:
 
 		Config();
+
+		/* Parse "set option=value" */
+		int		source(string file);
+		int		readline(string line);
+		int		set_opt_str(option_t * opt, string value);
+		string		get_opt_str(option_t * opt);
+
+		/* Print option values to the console. */
+		void		print_option(option_t * opt);
+		int		print_all_options();
+
+		/* Return the option_t struct of the option in question. */
+		option_t *	get_opt_ptr(string opt);
+
 
 		/* Connection parameters */
 		string		host;

@@ -61,6 +61,12 @@ int PMS::run_event(Inputevent * ev)
 			curses.flush();
 			return true;
 
+		case ACT_SET:
+			config.readline(ev->text);
+			wm.draw();
+			curses.flush();
+			return true;
+
 		case ACT_QUIT:
 			return quit();
 
@@ -178,8 +184,8 @@ int PMS::run_cmd(string cmd, unsigned int multiplier)
 
 	if ((i = cmd.find(' ')) != string::npos)
 	{
-		cmd = cmd.substr(0, i);
 		ev.text = cmd.size() > i ? cmd.substr(i + 1) : "";
+		cmd = cmd.substr(0, i);
 	}
 
 	c = commandlist.find(wm.context, cmd);
