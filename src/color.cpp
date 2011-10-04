@@ -29,6 +29,7 @@ Colortable::Colortable()
 	pair_content(-1, &dfront, &dback);
 
 	standard = new Color(dfront, dback, 0);
+	topbar = new Color(COLOR_WHITE, -1, 0);
 	statusbar = new Color(COLOR_WHITE, -1, 0);
 	windowtitle = new Color(COLOR_CYAN, -1, A_BOLD);
 	columnheader = new Color(COLOR_WHITE, -1, 0);
@@ -58,6 +59,12 @@ Colortable::Colortable()
 
 	field[FIELD_YEAR] = new Color(COLOR_YELLOW, -1, 0);
 	field[FIELD_TRACKSHORT] = new Color(COLOR_CYAN, -1, 0);
+
+	field[FIELD_ELAPSED] = new Color(COLOR_GREEN, -1, 0);
+	field[FIELD_MODES] = new Color(COLOR_CYAN, -1, 0);
+	field[FIELD_STATE] = new Color(COLOR_CYAN, -1, 0);
+	field[FIELD_QUEUESIZE] = new Color(COLOR_YELLOW, -1, 0);
+	field[FIELD_QUEUELENGTH] = new Color(COLOR_WHITE, -1, 0);
 }
 
 Colortable::~Colortable()

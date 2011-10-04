@@ -67,6 +67,8 @@ void Song::init()
 		f[FIELD_ARTIST] = "<Unknown artist>";
 	if (f[FIELD_ALBUM].size() == 0)
 		f[FIELD_ALBUM] = "<Unknown album>";
+	if (f[FIELD_YEAR].size() == 0)
+		f[FIELD_YEAR] = "----";
 
 	/* year from date */
 	if (f[FIELD_DATE].size() >= 4)
@@ -86,7 +88,7 @@ void Song::init()
 	}
 
 	/* replace % with %% for fast printing */
-	for (s = 0; s < FIELD_TOTAL_VALUES; ++s)
+	for (s = 0; s < FIELD_COLUMN_VALUES; ++s)
 		escape_printf(f[s]);
 
 	/* generate sort names if there are none available */

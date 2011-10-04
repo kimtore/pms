@@ -77,7 +77,9 @@ void Curses::detect_dimensions()
 	self.bottom = LINES - 1;
 
 	topbar.top = 0;
-	topbar.bottom = topbar.top;
+	topbar.bottom = topbar.top + config.topbar_height - 1;
+	if (topbar.bottom < 0)
+		topbar.bottom = 0;
 	topbar.right = self.right;
 
 	main.top = topbar.bottom + 1;

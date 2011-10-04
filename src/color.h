@@ -56,6 +56,7 @@ class Colortable
 
 		/* Main colors */
 		Color *		standard;
+		Color *		topbar;
 		Color *		statusbar;
 		Color *		windowtitle;
 		Color *		columnheader;

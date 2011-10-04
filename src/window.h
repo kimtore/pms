@@ -136,7 +136,7 @@ class Wsonglist : public Wmain
 class Wtopbar : public Window
 {
 	public:
-		void		drawline(int rely) {};
+		void		drawline(int rely);
 };
 
 class Wstatusbar : public Window

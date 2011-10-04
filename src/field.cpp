@@ -19,9 +19,13 @@
  */
 
 #include "field.h"
+#include "song.h"
+#include "mpd.h"
 #include <vector>
 #include <string>
 using namespace std;
+
+extern MPD mpd;
 
 Field::Field(field_t nfield, string name, string mpd_name, string tit, unsigned int minl, unsigned int maxl)
 {
@@ -31,6 +35,55 @@ Field::Field(field_t nfield, string name, string mpd_name, string tit, unsigned 
 	title = tit;
 	minlen = minl;
 	maxlen = maxl;
+}
+
+string Field::format(Song * song)
+{
+	string tmp;
+
+	if (!song)
+		return "";
+
+	if (type < FIELD_COLUMN_VALUES)
+		return song->f[type];
+
+	switch(type)
+	{
+		case FIELD_ELAPSED:
+			return time_format((int)mpd.status.elapsed);
+
+		case FIELD_MODES:
+			tmp = "----";
+			if (mpd.status.repeat)
+				tmp[0] = 'r';
+			if (mpd.status.random)
+				tmp[1] = 'z';
+			if (mpd.status.single)
+				tmp[2] = 's';
+			if (mpd.status.consume)
+				tmp[3] = 'c';
+			return tmp;
+
+		case FIELD_STATE:
+			if (mpd.status.state == MPD_STATE_PLAY)
+				return "Playing";
+			else if (mpd.status.state == MPD_STATE_STOP)
+				return "Stopped";
+			else if (mpd.status.state == MPD_STATE_PAUSE)
+				return "Paused";
+			break;
+
+		case FIELD_QUEUESIZE:
+			return tostring(mpd.playlist.size());
+
+		case FIELD_QUEUELENGTH:
+			return tostring(mpd.playlist.size());
+
+		default:
+			break;
+	}
+
+	return "";
 }
 
 Fieldtypes::Fieldtypes()
@@ -54,6 +107,13 @@ Fieldtypes::Fieldtypes()
 
 	fields.push_back(new Field(FIELD_YEAR, "year", "", "Year", 4, 4));
 	fields.push_back(new Field(FIELD_TRACKSHORT, "trackshort", "", "#", 2, 2));
+
+	/* Topbar fields */
+	fields.push_back(new Field(FIELD_ELAPSED, "elapsed", "", "", 0, 0));
+	fields.push_back(new Field(FIELD_MODES, "modes", "", "", 0, 0));
+	fields.push_back(new Field(FIELD_STATE, "state", "", "", 0, 0));
+	fields.push_back(new Field(FIELD_QUEUESIZE, "queuesize", "", "", 0, 0));
+	fields.push_back(new Field(FIELD_QUEUELENGTH, "queuelength", "", "", 0, 0));
 }
 
 Fieldtypes::~Fieldtypes()

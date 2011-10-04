@@ -21,7 +21,7 @@
 #ifndef _PMS_SONG_H_
 #define _PMS_SONG_H_
 
-#include "field.h"
+#include "fields.h"
 #include <string>
 #include <locale>
 using namespace std;
@@ -34,7 +34,7 @@ class Song
 		Song();
 
 		/* Song fields, see field.h */
-		string		f[FIELD_TOTAL_VALUES];
+		string		f[FIELD_COLUMN_VALUES];
 
 		/* Fields that are not strings */
 		int		pos;

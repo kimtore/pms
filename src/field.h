@@ -23,37 +23,9 @@
 
 #include <vector>
 #include <string>
+#include "fields.h"
+#include "song.h"
 using namespace std;
-
-typedef enum
-{
-	/* These fields come directly from MPD. */
-	FIELD_DIRECTORY,
-	FIELD_FILE,
-	FIELD_POS,
-	FIELD_ID,
-	FIELD_TIME,
-	FIELD_NAME,
-	FIELD_ARTIST,
-	FIELD_ARTISTSORT,
-	FIELD_ALBUM,
-	FIELD_TITLE,
-	FIELD_TRACK,
-	FIELD_DATE,
-	FIELD_DISC,
-	FIELD_GENRE,
-	FIELD_ALBUMARTIST,
-	FIELD_ALBUMARTISTSORT,
-
-	/* Custom fields used only in PMS */
-	FIELD_YEAR,
-	FIELD_TRACKSHORT,
-}
-
-field_t;
-
-#define FIELD_TOTAL_VALUES 18
-
 
 /*
  * Song metadata field
@@ -62,6 +34,9 @@ class Field
 {
 	public:
 		Field(field_t nfield, string name, string mpd_name, string tit, unsigned int minl, unsigned int maxl);
+
+		/* Format a field to a specific song */
+		string		format(Song * song);
 
 		/* Which kind of field is this? */
 		field_t		type;

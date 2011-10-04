@@ -71,10 +71,14 @@ int main(int argc, char *argv[])
 				mpd.get_status();
 				mpd.get_playlist();
 				mpd.get_library();
+				wm.topbar->draw();
+				curses.flush();
 				gettimeofday(&conn, NULL);
 			}
 		}
 		mpd.poll();
+		wm.topbar->draw();
+		curses.flush();
 		pms.run_event(input.next());
 	}
 }

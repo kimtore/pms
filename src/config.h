@@ -36,7 +36,8 @@ typedef enum
 	OPTION_TYPE_STRING,
 
 	/* More exotic stuff */
-	OPTION_TYPE_COLUMNHEADERS
+	OPTION_TYPE_COLUMNHEADERS,
+	OPTION_TYPE_TOPBAR
 }
 
 option_type_t;
@@ -106,6 +107,9 @@ class Config
 		/* Use column headers */
 		bool		show_column_headers;
 		bool		show_window_title;
+
+		/* Topbar stuff */
+		unsigned int	topbar_height;
 
 		/* The entire color collection */
 		Colortable	colors;

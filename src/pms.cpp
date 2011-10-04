@@ -63,6 +63,7 @@ int PMS::run_event(Inputevent * ev)
 
 		case ACT_SET:
 			config.readline(ev->text);
+			curses.detect_dimensions();
 			wm.draw();
 			curses.flush();
 			return true;

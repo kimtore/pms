@@ -607,17 +607,14 @@ int MPD::poll()
 	if ((s = select(sock+1, &set, NULL, NULL, &timeout)) == -1)
 	{
 		mpd_disconnect();
-		return false;
-	}
-	else if (s == 0)
-	{
-		// no data ready to recv(), but let's update our clock
-		run_clock();
-		return false;
+		return true;
 	}
 
+	/* Update elapsed time */
+	run_clock();
+
 	if (!FD_ISSET(sock, &set))
-		return true;
+		return false;
 
 	updates = MPD_UPDATE_NONE;
 
@@ -695,7 +692,7 @@ int MPD::poll()
 
 Song * MPD::update_currentsong()
 {
-	return (currentsong = playlist.size() > status.song ? playlist.songs[status.song] : NULL);
+	return (currentsong = (int)playlist.size() > status.song ? playlist.songs[status.song] : NULL);
 }
 
 int MPD::set_consume(bool nconsume)

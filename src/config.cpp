@@ -23,6 +23,7 @@
 #include "console.h"
 #include "song.h"
 #include "window.h"
+#include "topbar.h"
 #include <stdlib.h>
 #include <algorithm>
 
@@ -30,6 +31,7 @@ using namespace std;
 
 extern Fieldtypes fieldtypes;
 extern Windowmanager wm;
+Topbar topbar;
 
 Config::Config()
 {
@@ -41,7 +43,9 @@ Config::Config()
 	visual_bell = false;
 	show_column_headers = true;
 	show_window_title = true;
+	topbar_height = 1;
 	set_column_headers("artist track title album year length");
+	topbar.set("{PMS  $state [$modes] $elapsed / $length}{$artist / $title / $album / $year}{Queue has $queuesize songs ($queuelength)}");
 
 	/* Set up options array */
 	add_option("host", OPTION_TYPE_STRING, (void *)&host);
@@ -55,6 +59,8 @@ Config::Config()
 	add_option("windowtitle", OPTION_TYPE_BOOL, (void *)&show_window_title);
 
 	add_option("columns", OPTION_TYPE_COLUMNHEADERS, (void *)&songlist_columns);
+	add_option("topbar", OPTION_TYPE_TOPBAR, (void *)&topbar);
+	add_option("topbarlines", OPTION_TYPE_UINT, (void *)&topbar_height);
 }
 
 int Config::readline(string line)
@@ -213,6 +219,10 @@ string Config::get_opt_str(option_t * opt)
 			str = str.substr(0, str.size() - 1);
 			break;
 
+		case OPTION_TYPE_TOPBAR:
+			str = topbar.cached_format;
+			break;
+
 		default:
 			str = "<unknown>";
 			break;
@@ -250,6 +260,15 @@ int Config::set_opt_str(option_t * opt, string value)
 		case OPTION_TYPE_COLUMNHEADERS:
 			set_column_headers(value);
 			wm.update_column_length();
+			return true;
+
+		case OPTION_TYPE_TOPBAR:
+			topbar.set(value);
+			if (topbar.lines[0].size() > topbar_height)
+			{
+				topbar_height = topbar.lines[0].size();
+				print_option(get_opt_ptr("topbarlines"));
+			}
 			return true;
 
 		default:
@@ -343,7 +362,7 @@ void Config::set_column_headers(string hdr)
 		else
 			f = hdr.substr(start);
 
-		if ((field = fieldtypes.find(f)) != NULL)
+		if ((field = fieldtypes.find(f)) != NULL && field->type < FIELD_COLUMN_VALUES)
 			songlist_columns.push_back(field);
 		else
 			sterr("Ignoring invalid header field '%s'.", f.c_str());

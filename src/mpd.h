@@ -196,7 +196,7 @@ class MPD
 		int		get_stats();
 		int		get_status();
 
-		/* Polls the socket to see if there is any IDLE data to collect. */
+		/* Polls the socket to see if there is any IDLE data to collect. Returns true if there are any updates. */
 		int		poll();
 
 		/* Playback options */
