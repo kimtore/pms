@@ -143,6 +143,10 @@ class Wstatusbar : public Window
 {
 	public:
 		void		drawline(int rely);
+		bool		is_reset;
+
+		/* Draw the play mode string. */
+		void		reset();
 };
 
 class Wreadout : public Window

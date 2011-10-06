@@ -23,6 +23,7 @@
 #include "curses.h"
 #include "input.h"
 #include "config.h"
+#include "mpd.h"
 #include <cstring>
 #include <string>
 #include <vector>
@@ -34,6 +35,7 @@ extern Curses curses;
 extern Windowmanager wm;
 extern Input input;
 extern Config config;
+extern MPD mpd;
 
 void Wstatusbar::drawline(int rely)
 {
@@ -60,6 +62,12 @@ void Wstatusbar::drawline(int rely)
 			curses.print(rect, config.colors.statusbar, rely, 1, input.strbuf.c_str());
 			break;
 	}
+}
+
+void Wstatusbar::reset()
+{
+	stinfo(mpd.playstring().c_str(), NULL);
+	is_reset = true;
 }
 
 void Wreadout::drawline(int rely)

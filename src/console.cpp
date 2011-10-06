@@ -67,6 +67,7 @@ void console_log(int level, const char * format, ...)
 	if (level <= MSG_LEVEL_INFO)
 	{
 		wm.statusbar->draw();
+		wm.statusbar->is_reset = false;
 		curses.flush();
 	}
 }

@@ -117,6 +117,15 @@ class Config
 		/* Auto-advance to next song? */
 		bool		autoadvance;
 
+		/* We need to handle MPD's play modes in config, too. */
+		bool		random;
+		bool		repeat;
+		bool		consume;
+		bool		single;
+
+		/* Redraw play string in statusbar after this long */
+		bool		status_reset_interval;
+
 		/* The entire color collection */
 		Colortable	colors;
 };

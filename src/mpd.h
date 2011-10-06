@@ -128,7 +128,6 @@ class MPD
 		struct timeval	last_update;
 		struct timeval	last_clock;
 		bool		is_idle;
-		Songlist *	active_songlist;
 
 		/* Has the list been auto-advanced since last song switch? */
 		int		autoadvance_playlist;
@@ -178,6 +177,9 @@ class MPD
 		/* Current song. May be NULL. */
 		Song *		currentsong;
 
+		/* Current songlist. Never NULL. */
+		Songlist *	active_songlist;
+
 		/* Initialise a connection to an MPD server */
 		bool		mpd_connect(string host, string port);
 
@@ -205,6 +207,9 @@ class MPD
 
 		/* Returns a pointer to the next song in line according to play mode and config, or NULL if none. */
 		Song *		next_song_in_line();
+
+		/* Textual representation of play progression */
+		string		playstring();
 
 		/* Playback options */
 		int		set_consume(bool nconsume);

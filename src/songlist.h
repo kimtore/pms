@@ -36,6 +36,7 @@ class Songlist
 		Song *		operator[] (unsigned int spos);
 
 		vector<Song *>	songs;
+		string		title;
 
 		/* Find by hash value */
 		size_t		find(long hash, size_t pos = string::npos);
