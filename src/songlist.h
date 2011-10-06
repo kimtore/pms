@@ -46,11 +46,14 @@ class Songlist
 		/* Remove all songs from the list */
 		void		clear();
 
+		/* Get a random song position within boundaries */
+		size_t		randpos();
+
 		/* Truncate the list and resize the vector */
 		void		truncate(unsigned long length);
 
 		/* Size */
-		unsigned int	size() { return songs.size(); };
+		size_t		size() { return songs.size(); };
 
 		/* Can we make local modifications? */
 		bool		readonly;

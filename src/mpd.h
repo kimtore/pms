@@ -128,6 +128,10 @@ class MPD
 		struct timeval	last_update;
 		struct timeval	last_clock;
 		bool		is_idle;
+		Songlist *	active_songlist;
+
+		/* Has the list been auto-advanced since last song switch? */
+		int		autoadvance_playlist;
 
 		/* Advance clock in IDLE mode */
 		void		run_clock();
@@ -198,6 +202,9 @@ class MPD
 
 		/* Polls the socket to see if there is any IDLE data to collect. Returns true if there are any updates. */
 		int		poll();
+
+		/* Returns a pointer to the next song in line according to play mode and config, or NULL if none. */
+		Song *		next_song_in_line();
 
 		/* Playback options */
 		int		set_consume(bool nconsume);

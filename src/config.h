@@ -100,6 +100,9 @@ class Config
 		/* Autoconnect timeout */
 		unsigned int	reconnect_delay;
 
+		/* How many seconds left of song before adding next song */
+		unsigned int	add_next_interval;
+
 		/* System bell */
 		bool		use_bell;
 		bool		visual_bell;
@@ -110,6 +113,9 @@ class Config
 
 		/* Topbar stuff */
 		unsigned int	topbar_height;
+
+		/* Auto-advance to next song? */
+		bool		autoadvance;
 
 		/* The entire color collection */
 		Colortable	colors;

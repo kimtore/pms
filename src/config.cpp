@@ -44,6 +44,8 @@ Config::Config()
 	show_column_headers = true;
 	show_window_title = true;
 	topbar_height = 1;
+	add_next_interval = 5;
+	autoadvance = true;
 	set_column_headers("artist track title album year length");
 	topbar.set("{PMS  $state [$modes] $elapsed / $length}{$artist / $title / $album / $year}{Queue has $queuesize songs ($queuelength)}");
 
@@ -53,10 +55,13 @@ Config::Config()
 	add_option("password", OPTION_TYPE_STRING, (void *)&password);
 
 	add_option("reconnectdelay", OPTION_TYPE_UINT, (void *)&reconnect_delay);
+	add_option("addnextinterval", OPTION_TYPE_UINT, (void *)&add_next_interval);
+
 	add_option("bell", OPTION_TYPE_BOOL, (void *)&use_bell);
 	add_option("visualbell", OPTION_TYPE_BOOL, (void *)&visual_bell);
 	add_option("columnheaders", OPTION_TYPE_BOOL, (void *)&show_column_headers);
 	add_option("windowtitle", OPTION_TYPE_BOOL, (void *)&show_window_title);
+	add_option("autoadvance", OPTION_TYPE_BOOL, (void *)&autoadvance);
 
 	add_option("columns", OPTION_TYPE_COLUMNHEADERS, (void *)&songlist_columns);
 	add_option("topbar", OPTION_TYPE_TOPBAR, (void *)&topbar);

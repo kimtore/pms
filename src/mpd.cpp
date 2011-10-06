@@ -60,10 +60,12 @@ MPD::MPD()
 	host = "";
 	port = "";
 	sock = 0;
+	autoadvance_playlist = -1;
 	currentsong = NULL;
 	connected = false;
 	is_idle = false;
 	playlist.playlist = true;
+	active_songlist = &library;
 	memset(&last_update, 0, sizeof last_update);
 	memset(&last_clock, 0, sizeof last_clock);
 	memset(&status, 0, sizeof status);
@@ -570,13 +572,14 @@ int MPD::get_status()
 	gettimeofday(&last_update, NULL);
 	memcpy(&last_clock, &last_update, sizeof last_clock);
 	update_currentsong();
-	wm.playlist->draw();
+	wm.draw();
 
 	return s;
 }
 
 void MPD::run_clock()
 {
+	Song * song;
 	struct timeval tm;
 	gettimeofday(&tm, NULL);
 
@@ -587,6 +590,15 @@ void MPD::run_clock()
 	}
 
 	memcpy(&last_clock, &tm, sizeof last_clock);
+
+	if (config.autoadvance && autoadvance_playlist < playlist.version && status.length - status.elapsed < (int)config.add_next_interval)
+	{
+		if ((song = next_song_in_line()) != NULL)
+		{
+			addid(song->f[FIELD_FILE]);
+			autoadvance_playlist = playlist.version;
+		}
+	}
 }
 
 int MPD::poll()
@@ -693,6 +705,57 @@ int MPD::poll()
 Song * MPD::update_currentsong()
 {
 	return (currentsong = (int)playlist.size() > status.song ? playlist.songs[status.song] : NULL);
+}
+
+Song * MPD::next_song_in_line()
+{
+	size_t i;
+
+	/* Let MPD manage the playlist itself */
+	if (!active_songlist || active_songlist == &playlist)
+		return NULL;
+
+	/* No song in line if single-mode */
+	if (status.single)
+		return NULL;
+
+	/* Don't auto-progress if playlist still has queued songs */
+	if (status.song + 1 < (int)playlist.size())
+		return NULL;
+
+	/* Need songs in active list */
+	if (active_songlist->size() == 0)
+		return NULL;
+
+	/* Linear progression */
+	if (!status.random)
+	{
+		if (!currentsong)
+			return active_songlist->songs[0];
+
+		if ((i = active_songlist->find(currentsong->fhash)) != string::npos)
+		{
+			/* Reached end of list, wrap around. */
+			if (++i >= active_songlist->size())
+			{
+				/* ... unless we are not repeating ourselves. */
+				if (!status.repeat)
+					return NULL;
+
+				i = 0;
+			}
+
+			return active_songlist->songs[i];
+		}
+
+		return NULL;
+	}
+
+	/* Random progression */
+	else
+	{
+		return active_songlist->songs[active_songlist->randpos()];
+	}
 }
 
 int MPD::set_consume(bool nconsume)

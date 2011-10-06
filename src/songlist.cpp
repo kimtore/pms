@@ -19,6 +19,7 @@
  */
 
 #include "songlist.h"
+#include <stdlib.h>
 
 Songlist::Songlist()
 {
@@ -63,6 +64,15 @@ void Songlist::clear()
 	for (i = songs.begin(); i != songs.end(); ++i)
 		delete *i;
 	songs.clear();
+}
+
+size_t Songlist::randpos()
+{
+	size_t r = 0;
+	while (r < size())
+		r += rand();
+	r %= size() - 1;
+	return r;
 }
 
 void Songlist::truncate(unsigned long length)

@@ -56,7 +56,7 @@ Keybindings::Keybindings()
 	add(CONTEXT_LIST, ACT_CURSOR_CURRENTSONG, "gc");
 
 	add(CONTEXT_ALL, ACT_CONSUME, "c");
-	add(CONTEXT_ALL, ACT_RANDOM, "R");
+	add(CONTEXT_ALL, ACT_RANDOM, "z");
 	add(CONTEXT_ALL, ACT_REPEAT, "r");
 	add(CONTEXT_ALL, ACT_SINGLE, "s");
 	add(CONTEXT_ALL, ACT_VOLUME_UP, "+");
