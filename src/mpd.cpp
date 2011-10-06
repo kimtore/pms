@@ -716,7 +716,7 @@ Song * MPD::next_song_in_line()
 	size_t i;
 
 	/* Let MPD manage the playlist itself */
-	if (!active_songlist || active_songlist == &playlist)
+	if (!active_songlist || active_songlist == &playlist || status.random)
 		return NULL;
 
 	/* No song in line if single-mode */
@@ -777,9 +777,9 @@ string MPD::playstring()
 	if (status.state == MPD_STATE_PAUSE)
 		return "Paused...";
 
-	list = config.autoadvance ? active_songlist : &playlist;
+	list = config.autoadvance && !status.random ? active_songlist : &playlist;
 
-	if (status.consume && list == &playlist)
+	if (status.consume)
 		str = "Consuming ";
 	else
 		str = "Playing ";
@@ -804,13 +804,20 @@ string MPD::playstring()
 			str += " until empty";
 		else if (status.repeat)
 			str += " forever";
+		else
+			str += ", stopping when all songs have been played";
 
 		str += ".";
 		return str;
 	}
 
 	if (!islast && list != &playlist)
-		str += "through playlist, then ";
+	{
+		if (!status.consume)
+			str += "through playlist, then ";
+		else
+			str += "playlist, then playing ";
+	}
 
 	if (config.random)
 		str += "random ";
