@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
 				mpd.get_status();
 				mpd.get_playlist();
 				mpd.get_library();
+				mpd.read_opts();
 				wm.statusbar->reset();
 				wm.topbar->draw();
 				curses.flush();

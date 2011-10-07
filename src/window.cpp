@@ -77,7 +77,7 @@ void Wmain::draw()
 
 void Wmain::scroll_window(int offset)
 {
-	int limit = static_cast<int>(content_size() - height() + 1);
+	int limit = static_cast<int>(content_size() - height() - 1);
 
 	if (limit < 0)
 		limit = 0;

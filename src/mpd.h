@@ -205,6 +205,10 @@ class MPD
 		/* Polls the socket to see if there is any IDLE data to collect. Returns true if there are any updates. */
 		int		poll();
 
+		/* Synchronise PMS' play mode config with MPD. */
+		int		apply_opts();
+		int		read_opts();
+
 		/* Returns a pointer to the next song in line according to play mode and config, or NULL if none. */
 		Song *		next_song_in_line();
 

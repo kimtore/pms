@@ -55,10 +55,10 @@ Keybindings::Keybindings()
 	add(CONTEXT_LIST, ACT_CURSOR_CURRENTSONG, "C");
 	add(CONTEXT_LIST, ACT_CURSOR_CURRENTSONG, "gc");
 
-	add(CONTEXT_ALL, ACT_CONSUME, "c");
-	add(CONTEXT_ALL, ACT_RANDOM, "z");
-	add(CONTEXT_ALL, ACT_REPEAT, "r");
-	add(CONTEXT_ALL, ACT_SINGLE, "s");
+	add(CONTEXT_ALL, ACT_SET, "c", "consume!");
+	add(CONTEXT_ALL, ACT_SET, "z", "random!");
+	add(CONTEXT_ALL, ACT_SET, "r", "repeat!");
+	add(CONTEXT_ALL, ACT_SET, "s", "single!");
 	add(CONTEXT_ALL, ACT_VOLUME_UP, "+");
 	add(CONTEXT_ALL, ACT_VOLUME_DOWN, "-");
 
@@ -71,7 +71,7 @@ Keybindings::Keybindings()
 	add(CONTEXT_ALL, ACT_SEEK_BACK, "\\<");
 }
 
-Keybinding * Keybindings::add(int context, action_t action, string sequence)
+Keybinding * Keybindings::add(int context, action_t action, string sequence, string params)
 {
 	Keybinding * c;
 	vector<int> * seq;
@@ -92,6 +92,7 @@ Keybinding * Keybindings::add(int context, action_t action, string sequence)
 	c->action = action;
 	c->sequence = *seq;
 	c->seqstr = sequence;
+	c->params = params;
 	bindings.push_back(c);
 	return c;
 }
@@ -258,7 +259,7 @@ Keybinding * Keybindings::find_conflict(vector<int> * sequence)
 	return NULL;
 }
 
-int Keybindings::find(int context, vector<int> * sequence, action_t * action)
+int Keybindings::find(int context, vector<int> * sequence, action_t * action, string * params)
 {
 	vector<Keybinding *>::iterator i;
 	int found = KEYBIND_FIND_NOMATCH;
@@ -280,6 +281,7 @@ int Keybindings::find(int context, vector<int> * sequence, action_t * action)
 		if (s == (*i)->sequence.size())
 		{
 			*action = (*i)->action;
+			*params = (*i)->params;
 			return KEYBIND_FIND_EXACT;
 		}
 	}

@@ -64,6 +64,7 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_SET:
 			config.readline(ev->text);
 			curses.detect_dimensions();
+			mpd.apply_opts();
 			wm.draw();
 			curses.flush();
 			return true;
@@ -118,17 +119,8 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_CURSOR_CURRENTSONG:
 			return set_cursor_currentsong();
 
-		case ACT_CONSUME:
-			return set_consume(!mpd.status.consume);
-
 		case ACT_CROSSFADE:
 			return set_crossfade(ev->text);
-
-		case ACT_RANDOM:
-			return set_random(!mpd.status.random);
-
-		case ACT_REPEAT:
-			return set_repeat(!mpd.status.repeat);
 
 		case ACT_SETVOL:
 			return set_volume(ev->text);
@@ -138,9 +130,6 @@ int PMS::run_event(Inputevent * ev)
 
 		case ACT_VOLUME_DOWN:
 			return change_volume(-ev->multiplier);
-
-		case ACT_SINGLE:
-			return set_single(!mpd.status.single);
 
 		case ACT_TOGGLEPLAY:
 			return toggle_play();
@@ -317,24 +306,9 @@ int PMS::cycle_windows(int offset)
 	return true;
 }
 
-int PMS::set_consume(bool consume)
-{
-	return mpd.set_consume(consume);
-}
-
 int PMS::set_crossfade(string crossfade)
 {
 	return mpd.set_crossfade(atoi(crossfade.c_str()));
-}
-
-int PMS::set_random(bool random)
-{
-	return mpd.set_random(random);
-}
-
-int PMS::set_repeat(bool repeat)
-{
-	return mpd.set_repeat(repeat);
 }
 
 int PMS::set_volume(string volume)
@@ -356,11 +330,6 @@ int PMS::change_volume(int offset)
 	if (offset < 0) offset = 0;
 	if (offset > 100) offset = 100;
 	return mpd.set_volume(offset);
-}
-
-int PMS::set_single(bool single)
-{
-	return mpd.set_single(single);
 }
 
 int PMS::toggle_play()

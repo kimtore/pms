@@ -69,6 +69,7 @@ class Keybinding
 		vector<int>	sequence;
 		action_t	action;
 		int		context;
+		string		params;
 };
 
 class Keybindings
@@ -79,14 +80,14 @@ class Keybindings
 		Keybindings();
 
 		/* Add and check for duplicate sequences */
-		Keybinding *	add(int context, action_t action, string sequence);
+		Keybinding *	add(int context, action_t action, string sequence, string params = "");
 		Keybinding *	find_conflict(vector<int> * sequence);
 
 		/* Convert a string sequence to an int sequence */
 		vector<int> *	conv_sequence(string seq);
 
 		/* Find an action based on the key sequence */
-		int		find(int context, vector<int> * sequence, action_t * action);
+		int		find(int context, vector<int> * sequence, action_t * action, string * params);
 };
 
 class Input

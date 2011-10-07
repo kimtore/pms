@@ -701,7 +701,7 @@ int MPD::poll()
 		get_library();
 
 	set_idle(true);
-	wm.statusbar->reset();
+	wm.statusbar->is_reset = false;
 
 	return true;
 }
@@ -709,6 +709,40 @@ int MPD::poll()
 Song * MPD::update_currentsong()
 {
 	return (currentsong = (int)playlist.size() > status.song ? playlist.songs[status.song] : NULL);
+}
+
+int MPD::apply_opts()
+{
+	bool r;
+
+	if (mpd.status.single != config.single)
+		set_single(config.single);
+	if (mpd.status.repeat != config.repeat)
+		set_repeat(config.repeat);
+	if (mpd.status.consume != config.consume)
+		set_consume(config.consume);
+
+	/* Shuffle/random is a special case, since PMS has it's own random functions. */
+	if (config.random)
+	{
+		if ((r = active_songlist == &playlist) != mpd.status.random)
+			set_random(r);
+	}
+	else if (mpd.status.random)
+		set_random(config.random);
+
+	return true;
+}
+
+int MPD::read_opts()
+{
+	config.single = mpd.status.single;
+	config.repeat = mpd.status.repeat;
+	config.consume = mpd.status.consume;
+	if (active_songlist == &playlist)
+		config.random = mpd.status.random;
+
+	return true;
 }
 
 Song * MPD::next_song_in_line()

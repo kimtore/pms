@@ -46,14 +46,10 @@ Commandlist::Commandlist()
 	add(CONTEXT_LIST, ACT_CURSOR_BOTTOM, "cursor-bottom");
 	add(CONTEXT_SONGLIST, ACT_CURSOR_CURRENTSONG, "cursor-currentsong");
 
-	add(CONTEXT_ALL, ACT_CONSUME, "consume");
 	add(CONTEXT_ALL, ACT_CROSSFADE, "crossfade");
-	add(CONTEXT_ALL, ACT_RANDOM, "random");
-	add(CONTEXT_ALL, ACT_REPEAT, "repeat");
 	add(CONTEXT_ALL, ACT_SETVOL, "volume");
 	add(CONTEXT_ALL, ACT_VOLUME_UP, "volume-up");
 	add(CONTEXT_ALL, ACT_VOLUME_DOWN, "volume-down");
-	add(CONTEXT_ALL, ACT_SINGLE, "single");
 
 	add(CONTEXT_ALL, ACT_TOGGLEPLAY, "toggle-play");
 	add(CONTEXT_SONGLIST, ACT_PLAY, "play");

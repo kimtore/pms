@@ -61,13 +61,9 @@ class PMS
 		int		cycle_windows(int offset);
 
 		/* MPD options */
-		int		set_consume(bool consume);
 		int		set_crossfade(string secs);
-		int		set_random(bool random);
-		int		set_repeat(bool repeat);
 		int		change_volume(int offset);
 		int		set_volume(string volume);
-		int		set_single(bool single);
 		
 		/* Playback */
 		int		toggle_play();

@@ -37,7 +37,6 @@ Inputevent::Inputevent()
 
 void Inputevent::clear()
 {
-
 	context = 0;
 	multiplier = 1;
 	action = ACT_NOACTION;
@@ -99,7 +98,7 @@ Inputevent * Input::next()
 
 			buffer.push_back(chbuf);
 			strbuf.push_back(chbuf);
-			m = keybindings->find(wm.context, &buffer, &ev.action);
+			m = keybindings->find(wm.context, &buffer, &ev.action, &strbuf);
 
 			if (m == KEYBIND_FIND_EXACT)
 				ev.result = INPUT_RESULT_RUN;
