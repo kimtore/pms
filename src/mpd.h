@@ -180,6 +180,9 @@ class MPD
 		/* Current songlist. Never NULL. */
 		Songlist *	active_songlist;
 
+		/* Textual representation of play progression */
+		string		playstring;
+
 		/* Initialise a connection to an MPD server */
 		bool		mpd_connect(string host, string port);
 
@@ -212,8 +215,8 @@ class MPD
 		/* Returns a pointer to the next song in line according to play mode and config, or NULL if none. */
 		Song *		next_song_in_line();
 
-		/* Textual representation of play progression */
-		string		playstring();
+		/* Update textual representation of play progression */
+		void		update_playstring();
 
 		/* Playback options */
 		int		set_consume(bool nconsume);

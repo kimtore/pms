@@ -73,6 +73,7 @@ MPD::MPD()
 	memset(&last_clock, 0, sizeof last_clock);
 	memset(&status, 0, sizeof status);
 	memset(&stats, 0, sizeof stats);
+	update_playstring();
 }
 
 MPD::~MPD()
@@ -701,7 +702,7 @@ int MPD::poll()
 		get_library();
 
 	set_idle(true);
-	wm.statusbar->is_reset = false;
+	update_playstring();
 
 	return true;
 }
@@ -805,27 +806,36 @@ Song * MPD::next_song_in_line()
 	}
 }
 
-string MPD::playstring()
+void MPD::update_playstring()
 {
 	Songlist * list;
 	string str;
 	bool islast;
 
 	if (!is_connected())
-		return "Not connected to MPD server.";
+	{
+		playstring = "Not connected to MPD server.";
+		return;
+	}
 	
 	if (status.state == MPD_STATE_STOP || !currentsong)
-		return "Stopped.";
+	{
+		playstring = "Stopped.";
+		return;
+	}
 
 	if (status.state == MPD_STATE_PAUSE)
-		return "Paused...";
+	{
+		playstring = "Paused...";
+		return;
+	}
 
 	list = config.autoadvance && !status.random ? active_songlist : &playlist;
 
 	if (status.consume)
-		str = "Consuming ";
+		playstring = "Consuming ";
 	else
-		str = "Playing ";
+		playstring = "Playing ";
 
 	islast = (status.song + 1 == (int)playlist.size());
 
@@ -833,47 +843,46 @@ string MPD::playstring()
 	{
 		if (!status.consume && status.repeat)
 		{
-			str += "this song forever.";
-			return str;
+			playstring += "this song forever.";
+			return;
 		}
-		str += "this song, then stopping.";
-		return str;
+		playstring += "this song, then stopping.";
+		return;
 	}
 
 	if (status.random)
 	{
-		str += "random songs from playlist";
+		playstring += "random songs from playlist";
 		if (status.consume)
-			str += " until empty";
+			playstring += " until empty";
 		else if (status.repeat)
-			str += " forever";
+			playstring += " forever";
 		else
-			str += ", stopping when all songs have been played";
+			playstring += ", stopping when all songs have been played";
 
-		str += ".";
-		return str;
+		playstring += ".";
+		return;
 	}
 
 	if (!islast && list != &playlist)
 	{
 		if (!status.consume)
-			str += "through playlist, then ";
+			playstring += "through playlist, then ";
 		else
-			str += "playlist, then playing ";
+			playstring += "playlist, then playing ";
 	}
 
 	if (config.random)
-		str += "random ";
+		playstring += "random ";
 		
-	str += "songs from " + list->title;
+	playstring += "songs from " + list->title;
 
 	if (status.consume && list == &playlist)
-		str += " until empty";
+		playstring += " until empty";
 	else if (status.repeat)
-		str += " repeatedly";
+		playstring += " repeatedly";
 
-	str += ".";
-	return str;
+	playstring += ".";
 }
 
 int MPD::set_consume(bool nconsume)

@@ -27,6 +27,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <sys/time.h>
 
 using namespace std;
 
@@ -37,6 +38,11 @@ extern Input input;
 extern Config config;
 extern MPD mpd;
 
+Wstatusbar::Wstatusbar()
+{
+	memset(&cl, 0, sizeof cl);
+}
+
 void Wstatusbar::drawline(int rely)
 {
 	vector<Logline *>::reverse_iterator i;
@@ -45,10 +51,21 @@ void Wstatusbar::drawline(int rely)
 	switch(input.mode)
 	{
 		case INPUT_MODE_COMMAND:
+			gettimeofday(&cl, NULL);
 			for (i = logbuffer.rbegin(); i != logbuffer.rend(); i++)
 			{
 				if ((*i)->level > MSG_LEVEL_INFO)
 					continue;
+
+				/* Expired message - draw playstring instead */
+				if (cl.tv_sec - (*i)->tm.tv_sec >= (int)config.reconnect_delay)
+				{
+					curses.wipe(rect, config.colors.statusbar);
+					curses.print(rect, config.colors.statusbar, rely, 0, mpd.playstring.c_str());
+					break;
+				}
+
+				/* Draw last debug message */
 				c = (*i)->level == MSG_LEVEL_ERR ? config.colors.error : config.colors.statusbar;
 				curses.wipe(rect, c);
 				curses.print(rect, c, rely, 0, (*i)->line.c_str());
@@ -62,12 +79,6 @@ void Wstatusbar::drawline(int rely)
 			curses.print(rect, config.colors.statusbar, rely, 1, input.strbuf.c_str());
 			break;
 	}
-}
-
-void Wstatusbar::reset()
-{
-	stinfo(mpd.playstring().c_str(), NULL);
-	is_reset = true;
 }
 
 void Wreadout::drawline(int rely)

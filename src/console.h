@@ -34,6 +34,7 @@ class Logline
 	public:
 		Logline(int lvl, const char * ln);
 
+		struct timeval tm;
 		int level;
 		string line;
 };

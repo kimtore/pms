@@ -185,7 +185,7 @@ int Config::readline(string line)
 	{
 		if (opt->type != OPTION_TYPE_BOOL)
 		{
-			stinfo("%s=%s", optstr.c_str(), get_opt_str(opt).c_str());
+			debug("%s=%s", optstr.c_str(), get_opt_str(opt).c_str());
 			sterr("Trailing characters: %s", line.c_str());
 			return false;
 		}
@@ -426,9 +426,9 @@ void Config::print_option(option_t * opt)
 	if (opt == NULL)
 		return;
 	else if (opt->type == OPTION_TYPE_BOOL)
-		stinfo("  %s", get_opt_str(opt).c_str());
+		debug("  %s", get_opt_str(opt).c_str());
 	else
-		stinfo("  %s=%s", opt->name.c_str(), get_opt_str(opt).c_str());
+		debug("  %s=%s", opt->name.c_str(), get_opt_str(opt).c_str());
 }
 
 int Config::print_all_options()

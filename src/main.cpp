@@ -44,7 +44,6 @@ PMS		pms;
 int main(int argc, char *argv[])
 {
 	struct timeval cl;
-	struct timeval st;
 	struct timeval conn;
 
 	if (!curses.ready)
@@ -54,7 +53,6 @@ int main(int argc, char *argv[])
 	}
 
 	memset(&conn, 0, sizeof conn);
-	memset(&st, 0, sizeof conn);
 
 	wm.playlist->songlist = &mpd.playlist;
 	wm.library->songlist = &mpd.library;
@@ -74,26 +72,26 @@ int main(int argc, char *argv[])
 				mpd.get_playlist();
 				mpd.get_library();
 				mpd.read_opts();
-				wm.statusbar->reset();
-				wm.topbar->draw();
+				mpd.update_playstring();
+				wm.draw();
 				curses.flush();
 				gettimeofday(&conn, NULL);
-				gettimeofday(&st, NULL);
 			}
 		}
 
 		/* Get updates from MPD, run clock, do updates */
 		mpd.poll();
 
-		/* Statusbar needs redraw with playstring? */
-		if (!wm.statusbar->is_reset && cl.tv_sec - st.tv_sec >= (int)config.status_reset_interval)
-		{
-			wm.statusbar->reset();
-			gettimeofday(&st, NULL);
-		}
-
+		/* Draw topbar after poll() */
 		wm.topbar->draw();
+
+		/* Statusbar needs redraw with playstring? */
+		wm.statusbar->draw();
+
+		/* Refresh screen every tick */
 		curses.flush();
+
+		/* Check for any input events and run them */
 		pms.run_event(input.next());
 	}
 }

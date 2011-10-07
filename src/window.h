@@ -142,11 +142,10 @@ class Wtopbar : public Window
 class Wstatusbar : public Window
 {
 	public:
-		void		drawline(int rely);
-		bool		is_reset;
+		Wstatusbar();
 
-		/* Draw the play mode string. */
-		void		reset();
+		void		drawline(int rely);
+		struct timeval	cl;
 };
 
 class Wreadout : public Window

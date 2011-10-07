@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <sys/time.h>
 
 using namespace std;
 
@@ -36,6 +37,7 @@ Logline::Logline(int lvl, const char * ln)
 {
 	level = lvl;
 	line = ln;
+	gettimeofday(&tm, NULL);
 }
 
 void console_log(int level, const char * format, ...)
@@ -67,7 +69,6 @@ void console_log(int level, const char * format, ...)
 	if (level <= MSG_LEVEL_INFO)
 	{
 		wm.statusbar->draw();
-		wm.statusbar->is_reset = false;
 		curses.flush();
 	}
 }
