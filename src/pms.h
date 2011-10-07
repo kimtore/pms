@@ -62,6 +62,9 @@ class PMS
 		int		cycle_windows(int offset);
 		int		activate_songlist();
 
+		/* List management */
+		int		remove(int count);
+
 		/* MPD options */
 		int		set_crossfade(string secs);
 		int		change_volume(int offset);

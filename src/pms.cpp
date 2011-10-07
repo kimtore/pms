@@ -98,6 +98,9 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_ACTIVATE_SONGLIST:
 			return activate_songlist();
 
+		case ACT_REMOVE:
+			return remove(ev->multiplier);
+
 		case ACT_SCROLL_UP:
 			return scroll_window(-ev->multiplier);
 
@@ -344,6 +347,29 @@ int PMS::activate_songlist()
 	}
 
 	return mpd.activate_songlist(win->songlist);
+}
+
+int PMS::remove(int count)
+{
+	Wsonglist * win;
+	if ((win = WSONGLIST(wm.active)) == NULL)
+	{
+		sterr("Current window is not a playlist. Cannot remove any songs from here.", NULL);
+		return false;
+	}
+	if (win->songlist->readonly)
+	{
+		sterr("This playlist is read-only.", NULL);
+		return false;
+	}
+
+	if (mpd.remove(win->songlist, win->cursor, count))
+	{
+		win->move_cursor(0);
+		return true;
+	}
+
+	return false;
 }
 
 int PMS::set_crossfade(string crossfade)

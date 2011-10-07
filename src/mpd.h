@@ -215,6 +215,9 @@ class MPD
 		/* Activates a songlist */
 		int		activate_songlist(Songlist * list);
 
+		/* List management */
+		int		remove(Songlist * list, int start, int count);
+
 		/* Returns a pointer to the next song in line according to play mode and config, or NULL if none. */
 		Song *		next_song_in_line();
 

@@ -39,6 +39,9 @@ Keybindings::Keybindings()
 	add(CONTEXT_ALL, ACT_PREVIOUS_WINDOW, "T");
 	add(CONTEXT_ALL, ACT_PREVIOUS_WINDOW, "gT");
 
+	add(CONTEXT_SONGLIST, ACT_REMOVE, "dd");
+	add(CONTEXT_SONGLIST, ACT_REMOVE, "<Delete>");
+
 	add(CONTEXT_LIST, ACT_SCROLL_UP, "<C-y>");
 	add(CONTEXT_LIST, ACT_SCROLL_DOWN, "<C-e>");
 	add(CONTEXT_LIST, ACT_CURSOR_UP, "k");

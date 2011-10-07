@@ -768,6 +768,32 @@ int MPD::activate_songlist(Songlist * list)
 	return true;
 }
 
+int MPD::remove(Songlist * list, int start, int count)
+{
+	if (!list || start < 0 || start >= (int)list->size() || count == 0)
+		return false;
+
+	/* Reverse deletion */
+	if (count < 0)
+	{
+		start += count;
+		count = -count;
+		if (start < 0)
+			return false;
+	}
+
+	if (start + count > (int)list->size())
+		count = list->size() - start;
+
+	if (list == &playlist)
+	{
+		mpd_send("delete %d:%d", start, start + count);
+		return (mpd_getline(NULL) == MPD_GETLINE_OK);
+	}
+
+	return false;
+}
+
 Song * MPD::next_song_in_line()
 {
 	size_t i;
