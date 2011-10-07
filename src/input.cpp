@@ -40,8 +40,25 @@ void Inputevent::clear()
 	context = 0;
 	multiplier = 1;
 	action = ACT_NOACTION;
+	result = INPUT_RESULT_NOINPUT;
 	context = 0;
 	text.clear();
+}
+
+Inputevent & Inputevent::operator= (const Inputevent & src)
+{
+	if (this == &src)
+		return *this;
+
+	clear();
+	result = src.result;
+	context = src.context;
+	multiplier = src.multiplier;
+	action = src.action;
+	context = src.context;
+	text = src.text;
+
+	return *this;
 }
 
 Input::Input()

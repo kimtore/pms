@@ -37,7 +37,11 @@ extern Commandlist 	commandlist;
 
 int PMS::run_event(Inputevent * ev)
 {
+	static Inputevent lastev;
 	if (!ev) return false;
+
+	if (ev->result == INPUT_RESULT_RUN && ev->action != ACT_REPEATACTION && ev->action != ACT_RUN_CMD && ev != &lastev)
+		lastev = *ev;
 
 	if (ev->result == INPUT_RESULT_RUN)
 	switch(ev->action)
@@ -60,6 +64,9 @@ int PMS::run_event(Inputevent * ev)
 			wm.statusbar->draw();
 			curses.flush();
 			return true;
+
+		case ACT_REPEATACTION:
+			return run_event(&lastev);
 
 		case ACT_SET:
 			config.readline(ev->text);

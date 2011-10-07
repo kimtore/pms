@@ -31,6 +31,7 @@ using namespace std;
 Keybindings::Keybindings()
 {
 	add(CONTEXT_ALL, ACT_MODE_INPUT, ":");
+	add(CONTEXT_ALL, ACT_REPEATACTION, ".");
 	add(CONTEXT_ALL, ACT_QUIT, "q");
 
 	add(CONTEXT_ALL, ACT_NEXT_WINDOW, "t");

@@ -28,6 +28,8 @@ Commandlist::Commandlist()
 {
 	add(CONTEXT_ALL, ACT_SET, "se");
 	add(CONTEXT_ALL, ACT_SET, "set");
+	add(CONTEXT_ALL, ACT_MODE_INPUT, "cmd");
+	add(CONTEXT_ALL, ACT_REPEATACTION, "repeat-action");
 
 	add(CONTEXT_ALL, ACT_QUIT, "quit");
 	add(CONTEXT_ALL, ACT_QUIT, "q");

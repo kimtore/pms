@@ -46,6 +46,8 @@ class Inputevent
 		Inputevent();
 		void clear();
 
+		Inputevent & operator= (const Inputevent & src);
+
 		/* Which context are we in? */
 		int context;
 
