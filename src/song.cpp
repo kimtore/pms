@@ -208,6 +208,36 @@ string zeropad(int i, unsigned int target)
 	return s;
 }
 
+string str_replace(string search, string replace, string subject)
+{
+	string buffer;
+	unsigned int i, j;
+	unsigned int seal = search.size();
+	unsigned int strl = subject.size();
+
+	if (seal == 0)
+		return subject;
+
+	for (i = 0, j = 0; i < strl; j = 0)
+	{
+		while (i + j < strl && j < seal && subject[i+j] == search[j])
+			j++;
+
+		/* match */
+		if (j == seal)
+		{
+			buffer.append(replace);
+			i += seal;
+		}
+		else
+		{
+			buffer += subject[i++];
+		}
+	}
+
+	return buffer;
+}
+
 string tostring(int number)
 {
 	ostringstream s;

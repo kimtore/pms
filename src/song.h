@@ -58,6 +58,9 @@ string time_format(int seconds);
 /* Pad an int with zeroes */
 string zeropad(int i, unsigned int target);
 
+/* Search and replace string */
+string str_replace(string search, string replace, string subject);
+
 /* Convert number to string */
 string tostring(int number);
 string tostring(unsigned int number);

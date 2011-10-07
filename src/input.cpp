@@ -243,7 +243,7 @@ void Input::handle_text_input()
 				else if (pos + 1 == strbuf.size())
 				{
 					opt = config.get_opt_ptr(strbuf.substr(fpos, pos - fpos));
-					if (opt->type != OPTION_TYPE_BOOL)
+					if (opt && opt->type != OPTION_TYPE_BOOL)
 						strbuf = strbuf + config.get_opt_str(opt);
 				}
 

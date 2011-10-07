@@ -89,6 +89,7 @@ int Config::readline(string line)
 	bool show = false;
 	bool negative = false;
 	bool * bopt;
+	int arithmetic = 0;
 	int result;
 
 	/* Locate the identifier */
@@ -112,15 +113,31 @@ int Config::readline(string line)
 	{
 		case '?':
 			show = true;
-			optstr = optstr.substr(0, optstr.size() - 1);
 			break;
 		case '!':
 			invert = true;
-			optstr = optstr.substr(0, optstr.size() - 1);
 			break;
-		default:
-			break;
+		default:;
 	}
+
+	/* Detect += or -= values */
+	if (pos != string::npos && line[pos] == '=')
+	{
+		switch(optstr[optstr.size()-1])
+		{
+			case '+':
+				arithmetic = 1;
+				break;
+			case '-':
+				arithmetic = -1;
+				break;
+			default:;
+		}
+	}
+
+	/* Cut away operators */
+	if (show || invert || arithmetic != 0)
+		optstr = optstr.substr(0, optstr.size() - 1);
 
 	/* Return the option struct if this is a valid option */
 	if ((opt = get_opt_ptr(optstr)) == NULL)
@@ -149,6 +166,14 @@ int Config::readline(string line)
 	{
 		print_option(opt);
 		return true;
+	}
+
+	if (arithmetic != 0)
+	{
+		/* Add the new string value to the previous values */
+		if ((result = add_opt_str(opt, optval, arithmetic)))
+			print_option(opt);
+		return result;
 	}
 
 	/* Invert an option if boolean */
@@ -182,10 +207,8 @@ int Config::readline(string line)
 	}
 
 	/* Set the new string value */
-	result = set_opt_str(opt, optval);
-	if (result)
+	if ((result = set_opt_str(opt, optval)))
 		print_option(opt);
-
 	return result;
 }
 
@@ -251,6 +274,50 @@ string Config::get_opt_str(option_t * opt)
 	}
 
 	return str;
+}
+
+int Config::add_opt_str(option_t * opt, string value, int arithmetic)
+{
+	string s;
+	int * i;
+	unsigned int * ui;
+
+	if (opt == NULL)
+		return false;
+
+	if (arithmetic == 0)
+		return set_opt_str(opt, value);
+
+	switch(opt->type)
+	{
+		case OPTION_TYPE_COLUMNHEADERS:
+			if (arithmetic == 1)
+				value = " " + value;
+			/* break intentionally omitted */
+
+		case OPTION_TYPE_STRING:
+		case OPTION_TYPE_TOPBAR:
+			s = get_opt_str(opt);
+			if (arithmetic == 1)
+				s = s + value;
+			else if (arithmetic == -1)
+				s = str_replace(value, "", s);
+			set_opt_str(opt, s);
+			return true;
+
+		case OPTION_TYPE_INT:
+			i = (int *)opt->ptr;
+			*i = *i + (arithmetic * atoi(value.c_str()));
+			return true;
+
+		case OPTION_TYPE_UINT:
+			ui = (unsigned int *)opt->ptr;
+			*ui = *ui + (arithmetic * atoi(value.c_str()));
+			return true;
+
+		default:
+			return false;
+	}
 }
 
 int Config::set_opt_str(option_t * opt, string value)

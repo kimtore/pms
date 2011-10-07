@@ -72,6 +72,7 @@ class Config
 		int		readline(string line);
 
 		/* Option string getter and setter */
+		int		add_opt_str(option_t * opt, string value, int arithmetic);
 		int		set_opt_str(option_t * opt, string value);
 		string		get_opt_str(option_t * opt);
 
