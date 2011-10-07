@@ -55,6 +55,8 @@ Keybindings::Keybindings()
 	add(CONTEXT_LIST, ACT_CURSOR_END, "<End>");
 	add(CONTEXT_LIST, ACT_CURSOR_CURRENTSONG, "C");
 	add(CONTEXT_LIST, ACT_CURSOR_CURRENTSONG, "gc");
+	add(CONTEXT_LIST, ACT_CURSOR_RANDOM, "R");
+	add(CONTEXT_LIST, ACT_CURSOR_RANDOM, "gr");
 
 	add(CONTEXT_ALL, ACT_SET, "c", "consume!");
 	add(CONTEXT_ALL, ACT_SET, "z", "random!");

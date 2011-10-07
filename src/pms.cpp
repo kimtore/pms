@@ -126,6 +126,9 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_CURSOR_CURRENTSONG:
 			return set_cursor_currentsong();
 
+		case ACT_CURSOR_RANDOM:
+			return set_cursor_random();
+
 		case ACT_CROSSFADE:
 			return set_crossfade(ev->text);
 
@@ -307,6 +310,25 @@ int PMS::set_cursor_currentsong()
 	}
 
 	window->set_cursor(pos);
+	return true;
+}
+
+int PMS::set_cursor_random()
+{
+	Wsonglist * window;
+
+	/* Get current window */
+	window = WSONGLIST(wm.active);
+	if (window == NULL)
+	{
+		sterr("Current window is not a playlist, so cannot locate any songs here.", NULL);
+		return false;
+	}
+
+	if (window->songlist->size() == 0)
+		return false;
+	
+	window->set_cursor(window->songlist->randpos());
 	return true;
 }
 

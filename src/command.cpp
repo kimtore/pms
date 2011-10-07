@@ -47,6 +47,7 @@ Commandlist::Commandlist()
 	add(CONTEXT_LIST, ACT_CURSOR_TOP, "cursor-top");
 	add(CONTEXT_LIST, ACT_CURSOR_BOTTOM, "cursor-bottom");
 	add(CONTEXT_SONGLIST, ACT_CURSOR_CURRENTSONG, "cursor-currentsong");
+	add(CONTEXT_SONGLIST, ACT_CURSOR_RANDOM, "cursor-random");
 
 	add(CONTEXT_ALL, ACT_CROSSFADE, "crossfade");
 	add(CONTEXT_ALL, ACT_SETVOL, "volume");
