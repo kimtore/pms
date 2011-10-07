@@ -83,7 +83,7 @@ class Config
 		option_t *	get_opt_ptr(string opt);
 
 		/* Tab-complete search, return a list of option_t */
-		unsigned int	grep_opt(string opt, vector<option_t *> * list, bool * negate);
+		unsigned int	grep_opt(string opt, vector<option_t *> * list, string * prefix);
 
 
 		/* Connection parameters */

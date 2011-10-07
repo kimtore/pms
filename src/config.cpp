@@ -131,6 +131,12 @@ int Config::readline(string line)
 			negative = !invert;
 			optstr = optstr.substr(2);
 		}
+		/* Check if this is an invertion (inv<option>) */
+		else if (optstr.size() > 3 && optstr.substr(0, 3) == "inv" && ((opt = get_opt_ptr(optstr.substr(3))) != NULL) && opt->type == OPTION_TYPE_BOOL)
+		{
+			invert = true;
+			optstr = optstr.substr(3);
+		}
 		else
 		{
 			sterr("Unknown option: %s", line.c_str());
@@ -141,21 +147,6 @@ int Config::readline(string line)
 	/* Print the option to statusbar */
 	if (show)
 	{
-		print_option(opt);
-		return true;
-	}
-
-	/* Check for (negative) boolean options */
-	if (optval.size() == 0 && pos == string::npos)
-	{
-		/* Show option instead */
-		if (opt->type != OPTION_TYPE_BOOL)
-		{
-			print_option(opt);
-			return true;
-		}
-		bopt = (bool *)opt->ptr;
-		*bopt = !negative;
 		print_option(opt);
 		return true;
 	}
@@ -171,6 +162,21 @@ int Config::readline(string line)
 		}
 		bopt = (bool *)opt->ptr;
 		*bopt = !(*bopt);
+		print_option(opt);
+		return true;
+	}
+
+	/* Check for (negative) boolean options */
+	if (optval.size() == 0 && pos == string::npos)
+	{
+		/* Show option instead */
+		if (opt->type != OPTION_TYPE_BOOL)
+		{
+			print_option(opt);
+			return true;
+		}
+		bopt = (bool *)opt->ptr;
+		*bopt = !negative;
 		print_option(opt);
 		return true;
 	}
@@ -305,21 +311,27 @@ option_t * Config::get_opt_ptr(string opt)
 	return NULL;
 }
 
-unsigned int Config::grep_opt(string opt, vector<option_t *> * list, bool * negate)
+unsigned int Config::grep_opt(string opt, vector<option_t *> * list, string * prefix)
 {
 	vector<option_t *>::const_iterator i;
 
 	if (!list) return 0;
 	list->clear();
 
-	*negate = false;
+	/* Check for "no..." and "inv..." options, which also needs to be tab-completed. */
 	if (opt.size() >= 2 && opt.substr(0, 2) == "no")
+		*prefix = "no";
+	else if (opt.size() >= 3 && opt.substr(0, 3) == "inv")
+		*prefix = "inv";
+	else
+		prefix->clear();
+
+	if (prefix->size() > 0)
 	{
-		if (opt.size() == 2)
+		if (opt.size() == prefix->size())
 			opt.clear();
 		else
-			opt = opt.substr(2);
-		*negate = true;
+			opt = opt.substr(prefix->size());
 	}
 
 	for (i = options.begin(); i != options.end(); i++)
@@ -329,7 +341,8 @@ unsigned int Config::grep_opt(string opt, vector<option_t *> * list, bool * nega
 
 		if (opt == (*i)->name.substr(0, opt.size()))
 		{
-			if (!(*negate) || (*i)->type == OPTION_TYPE_BOOL || ((*i)->name.size() > 2 && (*i)->name.substr(0, 2) == "no"))
+			if (prefix->size() == 0 || (*i)->type == OPTION_TYPE_BOOL
+				|| ((*i)->name.size() > prefix->size() && (*i)->name.substr(0, prefix->size()) == *prefix))
 				list->push_back(*i);
 		}
 	}
@@ -342,9 +355,9 @@ void Config::print_option(option_t * opt)
 	if (opt == NULL)
 		return;
 	else if (opt->type == OPTION_TYPE_BOOL)
-		debug("  %s", get_opt_str(opt).c_str());
+		stinfo("  %s", get_opt_str(opt).c_str());
 	else
-		debug("  %s=%s", opt->name.c_str(), get_opt_str(opt).c_str());
+		stinfo("  %s=%s", opt->name.c_str(), get_opt_str(opt).c_str());
 }
 
 int Config::print_all_options()

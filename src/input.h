@@ -95,7 +95,7 @@ class Input
 		int			chbuf;
 		bool			is_tab_completing;
 		bool			is_option_tab_completing;
-		bool			option_tab_negate;
+		string			option_tab_prefix;
 		unsigned int		tab_complete_index;
 		unsigned int		option_tab_complete_index;
 		vector<Command *> *	tab_results;

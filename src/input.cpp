@@ -54,7 +54,7 @@ Input::Input()
 	buffer.clear();
 	is_tab_completing = false;
 	is_option_tab_completing = false;
-	option_tab_negate = false;
+	option_tab_prefix.clear();
 	tab_complete_index = 0;
 	option_tab_complete_index = 0;
 	keybindings = new Keybindings();
@@ -208,7 +208,7 @@ void Input::handle_text_input()
 					}
 					else
 					{
-						config.grep_opt(strbuf.substr(fpos), &option_tab_results, &option_tab_negate);
+						config.grep_opt(strbuf.substr(fpos), &option_tab_results, &option_tab_prefix);
 						if (option_tab_results.size() > 0)
 						{
 							is_option_tab_completing = true;
@@ -218,14 +218,8 @@ void Input::handle_text_input()
 
 					if (is_option_tab_completing)
 					{
-						opt = option_tab_results[option_tab_complete_index];
-						if (opt)
-						{
-							if (opt->type == OPTION_TYPE_BOOL && option_tab_negate)
-								strbuf = strbuf.substr(0, fpos) + "no" + opt->name;
-							else
-								strbuf = strbuf.substr(0, fpos) + opt->name;
-						}
+						if ((opt = option_tab_results[option_tab_complete_index]) != NULL)
+							strbuf = strbuf.substr(0, fpos) + option_tab_prefix + opt->name;
 					}
 				}
 
