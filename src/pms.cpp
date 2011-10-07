@@ -66,6 +66,8 @@ int PMS::run_event(Inputevent * ev)
 			return true;
 
 		case ACT_REPEATACTION:
+			if (ev->multiplier != 1)
+				lastev.multiplier = ev->multiplier;
 			return run_event(&lastev);
 
 		case ACT_SET:
