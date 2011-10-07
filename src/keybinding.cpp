@@ -62,8 +62,9 @@ Keybindings::Keybindings()
 	add(CONTEXT_ALL, ACT_SET, "z", "random!");
 	add(CONTEXT_ALL, ACT_SET, "r", "repeat!");
 	add(CONTEXT_ALL, ACT_SET, "s", "single!");
-	add(CONTEXT_ALL, ACT_VOLUME_UP, "+");
-	add(CONTEXT_ALL, ACT_VOLUME_DOWN, "-");
+	add(CONTEXT_ALL, ACT_SET, "+", "volume+=2");
+	add(CONTEXT_ALL, ACT_SET, "-", "volume-=2");
+	add(CONTEXT_ALL, ACT_SET, "m", "mute!");
 
 	add(CONTEXT_ALL, ACT_TOGGLEPLAY, "<Space>");
 	add(CONTEXT_SONGLIST, ACT_PLAY, "<Enter>");

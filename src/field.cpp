@@ -21,11 +21,13 @@
 #include "field.h"
 #include "song.h"
 #include "mpd.h"
+#include "config.h"
 #include <vector>
 #include <string>
 using namespace std;
 
 extern MPD mpd;
+extern Config config;
 
 Field::Field(field_t nfield, string name, string mpd_name, string tit, unsigned int minl, unsigned int maxl)
 {
@@ -54,6 +56,13 @@ string Field::format(Song * song)
 
 		case FIELD_REMAINING:
 			return time_format((int)(mpd.status.length - mpd.status.elapsed));
+
+		case FIELD_VOLUME:
+			if (mpd.status.volume == 0 && config.mute)
+				tmp = "Muted (" + tostring(config.volume) + "%%)";
+			else
+				tmp = tostring(mpd.status.volume) + "%%";
+			return tmp;
 
 		case FIELD_MODES:
 			tmp = "----";
@@ -114,6 +123,7 @@ Fieldtypes::Fieldtypes()
 	/* Topbar fields */
 	fields.push_back(new Field(FIELD_ELAPSED, "elapsed", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_REMAINING, "remaining", "", "", 0, 0));
+	fields.push_back(new Field(FIELD_VOLUME, "volume", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_MODES, "modes", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_STATE, "state", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_QUEUESIZE, "queuesize", "", "", 0, 0));

@@ -447,7 +447,7 @@ int MPD::get_library()
 	{
 		sterr("Library update terminated!", NULL);
 		debug("Library update was terminated by MPD. We got %d of a total of %d songs.", library.size(), stats.songs);
-		debug("This is due to the large volume of data transferred by PMS.", NULL);
+		debug("This sometimes happens due to the large volume of data transferred by PMS.", NULL);
 		debug("If this happens often, you might need to increase MPD's `max_output_buffer_size' setting.", NULL);
 	}
 	wm.library->update_column_length();
@@ -715,6 +715,14 @@ int MPD::apply_opts()
 {
 	bool r;
 
+	/* FIXME: maybe these should be sanitized before being allowed to set them? */
+	if (config.volume > 100)
+		config.volume = 100;
+	else if (config.volume < 0)
+		config.volume = 0;
+
+	if (mpd.status.volume != (config.mute ? 0 : config.volume))
+		set_volume(config.mute ? 0 : config.volume);
 	if (mpd.status.single != config.single)
 		set_single(config.single);
 	if (mpd.status.repeat != config.repeat)
@@ -736,6 +744,7 @@ int MPD::apply_opts()
 
 int MPD::read_opts()
 {
+	config.volume = mpd.status.volume;
 	config.single = mpd.status.single;
 	config.repeat = mpd.status.repeat;
 	config.consume = mpd.status.consume;

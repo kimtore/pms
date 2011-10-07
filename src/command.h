@@ -68,9 +68,6 @@ typedef enum
 
 	/* MPD options */
 	ACT_CROSSFADE,
-	ACT_SETVOL,
-	ACT_VOLUME_UP,
-	ACT_VOLUME_DOWN,
 	ACT_PASSWORD,
 
 	/* Playback */

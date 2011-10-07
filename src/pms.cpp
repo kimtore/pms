@@ -132,15 +132,6 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_CROSSFADE:
 			return set_crossfade(ev->text);
 
-		case ACT_SETVOL:
-			return set_volume(ev->text);
-
-		case ACT_VOLUME_UP:
-			return change_volume(ev->multiplier);
-
-		case ACT_VOLUME_DOWN:
-			return change_volume(-ev->multiplier);
-
 		case ACT_PASSWORD:
 			return set_password(ev->text);
 
@@ -343,33 +334,12 @@ int PMS::set_crossfade(string crossfade)
 	return mpd.set_crossfade(atoi(crossfade.c_str()));
 }
 
-int PMS::set_volume(string volume)
-{
-	if (volume.size() == 0)
-		return false;
-	
-	if (volume[0] == '+')
-		return mpd.set_volume(mpd.status.volume + atoi(volume.substr(1).c_str()));
-	else if (volume[0] == '-')
-		return mpd.set_volume(mpd.status.volume - atoi(volume.substr(1).c_str()));
-	else
-		return mpd.set_volume(atoi(volume.c_str()));
-}
-
 int PMS::set_password(string password)
 {
 	int i;
 	if ((i = mpd.set_password(password)) == true)
 		mpd.apply_opts(); /* any option desynch should be fixed here. */
 	return i;
-}
-
-int PMS::change_volume(int offset)
-{
-	offset = mpd.status.volume + offset;
-	if (offset < 0) offset = 0;
-	if (offset > 100) offset = 100;
-	return mpd.set_volume(offset);
 }
 
 int PMS::toggle_play()

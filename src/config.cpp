@@ -51,8 +51,10 @@ Config::Config()
 	repeat = false;
 	consume = false;
 	single = false;
+	mute = false;
+	volume = 100;
 	set_column_headers("artist track title album year length");
-	topbar.set("{PMS  $state [$modes] $elapsed / $remaining}{$artist / $title / $album / $year}{Queue has $queuesize songs ($queuelength)}");
+	topbar.set("{PMS $volume $state [$modes] $elapsed / $remaining}{$artist / $title / $album / $year}{Queue has $queuesize songs ($queuelength)}");
 
 	/* Set up options array */
 	add_option("host", OPTION_TYPE_STRING, (void *)&host);
@@ -73,6 +75,8 @@ Config::Config()
 	add_option("repeat", OPTION_TYPE_BOOL, (void *)&repeat);
 	add_option("consume", OPTION_TYPE_BOOL, (void *)&consume);
 	add_option("single", OPTION_TYPE_BOOL, (void *)&single);
+	add_option("mute", OPTION_TYPE_BOOL, (void *)&mute);
+	add_option("volume", OPTION_TYPE_INT, (void *)&volume);
 
 	add_option("columns", OPTION_TYPE_COLUMNHEADERS, (void *)&songlist_columns);
 	add_option("topbar", OPTION_TYPE_TOPBAR, (void *)&topbar);

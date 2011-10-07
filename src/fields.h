@@ -48,6 +48,7 @@ typedef enum
 	/* These fields are mainly for use in the topbar. DO NOT include them in FIELD_COLUMN_VALUES. */
 	FIELD_ELAPSED,
 	FIELD_REMAINING,
+	FIELD_VOLUME,
 	FIELD_MODES,
 	FIELD_STATE,
 	FIELD_QUEUESIZE,
@@ -57,6 +58,6 @@ typedef enum
 field_t;
 
 #define FIELD_COLUMN_VALUES 18
-#define FIELD_TOTAL_VALUES 24
+#define FIELD_TOTAL_VALUES 25
 
 #endif /* _PMS_FIELDS_H_ */
