@@ -96,7 +96,7 @@ int Config::readline(string line)
 	{
 		return print_all_options();
 	}
-	else if ((pos = line.find('=')) != string::npos)
+	else if ((pos = line.find_first_of("=:")) != string::npos)
 	{
 		optstr = line.substr(0, pos);
 		if (line.size() > pos + 1)
