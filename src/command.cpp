@@ -35,6 +35,7 @@ Commandlist::Commandlist()
 	add(CONTEXT_ALL, ACT_QUIT, "q");
 	add(CONTEXT_ALL, ACT_NEXT_WINDOW, "next-window");
 	add(CONTEXT_ALL, ACT_PREVIOUS_WINDOW, "prev-window");
+	add(CONTEXT_SONGLIST, ACT_ACTIVATE_SONGLIST, "activate-list");
 
 	add(CONTEXT_LIST, ACT_SCROLL_UP, "scroll-up");
 	add(CONTEXT_LIST, ACT_SCROLL_DOWN, "scroll-down");

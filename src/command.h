@@ -66,6 +66,9 @@ typedef enum
 	ACT_CURSOR_CURRENTSONG,
 	ACT_CURSOR_RANDOM,
 
+	/* Songlist actions */
+	ACT_ACTIVATE_SONGLIST,
+
 	/* MPD options */
 	ACT_CROSSFADE,
 	ACT_PASSWORD,

@@ -212,6 +212,9 @@ class MPD
 		int		apply_opts();
 		int		read_opts();
 
+		/* Activates a songlist */
+		int		activate_songlist(Songlist * list);
+
 		/* Returns a pointer to the next song in line according to play mode and config, or NULL if none. */
 		Song *		next_song_in_line();
 

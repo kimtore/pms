@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
 
 	memset(&conn, 0, sizeof conn);
 
+	curses.detect_dimensions();
 	wm.playlist->songlist = &mpd.playlist;
 	wm.library->songlist = &mpd.library;
 	wm.draw();

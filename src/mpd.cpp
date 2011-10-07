@@ -68,7 +68,7 @@ MPD::MPD()
 	playlist.title = "playlist";
 	library.readonly = true;
 	library.title = "library";
-	active_songlist = &library;
+	active_songlist = &playlist;
 	memset(&last_update, 0, sizeof last_update);
 	memset(&last_clock, 0, sizeof last_clock);
 	memset(&status, 0, sizeof status);
@@ -751,6 +751,19 @@ int MPD::read_opts()
 	config.consume = mpd.status.consume;
 	if (active_songlist == &playlist)
 		config.random = mpd.status.random;
+
+	return true;
+}
+
+int MPD::activate_songlist(Songlist * list)
+{
+	if (!list)
+		return false;
+	
+	active_songlist = list;
+	apply_opts();
+	update_playstring();
+	wm.statusbar->draw();
 
 	return true;
 }

@@ -60,6 +60,7 @@ class PMS
 
 		/* Change windows */
 		int		cycle_windows(int offset);
+		int		activate_songlist();
 
 		/* MPD options */
 		int		set_crossfade(string secs);

@@ -95,6 +95,9 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_PREVIOUS_WINDOW:
 			return cycle_windows(-ev->multiplier);
 
+		case ACT_ACTIVATE_SONGLIST:
+			return activate_songlist();
+
 		case ACT_SCROLL_UP:
 			return scroll_window(-ev->multiplier);
 
@@ -329,6 +332,18 @@ int PMS::cycle_windows(int offset)
 {
 	wm.cycle(offset);
 	return true;
+}
+
+int PMS::activate_songlist()
+{
+	Wsonglist * win;
+	if ((win = WSONGLIST(wm.active)) == NULL)
+	{
+		sterr("Current window is not a playlist, and cannot be set as the primary playback list.", NULL);
+		return false;
+	}
+
+	return mpd.activate_songlist(win->songlist);
 }
 
 int PMS::set_crossfade(string crossfade)

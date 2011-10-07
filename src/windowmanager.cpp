@@ -21,9 +21,13 @@
 #include "window.h"
 #include "curses.h"
 #include "command.h"
+#include "mpd.h"
+#include "config.h"
 #include <vector>
 
 extern Curses curses;
+extern MPD mpd;
+extern Config config;
 
 Windowmanager::Windowmanager()
 {
@@ -68,12 +72,16 @@ void Windowmanager::flush()
 
 bool Windowmanager::activate(Wmain * nactive)
 {
+	Wsonglist * ws;
 	unsigned int i;
 
 	for (i = 0; i < windows.size(); ++i)
 	{
 		if (windows[i] == nactive)
 		{
+			if ((ws = WSONGLIST(nactive)) != NULL && config.playback_follows_window)
+				mpd.activate_songlist(ws->songlist);
+
 			active_index = i;
 			active = nactive;
 			context = active->context;
@@ -90,6 +98,8 @@ bool Windowmanager::activate(Wmain * nactive)
 
 void Windowmanager::cycle(int offset)
 {
+	Wsonglist * ws;
+
 	if (offset >= 0)
 		offset %= windows.size();
 	else
@@ -104,6 +114,10 @@ void Windowmanager::cycle(int offset)
 	active_index = (unsigned int)offset;
 	active = windows[active_index];
 	context = active->context;
+
+	if ((ws = WSONGLIST(active)) != NULL && config.playback_follows_window)
+		mpd.activate_songlist(ws->songlist);
+
 	active->draw();
 	readout->draw();
 	curses.flush();

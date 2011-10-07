@@ -58,7 +58,7 @@ void Wstatusbar::drawline(int rely)
 					continue;
 
 				/* Expired message - draw playstring instead */
-				if (cl.tv_sec - (*i)->tm.tv_sec >= (int)config.reconnect_delay)
+				if (cl.tv_sec - (*i)->tm.tv_sec >= (int)config.status_reset_interval)
 				{
 					curses.wipe(rect, config.colors.statusbar);
 					curses.print(rect, config.colors.statusbar, rely, 0, mpd.playstring.c_str());

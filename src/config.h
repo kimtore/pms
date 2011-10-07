@@ -118,6 +118,9 @@ class Config
 		/* Auto-advance to next song? */
 		bool		autoadvance;
 
+		/* Playback follows window when switched. */
+		bool		playback_follows_window;
+
 		/* We need to handle MPD's options in config, too. */
 		bool		random;
 		bool		repeat;

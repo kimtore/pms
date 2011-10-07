@@ -43,10 +43,11 @@ Config::Config()
 	visual_bell = false;
 	show_column_headers = true;
 	show_window_title = true;
-	topbar_height = 1;
+	topbar_height = 2;
 	add_next_interval = 5;
 	autoadvance = true;
 	status_reset_interval = 3;
+	playback_follows_window = true;
 	random = false;
 	repeat = false;
 	consume = false;
@@ -69,6 +70,7 @@ Config::Config()
 	add_option("columnheaders", OPTION_TYPE_BOOL, (void *)&show_column_headers);
 	add_option("windowtitle", OPTION_TYPE_BOOL, (void *)&show_window_title);
 	add_option("autoadvance", OPTION_TYPE_BOOL, (void *)&autoadvance);
+	add_option("followwindow", OPTION_TYPE_BOOL, (void *)&playback_follows_window);
 	add_option("resetstatus", OPTION_TYPE_UINT, (void *)&status_reset_interval);
 
 	add_option("random", OPTION_TYPE_BOOL, (void *)&random);
