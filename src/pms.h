@@ -64,6 +64,7 @@ class PMS
 		int		set_crossfade(string secs);
 		int		change_volume(int offset);
 		int		set_volume(string volume);
+		int		set_password(string password);
 		
 		/* Playback */
 		int		toggle_play();

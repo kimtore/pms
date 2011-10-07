@@ -131,6 +131,9 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_VOLUME_DOWN:
 			return change_volume(-ev->multiplier);
 
+		case ACT_PASSWORD:
+			return set_password(ev->text);
+
 		case ACT_TOGGLEPLAY:
 			return toggle_play();
 
@@ -322,6 +325,14 @@ int PMS::set_volume(string volume)
 		return mpd.set_volume(mpd.status.volume - atoi(volume.substr(1).c_str()));
 	else
 		return mpd.set_volume(atoi(volume.c_str()));
+}
+
+int PMS::set_password(string password)
+{
+	int i;
+	if ((i = mpd.set_password(password)) == true)
+		mpd.apply_opts(); /* any option desynch should be fixed here. */
+	return i;
 }
 
 int PMS::change_volume(int offset)

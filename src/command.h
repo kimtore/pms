@@ -69,6 +69,7 @@ typedef enum
 	ACT_SETVOL,
 	ACT_VOLUME_UP,
 	ACT_VOLUME_DOWN,
+	ACT_PASSWORD,
 
 	/* Playback */
 	ACT_TOGGLEPLAY,

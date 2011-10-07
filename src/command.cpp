@@ -50,6 +50,7 @@ Commandlist::Commandlist()
 	add(CONTEXT_ALL, ACT_SETVOL, "volume");
 	add(CONTEXT_ALL, ACT_VOLUME_UP, "volume-up");
 	add(CONTEXT_ALL, ACT_VOLUME_DOWN, "volume-down");
+	add(CONTEXT_ALL, ACT_PASSWORD, "password");
 
 	add(CONTEXT_ALL, ACT_TOGGLEPLAY, "toggle-play");
 	add(CONTEXT_SONGLIST, ACT_PLAY, "play");

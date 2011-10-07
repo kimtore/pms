@@ -52,7 +52,7 @@ Config::Config()
 	consume = false;
 	single = false;
 	set_column_headers("artist track title album year length");
-	topbar.set("{PMS  $state [$modes] $elapsed / $length}{$artist / $title / $album / $year}{Queue has $queuesize songs ($queuelength)}");
+	topbar.set("{PMS  $state [$modes] $elapsed / $remaining}{$artist / $title / $album / $year}{Queue has $queuesize songs ($queuelength)}");
 
 	/* Set up options array */
 	add_option("host", OPTION_TYPE_STRING, (void *)&host);
