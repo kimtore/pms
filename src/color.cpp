@@ -61,6 +61,7 @@ Colortable::Colortable()
 	field[FIELD_TRACKSHORT] = new Color(COLOR_CYAN, -1, 0);
 
 	field[FIELD_ELAPSED] = new Color(COLOR_GREEN, -1, 0);
+	field[FIELD_REMAINING] = new Color(COLOR_MAGENTA, -1, 0);
 	field[FIELD_MODES] = new Color(COLOR_CYAN, -1, 0);
 	field[FIELD_STATE] = new Color(COLOR_CYAN, -1, 0);
 	field[FIELD_QUEUESIZE] = new Color(COLOR_YELLOW, -1, 0);

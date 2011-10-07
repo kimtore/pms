@@ -52,6 +52,9 @@ string Field::format(Song * song)
 		case FIELD_ELAPSED:
 			return time_format((int)mpd.status.elapsed);
 
+		case FIELD_REMAINING:
+			return time_format((int)(mpd.status.length - mpd.status.elapsed));
+
 		case FIELD_MODES:
 			tmp = "----";
 			if (mpd.status.repeat)
@@ -110,6 +113,7 @@ Fieldtypes::Fieldtypes()
 
 	/* Topbar fields */
 	fields.push_back(new Field(FIELD_ELAPSED, "elapsed", "", "", 0, 0));
+	fields.push_back(new Field(FIELD_REMAINING, "remaining", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_MODES, "modes", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_STATE, "state", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_QUEUESIZE, "queuesize", "", "", 0, 0));
