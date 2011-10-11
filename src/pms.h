@@ -35,6 +35,9 @@ class PMS
 		/* This function handles input events from main(). */
 		int		run_event(Inputevent * ev);
 
+		/* Set options */
+		int		set_opt(Inputevent * ev);
+
 		/* Run a text command */
 		int		run_cmd(string cmd, unsigned int multiplier = 1);
 
@@ -63,6 +66,7 @@ class PMS
 		int		activate_songlist();
 
 		/* List management */
+		int		add(int count);
 		int		remove(int count);
 
 		/* MPD options */

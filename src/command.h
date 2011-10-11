@@ -68,6 +68,7 @@ typedef enum
 
 	/* Songlist actions */
 	ACT_ACTIVATE_SONGLIST,
+	ACT_ADD,
 	ACT_REMOVE,
 
 	/* MPD options */

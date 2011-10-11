@@ -119,6 +119,7 @@ void Wsonglist::update_column_length()
 	unsigned int it;
 	unsigned int max;
 	unsigned int len = 0;
+	unsigned int oldlen = 0;
 
 	column_len.clear();
 
@@ -135,6 +136,7 @@ void Wsonglist::update_column_length()
 
 	while (len < max)
 	{
+		oldlen = len;
 		for (it = 0; it < column_len.size(); ++it)
 		{
 			if (len == max)
@@ -145,5 +147,9 @@ void Wsonglist::update_column_length()
 			column_len[it]++;
 			++len;
 		}
+
+		/* break out of infinite loops if there are no expanding columns. */
+		if (len == oldlen)
+			break;
 	}
 }

@@ -58,34 +58,34 @@ Config::Config()
 	topbar.set("{PMS $volume $state [$modes] $elapsed / $remaining}{$artist / $title / $album / $year}{Queue has $queuesize songs ($queuelength)}");
 
 	/* Set up options array */
-	add_option("host", OPTION_TYPE_STRING, (void *)&host);
-	add_option("port", OPTION_TYPE_STRING, (void *)&port);
-	add_option("password", OPTION_TYPE_STRING, (void *)&password);
+	add_option("host", OPTION_TYPE_STRING, (void *)&host, OPT_CHANGE_NONE);
+	add_option("port", OPTION_TYPE_STRING, (void *)&port, OPT_CHANGE_NONE);
+	add_option("password", OPTION_TYPE_STRING, (void *)&password, OPT_CHANGE_NONE);
 
-	add_option("reconnectdelay", OPTION_TYPE_UINT, (void *)&reconnect_delay);
-	add_option("addnextinterval", OPTION_TYPE_UINT, (void *)&add_next_interval);
+	add_option("reconnectdelay", OPTION_TYPE_UINT, (void *)&reconnect_delay, OPT_CHANGE_NONE);
+	add_option("addnextinterval", OPTION_TYPE_UINT, (void *)&add_next_interval, OPT_CHANGE_NONE);
 
-	add_option("bell", OPTION_TYPE_BOOL, (void *)&use_bell);
-	add_option("visualbell", OPTION_TYPE_BOOL, (void *)&visual_bell);
-	add_option("columnheaders", OPTION_TYPE_BOOL, (void *)&show_column_headers);
-	add_option("windowtitle", OPTION_TYPE_BOOL, (void *)&show_window_title);
-	add_option("autoadvance", OPTION_TYPE_BOOL, (void *)&autoadvance);
-	add_option("followwindow", OPTION_TYPE_BOOL, (void *)&playback_follows_window);
-	add_option("resetstatus", OPTION_TYPE_UINT, (void *)&status_reset_interval);
+	add_option("bell", OPTION_TYPE_BOOL, (void *)&use_bell, OPT_CHANGE_NONE);
+	add_option("visualbell", OPTION_TYPE_BOOL, (void *)&visual_bell, OPT_CHANGE_NONE);
+	add_option("columnheaders", OPTION_TYPE_BOOL, (void *)&show_column_headers, OPT_CHANGE_DRAWLIST);
+	add_option("windowtitle", OPTION_TYPE_BOOL, (void *)&show_window_title, OPT_CHANGE_DRAWLIST);
+	add_option("autoadvance", OPTION_TYPE_BOOL, (void *)&autoadvance, OPT_CHANGE_NONE);
+	add_option("followwindow", OPTION_TYPE_BOOL, (void *)&playback_follows_window, OPT_CHANGE_NONE);
+	add_option("resetstatus", OPTION_TYPE_UINT, (void *)&status_reset_interval, OPT_CHANGE_NONE);
 
-	add_option("random", OPTION_TYPE_BOOL, (void *)&random);
-	add_option("repeat", OPTION_TYPE_BOOL, (void *)&repeat);
-	add_option("consume", OPTION_TYPE_BOOL, (void *)&consume);
-	add_option("single", OPTION_TYPE_BOOL, (void *)&single);
-	add_option("mute", OPTION_TYPE_BOOL, (void *)&mute);
-	add_option("volume", OPTION_TYPE_INT, (void *)&volume);
+	add_option("random", OPTION_TYPE_BOOL, (void *)&random, OPT_CHANGE_MPD);
+	add_option("repeat", OPTION_TYPE_BOOL, (void *)&repeat, OPT_CHANGE_MPD);
+	add_option("consume", OPTION_TYPE_BOOL, (void *)&consume, OPT_CHANGE_MPD);
+	add_option("single", OPTION_TYPE_BOOL, (void *)&single, OPT_CHANGE_MPD);
+	add_option("mute", OPTION_TYPE_BOOL, (void *)&mute, OPT_CHANGE_MPD);
+	add_option("volume", OPTION_TYPE_INT, (void *)&volume, OPT_CHANGE_MPD);
 
-	add_option("columns", OPTION_TYPE_COLUMNHEADERS, (void *)&songlist_columns);
-	add_option("topbar", OPTION_TYPE_TOPBAR, (void *)&topbar);
-	add_option("topbarlines", OPTION_TYPE_UINT, (void *)&topbar_height);
+	add_option("columns", OPTION_TYPE_COLUMNHEADERS, (void *)&songlist_columns, OPT_CHANGE_COLUMNS | OPT_CHANGE_DRAWLIST);
+	add_option("topbar", OPTION_TYPE_TOPBAR, (void *)&topbar, OPT_CHANGE_DIMENSIONS | OPT_CHANGE_REDRAW);
+	add_option("topbarlines", OPTION_TYPE_UINT, (void *)&topbar_height, OPT_CHANGE_DIMENSIONS | OPT_CHANGE_REDRAW);
 }
 
-int Config::readline(string line)
+option_t * Config::readline(string line)
 {
 	string optstr;
 	string optval = "";
@@ -96,12 +96,12 @@ int Config::readline(string line)
 	bool negative = false;
 	bool * bopt;
 	int arithmetic = 0;
-	int result;
 
 	/* Locate the identifier */
 	if (line.size() == 0)
 	{
-		return print_all_options();
+		print_all_options();
+		return NULL;
 	}
 	else if ((pos = line.find_first_of("=:")) != string::npos)
 	{
@@ -163,7 +163,7 @@ int Config::readline(string line)
 		else
 		{
 			sterr("Unknown option: %s", line.c_str());
-			return false;
+			return NULL;
 		}
 	}
 
@@ -171,15 +171,18 @@ int Config::readline(string line)
 	if (show)
 	{
 		print_option(opt);
-		return true;
+		return NULL;
 	}
 
 	if (arithmetic != 0)
 	{
 		/* Add the new string value to the previous values */
-		if ((result = add_opt_str(opt, optval, arithmetic)))
+		if (add_opt_str(opt, optval, arithmetic))
+		{
 			print_option(opt);
-		return result;
+			return opt;
+		}
+		return NULL;
 	}
 
 	/* Invert an option if boolean */
@@ -189,12 +192,12 @@ int Config::readline(string line)
 		{
 			debug("%s=%s", optstr.c_str(), get_opt_str(opt).c_str());
 			sterr("Trailing characters: %s", line.c_str());
-			return false;
+			return NULL;
 		}
 		bopt = (bool *)opt->ptr;
 		*bopt = !(*bopt);
 		print_option(opt);
-		return true;
+		return opt;
 	}
 
 	/* Check for (negative) boolean options */
@@ -204,26 +207,31 @@ int Config::readline(string line)
 		if (opt->type != OPTION_TYPE_BOOL)
 		{
 			print_option(opt);
-			return true;
+			return NULL;
 		}
 		bopt = (bool *)opt->ptr;
 		*bopt = !negative;
 		print_option(opt);
-		return true;
+		return opt;
 	}
 
 	/* Set the new string value */
-	if ((result = set_opt_str(opt, optval)))
+	if (set_opt_str(opt, optval))
+	{
 		print_option(opt);
-	return result;
+		return opt;
+	}
+
+	return NULL;
 }
 
-option_t * Config::add_option(string name, option_type_t type, void * ptr)
+option_t * Config::add_option(string name, option_type_t type, void * ptr, int mask)
 {
 	option_t * o = new option_t;
 	o->name = name;
 	o->type = type;
 	o->ptr = ptr;
+	o->mask = mask;
 	options.push_back(o);
 	return o;
 }

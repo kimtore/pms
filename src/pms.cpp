@@ -71,12 +71,7 @@ int PMS::run_event(Inputevent * ev)
 			return run_event(&lastev);
 
 		case ACT_SET:
-			config.readline(ev->text);
-			curses.detect_dimensions();
-			mpd.apply_opts();
-			wm.draw();
-			curses.flush();
-			return true;
+			return set_opt(ev);
 
 		case ACT_QUIT:
 			return quit();
@@ -97,6 +92,9 @@ int PMS::run_event(Inputevent * ev)
 
 		case ACT_ACTIVATE_SONGLIST:
 			return activate_songlist();
+
+		case ACT_ADD:
+			return add(ev->multiplier);
 
 		case ACT_REMOVE:
 			return remove(ev->multiplier);
@@ -202,6 +200,31 @@ int PMS::run_cmd(string cmd, unsigned int multiplier)
 	ev.result = INPUT_RESULT_RUN;
 	ev.multiplier = multiplier > 0 ? multiplier : 1;
 	return run_event(&ev);
+}
+
+int PMS::set_opt(Inputevent * ev)
+{
+	option_t * opt;
+
+	opt = config.readline(ev->text);
+	if (!opt)
+		return false;
+
+	if (opt->mask & OPT_CHANGE_MPD)
+		mpd.apply_opts();
+	if (opt->mask & OPT_CHANGE_DIMENSIONS)
+		curses.detect_dimensions();
+
+	if (opt->mask & OPT_CHANGE_REDRAW)
+		wm.draw();
+	else if (opt->mask & OPT_CHANGE_DRAWLIST)
+		wm.active->draw();
+	else
+		return true;
+
+	curses.flush();
+
+	return true;
 }
 
 int PMS::quit()
@@ -347,6 +370,37 @@ int PMS::activate_songlist()
 	}
 
 	return mpd.activate_songlist(win->songlist);
+}
+
+int PMS::add(int count)
+{
+	int status = true;
+	int c = count;
+	Wsonglist * win;
+	vector<Song *>::iterator song;
+
+	if ((win = WSONGLIST(wm.active)) == NULL)
+	{
+		sterr("Current window is not a playlist. Cannot add any songs from here.", NULL);
+		return false;
+	}
+
+	song = win->songlist->songs.begin() + win->cursor;
+	while (c > 0 && song != win->songlist->songs.end())
+	{
+		status = status && mpd.addid((*song)->f[FIELD_FILE]);
+		--c;
+		++song;
+	}
+
+	if (status && count > 1)
+		stinfo("%d songs added to playlist.", NULL);
+	else if (status)
+		stinfo("`%s' added to playlist.", (*--song)->f[FIELD_TITLE].c_str());
+	else
+		stinfo("Failed to add some songs to playlist.", NULL);
+
+	return true;
 }
 
 int PMS::remove(int count)

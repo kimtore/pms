@@ -39,6 +39,7 @@ Keybindings::Keybindings()
 	add(CONTEXT_ALL, ACT_PREVIOUS_WINDOW, "T");
 	add(CONTEXT_ALL, ACT_PREVIOUS_WINDOW, "gT");
 
+	add(CONTEXT_SONGLIST, ACT_ADD, "a");
 	add(CONTEXT_SONGLIST, ACT_REMOVE, "dd");
 	add(CONTEXT_SONGLIST, ACT_REMOVE, "<Delete>");
 

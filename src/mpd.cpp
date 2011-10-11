@@ -626,11 +626,13 @@ int MPD::poll()
 		return true;
 	}
 
-	/* Update elapsed time */
-	run_clock();
-
+	if (FD_ISSET(STDIN_FILENO, &set))
+		return false;
 	if (!FD_ISSET(sock, &set))
 		return false;
+
+	/* Update elapsed time */
+	run_clock();
 
 	updates = MPD_UPDATE_NONE;
 

@@ -26,6 +26,17 @@
 #include "field.h"
 using namespace std;
 
+enum
+{
+	OPT_CHANGE_NONE		= 0,
+	OPT_CHANGE_MPD		= 1 << 0,
+	OPT_CHANGE_DIMENSIONS	= 1 << 1,
+	OPT_CHANGE_COLUMNS	= 1 << 2,
+	OPT_CHANGE_DRAWLIST	= 1 << 3,
+	OPT_CHANGE_REDRAW	= 1 << 4,
+	OPT_CHANGE_ALL		= (1 << 5) - 1
+};
+
 /* Standard option types */
 typedef enum
 {
@@ -47,6 +58,7 @@ typedef struct
 	string name;
 	option_type_t type;
 	void * ptr;
+	int mask;
 }
 
 option_t;
@@ -62,14 +74,14 @@ class Config
 		vector<option_t *>	options;
 		
 		/* Add an option to the options vector. */
-		option_t *		add_option(string name, option_type_t type, void * ptr);
+		option_t *		add_option(string name, option_type_t type, void * ptr, int mask);
 
 	public:
 
 		Config();
 
 		/* Parse "option=value" */
-		int		readline(string line);
+		option_t *	readline(string line);
 
 		/* Option string getter and setter */
 		int		add_opt_str(option_t * opt, string value, int arithmetic);
