@@ -77,6 +77,7 @@ void Wstatusbar::drawline(int rely)
 			curses.wipe(rect, config.colors.standard);
 			curses.print(rect, config.colors.statusbar, rely, 0, ":");
 			curses.print(rect, config.colors.statusbar, rely, 1, input.strbuf.c_str());
+			curses.setcursor(rect, rely, input.cursorpos + 1);
 			break;
 	}
 }

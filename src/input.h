@@ -112,6 +112,7 @@ class Input
 
 	public:
 
+		unsigned int	cursorpos;
 		int		mode;
 		unsigned long	multiplier;
 		vector<int> 	buffer;

@@ -63,6 +63,9 @@ class Curses
 		/* Clear the rectangle. */
 		void		wipe(Rect * rect, Color * c);
 
+		/* Set cursor position relative to rect */
+		void		setcursor(Rect * rect, int y, int x);
+
 		/* Set left/right/top/bottom layout for all panels */
 		void		detect_dimensions();
 

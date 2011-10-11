@@ -73,6 +73,7 @@ Input::Input()
 	option_tab_prefix.clear();
 	tab_complete_index = 0;
 	option_tab_complete_index = 0;
+	cursorpos = 0;
 	keybindings = new Keybindings();
 }
 
@@ -172,6 +173,31 @@ void Input::handle_text_input()
 
 	switch(chbuf)
 	{
+		/* Navigation */
+		case KEY_LEFT:
+			if (cursorpos > 0)
+				--cursorpos;
+			ev.result = INPUT_RESULT_BUFFERED;
+			break;
+
+		case KEY_RIGHT:
+			if (cursorpos < strbuf.size())
+				++cursorpos;
+			ev.result = INPUT_RESULT_BUFFERED;
+			break;
+
+		case 1:			/* ^A */
+		case KEY_HOME:
+			cursorpos = 0;
+			ev.result = INPUT_RESULT_BUFFERED;
+			break;
+
+		case 5:			/* ^E */
+		case KEY_END:
+			cursorpos = strbuf.size();
+			ev.result = INPUT_RESULT_BUFFERED;
+			break;
+
 		case 10:
 		case KEY_ENTER:
 			if (mode == INPUT_MODE_INPUT)
@@ -181,8 +207,12 @@ void Input::handle_text_input()
 			return;
 
 		case 21:		/* ^U */
-			buffer.clear();
-			strbuf.clear();
+			if (cursorpos > 0)
+			{
+				buffer.erase(vector<int>::iterator(buffer.begin()), vector<int>::iterator(buffer.begin() + cursorpos));
+				strbuf.erase(string::iterator(strbuf.begin()), string::iterator(strbuf.begin() + cursorpos));
+			}
+			cursorpos = 0;
 			ev.result = INPUT_RESULT_BUFFERED;
 			return;
 
@@ -196,8 +226,13 @@ void Input::handle_text_input()
 		case KEY_BACKSPACE:
 			if (buffer.size() > 0)
 			{
-				buffer.pop_back();
-				strbuf.erase(--string::iterator(strbuf.end()));
+				if (cursorpos > 0)
+				{
+					buffer.erase(--vector<int>::iterator(buffer.begin() + cursorpos));
+					strbuf.erase(--string::iterator(strbuf.begin() + cursorpos));
+					if (cursorpos > 0)
+						--cursorpos;
+				}
 				ev.result = INPUT_RESULT_BUFFERED;
 			}
 			else
@@ -278,12 +313,15 @@ void Input::handle_text_input()
 			for (si = strbuf.begin(); si != strbuf.end(); ++si)
 				buffer.push_back(*si);
 
+			cursorpos = buffer.size();
 			ev.result = INPUT_RESULT_BUFFERED;
 			return;
 
+		/* Add normal character to buffer */
 		default:
-			buffer.push_back(chbuf);
-			strbuf.push_back(chbuf);
+			buffer.insert(vector<int>::iterator(buffer.begin() + cursorpos), chbuf);
+			strbuf.insert(string::iterator(strbuf.begin() + cursorpos), chbuf);
+			++cursorpos;
 			ev.result = INPUT_RESULT_BUFFERED;
 	}
 }
@@ -296,6 +334,7 @@ void Input::setmode(int nmode)
 	strbuf.clear();
 	buffer.clear();
 	chbuf = 0;
+	cursorpos = 0;
 	mode = nmode;
 
 	if (mode == INPUT_MODE_COMMAND)

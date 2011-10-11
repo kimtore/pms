@@ -96,6 +96,14 @@ void Curses::detect_dimensions()
 	readout.right = self.right;
 }
 
+void Curses::setcursor(Rect * rect, int y, int x)
+{
+	if (!rect)
+		return;
+	
+	move(rect->top + y, rect->left + x);
+}
+
 void Curses::flush()
 {
 	refresh();
