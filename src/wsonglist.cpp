@@ -134,12 +134,12 @@ void Wsonglist::update_column_length()
 		len += (*column)->minlen;
 	}
 
-	while (len < max)
+	while (len <= max)
 	{
 		oldlen = len;
 		for (it = 0; it < column_len.size(); ++it)
 		{
-			if (len == max)
+			if (len > max)
 				break;
 			if (config.songlist_columns[it]->maxlen > 0 && column_len[it] >= config.songlist_columns[it]->maxlen)
 				continue;

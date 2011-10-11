@@ -135,7 +135,7 @@ void Curses::wipe(Rect * rect, Color * c)
 	attron(c->pair | A_INVIS);
 	for (y = rect->top; y <= rect->bottom; y++)
 	{
-		mvhline(y, rect->left, ' ', rect->right - rect->left);
+		mvhline(y, rect->left, ' ', rect->right - rect->left + 1);
 	}
 	attroff(c->pair | A_INVIS);
 	flush();
@@ -176,7 +176,7 @@ void Curses::print(Rect * rect, Color * c, int y, int x, const char * fmt, ...)
 	
 	va_start(ap, fmt);
 
-	maxlen = rect->right - rect->left + 1;
+	maxlen = rect->right - rect->left - x + 1;
 	move(rect->top + y, rect->left + x);
 	attron(c->pair);
 
@@ -236,10 +236,6 @@ void Curses::print(Rect * rect, Color * c, int y, int x, const char * fmt, ...)
 				case 's':
 					parse = false;
 					output = va_arg(ap, const char *);
-					if (output.size() >= (maxlen - printlen))
-					{
-						output = output.substr(0, (maxlen - printlen - 1));
-					}
 					sprintf(buf, "%s", output.c_str());
 					printw(buf);
 					printlen += strlen(buf);

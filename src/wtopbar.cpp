@@ -60,7 +60,7 @@ void Wtopbar::drawline(int rely)
 			else if (pos == 1)
 				x = ((rect->right - rect->left) / 2) - (strl / 2);
 			else if (pos == 2)
-				x = rect->right - rect->left - strl;
+				x = rect->right - rect->left - strl + 1;
 
 			for (chunk = (*seg)->chunks.begin(); chunk != (*seg)->chunks.end(); ++chunk)
 			{
