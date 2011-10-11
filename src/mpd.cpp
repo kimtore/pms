@@ -257,8 +257,11 @@ int MPD::mpd_raw_send(string data)
 		return -1;
 
 	data += '\n';
-	if ((s = send(sock, data.c_str(), data.size(), 0)) == -1)
+	if ((s = send(sock, data.c_str(), data.size(), MSG_NOSIGNAL)) == -1)
+	{
+		mpd_disconnect();
 		return s;
+	}
 
 	sent = s;
 
@@ -626,13 +629,13 @@ int MPD::poll()
 		return true;
 	}
 
+	/* Update elapsed time */
+	run_clock();
+
 	if (FD_ISSET(STDIN_FILENO, &set))
 		return false;
 	if (!FD_ISSET(sock, &set))
 		return false;
-
-	/* Update elapsed time */
-	run_clock();
 
 	updates = MPD_UPDATE_NONE;
 
@@ -652,6 +655,7 @@ int MPD::poll()
 		else if (value == "update")
 		{
 			// a database update has started or finished. If the database was modified during the update, the database event is also emitted. 
+			updates |= MPD_UPDATE_DB;
 		}
 		else if (value == "stored_playlist")
 		{
@@ -924,6 +928,13 @@ void MPD::update_playstring()
 		playstring += " repeatedly";
 
 	playstring += ".";
+}
+
+int MPD::update(string dir)
+{
+	mpd_send("update %s", dir.c_str());
+	while (mpd_getline(NULL) == MPD_GETLINE_MORE);
+	return true;
 }
 
 int MPD::set_consume(bool nconsume)

@@ -51,7 +51,8 @@ enum
 	MPD_UPDATE_NONE = 0,
 	MPD_UPDATE_STATUS = 1 << 0,
 	MPD_UPDATE_PLAYLIST = 1 << 1,
-	MPD_UPDATE_LIBRARY = 1 << 2
+	MPD_UPDATE_DB = 1 << 2,
+	MPD_UPDATE_LIBRARY = 1 << 3
 };
 
 typedef struct
@@ -223,6 +224,9 @@ class MPD
 
 		/* Update textual representation of play progression */
 		void		update_playstring();
+
+		/* Update library */
+		int		update(string dir);
 
 		/* Playback options */
 		int		set_consume(bool nconsume);

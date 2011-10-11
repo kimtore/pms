@@ -52,6 +52,7 @@ Commandlist::Commandlist()
 	add(CONTEXT_SONGLIST, ACT_CURSOR_CURRENTSONG, "cursor-currentsong");
 	add(CONTEXT_SONGLIST, ACT_CURSOR_RANDOM, "cursor-random");
 
+	add(CONTEXT_ALL, ACT_UPDATE, "update");
 	add(CONTEXT_ALL, ACT_CROSSFADE, "crossfade");
 	add(CONTEXT_ALL, ACT_PASSWORD, "password");
 

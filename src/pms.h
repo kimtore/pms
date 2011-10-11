@@ -70,6 +70,7 @@ class PMS
 		int		remove(int count);
 
 		/* MPD options */
+		int		update(string dir = "/");
 		int		set_crossfade(string secs);
 		int		change_volume(int offset);
 		int		set_volume(string volume);

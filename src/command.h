@@ -72,6 +72,7 @@ typedef enum
 	ACT_REMOVE,
 
 	/* MPD options */
+	ACT_UPDATE,
 	ACT_CROSSFADE,
 	ACT_PASSWORD,
 

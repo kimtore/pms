@@ -99,6 +99,9 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_REMOVE:
 			return remove(ev->multiplier);
 
+		case ACT_UPDATE:
+			return update(ev->text);
+
 		case ACT_SCROLL_UP:
 			return scroll_window(-ev->multiplier);
 
@@ -424,6 +427,11 @@ int PMS::remove(int count)
 	}
 
 	return false;
+}
+
+int PMS::update(string dir)
+{
+	return mpd.update(dir);
 }
 
 int PMS::set_crossfade(string crossfade)
