@@ -453,18 +453,17 @@ int PMS::add(int count)
 		--c;
 		++song;
 	}
+	count -= c;
 
 	if (status && count >= 1)
 	{
 		if (count > 1)
-		{
 			stinfo("%d songs added to playlist.", count);
-		}
 		else if (count == 1)
-		{
 			stinfo("`%s' added to playlist.", (*--song)->f[FIELD_TITLE].c_str());
-		}
-		move_cursor(count);
+
+		if (config.advance_cursor)
+			win->move_cursor(count);
 	}
 	else
 	{

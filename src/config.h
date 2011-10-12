@@ -168,6 +168,9 @@ class Config
 		/* What fields to search by default */
 		long		search_field_mask;
 
+		/* Advance cursor on add actions */
+		bool		advance_cursor;
+
 		/* The entire color collection */
 		Colortable	colors;
 };

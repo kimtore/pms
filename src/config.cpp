@@ -52,6 +52,7 @@ Config::Config()
 	autoadvance = true;
 	status_reset_interval = 3;
 	playback_follows_window = true;
+	advance_cursor = true;
 	random = false;
 	repeat = false;
 	consume = false;
@@ -71,6 +72,7 @@ Config::Config()
 	add_option("reconnectdelay", OPTION_TYPE_UINT, (void *)&reconnect_delay, OPT_CHANGE_NONE);
 	add_option("addnextinterval", OPTION_TYPE_UINT, (void *)&add_next_interval, OPT_CHANGE_NONE);
 
+	add_option("advancecursor", OPTION_TYPE_BOOL, (void *)&advance_cursor, OPT_CHANGE_NONE);
 	add_option("bell", OPTION_TYPE_BOOL, (void *)&use_bell, OPT_CHANGE_NONE);
 	add_option("visualbell", OPTION_TYPE_BOOL, (void *)&visual_bell, OPT_CHANGE_NONE);
 	add_option("columnheaders", OPTION_TYPE_BOOL, (void *)&show_column_headers, OPT_CHANGE_DRAWLIST);
