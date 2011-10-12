@@ -40,6 +40,8 @@ extern Commandlist 	commandlist;
 int PMS::run_event(Inputevent * ev)
 {
 	static Inputevent lastev;
+	Inputevent sev;
+
 	if (!ev) return false;
 
 	if (ev->result == INPUT_RESULT_RUN && ev->action != ACT_REPEATACTION && ev->action != ACT_RUN_CMD && ev != &lastev)
@@ -66,8 +68,17 @@ int PMS::run_event(Inputevent * ev)
 			curses.flush();
 			return true;
 
+		case ACT_REHASH:
+			sev = *ev;
+			config.source_default_config();
+			lastev = sev;
+			return true;
+
 		case ACT_SOURCE:
-			return config.source(ev->text);
+			sev = *ev;
+			config.source(ev->text);
+			lastev = sev;
+			return true;
 
 		case ACT_RUN_CMD:
 			run_cmd(ev->text, ev->multiplier);

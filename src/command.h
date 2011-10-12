@@ -48,6 +48,7 @@ typedef enum
 
 	/* Global commands */
 	ACT_QUIT,
+	ACT_REHASH,
 	ACT_SOURCE,
 	ACT_MODE_INPUT,
 	ACT_MODE_SEARCH,
