@@ -420,7 +420,7 @@ int PMS::activate_songlist()
 
 int PMS::add(int count)
 {
-	int status = true;
+	bool status = true;
 	int c = count;
 	Wsonglist * win;
 	vector<Song *>::iterator song;
@@ -439,14 +439,24 @@ int PMS::add(int count)
 		++song;
 	}
 
-	if (status && count > 1)
-		stinfo("%d songs added to playlist.", NULL);
-	else if (status)
-		stinfo("`%s' added to playlist.", (*--song)->f[FIELD_TITLE].c_str());
+	if (status && count >= 1)
+	{
+		if (count > 1)
+		{
+			stinfo("%d songs added to playlist.", NULL);
+		}
+		else if (count == 1)
+		{
+			stinfo("`%s' added to playlist.", (*--song)->f[FIELD_TITLE].c_str());
+		}
+		move_cursor(count);
+	}
 	else
+	{
 		stinfo("Failed to add some songs to playlist.", NULL);
+	}
 
-	return true;
+	return status;
 }
 
 int PMS::remove(int count)
