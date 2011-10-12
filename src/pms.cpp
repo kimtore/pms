@@ -443,7 +443,7 @@ int PMS::add(int count)
 	{
 		if (count > 1)
 		{
-			stinfo("%d songs added to playlist.", NULL);
+			stinfo("%d songs added to playlist.", count);
 		}
 		else if (count == 1)
 		{
