@@ -56,6 +56,7 @@ Config::Config()
 	volume = 100;
 	set_column_headers("artist track title album year length");
 	set_search_fields("artist title album");
+	set_scroll_mode("normal");
 	topbar.set("{PMS $volume $state [$modes] $elapsed / $remaining}{$artist / $title / $album / $year}{Queue has $queuesize songs ($queuelength)}");
 
 	/* Set up options array */
@@ -81,6 +82,7 @@ Config::Config()
 	add_option("mute", OPTION_TYPE_BOOL, (void *)&mute, OPT_CHANGE_MPD);
 	add_option("volume", OPTION_TYPE_INT, (void *)&volume, OPT_CHANGE_MPD);
 
+	add_option("scroll", OPTION_TYPE_SCROLLMODE, (void *)&scroll_mode, OPT_CHANGE_DRAWLIST);
 	add_option("searchfields", OPTION_TYPE_SEARCHFIELDS, (void *)&search_field_mask, OPT_CHANGE_NONE);
 	add_option("columns", OPTION_TYPE_COLUMNHEADERS, (void *)&songlist_columns, OPT_CHANGE_COLUMNS | OPT_CHANGE_DRAWLIST);
 	add_option("topbar", OPTION_TYPE_TOPBAR, (void *)&topbar, OPT_CHANGE_DIMENSIONS | OPT_CHANGE_REDRAW);
@@ -274,6 +276,13 @@ string Config::get_opt_str(option_t * opt)
 
 		/* Exotic data types */
 
+		case OPTION_TYPE_SCROLLMODE:
+			if (scroll_mode == SCROLL_MODE_NORMAL)
+				str = "normal";
+			else if (scroll_mode == SCROLL_MODE_CENTERED)
+				str = "centered";
+			break;
+
 		case OPTION_TYPE_COLUMNHEADERS:
 			for (field_it = songlist_columns.begin(); field_it != songlist_columns.end(); ++field_it)
 				str = str + (*field_it)->str + " ";
@@ -377,6 +386,10 @@ int Config::set_opt_str(option_t * opt, string value)
 
 		case OPTION_TYPE_SEARCHFIELDS:
 			set_search_fields(value);
+			return true;
+
+		case OPTION_TYPE_SCROLLMODE:
+			set_scroll_mode(value);
 			return true;
 
 		case OPTION_TYPE_TOPBAR:
@@ -534,6 +547,16 @@ void Config::set_search_fields(string fields)
 		search_field_mask = FIELD_FILE;
 		sterr("Warning: at least one field needs to be specified, falling back to `file'.", NULL);
 	}
+}
+
+void Config::set_scroll_mode(string mode)
+{
+	if (mode == "normal")
+		scroll_mode = SCROLL_MODE_NORMAL;
+	else if (mode == "centered")
+		scroll_mode = SCROLL_MODE_CENTERED;
+	else
+		sterr("Invalid scroll mode `%s', expected one of `normal', `centered'", mode.c_str());
 }
 
 void Config::setup_default_connection_info()

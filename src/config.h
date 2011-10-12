@@ -49,7 +49,8 @@ typedef enum
 	/* More exotic stuff */
 	OPTION_TYPE_COLUMNHEADERS,
 	OPTION_TYPE_TOPBAR,
-	OPTION_TYPE_SEARCHFIELDS
+	OPTION_TYPE_SEARCHFIELDS,
+	OPTION_TYPE_SCROLLMODE
 }
 
 option_type_t;
@@ -64,6 +65,14 @@ typedef struct
 
 option_t;
 
+typedef enum
+{
+	SCROLL_MODE_NORMAL,
+	SCROLL_MODE_CENTERED
+}
+
+scroll_mode_t;
+
 
 
 class Config
@@ -72,6 +81,7 @@ class Config
 		void			setup_default_connection_info();
 		void			set_column_headers(string hdr);
 		void			set_search_fields(string fields);
+		void			set_scroll_mode(string mode);
 
 		vector<option_t *>	options;
 		
@@ -125,6 +135,9 @@ class Config
 		/* Use column headers */
 		bool		show_column_headers;
 		bool		show_window_title;
+
+		/* Scroll/cursor mode */
+		scroll_mode_t	scroll_mode;
 
 		/* Topbar stuff */
 		unsigned int	topbar_height;

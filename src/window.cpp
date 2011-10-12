@@ -100,10 +100,17 @@ void Wmain::scroll_window(int offset)
 
 	position = offset;
 
-	if (cursor < position)
-		cursor = position;
-	else if (cursor > position + height())
-		cursor = position + height();
+	if (config.scroll_mode == SCROLL_MODE_NORMAL)
+	{
+		if (cursor < position)
+			cursor = position;
+		else if (cursor > position + height())
+			cursor = position + height();
+	}
+	else if (config.scroll_mode == SCROLL_MODE_CENTERED)
+	{
+		cursor = position + (height() / 2);
+	}
 	
 	draw();
 	curses.flush();
@@ -134,10 +141,23 @@ void Wmain::move_cursor(int offset)
 
 	cursor = offset;
 
-	if (cursor < position)
-		set_position(cursor);
-	else if (cursor > position + height())
-		set_position(cursor - height());
+	if (config.scroll_mode == SCROLL_MODE_NORMAL)
+	{
+		if (cursor < position)
+			set_position(cursor);
+		else if (cursor > position + height())
+			set_position(cursor - height());
+	}
+	else if (config.scroll_mode == SCROLL_MODE_CENTERED)
+	{
+		offset = height() / 2;
+		if ((int)cursor < offset)
+			position = 0;
+		else if (cursor + offset >= content_size())
+			position = content_size() - height() - 1;
+		else
+			position = cursor - offset;
+	}
 	
 	draw();
 	curses.flush();
