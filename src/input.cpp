@@ -42,6 +42,7 @@ void Inputevent::clear()
 	action = ACT_NOACTION;
 	result = INPUT_RESULT_NOINPUT;
 	context = 0;
+	silent = false;
 	text.clear();
 }
 

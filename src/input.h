@@ -60,6 +60,9 @@ class Inputevent
 		/* one of INPUT_RESULT_* */
 		int result;
 
+		/* Shut up about any messages */
+		bool silent;
+
 		/* The full character buffer or command/input */
 		string text;
 };

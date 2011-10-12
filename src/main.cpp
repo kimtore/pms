@@ -52,13 +52,14 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	memset(&conn, 0, sizeof conn);
+	stinfo("%s %d.%d", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
+	config.source_default_config();
 
+	memset(&conn, 0, sizeof conn);
 	curses.detect_dimensions();
 	wm.playlist->songlist = &mpd.playlist;
 	wm.library->songlist = &mpd.library;
 	wm.draw();
-	stinfo("%s %d.%d", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
 
 	while(!config.quit)
 	{

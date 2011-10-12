@@ -39,7 +39,7 @@ class PMS
 		int		set_opt(Inputevent * ev);
 
 		/* Run a text command */
-		int		run_cmd(string cmd, unsigned int multiplier = 1);
+		int		run_cmd(string cmd, unsigned int multiplier = 1, bool batch = false);
 
 		/* Run a search */
 		int		run_search(string terms, unsigned int multiplier = 1);

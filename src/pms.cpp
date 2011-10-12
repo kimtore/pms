@@ -66,6 +66,9 @@ int PMS::run_event(Inputevent * ev)
 			curses.flush();
 			return true;
 
+		case ACT_SOURCE:
+			return config.source(ev->text);
+
 		case ACT_RUN_CMD:
 			run_cmd(ev->text, ev->multiplier);
 			input.setmode(INPUT_MODE_COMMAND);
@@ -195,7 +198,7 @@ int PMS::run_event(Inputevent * ev)
 	return false;
 }
 
-int PMS::run_cmd(string cmd, unsigned int multiplier)
+int PMS::run_cmd(string cmd, unsigned int multiplier, bool batch)
 {
 	Inputevent ev;
 	Command * c;
@@ -217,6 +220,7 @@ int PMS::run_cmd(string cmd, unsigned int multiplier)
 	ev.action = c->action;
 	ev.context = wm.context;
 	ev.result = INPUT_RESULT_RUN;
+	ev.silent = batch;
 	ev.multiplier = multiplier > 0 ? multiplier : 1;
 	return run_event(&ev);
 }
@@ -252,7 +256,7 @@ int PMS::set_opt(Inputevent * ev)
 {
 	option_t * opt;
 
-	opt = config.readline(ev->text);
+	opt = config.readline(ev->text, !ev->silent);
 	if (!opt)
 		return false;
 

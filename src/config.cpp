@@ -24,6 +24,9 @@
 #include "song.h"
 #include "window.h"
 #include "topbar.h"
+#include "pms.h"
+#include <cstring>
+#include <stdio.h>
 #include <stdlib.h>
 #include <algorithm>
 
@@ -31,6 +34,7 @@ using namespace std;
 
 extern Fieldtypes fieldtypes;
 extern Windowmanager wm;
+extern PMS pms;
 Topbar topbar;
 
 Config::Config()
@@ -89,7 +93,77 @@ Config::Config()
 	add_option("topbarlines", OPTION_TYPE_UINT, (void *)&topbar_height, OPT_CHANGE_DIMENSIONS | OPT_CHANGE_REDRAW);
 }
 
-option_t * Config::readline(string line)
+void Config::source_default_config()
+{
+	string home;
+	string s;
+	const string suffix = "/pms/pms.conf";
+	size_t start = 0, end = 0;
+
+	debug("Reading configuration files...", NULL);
+
+	home = getenv("HOME");
+
+	// XDG config dirs (colon-separated priority list, defaults to just /etc/xdg)
+	s = getenv("XDG_CONFIG_DIRS");
+	if (!s.size())
+	{
+		source("/usr/local/etc/xdg" + suffix, true);
+		source("/etc/xdg" + suffix, true);
+	}
+	else
+	{
+		while ((end = s.find(':', start)) != string::npos)
+		{
+			source(s.substr(start, end - start) + suffix, true);
+			start = end + 1;
+		}
+
+		if (start < s.size())
+			source(s.substr(start) + suffix, true);
+	}
+
+	// XDG config home (usually $HOME/.config)
+	s = getenv("XDG_CONFIG_HOME");
+	if (!s.size())
+	{
+		if (home.size() > 0)
+			source(home + "/.config" + suffix);
+	}
+	else
+	{
+		source(s + suffix);
+	}
+}
+
+bool Config::source(string filename, bool suppress_errmsg)
+{
+	FILE * fd;
+	char * line = NULL;
+	char * lb;
+	size_t len;
+
+	if ((fd = fopen(filename.c_str(), "r")) == NULL)
+	{
+		if (!suppress_errmsg)
+			sterr("Cannot open file `%s'", filename.c_str());
+		return false;
+	}
+
+	while ((getline(&line, &len, fd)) != -1)
+	{
+		if ((lb = strchr(line, '\n')) != NULL)
+			*lb = '\0';
+		pms.run_cmd(line, 1, true);
+	}
+
+	free(line);
+	fclose(fd);
+
+	return true;
+}
+
+option_t * Config::readline(string line, bool verbose)
 {
 	string optstr;
 	string optval = "";
@@ -183,7 +257,8 @@ option_t * Config::readline(string line)
 		/* Add the new string value to the previous values */
 		if (add_opt_str(opt, optval, arithmetic))
 		{
-			print_option(opt);
+			if (verbose)
+				print_option(opt);
 			return opt;
 		}
 		return NULL;
@@ -200,7 +275,8 @@ option_t * Config::readline(string line)
 		}
 		bopt = (bool *)opt->ptr;
 		*bopt = !(*bopt);
-		print_option(opt);
+		if (verbose)
+			print_option(opt);
 		return opt;
 	}
 
@@ -210,19 +286,22 @@ option_t * Config::readline(string line)
 		/* Show option instead */
 		if (opt->type != OPTION_TYPE_BOOL)
 		{
-			print_option(opt);
+			if (verbose)
+				print_option(opt);
 			return NULL;
 		}
 		bopt = (bool *)opt->ptr;
 		*bopt = !negative;
-		print_option(opt);
+		if (verbose)
+			print_option(opt);
 		return opt;
 	}
 
 	/* Set the new string value */
 	if (set_opt_str(opt, optval))
 	{
-		print_option(opt);
+		if (verbose)
+			print_option(opt);
 		return opt;
 	}
 
