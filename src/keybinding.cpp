@@ -269,6 +269,34 @@ Keybinding * Keybindings::find_conflict(vector<int> * sequence)
 	return NULL;
 }
 
+bool Keybindings::remove(string sequence)
+{
+	vector<Keybinding *>::iterator it;
+	Keybinding * c;
+	vector<int> * seq;
+
+	if ((seq = conv_sequence(sequence)) == NULL)
+		return false;
+
+	c = find_conflict(seq);
+	delete seq;
+
+	if (c)
+	for (it = bindings.begin(); it != bindings.end(); ++it)
+	{
+		if (*it == c)
+		{
+			debug("Removed key mapping `%s'.", sequence.c_str());
+			bindings.erase(it);
+			delete c;
+			return true;
+		}
+	}
+
+	sterr("Key sequence `%s' is not mapped.", sequence.c_str());
+	return false;
+}
+
 int Keybindings::find(int context, vector<int> * sequence, action_t * action, string * params)
 {
 	vector<Keybinding *>::iterator i;

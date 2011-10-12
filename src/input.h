@@ -81,12 +81,16 @@ class Keybindings
 {
 	private:
 		vector<Keybinding *>	bindings;
+
 	public:
 		Keybindings();
 
 		/* Add and check for duplicate sequences */
 		Keybinding *	add(int context, action_t action, string sequence, string params = "");
 		Keybinding *	find_conflict(vector<int> * sequence);
+
+		/* Delete a mapping */
+		bool		remove(string sequence);
 
 		/* Convert a string sequence to an int sequence */
 		vector<int> *	conv_sequence(string seq);

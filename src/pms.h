@@ -44,6 +44,9 @@ class PMS
 		/* Run a search */
 		int		run_search(string terms, unsigned int multiplier = 1);
 
+		/* Map keys */
+		int		map_keys(string params);
+
 		/* Quit the program. */
 		int		quit();
 

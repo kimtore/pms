@@ -45,6 +45,8 @@ typedef enum
 	ACT_RUN_CMD,
 	ACT_REPEATACTION,
 	ACT_SET,
+	ACT_MAP,
+	ACT_UNMAP,
 
 	/* Global commands */
 	ACT_QUIT,

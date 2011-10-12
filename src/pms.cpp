@@ -36,6 +36,7 @@ extern Curses		curses;
 extern Windowmanager	wm;
 extern Input		input;
 extern Commandlist 	commandlist;
+extern Keybindings *	keybindings;
 
 int PMS::run_event(Inputevent * ev)
 {
@@ -79,6 +80,12 @@ int PMS::run_event(Inputevent * ev)
 			config.source(ev->text);
 			lastev = sev;
 			return true;
+
+		case ACT_MAP:
+			return map_keys(ev->text);
+
+		case ACT_UNMAP:
+			return keybindings->remove(ev->text);
 
 		case ACT_RUN_CMD:
 			run_cmd(ev->text, ev->multiplier);
@@ -275,6 +282,54 @@ int PMS::run_search(string terms, unsigned int multiplier)
 		window->set_cursor(i);
 
 	return true;
+}
+
+int PMS::map_keys(string params)
+{
+	Command * cmd;
+	size_t start = 0, end = 0;
+	int context;
+	vector<string> s;
+
+	while (s.size() <= 3)
+	{
+		if ((end = params.find(' ', start)) == string::npos)
+		{
+			if (s.size() >= 2)
+			{
+				s.push_back(params.substr(start));
+				break;
+			}
+
+			sterr("Syntax: map <context> <sequence> <command>", NULL);
+			return false;
+		}
+		s.push_back(params.substr(start, end - start));
+		start = end + 1;
+	}
+
+	if (s[0] == "console")
+		context = CONTEXT_CONSOLE;
+	else if (s[0] == "songlist")
+		context = CONTEXT_SONGLIST;
+	else if (s[0] == "list")
+		context = CONTEXT_LIST;
+	else if (s[0] == "all")
+		context = CONTEXT_ALL;
+	else
+	{
+		sterr("Invalid context `%s', expecteded one of `console', `songlist', `list', `all'", s[0].c_str());
+		return false;
+	}
+
+	if ((cmd = commandlist.find(context, s[2])) == NULL)
+	{
+		sterr("Invalid command `%s' for context `%s'", s[2].c_str(), s[0].c_str());
+		return false;
+	}
+
+	return (keybindings->add(context, cmd->action, s[1], (s.size() == 4 ? s[3] : "")) != NULL);
+
 }
 
 int PMS::set_opt(Inputevent * ev)
