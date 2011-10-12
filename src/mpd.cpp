@@ -250,26 +250,20 @@ int MPD::mpd_send(const char * data, ...)
 
 int MPD::mpd_raw_send(string data)
 {
-	unsigned int sent;
+	unsigned int sent = 0;
 	int s;
 
 	if (!connected)
 		return -1;
 
 	data += '\n';
-	if ((s = send(sock, data.c_str(), data.size(), MSG_NOSIGNAL)) == -1)
-	{
-		mpd_disconnect();
-		return s;
-	}
-
-	sent = s;
-
 	while (sent < data.size())
 	{
 		if ((s = send(sock, data.substr(sent).c_str(), data.size() - sent, 0)) == -1)
-			return -1;
-
+		{
+			mpd_disconnect();
+			return s;
+		}
 		sent += s;
 	}
 

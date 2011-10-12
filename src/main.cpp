@@ -89,9 +89,6 @@ int main(int argc, char *argv[])
 		/* Statusbar needs redraw with playstring? */
 		wm.statusbar->draw();
 
-		/* Refresh screen every tick */
-		curses.flush();
-
 		/* Check for any input events and run them */
 		pms.run_event(input.next());
 	}
