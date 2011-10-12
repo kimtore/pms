@@ -24,4 +24,4 @@ This client works best with recent
 - boost_regex (>= 1.36.0) to enable regular expression searches
 
 ### Copying
-Copyright (C) 2006-2011 [Kim Tore Jensen](kimtjen@gmail.com)
+Copyright (C) 2006-2011 [Kim Tore Jensen](mailto:kimtjen@gmail.com)
