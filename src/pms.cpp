@@ -215,11 +215,25 @@ int PMS::run_cmd(string cmd, unsigned int multiplier, bool batch)
 	Command * c;
 	size_t i;
 
+	/* Strip whitespace from beginning */
+	if ((i = cmd.find_first_not_of(' ')) > 0)
+	{
+		if (cmd.size() > i)
+			cmd = cmd.substr(i);
+		else
+			return false;
+	}
+
+	/* Separate command and param */
 	if ((i = cmd.find(' ')) != string::npos)
 	{
 		ev.text = cmd.size() > i ? cmd.substr(i + 1) : "";
 		cmd = cmd.substr(0, i);
 	}
+
+	/* Ignore comments and empty lines */
+	if (!cmd.size() || cmd[0] == '#')
+		return false;
 
 	c = commandlist.find(wm.context, cmd);
 	if (!c)
