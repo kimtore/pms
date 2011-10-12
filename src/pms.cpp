@@ -69,6 +69,10 @@ int PMS::run_event(Inputevent * ev)
 			curses.flush();
 			return true;
 
+		case ACT_CONNECT:
+			mpd.mpd_disconnect();
+			return true;
+
 		case ACT_REHASH:
 			sev = *ev;
 			config.source_default_config();

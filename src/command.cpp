@@ -37,6 +37,8 @@ Commandlist::Commandlist()
 
 	add(CONTEXT_ALL, ACT_SOURCE, "source");
 	add(CONTEXT_ALL, ACT_REHASH, "rehash");
+	add(CONTEXT_ALL, ACT_CONNECT, "connect");
+	add(CONTEXT_ALL, ACT_CONNECT, "reconnect");
 	add(CONTEXT_ALL, ACT_QUIT, "quit");
 	add(CONTEXT_ALL, ACT_QUIT, "q");
 	add(CONTEXT_ALL, ACT_NEXT_WINDOW, "next-window");
