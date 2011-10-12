@@ -34,11 +34,12 @@ class Songlist
 		Songlist();
 		~Songlist();
 
-		Song *			operator[] (unsigned int spos);
+		Song *			at(unsigned int spos);
+		Song *			operator[] (unsigned int spos) { return at(spos); };
 
 		vector<Song *>		songs;
 		string			title;
-		Searchresultset		searchresult;
+		Searchresultset	*	searchresult;
 		search_mode_t		searchmode;
 
 		/* Can we make local modifications? */
@@ -70,11 +71,14 @@ class Songlist
 		 */
 		
 		/* Find by hash value */
-		size_t			find(long hash, size_t pos = string::npos);
+		size_t			find(long hash, size_t pos = 0);
+
+		/* Same as find(), but looks only through search results */
+		size_t			sfind(long hash, size_t pos = 0);
 
 		/* Search for songs using song fields. */
-		Searchresult *		search(search_mode_t mode);
-		Searchresult *		search(search_mode_t mode, long mask, string terms);
+		Song *			search(search_mode_t mode);
+		Song *			search(search_mode_t mode, long mask, string terms);
 
 };
 

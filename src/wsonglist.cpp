@@ -74,7 +74,7 @@ void Wsonglist::drawline(int rely)
 		return;
 	}
 
-	song = songlist->songs[linepos];
+	song = songlist->at(linepos);
 	if (linepos == cursor)
 		color = config.colors.cursor;
 	else if (song->pos == mpd.status.song)
@@ -99,7 +99,7 @@ Song * Wsonglist::cursorsong()
 		return NULL;
 	
 	move_cursor(0);
-	return songlist->songs[cursor];
+	return songlist->at(cursor);
 }
 
 unsigned int Wsonglist::height()

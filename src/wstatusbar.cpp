@@ -45,6 +45,7 @@ Wstatusbar::Wstatusbar()
 
 void Wstatusbar::drawline(int rely)
 {
+	string pstr;
 	size_t vscroll = 0;
 	size_t width = rect->right - rect->left;
 	vector<Logline *>::reverse_iterator i;
@@ -84,12 +85,13 @@ void Wstatusbar::drawline(int rely)
 			curses.wipe(rect, config.colors.standard);
 
 			if (input.mode == INPUT_MODE_INPUT)
-				curses.print(rect, config.colors.statusbar, rely, 0, ":");
+				pstr = ":";
 			else if (input.mode == INPUT_MODE_SEARCH)
-				curses.print(rect, config.colors.statusbar, rely, 0, "/");
+				pstr = "Search: ";
 
-			curses.print(rect, config.colors.statusbar, rely, 1, input.strbuf.substr(vscroll).c_str());
-			curses.setcursor(rect, rely, input.cursorpos - vscroll + 1);
+			curses.print(rect, config.colors.statusbar, rely, 0, pstr.c_str());
+			curses.print(rect, config.colors.statusbar, rely, pstr.size(), input.strbuf.substr(vscroll).c_str());
+			curses.setcursor(rect, rely, input.cursorpos - vscroll + pstr.size());
 			break;
 	}
 }

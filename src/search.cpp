@@ -32,37 +32,6 @@ Searchresultset::Searchresultset()
 	mask = 0;
 }
 
-Searchresultset::~Searchresultset()
-{
-	clear();
-}
-
-void Searchresultset::clear()
-{
-	vector<Searchresult *>::const_iterator i;
-	for (i = results.begin(); i != results.end(); ++i)
-		delete *i;
-	results.clear();
-}
-
-Searchresult * Searchresultset::operator[] (unsigned int spos)
-{
-	if (spos >= results.size())
-		return NULL;
-	
-	return results[spos];
-}
-
-Searchresult * Searchresultset::add(unsigned int pos, Song * song)
-{
-	Searchresult * s;
-	s = new Searchresult;
-	s->pos = pos;
-	s->song = song;
-	results.push_back(s);
-	return s;
-}
-
 /*
  * Search functions
  */
@@ -70,52 +39,85 @@ Searchresult * Searchresultset::add(unsigned int pos, Song * song)
 size_t Songlist::find(long hash, size_t pos)
 {
 	size_t it;
-	for (it = 0; it < songs.size(); ++it)
+	for (it = pos; it < songs.size(); ++it)
 		if (songs[it]->fhash == hash)
 			return it;
 
 	return string::npos;
 }
 
-Searchresult * Songlist::search(search_mode_t mode)
+size_t Songlist::sfind(long hash, size_t pos)
+{
+	size_t it;
+
+	if (!searchresult)
+		return find(hash, pos);
+
+	for (it = pos; it < searchresult->songs.size(); ++it)
+		if (searchresult->songs[it]->fhash == hash)
+			return it;
+
+	return string::npos;
+}
+
+Song * Songlist::search(search_mode_t mode)
 {
 	searchmode = mode;
+	if (searchmode == SEARCH_MODE_NONE && searchresult)
+	{
+		delete searchresult;
+		searchresult = NULL;
+		return NULL;
+	}
 	return NULL;
 }
 
-Searchresult * Songlist::search(search_mode_t mode, long mask, string terms)
+Song * Songlist::search(search_mode_t mode, long mask, string terms)
 {
-	size_t i, count;
+	Searchresultset * results;
 	vector<Field *>::const_iterator fit;
+	vector<Song *>::const_iterator sit;
+	vector<Song *> * source;
 
-	count = songs.size();
+	results = new Searchresultset;
+	source = &songs;
 
-	/* Check if we need to clear the current result set */
-	//if ((searchresult.mask & mask) != searchresult.mask ||
-		//terms.find(searchresult.terms) == string::npos)
-	//{
-		searchresult.clear();
-	//}
-	searchmode = mode;
+	/* Check if we can use the current result set */
+	if (searchresult)
+	{
+		//if ((searchresult->mask & mask) != searchresult->mask ||
+			//terms.find(searchresult->terms) == string::npos)
+		//{
+			source = &(searchresult->songs);
+		//}
+	}
 
-	debug("Searching for `%s' in %d songs...", terms.c_str(), count);
+	debug("Searching for `%s' in %d songs...", terms.c_str(), source->size());
 
-	for (i = 0; i < count; ++i)
+	for (sit = source->begin(); sit != source->end(); ++sit)
 	{
 		for (fit = fieldtypes.fields.begin(); fit != fieldtypes.fields.end(); ++fit)
 		{
 			if (!(mask & (1 << (*fit)->type)))
 				continue;
-			if (!cistrmatch(songs[i]->f[(*fit)->type], terms))
+			if (!cistrmatch((*sit)->f[(*fit)->type], terms))
 				continue;
 
-			debug("Found match in field %d of %s", (*fit)->type, songs[i]->f[(*fit)->type].c_str()); 
-			searchresult.add(i, songs[i]);
+			results->songs.push_back(*sit);
 			break;
 		}
 	}
 
-	debug("Search finished.", NULL);
+	debug("Search finished with %d results.", results->size());
+
+	if (searchresult)
+		delete searchresult;
+	searchresult = results;
+
+	searchmode = mode;
+
+	if (searchresult->size() > 0)
+		return searchresult->songs[0];
 
 	return NULL;
 }

@@ -709,7 +709,7 @@ int MPD::poll()
 
 Song * MPD::update_currentsong()
 {
-	return (currentsong = (int)playlist.size() > status.song ? playlist.songs[status.song] : NULL);
+	return (currentsong = (int)playlist.songs.size() > status.song ? playlist.songs[status.song] : NULL);
 }
 
 int MPD::apply_opts()

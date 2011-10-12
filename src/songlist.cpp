@@ -34,24 +34,24 @@ Songlist::Songlist()
 
 Songlist::~Songlist()
 {
-	searchresult.clear();
+	search(SEARCH_MODE_NONE);
 	clear();
 }
 
-Song * Songlist::operator[] (unsigned int spos)
+Song * Songlist::at(unsigned int spos)
 {
-	//if (searchmode == SEARCH_MODE_NONE)
-	//{
+	if (searchmode == SEARCH_MODE_NONE)
+	{
 		if (spos >= songs.size())
 			return NULL;
 		return songs[spos];
-	//}
-	//else
-	//{
-		//if (spos >= searchresult.size())
-			//return NULL;
-		//return searchresult[spos]->song;
-	//}
+	}
+	else
+	{
+		if (spos >= searchresult->size())
+			return NULL;
+		return searchresult->songs[spos];
+	}
 }
 
 void Songlist::add(Song * song)
@@ -72,7 +72,6 @@ void Songlist::add(Song * song)
 
 	/* Reset search. TODO: inject into search results */
 	search(SEARCH_MODE_NONE);
-	searchresult.clear();
 }
 
 void Songlist::clear()
@@ -81,7 +80,7 @@ void Songlist::clear()
 	for (i = songs.begin(); i != songs.end(); ++i)
 		delete *i;
 	songs.clear();
-	searchresult.clear();
+	search(SEARCH_MODE_NONE);
 }
 
 size_t Songlist::randpos()
@@ -106,8 +105,8 @@ void Songlist::truncate(unsigned long length)
 
 size_t Songlist::size()
 {
-	//if (searchmode == SEARCH_MODE_NONE)
+	if (searchmode == SEARCH_MODE_NONE)
 		return songs.size();
-	//else
-		//return searchresult.size();
+	else
+		return searchresult->size();
 }

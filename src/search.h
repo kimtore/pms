@@ -35,28 +35,17 @@ typedef enum
 
 search_mode_t;
 
-/* A single song reference */
-class Searchresult
-{
-	public:
-		unsigned int	pos;
-		Song *		song;
-};
-
-/* A set of search results */
+/* A set of songs from a search result */
 class Searchresultset
 {
 	public:
-		vector<Searchresult *>	results;
+		vector<Song *>		songs;
 		string			terms;
 		long			mask;
+		search_mode_t		mode;
 			
 		Searchresultset();
-		~Searchresultset();
-		void			clear();
-		Searchresult *		add(unsigned int pos, Song * song);
-		Searchresult *		operator[] (unsigned int spos);
-		size_t			size() { return results.size(); };
+		size_t			size() { return songs.size(); };
 };
 
 /* Performs a case-insensitive match. */

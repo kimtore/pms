@@ -77,6 +77,7 @@ int PMS::run_event(Inputevent * ev)
 			run_search(ev->text, ev->multiplier);
 			input.setmode(INPUT_MODE_COMMAND);
 			wm.statusbar->draw();
+			wm.active->draw();
 			curses.flush();
 			return true;
 
@@ -223,6 +224,8 @@ int PMS::run_cmd(string cmd, unsigned int multiplier)
 int PMS::run_search(string terms, unsigned int multiplier)
 {
 	Wsonglist * window;
+	Song * song;
+	size_t i;
 
 	if ((window = WSONGLIST(wm.active)) == NULL)
 	{
@@ -230,7 +233,17 @@ int PMS::run_search(string terms, unsigned int multiplier)
 		return false;
 	}
 
-	window->songlist->search(SEARCH_MODE_FILTER, config.search_field_mask, terms);
+	song = window->cursorsong();
+
+	if (terms.size() > 0)
+		window->songlist->search(SEARCH_MODE_FILTER, config.search_field_mask, terms);
+	else
+		window->songlist->search(SEARCH_MODE_NONE);
+
+	window->set_cursor(0);
+
+	if (song && (i = window->songlist->sfind(song->fhash)) != string::npos)
+		window->set_cursor(i);
 
 	return true;
 }
@@ -358,7 +371,7 @@ int PMS::set_cursor_currentsong()
 	}
 
 	/* Use song hash to look it up. */
-	else if ((pos = window->songlist->find(song->fhash)) == string::npos)
+	else if ((pos = window->songlist->sfind(song->fhash)) == string::npos)
 	{
 		sterr("Currently playing song is not in this songlist.", NULL);
 		return false;
