@@ -178,30 +178,32 @@ void Input::handle_text_input()
 			if (cursorpos > 0)
 				--cursorpos;
 			ev.result = INPUT_RESULT_BUFFERED;
-			break;
+			return;
 
 		case KEY_RIGHT:
 			if (cursorpos < strbuf.size())
 				++cursorpos;
 			ev.result = INPUT_RESULT_BUFFERED;
-			break;
+			return;
 
 		case 1:			/* ^A */
 		case KEY_HOME:
 			cursorpos = 0;
 			ev.result = INPUT_RESULT_BUFFERED;
-			break;
+			return;
 
 		case 5:			/* ^E */
 		case KEY_END:
 			cursorpos = strbuf.size();
 			ev.result = INPUT_RESULT_BUFFERED;
-			break;
+			return;
 
 		case 10:
 		case KEY_ENTER:
 			if (mode == INPUT_MODE_INPUT)
 				ev.action = ACT_RUN_CMD;
+			else if (mode == INPUT_MODE_SEARCH)
+				ev.action = ACT_RUN_SEARCH;
 
 			ev.result = INPUT_RESULT_RUN;
 			return;

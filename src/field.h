@@ -57,13 +57,12 @@ class Field
 
 class Fieldtypes
 {
-	private:
-		/* All supported field types */
-		vector<Field *>	fields;
-
 	public:
 		Fieldtypes();
 		~Fieldtypes();
+
+		/* All supported field types */
+		vector<Field *>	fields;
 
 		/* Locate a field type by MPD string */
 		Field *		find_mpd(string &value);

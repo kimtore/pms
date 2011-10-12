@@ -22,6 +22,7 @@
 #define _PMS_SONGLIST_H_
 
 #include "song.h"
+#include "search.h"
 #include <string>
 #include <vector>
 
@@ -33,37 +34,48 @@ class Songlist
 		Songlist();
 		~Songlist();
 
-		Song *		operator[] (unsigned int spos);
+		Song *			operator[] (unsigned int spos);
 
-		vector<Song *>	songs;
-		string		title;
-
-		/* Find by hash value */
-		size_t		find(long hash, size_t pos = string::npos);
-
-		/* Add or replace a song */
-		void		add(Song * song);
-
-		/* Remove all songs from the list */
-		void		clear();
-
-		/* Get a random song position within boundaries */
-		size_t		randpos();
-
-		/* Truncate the list and resize the vector */
-		void		truncate(unsigned long length);
-
-		/* Size */
-		size_t		size() { return songs.size(); };
+		vector<Song *>		songs;
+		string			title;
+		Searchresultset		searchresult;
+		search_mode_t		searchmode;
 
 		/* Can we make local modifications? */
-		bool		readonly;
+		bool			readonly;
 
 		/* Is this the main playlist? */
-		bool		playlist;
+		bool			playlist;
 
 		/* Playlist version at MPD side */
-		long long	version;
+		long long		version;
+
+		/* Add or replace a song */
+		void			add(Song * song);
+
+		/* Remove all songs from the list */
+		void			clear();
+
+		/* Get a random song position within boundaries */
+		size_t			randpos();
+
+		/* Truncate the list and resize the vector */
+		void			truncate(unsigned long length);
+
+		/* Size */
+		size_t			size();
+
+		/*
+		 * Search functions
+		 */
+		
+		/* Find by hash value */
+		size_t			find(long hash, size_t pos = string::npos);
+
+		/* Search for songs using song fields. */
+		Searchresult *		search(search_mode_t mode);
+		Searchresult *		search(search_mode_t mode, long mask, string terms);
+
 };
 
 #endif /* _PMS_SONGLIST_H_ */

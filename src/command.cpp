@@ -29,6 +29,7 @@ Commandlist::Commandlist()
 	add(CONTEXT_ALL, ACT_SET, "se");
 	add(CONTEXT_ALL, ACT_SET, "set");
 	add(CONTEXT_ALL, ACT_MODE_INPUT, "cmd");
+	add(CONTEXT_SONGLIST, ACT_MODE_SEARCH, "search");
 	add(CONTEXT_ALL, ACT_REPEATACTION, "repeat-action");
 
 	add(CONTEXT_ALL, ACT_QUIT, "quit");

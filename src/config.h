@@ -48,7 +48,8 @@ typedef enum
 
 	/* More exotic stuff */
 	OPTION_TYPE_COLUMNHEADERS,
-	OPTION_TYPE_TOPBAR
+	OPTION_TYPE_TOPBAR,
+	OPTION_TYPE_SEARCHFIELDS
 }
 
 option_type_t;
@@ -70,6 +71,7 @@ class Config
 	private:
 		void			setup_default_connection_info();
 		void			set_column_headers(string hdr);
+		void			set_search_fields(string fields);
 
 		vector<option_t *>	options;
 		
@@ -143,6 +145,9 @@ class Config
 
 		/* Redraw play string in statusbar after this long */
 		bool		status_reset_interval;
+
+		/* What fields to search by default */
+		long		search_field_mask;
 
 		/* The entire color collection */
 		Colortable	colors;

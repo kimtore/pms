@@ -76,12 +76,18 @@ void Wstatusbar::drawline(int rely)
 			break;
 
 		case INPUT_MODE_INPUT:
+		case INPUT_MODE_SEARCH:
 			if (input.strbuf.size() >= width)
 				vscroll = input.strbuf.size() - width;
 			if (vscroll > input.cursorpos)
 				vscroll = input.cursorpos;
 			curses.wipe(rect, config.colors.standard);
-			curses.print(rect, config.colors.statusbar, rely, 0, ":");
+
+			if (input.mode == INPUT_MODE_INPUT)
+				curses.print(rect, config.colors.statusbar, rely, 0, ":");
+			else if (input.mode == INPUT_MODE_SEARCH)
+				curses.print(rect, config.colors.statusbar, rely, 0, "/");
+
 			curses.print(rect, config.colors.statusbar, rely, 1, input.strbuf.substr(vscroll).c_str());
 			curses.setcursor(rect, rely, input.cursorpos - vscroll + 1);
 			break;

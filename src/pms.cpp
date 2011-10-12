@@ -26,6 +26,8 @@
 #include "command.h"
 #include "mpd.h"
 #include "input.h"
+#include "songlist.h"
+#include "search.h"
 #include <stdlib.h>
 
 extern Config		config;
@@ -58,8 +60,21 @@ int PMS::run_event(Inputevent * ev)
 			curses.flush();
 			return true;
 
+		case ACT_MODE_SEARCH:
+			input.setmode(INPUT_MODE_SEARCH);
+			wm.statusbar->draw();
+			curses.flush();
+			return true;
+
 		case ACT_RUN_CMD:
 			run_cmd(ev->text, ev->multiplier);
+			input.setmode(INPUT_MODE_COMMAND);
+			wm.statusbar->draw();
+			curses.flush();
+			return true;
+
+		case ACT_RUN_SEARCH:
+			run_search(ev->text, ev->multiplier);
 			input.setmode(INPUT_MODE_COMMAND);
 			wm.statusbar->draw();
 			curses.flush();
@@ -203,6 +218,21 @@ int PMS::run_cmd(string cmd, unsigned int multiplier)
 	ev.result = INPUT_RESULT_RUN;
 	ev.multiplier = multiplier > 0 ? multiplier : 1;
 	return run_event(&ev);
+}
+
+int PMS::run_search(string terms, unsigned int multiplier)
+{
+	Wsonglist * window;
+
+	if ((window = WSONGLIST(wm.active)) == NULL)
+	{
+		sterr("Current window is not a playlist, so cannot locate any songs here.", NULL);
+		return false;
+	}
+
+	window->songlist->search(SEARCH_MODE_FILTER, config.search_field_mask, terms);
+
+	return true;
 }
 
 int PMS::set_opt(Inputevent * ev)

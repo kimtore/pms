@@ -18,27 +18,40 @@
  *
  */
 
+#include "search.h"
 #include "songlist.h"
 #include <stdlib.h>
+
+using namespace std;
 
 Songlist::Songlist()
 {
 	readonly = false;
 	playlist = false;
 	version = -1;
+	searchmode = SEARCH_MODE_NONE;
 }
 
 Songlist::~Songlist()
 {
+	searchresult.clear();
 	clear();
 }
 
 Song * Songlist::operator[] (unsigned int spos)
 {
-	if (spos >= songs.size())
-		return NULL;
-	
-	return songs[spos];
+	//if (searchmode == SEARCH_MODE_NONE)
+	//{
+		if (spos >= songs.size())
+			return NULL;
+		return songs[spos];
+	//}
+	//else
+	//{
+		//if (spos >= searchresult.size())
+			//return NULL;
+		//return searchresult[spos]->song;
+	//}
 }
 
 void Songlist::add(Song * song)
@@ -56,6 +69,10 @@ void Songlist::add(Song * song)
 	{
 		songs.push_back(song);
 	}
+
+	/* Reset search. TODO: inject into search results */
+	search(SEARCH_MODE_NONE);
+	searchresult.clear();
 }
 
 void Songlist::clear()
@@ -64,6 +81,7 @@ void Songlist::clear()
 	for (i = songs.begin(); i != songs.end(); ++i)
 		delete *i;
 	songs.clear();
+	searchresult.clear();
 }
 
 size_t Songlist::randpos()
@@ -86,12 +104,10 @@ void Songlist::truncate(unsigned long length)
 	songs.reserve(length);
 }
 
-size_t Songlist::find(long hash, size_t pos)
+size_t Songlist::size()
 {
-	size_t it;
-	for (it = 0; it < songs.size(); ++it)
-		if (songs[it]->fhash == hash)
-			return it;
-
-	return string::npos;
+	//if (searchmode == SEARCH_MODE_NONE)
+		return songs.size();
+	//else
+		//return searchresult.size();
 }

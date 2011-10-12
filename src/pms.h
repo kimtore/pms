@@ -41,6 +41,9 @@ class PMS
 		/* Run a text command */
 		int		run_cmd(string cmd, unsigned int multiplier = 1);
 
+		/* Run a search */
+		int		run_search(string terms, unsigned int multiplier = 1);
+
 		/* Quit the program. */
 		int		quit();
 

@@ -41,6 +41,7 @@ typedef enum
 	/* Configuration and internals */
 	ACT_NOACTION = 0,
 	ACT_RESIZE,
+	ACT_RUN_SEARCH,
 	ACT_RUN_CMD,
 	ACT_REPEATACTION,
 	ACT_SET,
@@ -48,6 +49,7 @@ typedef enum
 	/* Global commands */
 	ACT_QUIT,
 	ACT_MODE_INPUT,
+	ACT_MODE_SEARCH,
 	ACT_MODE_COMMAND,
 	ACT_NEXT_WINDOW,
 	ACT_PREVIOUS_WINDOW,

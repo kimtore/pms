@@ -55,6 +55,7 @@ Config::Config()
 	mute = false;
 	volume = 100;
 	set_column_headers("artist track title album year length");
+	set_search_fields("artist title album");
 	topbar.set("{PMS $volume $state [$modes] $elapsed / $remaining}{$artist / $title / $album / $year}{Queue has $queuesize songs ($queuelength)}");
 
 	/* Set up options array */
@@ -80,6 +81,7 @@ Config::Config()
 	add_option("mute", OPTION_TYPE_BOOL, (void *)&mute, OPT_CHANGE_MPD);
 	add_option("volume", OPTION_TYPE_INT, (void *)&volume, OPT_CHANGE_MPD);
 
+	add_option("searchfields", OPTION_TYPE_SEARCHFIELDS, (void *)&search_field_mask, OPT_CHANGE_NONE);
 	add_option("columns", OPTION_TYPE_COLUMNHEADERS, (void *)&songlist_columns, OPT_CHANGE_COLUMNS | OPT_CHANGE_DRAWLIST);
 	add_option("topbar", OPTION_TYPE_TOPBAR, (void *)&topbar, OPT_CHANGE_DIMENSIONS | OPT_CHANGE_REDRAW);
 	add_option("topbarlines", OPTION_TYPE_UINT, (void *)&topbar_height, OPT_CHANGE_DIMENSIONS | OPT_CHANGE_REDRAW);
@@ -278,6 +280,13 @@ string Config::get_opt_str(option_t * opt)
 			str = str.substr(0, str.size() - 1);
 			break;
 
+		case OPTION_TYPE_SEARCHFIELDS:
+			for (field_it = fieldtypes.fields.begin(); field_it != fieldtypes.fields.end(); ++field_it)
+				if (search_field_mask & (1 << (*field_it)->type))
+					str = str + (*field_it)->str + " ";
+			str = str.substr(0, str.size() - 1);
+			break;
+
 		case OPTION_TYPE_TOPBAR:
 			str = topbar.cached_format;
 			break;
@@ -305,6 +314,7 @@ int Config::add_opt_str(option_t * opt, string value, int arithmetic)
 	switch(opt->type)
 	{
 		case OPTION_TYPE_COLUMNHEADERS:
+		case OPTION_TYPE_SEARCHFIELDS:
 			if (arithmetic == 1)
 				value = " " + value;
 			/* break intentionally omitted */
@@ -363,6 +373,10 @@ int Config::set_opt_str(option_t * opt, string value)
 		case OPTION_TYPE_COLUMNHEADERS:
 			set_column_headers(value);
 			wm.update_column_length();
+			return true;
+
+		case OPTION_TYPE_SEARCHFIELDS:
+			set_search_fields(value);
 			return true;
 
 		case OPTION_TYPE_TOPBAR:
@@ -485,6 +499,40 @@ void Config::set_column_headers(string hdr)
 		f = "title";
 		sterr("Warning: at least one column type needs to be specified, falling back to `%s'.", f.c_str());
 		songlist_columns.push_back(fieldtypes.find(f));
+	}
+}
+
+void Config::set_search_fields(string fields)
+{
+	size_t start = 0;
+	size_t pos;
+	string f;
+	Field * field;
+
+	search_field_mask = 0;
+
+	while (start + 1 < fields.size())
+	{
+		if (pos == string::npos)
+			break;
+
+		if ((pos = fields.find(' ', start)) != string::npos)
+			f = fields.substr(start, pos - start);
+		else
+			f = fields.substr(start);
+
+		if ((field = fieldtypes.find(f)) != NULL && field->type < FIELD_COLUMN_VALUES)
+			search_field_mask |= (1 << field->type);
+		else
+			sterr("Ignoring invalid header field '%s'.", f.c_str());
+
+		start = pos + 1;
+	}
+
+	if (search_field_mask == 0)
+	{
+		search_field_mask = FIELD_FILE;
+		sterr("Warning: at least one field needs to be specified, falling back to `file'.", NULL);
 	}
 }
 
