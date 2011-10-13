@@ -525,7 +525,7 @@ int PMS::add(int count)
 	i = win->cursor;
 	while (c > 0 && i < win->songlist->size())
 	{
-		status = status && mpd.addid(win->songlist->at(win->cursor)->f[FIELD_FILE]);
+		status = status && mpd.addid(win->songlist->at(i)->f[FIELD_FILE]);
 		--c;
 		++i;
 	}
