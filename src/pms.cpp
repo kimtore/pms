@@ -565,7 +565,8 @@ int PMS::remove(int count)
 
 	if (mpd.remove(win->songlist, win->cursor, count))
 	{
-		win->move_cursor(0);
+		if (win->cursor + count >= win->songlist->size())
+			win->set_cursor(win->songlist->size() - count - 1);
 		return true;
 	}
 
