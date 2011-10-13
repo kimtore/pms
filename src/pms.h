@@ -72,6 +72,7 @@ class PMS
 		int		activate_songlist();
 
 		/* List management */
+		int		sortlist(string sortstr);
 		int		add(int count);
 		int		remove(int count);
 

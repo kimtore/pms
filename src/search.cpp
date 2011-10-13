@@ -22,10 +22,12 @@
 #include "songlist.h"
 #include "field.h"
 #include "console.h"
+#include "config.h"
 #include <stdlib.h>
 using namespace std;
 
 extern Fieldtypes fieldtypes;
+extern Config config;
 
 Searchresultset::Searchresultset()
 {
@@ -94,19 +96,12 @@ Song * Songlist::search(search_mode_t mode, long mask, string terms)
 	vector<Song *> * source;
 
 	results = new Searchresultset;
-	source = &songs;
 
 	/* Check if we can use the current result set */
 	if (searchresult)
-	{
-		//if ((searchresult->mask & mask) != searchresult->mask ||
-			//terms.find(searchresult->terms) == string::npos)
-		//{
-			source = &(searchresult->songs);
-		//}
-	}
-
-	debug("Searching for `%s' in %d songs...", terms.c_str(), source->size());
+		source = &(searchresult->songs);
+	else
+		source = &songs;
 
 	for (sit = source->begin(); sit != source->end(); ++sit)
 	{
@@ -114,15 +109,14 @@ Song * Songlist::search(search_mode_t mode, long mask, string terms)
 		{
 			if (!(mask & (1 << (*fit)->type)))
 				continue;
-			if (!cistrmatch((*sit)->f[(*fit)->type], terms))
+
+			if (!strmatch((*sit)->f[(*fit)->type], terms, !config.search_case))
 				continue;
 
 			results->songs.push_back(*sit);
 			break;
 		}
 	}
-
-	debug("Search finished with %d results.", results->size());
 
 	if (searchresult)
 		delete searchresult;
@@ -139,7 +133,7 @@ Song * Songlist::search(search_mode_t mode, long mask, string terms)
 /*
  * Performs a case-insensitive match.
  */
-inline bool cistrmatch(const string & haystack, const string & needle)
+inline bool strmatch(const string & haystack, const string & needle, bool ignorecase)
 {
 	bool matched = false;
 
@@ -153,7 +147,8 @@ inline bool cistrmatch(const string & haystack, const string & needle)
 			return false;
 
 		/* check next character in needle with character in haystack */
-		if (::toupper(*it_needle) == ::toupper(*it_haystack))
+		if ((!ignorecase && *it_needle == *it_haystack) ||
+			(ignorecase && ::toupper(*it_needle) == ::toupper(*it_haystack)))
 		{
 			/* matched a letter -- look for next letter */
 			matched = true;

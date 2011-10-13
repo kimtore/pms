@@ -107,7 +107,7 @@ Fieldtypes::Fieldtypes()
 	fields.push_back(new Field(FIELD_FILE, "file", "file", "Filename", 0, 0));
 	fields.push_back(new Field(FIELD_NAME, "name", "Name", "Name", 0, 0));
 	fields.push_back(new Field(FIELD_ARTIST, "artist", "Artist", "Artist", 0, 0));
-	fields.push_back(new Field(FIELD_ARTISTSORT, "artist", "ArtistSort", "Artist", 0, 0));
+	fields.push_back(new Field(FIELD_ARTISTSORT, "artistsort", "ArtistSort", "Artist", 0, 0));
 	fields.push_back(new Field(FIELD_ALBUM, "album", "Album", "Album", 0, 0));
 	fields.push_back(new Field(FIELD_TITLE, "title", "Title", "Title", 0, 0));
 	fields.push_back(new Field(FIELD_TRACK, "track", "Track", "Track", 5, 5));

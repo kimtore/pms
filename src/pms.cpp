@@ -140,6 +140,9 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_GOTO_WINDOW_POS:
 			return wm.go((ev->text.size() ? atoi(ev->text.c_str()) : ev->multiplier) - 1);
 
+		case ACT_SORT:
+			return sortlist(ev->text.size() ? ev->text : config.default_sort);
+
 		case ACT_ACTIVATE_SONGLIST:
 			return activate_songlist();
 
@@ -508,11 +511,25 @@ int PMS::activate_songlist()
 	Wsonglist * win;
 	if ((win = WSONGLIST(wm.active)) == NULL)
 	{
-		sterr("Current window is not a playlist, and cannot be set as the primary playback list.", NULL);
+		sterr("Current window is not a song list, and cannot be set as the primary playback list.", NULL);
 		return false;
 	}
 
 	return mpd.activate_songlist(win->songlist);
+}
+
+int PMS::sortlist(string sortstr)
+{
+	Wsonglist * win;
+	if ((win = WSONGLIST(wm.active)) == NULL)
+	{
+		sterr("Current window is not a song list, and cannot be sorted.", NULL);
+		return false;
+	}
+
+	win->songlist->sort(sortstr);
+	win->draw();
+	return true;
 }
 
 int PMS::add(int count)

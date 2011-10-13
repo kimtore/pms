@@ -91,13 +91,17 @@ void Song::init()
 	for (s = 0; s < FIELD_COLUMN_VALUES; ++s)
 		escape_printf(f[s]);
 
+	/* fill out empty fields that might be used for sorting */
+	if (f[FIELD_ALBUMARTIST].empty())
+		f[FIELD_ALBUMARTIST] = f[FIELD_ARTIST];
+
 	/* generate sort names if there are none available */
-	if (f[FIELD_ARTISTSORT].size() == 0)
+	if (f[FIELD_ARTISTSORT].empty())
 	{
 		original.push_back(&f[FIELD_ARTIST]);
 		rewritten.push_back(&f[FIELD_ARTISTSORT]);
 	}
-	if (f[FIELD_ALBUMARTISTSORT].size() == 0)
+	if (f[FIELD_ALBUMARTISTSORT].empty())
 	{
 		original.push_back(&f[FIELD_ALBUMARTIST]);
 		rewritten.push_back(&f[FIELD_ALBUMARTISTSORT]);

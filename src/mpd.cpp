@@ -449,6 +449,11 @@ int MPD::get_library()
 		debug("This sometimes happens due to the large volume of data transferred by PMS.", NULL);
 		debug("If this happens often, you might need to increase MPD's `max_output_buffer_size' setting.", NULL);
 	}
+
+	debug("Sorting library by `%s'...", config.default_sort.c_str());
+	library.sort(config.default_sort);
+	debug("Library is sorted.", NULL);
+
 	wm.library->update_column_length();
 	wm.active->draw();
 	curses.flush();

@@ -66,6 +66,9 @@ class Songlist
 		/* Size */
 		size_t			size();
 
+		/* Sort the list */
+		void			sort(string sortstr);
+
 		/*
 		 * Search functions
 		 */

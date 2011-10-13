@@ -75,6 +75,7 @@ typedef enum
 	ACT_CURSOR_RANDOM,
 
 	/* Songlist actions */
+	ACT_SORT,
 	ACT_ACTIVATE_SONGLIST,
 	ACT_ADD,
 	ACT_REMOVE,

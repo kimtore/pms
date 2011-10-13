@@ -59,6 +59,9 @@ Config::Config()
 	single = false;
 	mute = false;
 	volume = 100;
+	sort_case = false;
+	search_case = false;
+	default_sort = "track disc album date albumartistsort";
 	set_column_headers("artist track title album year length");
 	set_search_fields("artist title album");
 	set_scroll_mode("normal");
@@ -87,6 +90,10 @@ Config::Config()
 	add_option("single", OPTION_TYPE_BOOL, (void *)&single, OPT_CHANGE_MPD);
 	add_option("mute", OPTION_TYPE_BOOL, (void *)&mute, OPT_CHANGE_MPD);
 	add_option("volume", OPTION_TYPE_INT, (void *)&volume, OPT_CHANGE_MPD);
+
+	add_option("sort", OPTION_TYPE_STRING, (void *)&default_sort, OPT_CHANGE_NONE);
+	add_option("casesort", OPTION_TYPE_BOOL, (void *)&sort_case, OPT_CHANGE_NONE);
+	add_option("casesearch", OPTION_TYPE_BOOL, (void *)&search_case, OPT_CHANGE_NONE);
 
 	add_option("scroll", OPTION_TYPE_SCROLLMODE, (void *)&scroll_mode, OPT_CHANGE_DRAWLIST);
 	add_option("searchfields", OPTION_TYPE_SEARCHFIELDS, (void *)&search_field_mask, OPT_CHANGE_NONE);

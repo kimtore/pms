@@ -48,7 +48,7 @@ class Searchresultset
 		size_t			size() { return songs.size(); };
 };
 
-/* Performs a case-insensitive match. */
-inline bool cistrmatch(const string & haystack, const string & needle);
+/* Performs a (case-insensitive) match. */
+inline bool strmatch(const string & haystack, const string & needle, bool ignorecase);
 
 #endif /* _PMS_SEARCH_H_ */

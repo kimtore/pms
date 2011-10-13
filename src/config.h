@@ -154,6 +154,13 @@ class Config
 		/* Playback follows window when switched. */
 		bool		playback_follows_window;
 
+		/* Default sort string */
+		string		default_sort;
+
+		/* Ignore case on searching/sorting? */
+		bool		sort_case;
+		bool		search_case;
+
 		/* We need to handle MPD's options in config, too. */
 		bool		random;
 		bool		repeat;
