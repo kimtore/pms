@@ -21,6 +21,7 @@
 #include "color.h"
 #include "curses.h"
 #include "field.h"
+#include "console.h"
 
 short Color::color_count = 0;
 
@@ -88,4 +89,197 @@ void Color::set(short nfront, short nback, int nattr)
 	attr = nattr;
 	init_pair(id, front, back);
 	pair = COLOR_PAIR(id) | attr;
+}
+
+bool Color::set(string strcolor)
+{
+	vector<string>::iterator it;
+	vector<string> cols;
+	string t;
+	size_t start = 0, end = 0;
+	short nfront = -1;
+	short nback = -1;
+	int nattr = 0;
+	short * cur = &nfront;
+
+	while (start + 1 < strcolor.size())
+	{
+		if ((end = strcolor.find(' ', start)) != string::npos)
+			t = strcolor.substr(start, end - start);
+		else
+			t = strcolor.substr(start);
+
+		cols.push_back(t);
+
+		if (end == string::npos)
+			break;
+
+		start = end + 1;
+	}
+
+	for (it = cols.begin(); it != cols.end(); ++it)
+	{
+		/* Attributes */
+		if (*it == "bold")
+			nattr |= A_BOLD;
+		else if (*it == "reverse")
+			nattr |= A_REVERSE;
+		else if (cur == NULL)
+		{
+			sterr("Trailing characters near `%s'", it->c_str());
+			return false;
+		}
+		else
+		{
+			/* Front colors only */
+			if (cur == &nfront && (*it == "gray" || *it == "grey"))
+			{
+				*cur = COLOR_BLACK;
+				nattr |= A_BOLD;
+			}
+			else if (cur == &nfront && (*it == "brightred" || *it == "lightred"))
+			{
+				*cur = COLOR_RED;
+				nattr |= A_BOLD;
+			}
+			else if (cur == &nfront && (*it == "brightgreen" || *it == "lightgreen"))
+			{
+				*cur = COLOR_GREEN;
+				nattr |= A_BOLD;
+			}
+			else if (cur == &nfront && *it == "yellow")
+			{
+				*cur = COLOR_YELLOW;
+				nattr |= A_BOLD;
+			}
+			else if (cur == &nfront && (*it == "brightblue" || *it == "lightblue"))
+			{
+				*cur = COLOR_BLUE;
+				nattr |= A_BOLD;
+			}
+			else if (cur == &nfront && (*it == "brightmagenta" || *it == "lightmagenta"))
+			{
+				*cur = COLOR_MAGENTA;
+				nattr |= A_BOLD;
+			}
+			else if (cur == &nfront && (*it == "brightcyan" || *it == "lightcyan"))
+			{
+				*cur = COLOR_CYAN;
+				nattr |= A_BOLD;
+			}
+			else if (cur == &nfront && *it == "white")
+			{
+				*cur = COLOR_WHITE;
+				nattr |= A_BOLD;
+			}
+
+			/* Applies everywhere */
+			else if (*it == "black")
+				*cur = COLOR_BLACK;
+			else if (*it == "red")
+				*cur = COLOR_RED;
+			else if (*it == "green")
+				*cur = COLOR_GREEN;
+			else if (*it == "brown")
+				*cur = COLOR_YELLOW;
+			else if (*it == "blue")
+				*cur = COLOR_BLUE;
+			else if (*it == "magenta")
+				*cur = COLOR_MAGENTA;
+			else if (*it == "cyan")
+				*cur = COLOR_CYAN;
+			else if (*it == "gray" || *it == "brightgray" || *it == "lightgray" || *it == "white")
+				*cur = COLOR_WHITE;
+			else
+			{
+				sterr("Invalid color `%s' for use in %s, ignoring.", it->c_str(), cur == &nfront ? "foreground" : "background");
+				return false;
+			}
+
+			if (cur == &nfront)
+				cur = &nback;
+			else
+				cur = NULL;
+		}
+	}
+
+	set(nfront, nback, nattr);
+
+	return true;
+}
+
+string Color::getstrname()
+{
+	string f;
+	string b;
+	string a;
+
+	/*
+	 * Foreground colors
+	 */
+	if (attr & A_BOLD)
+	{
+		if (front == COLOR_BLACK)
+			f = "gray";
+		else if (front == COLOR_YELLOW)
+			f = "yellow";
+		else if (front == COLOR_WHITE)
+			f = "white";
+	}
+	if (f.empty())
+	{
+		if (front == COLOR_BLACK)
+			f = "black";
+		else if (front == COLOR_RED)
+			f = "red";
+		else if (front == COLOR_GREEN)
+			f = "green";
+		else if (front == COLOR_YELLOW)
+			f = "brown";
+		else if (front == COLOR_BLUE)
+			f = "blue";
+		else if (front == COLOR_MAGENTA)
+			f = "magenta";
+		else if (front == COLOR_CYAN)
+			f = "cyan";
+		else if (front == COLOR_WHITE)
+			f = "brightgray";
+
+		if (attr & A_BOLD)
+			f = "bright" + f;
+	}
+
+	/*
+	 * Background colors
+	 */
+	if (back == -1);
+	else if (back == COLOR_BLACK)
+		b = "black";
+	else if (back == COLOR_RED)
+		b = "red";
+	else if (back == COLOR_GREEN)
+		b = "green";
+	else if (back == COLOR_YELLOW)
+		b = "brown";
+	else if (back == COLOR_BLUE)
+		b = "blue";
+	else if (back == COLOR_MAGENTA)
+		b = "magenta";
+	else if (back == COLOR_CYAN)
+		b = "cyan";
+	else if (back == COLOR_WHITE)
+		b = "gray";
+
+	/*
+	 * Attributes
+	 */
+	if (attr & A_REVERSE)
+		a = "reverse";
+
+	if (b.size())
+		f += " " + b;
+	if (a.size())
+		f += " " + a;
+
+	return f;
 }

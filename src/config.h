@@ -47,6 +47,8 @@ typedef enum
 	OPTION_TYPE_UINT,
 	OPTION_TYPE_INT,
 	OPTION_TYPE_STRING,
+	OPTION_TYPE_COLOR,
+	OPTION_TYPE_COLORLIST,
 
 	/* More exotic stuff */
 	OPTION_TYPE_COLUMNHEADERS,
@@ -111,6 +113,7 @@ class Config
 		/* Print option values to the console. */
 		void		print_option(option_t * opt);
 		int		print_all_options();
+		int		print_all_colors();
 
 		/* Return the option_t struct of the option in question. */
 		option_t *	get_opt_ptr(string opt);

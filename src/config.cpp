@@ -103,6 +103,47 @@ Config::Config()
 	add_option("columns", OPTION_TYPE_COLUMNHEADERS, (void *)&songlist_columns, OPT_CHANGE_COLUMNS | OPT_CHANGE_DRAWLIST);
 	add_option("topbar", OPTION_TYPE_TOPBAR, (void *)&topbar, OPT_CHANGE_DIMENSIONS | OPT_CHANGE_REDRAW);
 	add_option("topbarlines", OPTION_TYPE_UINT, (void *)&topbar_height, OPT_CHANGE_DIMENSIONS | OPT_CHANGE_REDRAW);
+
+	/*
+	 * Set up all colors
+	 */
+
+	add_option("color", OPTION_TYPE_COLORLIST, NULL, OPT_CHANGE_NONE);
+	add_option("color.topbar", OPTION_TYPE_COLOR, (void *)colors.topbar, OPT_CHANGE_NONE);
+	add_option("color.statusbar", OPTION_TYPE_COLOR, (void *)colors.statusbar, OPT_CHANGE_NONE);
+	add_option("color.windowtitle", OPTION_TYPE_COLOR, (void *)colors.windowtitle, OPT_CHANGE_NONE);
+	add_option("color.columnheaders", OPTION_TYPE_COLOR, (void *)colors.columnheader, OPT_CHANGE_NONE);
+	add_option("color.console", OPTION_TYPE_COLOR, (void *)colors.console, OPT_CHANGE_NONE);
+	add_option("color.error", OPTION_TYPE_COLOR, (void *)colors.error, OPT_CHANGE_NONE);
+	add_option("color.readout", OPTION_TYPE_COLOR, (void *)colors.readout, OPT_CHANGE_NONE);
+	add_option("color.cursor", OPTION_TYPE_COLOR, (void *)colors.cursor, OPT_CHANGE_NONE);
+	add_option("color.playing", OPTION_TYPE_COLOR, (void *)colors.playing, OPT_CHANGE_NONE);
+	add_option("color.directory", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_DIRECTORY], OPT_CHANGE_NONE);
+	add_option("color.file", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_FILE], OPT_CHANGE_NONE);
+	add_option("color.pos", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_POS], OPT_CHANGE_NONE);
+	add_option("color.id", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ID], OPT_CHANGE_NONE);
+	add_option("color.time", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_TIME], OPT_CHANGE_NONE);
+	add_option("color.name", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_NAME], OPT_CHANGE_NONE);
+	add_option("color.artist", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ARTIST], OPT_CHANGE_NONE);
+	add_option("color.artistsort", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ARTISTSORT], OPT_CHANGE_NONE);
+	add_option("color.album", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ALBUM], OPT_CHANGE_NONE);
+	add_option("color.title", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_TITLE], OPT_CHANGE_NONE);
+	add_option("color.track", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_TRACK], OPT_CHANGE_NONE);
+	add_option("color.disc", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_DISC], OPT_CHANGE_NONE);
+	add_option("color.date", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_DATE], OPT_CHANGE_NONE);
+	add_option("color.genre", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_GENRE], OPT_CHANGE_NONE);
+	add_option("color.albumartist", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ALBUMARTIST], OPT_CHANGE_NONE);
+	add_option("color.albumartistsort", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ALBUMARTISTSORT], OPT_CHANGE_NONE);
+	add_option("color.year", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_YEAR], OPT_CHANGE_NONE);
+	add_option("color.trackshort", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_TRACKSHORT], OPT_CHANGE_NONE);
+	add_option("color.elapsed", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ELAPSED], OPT_CHANGE_NONE);
+	add_option("color.remaining", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_REMAINING], OPT_CHANGE_NONE);
+	add_option("color.volume", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_VOLUME], OPT_CHANGE_NONE);
+	add_option("color.progressbar", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_PROGRESSBAR], OPT_CHANGE_NONE);
+	add_option("color.modes", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_MODES], OPT_CHANGE_NONE);
+	add_option("color.state", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_STATE], OPT_CHANGE_NONE);
+	add_option("color.queuesize", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_QUEUESIZE], OPT_CHANGE_NONE);
+	add_option("color.queuelength", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_QUEUELENGTH], OPT_CHANGE_NONE);
 }
 
 void Config::source_default_config()
@@ -335,6 +376,7 @@ string Config::get_opt_str(option_t * opt)
 {
 	vector<Field *>::const_iterator field_it;
 
+	Color * c;
 	string str = "";
 	unsigned int * ui;
 	int * i;
@@ -363,6 +405,11 @@ string Config::get_opt_str(option_t * opt)
 		case OPTION_TYPE_INT:
 			i = (int *)opt->ptr;
 			str = tostring(*i);
+			break;
+
+		case OPTION_TYPE_COLOR:
+			c = (Color *)opt->ptr;
+			str = c->getstrname();
 			break;
 
 		/* Exotic data types */
@@ -413,6 +460,12 @@ int Config::add_opt_str(option_t * opt, string value, int arithmetic)
 
 	switch(opt->type)
 	{
+		case OPTION_TYPE_COLOR:
+		case OPTION_TYPE_COLORLIST:
+			/* Easter egg for those who like to play with their apps */
+			sterr("If you want to play with colors, please buy a palette.", NULL);
+			return false;
+
 		case OPTION_TYPE_COLUMNHEADERS:
 		case OPTION_TYPE_SEARCHFIELDS:
 			if (arithmetic == 1)
@@ -446,6 +499,7 @@ int Config::add_opt_str(option_t * opt, string value, int arithmetic)
 
 int Config::set_opt_str(option_t * opt, string value)
 {
+	Color * c;
 	string * s;
 	int * i;
 	unsigned int * ui;
@@ -481,6 +535,11 @@ int Config::set_opt_str(option_t * opt, string value)
 
 		case OPTION_TYPE_SCROLLMODE:
 			set_scroll_mode(value);
+			return true;
+
+		case OPTION_TYPE_COLOR:
+			c = (Color *)opt->ptr;
+			c->set(value);
 			return true;
 
 		case OPTION_TYPE_TOPBAR:
@@ -555,6 +614,8 @@ void Config::print_option(option_t * opt)
 		return;
 	else if (opt->type == OPTION_TYPE_BOOL)
 		debug("  %s", get_opt_str(opt).c_str());
+	else if (opt->type == OPTION_TYPE_COLORLIST)
+		print_all_colors();
 	else
 		debug("  %s=%s", opt->name.c_str(), get_opt_str(opt).c_str());
 }
@@ -566,7 +627,21 @@ int Config::print_all_options()
 	debug("--- Options ---", NULL);
 
 	for (i = options.begin(); i != options.end(); ++i)
-		print_option(*i);
+		if ((*i)->type != OPTION_TYPE_COLOR)
+			print_option(*i);
+
+	return true;
+}
+
+int Config::print_all_colors()
+{
+	vector<option_t *>::const_iterator i;
+
+	debug("--- Colors ---", NULL);
+
+	for (i = options.begin(); i != options.end(); ++i)
+		if ((*i)->type == OPTION_TYPE_COLOR)
+			print_option(*i);
 
 	return true;
 }

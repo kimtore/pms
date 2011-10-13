@@ -22,6 +22,9 @@
 #define _PMS_COLOR_H_
 
 #include "field.h"
+#include <string>
+#include <vector>
+using namespace std;
 
 class Color
 {
@@ -34,6 +37,8 @@ class Color
 					Color(short nfront, short nback, int nattr);
 
 		void			set(short nfront, short nback, int nattr);
+		bool			set(string strcolor);
+		string			getstrname();
 
 		static short		color_count;
 
@@ -53,6 +58,8 @@ class Colortable
 	public:
 				Colortable();
 				~Colortable();
+
+		vector<Color *>	table;
 
 		/* Main colors */
 		Color *		standard;
