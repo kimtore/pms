@@ -28,8 +28,10 @@
 
 using namespace std;
 
-Keybindings::Keybindings()
+void Keybindings::load_defaults()
 {
+	truncate();
+
 	add(CONTEXT_ALL, ACT_MODE_INPUT, ":");
 	add(CONTEXT_SONGLIST, ACT_MODE_SEARCH, "/");
 	add(CONTEXT_ALL, ACT_REPEATACTION, ".");
@@ -327,4 +329,14 @@ int Keybindings::find(int context, vector<int> * sequence, action_t * action, st
 	}
 
 	return found;
+}
+
+void Keybindings::truncate()
+{
+	vector<Keybinding *>::const_iterator i;
+
+	for (i = bindings.begin(); i != bindings.end(); ++i)
+		delete *i;
+
+	bindings.clear();
 }

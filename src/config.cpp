@@ -35,9 +35,10 @@ using namespace std;
 extern Fieldtypes fieldtypes;
 extern Windowmanager wm;
 extern PMS pms;
+extern Keybindings keybindings;
 Topbar topbar;
 
-Config::Config()
+void Config::load_default_config()
 {
 	setup_default_connection_info();
 
@@ -69,6 +70,15 @@ Config::Config()
 			"{$artist / $title / $album / $year}"
 			"{Queue has $queuesize songs ($queuelength)}"
 			"{$progressbar}{}{}");
+
+	colors.load_defaults();
+	keybindings.load_defaults();
+}
+
+Config::Config()
+{
+	/* Load internal defaults */
+	load_default_config();
 
 	/* Set up options array */
 	add_option("host", OPTION_TYPE_STRING, (void *)&host, OPT_CHANGE_NONE);

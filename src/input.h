@@ -83,7 +83,7 @@ class Keybindings
 		vector<Keybinding *>	bindings;
 
 	public:
-		Keybindings();
+		void		load_defaults();
 
 		/* Add and check for duplicate sequences */
 		Keybinding *	add(int context, action_t action, string sequence, string params = "");
@@ -97,6 +97,9 @@ class Keybindings
 
 		/* Find an action based on the key sequence */
 		int		find(int context, vector<int> * sequence, action_t * action, string * params);
+
+		/* Delete all mappings */
+		void		truncate();
 };
 
 class Input

@@ -25,60 +25,80 @@
 
 short Color::color_count = 0;
 
-Colortable::Colortable()
+void Colortable::load_defaults()
 {
 	pair_content(-1, &dfront, &dback);
 
-	standard = new Color(dfront, dback, 0);
-	topbar = new Color(COLOR_WHITE, -1, 0);
-	statusbar = new Color(COLOR_WHITE, -1, 0);
-	windowtitle = new Color(COLOR_CYAN, -1, A_BOLD);
-	columnheader = new Color(COLOR_WHITE, -1, 0);
-	console = new Color(COLOR_WHITE, -1, 0);
-	error = new Color(COLOR_WHITE, COLOR_RED, A_BOLD);
-	readout = new Color(COLOR_WHITE, -1, 0);
+	standard->set(dfront, dback, 0);
+	topbar->set(COLOR_WHITE, -1, 0);
+	statusbar->set(COLOR_WHITE, -1, 0);
+	windowtitle->set(COLOR_CYAN, -1, A_BOLD);
+	columnheader->set(COLOR_WHITE, -1, 0);
+	console->set(COLOR_WHITE, -1, 0);
+	error->set(COLOR_WHITE, COLOR_RED, A_BOLD);
+	readout->set(COLOR_WHITE, -1, 0);
 
-	cursor = new Color(COLOR_BLACK, COLOR_WHITE, 0);
-	playing = new Color(COLOR_BLACK, COLOR_YELLOW, 0);
+	cursor->set(COLOR_BLACK, COLOR_WHITE, 0);
+	playing->set(COLOR_BLACK, COLOR_YELLOW, 0);
 
-	field[FIELD_DIRECTORY] = new Color(COLOR_WHITE, -1, 0);
-	field[FIELD_FILE] = new Color(COLOR_WHITE, -1, 0);
-	field[FIELD_POS] = new Color(COLOR_WHITE, -1, 0);
-	field[FIELD_ID] = new Color(COLOR_WHITE, -1, 0);
-	field[FIELD_TIME] = new Color(COLOR_MAGENTA, -1, 0);
-	field[FIELD_NAME] = new Color(COLOR_WHITE, -1, A_BOLD);
-	field[FIELD_ARTIST] = new Color(COLOR_YELLOW, -1, 0);
-	field[FIELD_ARTISTSORT] = new Color(COLOR_YELLOW, -1, 0);
-	field[FIELD_ALBUM] = new Color(COLOR_CYAN, -1, 0);
-	field[FIELD_TITLE] = new Color(COLOR_WHITE, -1, A_BOLD);
-	field[FIELD_TRACK] = new Color(COLOR_CYAN, -1, 0);
-	field[FIELD_DATE] = new Color(COLOR_YELLOW, -1, 0);
-	field[FIELD_DISC] = new Color(COLOR_WHITE, -1, 0);
-	field[FIELD_GENRE] = new Color(COLOR_WHITE, -1, 0);
-	field[FIELD_ALBUMARTIST] = new Color(COLOR_YELLOW, -1, 0);
-	field[FIELD_ALBUMARTISTSORT] = new Color(COLOR_YELLOW, -1, 0);
+	field[FIELD_DIRECTORY]->set(COLOR_WHITE, -1, 0);
+	field[FIELD_FILE]->set(COLOR_WHITE, -1, 0);
+	field[FIELD_POS]->set(COLOR_WHITE, -1, 0);
+	field[FIELD_ID]->set(COLOR_WHITE, -1, 0);
+	field[FIELD_TIME]->set(COLOR_MAGENTA, -1, 0);
+	field[FIELD_NAME]->set(COLOR_WHITE, -1, A_BOLD);
+	field[FIELD_ARTIST]->set(COLOR_YELLOW, -1, 0);
+	field[FIELD_ARTISTSORT]->set(COLOR_YELLOW, -1, 0);
+	field[FIELD_ALBUM]->set(COLOR_CYAN, -1, 0);
+	field[FIELD_TITLE]->set(COLOR_WHITE, -1, A_BOLD);
+	field[FIELD_TRACK]->set(COLOR_CYAN, -1, 0);
+	field[FIELD_DATE]->set(COLOR_YELLOW, -1, 0);
+	field[FIELD_DISC]->set(COLOR_WHITE, -1, 0);
+	field[FIELD_GENRE]->set(COLOR_WHITE, -1, 0);
+	field[FIELD_ALBUMARTIST]->set(COLOR_YELLOW, -1, 0);
+	field[FIELD_ALBUMARTISTSORT]->set(COLOR_YELLOW, -1, 0);
 
-	field[FIELD_YEAR] = new Color(COLOR_YELLOW, -1, 0);
-	field[FIELD_TRACKSHORT] = new Color(COLOR_CYAN, -1, 0);
+	field[FIELD_YEAR]->set(COLOR_YELLOW, -1, 0);
+	field[FIELD_TRACKSHORT]->set(COLOR_CYAN, -1, 0);
 
-	field[FIELD_ELAPSED] = new Color(COLOR_GREEN, -1, 0);
-	field[FIELD_REMAINING] = new Color(COLOR_MAGENTA, -1, 0);
-	field[FIELD_VOLUME] = new Color(COLOR_YELLOW, -1, 0);
-	field[FIELD_PROGRESSBAR] = new Color(COLOR_BLACK, -1, A_BOLD);
-	field[FIELD_MODES] = new Color(COLOR_CYAN, -1, 0);
-	field[FIELD_STATE] = new Color(COLOR_CYAN, -1, 0);
-	field[FIELD_QUEUESIZE] = new Color(COLOR_YELLOW, -1, 0);
-	field[FIELD_QUEUELENGTH] = new Color(COLOR_WHITE, -1, 0);
+	field[FIELD_ELAPSED]->set(COLOR_GREEN, -1, 0);
+	field[FIELD_REMAINING]->set(COLOR_MAGENTA, -1, 0);
+	field[FIELD_VOLUME]->set(COLOR_YELLOW, -1, 0);
+	field[FIELD_PROGRESSBAR]->set(COLOR_BLACK, -1, A_BOLD);
+	field[FIELD_MODES]->set(COLOR_CYAN, -1, 0);
+	field[FIELD_STATE]->set(COLOR_CYAN, -1, 0);
+	field[FIELD_QUEUESIZE]->set(COLOR_YELLOW, -1, 0);
+	field[FIELD_QUEUELENGTH]->set(COLOR_WHITE, -1, 0);
+}
+
+Colortable::Colortable()
+{
+	size_t i;
+
+	standard = new Color();
+	topbar = new Color();
+	statusbar = new Color();
+	windowtitle = new Color();
+	columnheader = new Color();
+	console = new Color();
+	error = new Color();
+	readout = new Color();
+
+	cursor = new Color();
+	playing = new Color();
+
+	for (i = 0; i < FIELD_TOTAL_VALUES; ++i)
+		field[i] = new Color();
 }
 
 Colortable::~Colortable()
 {
 }
 
-Color::Color(short nfront, short nback, int nattr)
+Color::Color()
 {
 	id = Color::color_count;
-	set(nfront, nback, nattr);
+	set(-1, -1, 0);
 	Color::color_count++;
 }
 

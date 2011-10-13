@@ -36,7 +36,7 @@ extern Curses		curses;
 extern Windowmanager	wm;
 extern Input		input;
 extern Commandlist 	commandlist;
-extern Keybindings *	keybindings;
+extern Keybindings 	keybindings;
 
 int PMS::run_event(Inputevent * ev)
 {
@@ -75,6 +75,7 @@ int PMS::run_event(Inputevent * ev)
 
 		case ACT_REHASH:
 			sev = *ev;
+			config.load_default_config();
 			config.source_default_config();
 			lastev = sev;
 			return true;
@@ -89,7 +90,7 @@ int PMS::run_event(Inputevent * ev)
 			return map_keys(ev->text);
 
 		case ACT_UNMAP:
-			return keybindings->remove(ev->text);
+			return keybindings.remove(ev->text);
 
 		case ACT_RUN_CMD:
 			run_cmd(ev->text, ev->multiplier);
@@ -344,7 +345,7 @@ int PMS::map_keys(string params)
 		return false;
 	}
 
-	return (keybindings->add(context, cmd->action, s[1], (s.size() == 4 ? s[3] : "")) != NULL);
+	return (keybindings.add(context, cmd->action, s[1], (s.size() == 4 ? s[3] : "")) != NULL);
 
 }
 

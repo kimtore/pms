@@ -96,6 +96,9 @@ class Config
 
 		Config();
 
+		/* Load internal default config. */
+		void		load_default_config();
+
 		/* Load all default config files */
 		void		source_default_config();
 

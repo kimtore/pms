@@ -25,7 +25,7 @@
 #include "config.h"
 #include <cstring>
 
-Keybindings * keybindings;
+Keybindings keybindings;
 Commandlist commandlist;
 extern Windowmanager wm;
 extern Config config;
@@ -75,7 +75,6 @@ Input::Input()
 	tab_complete_index = 0;
 	option_tab_complete_index = 0;
 	cursorpos = 0;
-	keybindings = new Keybindings();
 }
 
 bool Input::run_multiplier(int ch)
@@ -117,7 +116,7 @@ Inputevent * Input::next()
 
 			buffer.push_back(chbuf);
 			strbuf.push_back(chbuf);
-			m = keybindings->find(wm.context, &buffer, &ev.action, &strbuf);
+			m = keybindings.find(wm.context, &buffer, &ev.action, &strbuf);
 
 			if (m == KEYBIND_FIND_EXACT)
 				ev.result = INPUT_RESULT_RUN;

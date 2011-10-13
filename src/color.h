@@ -34,7 +34,7 @@ class Color
 
 	public:
 
-					Color(short nfront, short nback, int nattr);
+					Color();
 
 		void			set(short nfront, short nback, int nattr);
 		bool			set(string strcolor);
@@ -58,6 +58,8 @@ class Colortable
 	public:
 				Colortable();
 				~Colortable();
+
+		void		load_defaults();
 
 		vector<Color *>	table;
 
