@@ -45,6 +45,7 @@ Commandlist::Commandlist()
 	add(CONTEXT_ALL, ACT_PREVIOUS_WINDOW, "prev-window");
 	add(CONTEXT_ALL, ACT_TOGGLE_WINDOW, "last-window");
 	add(CONTEXT_ALL, ACT_GOTO_WINDOW, "goto-window");
+	add(CONTEXT_ALL, ACT_GOTO_WINDOW_POS, "goto-window-pos");
 	add(CONTEXT_SONGLIST, ACT_ACTIVATE_SONGLIST, "activate-list");
 	add(CONTEXT_SONGLIST, ACT_ADD, "add");
 	add(CONTEXT_SONGLIST, ACT_REMOVE, "remove");

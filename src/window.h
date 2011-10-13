@@ -185,6 +185,9 @@ class Windowmanager
 
 		/* Activate a window with given title, case insensitive */
 		bool			go(string title);
+		
+		/* Activate window N */
+		bool			go(unsigned int index);
 
 		/* Update column lengths in all windows */
 		void			update_column_length();

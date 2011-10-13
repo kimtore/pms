@@ -29,10 +29,8 @@ enum
 {
 	CONTEXT_CONSOLE		= (1 << 0),
 	CONTEXT_SONGLIST	= (1 << 1),
-
 	CONTEXT_LIST		= (1 << 1) |
 				  (1 << 0),
-
 	CONTEXT_ALL		= (1 << 2) - 1
 };
 
@@ -60,6 +58,7 @@ typedef enum
 	ACT_PREVIOUS_WINDOW,
 	ACT_TOGGLE_WINDOW,
 	ACT_GOTO_WINDOW,
+	ACT_GOTO_WINDOW_POS,
 
 	/* List actions */
 	ACT_SCROLL_UP,

@@ -137,6 +137,9 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_GOTO_WINDOW:
 			return wm.go(ev->text);
 
+		case ACT_GOTO_WINDOW_POS:
+			return wm.go((ev->text.size() ? atoi(ev->text.c_str()) : ev->multiplier) - 1);
+
 		case ACT_ACTIVATE_SONGLIST:
 			return activate_songlist();
 

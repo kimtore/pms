@@ -85,7 +85,8 @@ bool Windowmanager::activate(Wmain * nactive)
 			if ((ws = WSONGLIST(nactive)) != NULL && config.playback_follows_window)
 				mpd.activate_songlist(ws->songlist);
 
-			last_active = active;
+			if (nactive != active)
+				last_active = active;
 			active_index = i;
 			active = nactive;
 			context = active->context;
@@ -122,6 +123,14 @@ bool Windowmanager::go(string title)
 	return false;
 }
 
+bool Windowmanager::go(unsigned int index)
+{
+	if (index >= windows.size())
+		return false;
+
+	return activate(windows[index]);
+}
+
 void Windowmanager::cycle(int offset)
 {
 	Wsonglist * ws;
@@ -138,7 +147,8 @@ void Windowmanager::cycle(int offset)
 		offset -= windows.size();
 
 	active_index = (unsigned int)offset;
-	last_active = active;
+	if (windows[active_index] != active)
+		last_active = active;
 	active = windows[active_index];
 	context = active->context;
 
