@@ -131,6 +131,12 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_PREVIOUS_WINDOW:
 			return cycle_windows(-ev->multiplier);
 
+		case ACT_TOGGLE_WINDOW:
+			return wm.toggle();
+
+		case ACT_GOTO_WINDOW:
+			return wm.go(ev->text);
+
 		case ACT_ACTIVATE_SONGLIST:
 			return activate_songlist();
 

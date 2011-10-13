@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
 {
 	struct timeval cl;
 	struct timeval conn;
+	bool initialized = false;
 
 	if (!curses.ready)
 	{
@@ -75,6 +76,13 @@ int main(int argc, char *argv[])
 				mpd.get_library();
 				mpd.read_opts();
 				mpd.update_playstring();
+				if (!initialized)
+				{
+					initialized = true;
+					wm.activate(WMAIN(wm.playlist));
+					if (mpd.currentsong)
+						wm.active->set_cursor(mpd.currentsong->pos);
+				}
 				wm.draw();
 				curses.flush();
 				gettimeofday(&conn, NULL);

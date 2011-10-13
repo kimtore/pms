@@ -180,6 +180,12 @@ class Windowmanager
 		/* Activate a window */
 		bool			activate(Wmain * nactive);
 
+		/* Activate the last used window */
+		bool			toggle();
+
+		/* Activate a window with given title, case insensitive */
+		bool			go(string title);
+
 		/* Update column lengths in all windows */
 		void			update_column_length();
 
@@ -187,6 +193,7 @@ class Windowmanager
 		Wsonglist *		playlist;
 		Wsonglist *		library;
 
+		Wmain *			last_active;
 		Wmain *			active;
 		Wtopbar *		topbar;
 		Wstatusbar *		statusbar;

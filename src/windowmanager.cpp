@@ -23,7 +23,10 @@
 #include "command.h"
 #include "mpd.h"
 #include "config.h"
+#include <string>
 #include <vector>
+#include <algorithm>
+using namespace std;
 
 extern Curses curses;
 extern MPD mpd;
@@ -82,6 +85,7 @@ bool Windowmanager::activate(Wmain * nactive)
 			if ((ws = WSONGLIST(nactive)) != NULL && config.playback_follows_window)
 				mpd.activate_songlist(ws->songlist);
 
+			last_active = active;
 			active_index = i;
 			active = nactive;
 			context = active->context;
@@ -91,6 +95,28 @@ bool Windowmanager::activate(Wmain * nactive)
 			curses.flush();
 			return true;
 		}
+	}
+
+	return false;
+}
+
+bool Windowmanager::toggle()
+{
+	return activate(last_active);
+}
+
+bool Windowmanager::go(string title)
+{
+	string tmp;
+	vector<Wmain *>::const_iterator it;
+
+	std::transform(title.begin(), title.end(), title.begin(), ::tolower);
+	for (it = windows.begin(); it != windows.end(); ++it)
+	{
+		tmp = (*it)->title;
+		std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
+		if (tmp == title)
+			return activate(*it);
 	}
 
 	return false;
@@ -112,6 +138,7 @@ void Windowmanager::cycle(int offset)
 		offset -= windows.size();
 
 	active_index = (unsigned int)offset;
+	last_active = active;
 	active = windows[active_index];
 	context = active->context;
 
