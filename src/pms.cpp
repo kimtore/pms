@@ -509,9 +509,9 @@ int PMS::activate_songlist()
 int PMS::add(int count)
 {
 	bool status = true;
+	size_t i;
 	int c = count;
 	Wsonglist * win;
-	vector<Song *>::iterator song;
 
 	if ((win = WSONGLIST(wm.active)) == NULL)
 	{
@@ -519,12 +519,15 @@ int PMS::add(int count)
 		return false;
 	}
 
-	song = win->songlist->songs.begin() + win->cursor;
-	while (c > 0 && song != win->songlist->songs.end())
+	if (win->cursor >= win->songlist->size())
+		return false;
+
+	i = win->cursor;
+	while (c > 0 && i < win->songlist->size())
 	{
-		status = status && mpd.addid((*song)->f[FIELD_FILE]);
+		status = status && mpd.addid(win->songlist->at(win->cursor)->f[FIELD_FILE]);
 		--c;
-		++song;
+		++i;
 	}
 	count -= c;
 
@@ -533,7 +536,7 @@ int PMS::add(int count)
 		if (count > 1)
 			stinfo("%d songs added to playlist.", count);
 		else if (count == 1)
-			stinfo("`%s' added to playlist.", (*--song)->f[FIELD_TITLE].c_str());
+			stinfo("`%s' added to playlist.", win->songlist->at(--i)->f[FIELD_TITLE].c_str());
 
 		if (config.advance_cursor)
 			win->move_cursor(count);
