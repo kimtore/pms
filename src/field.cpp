@@ -22,12 +22,14 @@
 #include "song.h"
 #include "mpd.h"
 #include "config.h"
+#include "curses.h"
 #include <vector>
 #include <string>
 using namespace std;
 
 extern MPD mpd;
 extern Config config;
+extern Curses curses;
 
 Field::Field(field_t nfield, string name, string mpd_name, string tit, unsigned int minl, unsigned int maxl)
 {
@@ -42,6 +44,7 @@ Field::Field(field_t nfield, string name, string mpd_name, string tit, unsigned 
 string Field::format(Song * song)
 {
 	string tmp;
+	int i;
 
 	if (!song)
 		return "";
@@ -57,6 +60,16 @@ string Field::format(Song * song)
 		case FIELD_REMAINING:
 			return time_format((int)(mpd.status.length - mpd.status.elapsed));
 
+		case FIELD_PROGRESSBAR:
+			tmp.clear();
+			if (mpd.status.length == -1 || mpd.status.elapsed == -1)
+				return tmp;
+			i = mpd.status.elapsed * (curses.topbar.right - curses.topbar.left) / mpd.status.length;
+			while (i-- >= 0)
+				tmp += '=';
+			tmp += '>';
+			return tmp;
+
 		case FIELD_VOLUME:
 			if (mpd.status.volume == 0 && config.mute)
 				tmp = "Muted (" + tostring(config.volume) + "%%)";
@@ -68,7 +81,7 @@ string Field::format(Song * song)
 			tmp = "----";
 			if (mpd.status.repeat)
 				tmp[0] = 'r';
-			if (mpd.status.random)
+			if (config.random)
 				tmp[1] = 'z';
 			if (mpd.status.single)
 				tmp[2] = 's';
@@ -126,6 +139,7 @@ Fieldtypes::Fieldtypes()
 	fields.push_back(new Field(FIELD_VOLUME, "volume", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_MODES, "modes", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_STATE, "state", "", "", 0, 0));
+	fields.push_back(new Field(FIELD_PROGRESSBAR, "progressbar", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_QUEUESIZE, "queuesize", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_QUEUELENGTH, "queuelength", "", "", 0, 0));
 }

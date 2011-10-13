@@ -811,7 +811,7 @@ Song * MPD::next_song_in_line(int steps)
 		return NULL;
 
 	/* Linear progression */
-	if (!status.random)
+	if (!config.random)
 	{
 		if (!currentsong)
 			return active_songlist->at(0);

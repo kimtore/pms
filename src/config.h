@@ -34,7 +34,9 @@ enum
 	OPT_CHANGE_COLUMNS	= 1 << 2,
 	OPT_CHANGE_DRAWLIST	= 1 << 3,
 	OPT_CHANGE_REDRAW	= 1 << 4,
-	OPT_CHANGE_ALL		= (1 << 5) - 1
+	OPT_CHANGE_TOPBAR	= 1 << 5,
+	OPT_CHANGE_PLAYMODE	= 1 << 6,
+	OPT_CHANGE_ALL		= (1 << 7) - 1
 };
 
 /* Standard option types */

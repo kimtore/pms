@@ -360,13 +360,26 @@ int PMS::set_opt(Inputevent * ev)
 		mpd.apply_opts();
 	if (opt->mask & OPT_CHANGE_DIMENSIONS)
 		curses.detect_dimensions();
+	if (opt->mask & OPT_CHANGE_PLAYMODE)
+	{
+		mpd.update_playstring();
+		wm.statusbar->draw();
+	}
 
 	if (opt->mask & OPT_CHANGE_REDRAW)
+	{
 		wm.draw();
-	else if (opt->mask & OPT_CHANGE_DRAWLIST)
-		wm.active->draw();
+	}
 	else
-		return true;
+	{
+		if (opt->mask & OPT_CHANGE_DRAWLIST)
+			wm.active->draw();
+		if (opt->mask & OPT_CHANGE_TOPBAR)
+			wm.topbar->draw();
+
+		if (!(opt->mask & OPT_CHANGE_DRAWLIST) && !(opt->mask & OPT_CHANGE_TOPBAR))
+			return true;
+	}
 
 	curses.flush();
 

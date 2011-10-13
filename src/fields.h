@@ -51,6 +51,7 @@ typedef enum
 	FIELD_VOLUME,
 	FIELD_MODES,
 	FIELD_STATE,
+	FIELD_PROGRESSBAR,
 	FIELD_QUEUESIZE,
 	FIELD_QUEUELENGTH
 }
@@ -58,6 +59,6 @@ typedef enum
 field_t;
 
 #define FIELD_COLUMN_VALUES 18
-#define FIELD_TOTAL_VALUES 25
+#define FIELD_TOTAL_VALUES 26
 
 #endif /* _PMS_FIELDS_H_ */

@@ -65,7 +65,10 @@ Config::Config()
 	set_column_headers("artist track title album year length");
 	set_search_fields("artist title album");
 	set_scroll_mode("normal");
-	topbar.set("{PMS $volume $state [$modes] $elapsed / $remaining}{$artist / $title / $album / $year}{Queue has $queuesize songs ($queuelength)}");
+	topbar.set("{PMS $volume $state [$modes] $elapsed / $remaining}"
+			"{$artist / $title / $album / $year}"
+			"{Queue has $queuesize songs ($queuelength)}"
+			"{$progressbar}{}{}");
 
 	/* Set up options array */
 	add_option("host", OPTION_TYPE_STRING, (void *)&host, OPT_CHANGE_NONE);
@@ -84,7 +87,7 @@ Config::Config()
 	add_option("followwindow", OPTION_TYPE_BOOL, (void *)&playback_follows_window, OPT_CHANGE_NONE);
 	add_option("resetstatus", OPTION_TYPE_UINT, (void *)&status_reset_interval, OPT_CHANGE_NONE);
 
-	add_option("random", OPTION_TYPE_BOOL, (void *)&random, OPT_CHANGE_MPD);
+	add_option("random", OPTION_TYPE_BOOL, (void *)&random, OPT_CHANGE_MPD | OPT_CHANGE_TOPBAR | OPT_CHANGE_PLAYMODE);
 	add_option("repeat", OPTION_TYPE_BOOL, (void *)&repeat, OPT_CHANGE_MPD);
 	add_option("consume", OPTION_TYPE_BOOL, (void *)&consume, OPT_CHANGE_MPD);
 	add_option("single", OPTION_TYPE_BOOL, (void *)&single, OPT_CHANGE_MPD);
