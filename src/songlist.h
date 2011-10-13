@@ -76,6 +76,9 @@ class Songlist
 		/* Same as find(), but looks only through search results */
 		size_t			sfind(long hash, size_t pos = 0);
 
+		/* Find relative song->pos in search mode, for use in playlist */
+		size_t			spos(song_t pos);
+
 		/* Search for songs using song fields. */
 		Song *			search(search_mode_t mode);
 		Song *			search(search_mode_t mode, long mask, string terms);

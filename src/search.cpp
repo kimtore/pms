@@ -60,6 +60,20 @@ size_t Songlist::sfind(long hash, size_t pos)
 	return string::npos;
 }
 
+size_t Songlist::spos(song_t pos)
+{
+	size_t it;
+
+	if (!searchresult)
+		return pos;
+
+	for (it = 0; it < searchresult->songs.size(); ++it)
+		if (searchresult->songs[it]->pos == pos)
+			return it;
+
+	return string::npos;
+}
+
 Song * Songlist::search(search_mode_t mode)
 {
 	searchmode = mode;

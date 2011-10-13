@@ -799,7 +799,7 @@ int MPD::remove(Songlist * list, int start, int count)
 
 Song * MPD::next_song_in_line(int steps)
 {
-	size_t i;
+	int i;
 
 	/* Need songs in active list */
 	if (active_songlist->size() == 0)
@@ -809,45 +809,40 @@ Song * MPD::next_song_in_line(int steps)
 	if (!status.random)
 	{
 		if (!currentsong)
-			return active_songlist->songs[0];
+			return active_songlist->at(0);
 
 		if (active_songlist == &playlist)
-			i = currentsong->pos;
+			i = active_songlist->spos(currentsong->pos);
 		else
-			i = active_songlist->find(currentsong->fhash);
+			i = active_songlist->sfind(currentsong->fhash);
 
-		if (i != string::npos)
+		steps += i;
+
+		/* Reached end of list, wrap around. */
+		if (steps >= (int)active_songlist->size())
 		{
-			steps += i;
-
-			/* Reached end of list, wrap around. */
-			if (steps >= (int)active_songlist->size())
-			{
-				/* ... unless we are not repeating ourselves. */
-				if (!status.repeat)
-					return NULL;
-				steps %= active_songlist->size();
-			}
-
-			/* Reached beginning of list, wrap around. */
-			while (steps < 0)
-			{
-				/* ... unless we are not repeating ourselves. */
-				if (!status.repeat)
-					return NULL;
-				steps += active_songlist->size();
-			}
-
-			return active_songlist->songs[steps];
+			/* ... unless we are not repeating ourselves. */
+			if (!status.repeat)
+				return NULL;
+			steps %= active_songlist->size();
 		}
 
-		return NULL;
+		/* Reached beginning of list, wrap around. */
+		while (steps < 0)
+		{
+			/* ... unless we are not repeating ourselves. */
+			if (!status.repeat)
+				return NULL;
+			steps += active_songlist->size();
+		}
+
+		return active_songlist->at(steps);
 	}
 
 	/* Random progression */
 	else
 	{
-		return active_songlist->songs[active_songlist->randpos()];
+		return active_songlist->at(active_songlist->randpos());
 	}
 }
 
