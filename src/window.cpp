@@ -64,6 +64,9 @@ unsigned int Wmain::height()
 
 void Wmain::draw()
 {
+	if (!rect || !visible())
+		return;
+
 	if (config.show_window_title)
 	{
 		curses.clearline(rect, 0, config.colors.windowtitle);
