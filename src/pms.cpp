@@ -615,13 +615,21 @@ int PMS::stop()
 
 int PMS::change_song(int steps)
 {
-	int s;
-	while (steps < 0 && (s = mpd.previous()))
-		++steps;
-	while (steps > 0 && (s = mpd.next()))
-		--steps;
+	Song * song;
 
-	return s;
+	if (mpd.status.single && mpd.status.repeat && mpd.currentsong)
+		return mpd.playid(mpd.currentsong->id);
+
+	if ((song = mpd.next_song_in_line(steps)) == NULL)
+	{
+		sterr("There is no candidate for %s song, try switching lists or setting repeat mode.", string(steps > 0 ? "next" : "previous").c_str());
+		return false;
+	}
+
+	if (song->id != -1)
+		return mpd.playid(song->id);
+	else
+		return mpd.playid(mpd.addid(song->f[FIELD_FILE]));
 }
 
 int PMS::seek(int seconds)

@@ -412,7 +412,8 @@ int MPD::get_playlist()
 	playlist.version = status.playlist;
 	update_currentsong();
 	wm.playlist->update_column_length();
-	wm.playlist->draw();
+	wm.active->draw();
+	curses.flush();
 
 	debug("Playlist has been updated to version %d", playlist.version);
 
@@ -449,7 +450,8 @@ int MPD::get_library()
 		debug("If this happens often, you might need to increase MPD's `max_output_buffer_size' setting.", NULL);
 	}
 	wm.library->update_column_length();
-	wm.library->draw();
+	wm.active->draw();
+	curses.flush();
 
 	return s;
 }
@@ -573,7 +575,8 @@ int MPD::get_status()
 	gettimeofday(&last_update, NULL);
 	memcpy(&last_clock, &last_update, sizeof last_clock);
 	update_currentsong();
-	wm.draw();
+	wm.active->draw();
+	curses.flush();
 
 	return s;
 }
@@ -594,7 +597,7 @@ void MPD::run_clock()
 
 	if (config.autoadvance && autoadvance_playlist < playlist.version && status.length - status.elapsed < (int)config.add_next_interval)
 	{
-		if ((song = next_song_in_line()) != NULL)
+		if ((song = next_auto_song_in_line()) != NULL)
 		{
 			addid(song->f[FIELD_FILE]);
 			autoadvance_playlist = playlist.version;
@@ -794,10 +797,62 @@ int MPD::remove(Songlist * list, int start, int count)
 	return false;
 }
 
-Song * MPD::next_song_in_line()
+Song * MPD::next_song_in_line(int steps)
 {
 	size_t i;
 
+	/* Need songs in active list */
+	if (active_songlist->size() == 0)
+		return NULL;
+
+	/* Linear progression */
+	if (!status.random)
+	{
+		if (!currentsong)
+			return active_songlist->songs[0];
+
+		if (active_songlist == &playlist)
+			i = currentsong->pos;
+		else
+			i = active_songlist->find(currentsong->fhash);
+
+		if (i != string::npos)
+		{
+			steps += i;
+
+			/* Reached end of list, wrap around. */
+			if (steps >= (int)active_songlist->size())
+			{
+				/* ... unless we are not repeating ourselves. */
+				if (!status.repeat)
+					return NULL;
+				steps %= active_songlist->size();
+			}
+
+			/* Reached beginning of list, wrap around. */
+			while (steps < 0)
+			{
+				/* ... unless we are not repeating ourselves. */
+				if (!status.repeat)
+					return NULL;
+				steps += active_songlist->size();
+			}
+
+			return active_songlist->songs[steps];
+		}
+
+		return NULL;
+	}
+
+	/* Random progression */
+	else
+	{
+		return active_songlist->songs[active_songlist->randpos()];
+	}
+}
+
+Song * MPD::next_auto_song_in_line()
+{
 	/* Let MPD manage the playlist itself */
 	if (!active_songlist || active_songlist == &playlist || status.random)
 		return NULL;
@@ -810,39 +865,7 @@ Song * MPD::next_song_in_line()
 	if (status.song + 1 < (int)playlist.size())
 		return NULL;
 
-	/* Need songs in active list */
-	if (active_songlist->size() == 0)
-		return NULL;
-
-	/* Linear progression */
-	if (!status.random)
-	{
-		if (!currentsong)
-			return active_songlist->songs[0];
-
-		if ((i = active_songlist->find(currentsong->fhash)) != string::npos)
-		{
-			/* Reached end of list, wrap around. */
-			if (++i >= active_songlist->size())
-			{
-				/* ... unless we are not repeating ourselves. */
-				if (!status.repeat)
-					return NULL;
-
-				i = 0;
-			}
-
-			return active_songlist->songs[i];
-		}
-
-		return NULL;
-	}
-
-	/* Random progression */
-	else
-	{
-		return active_songlist->songs[active_songlist->randpos()];
-	}
+	return next_song_in_line();
 }
 
 void MPD::update_playstring()

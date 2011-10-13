@@ -220,7 +220,8 @@ class MPD
 		int		remove(Songlist * list, int start, int count);
 
 		/* Returns a pointer to the next song in line according to play mode and config, or NULL if none. */
-		Song *		next_song_in_line();
+		Song *		next_song_in_line(int steps = 1);
+		Song *		next_auto_song_in_line();
 
 		/* Update textual representation of play progression */
 		void		update_playstring();
