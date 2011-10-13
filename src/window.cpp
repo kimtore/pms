@@ -154,7 +154,12 @@ void Wmain::move_cursor(int offset)
 		if ((int)cursor < offset)
 			position = 0;
 		else if (cursor + offset >= content_size())
-			position = content_size() - height() - 1;
+		{
+			if (content_size() > height())
+				position = content_size() - height() - 1;
+			else
+				position = 0;
+		}
 		else
 			position = cursor - offset;
 	}
