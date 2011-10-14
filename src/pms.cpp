@@ -53,20 +53,17 @@ int PMS::run_event(Inputevent * ev)
 	{
 		case ACT_MODE_INPUT:
 			input.setmode(INPUT_MODE_INPUT);
-			wm.statusbar->draw();
-			curses.flush();
+			wm.statusbar->qdraw();
 			return true;
 
 		case ACT_MODE_COMMAND:
 			input.setmode(INPUT_MODE_COMMAND);
-			wm.statusbar->draw();
-			curses.flush();
+			wm.statusbar->qdraw();
 			return true;
 
 		case ACT_MODE_SEARCH:
 			input.setmode(INPUT_MODE_SEARCH);
-			wm.statusbar->draw();
-			curses.flush();
+			wm.statusbar->qdraw();
 			return true;
 
 		case ACT_CONNECT:
@@ -95,15 +92,13 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_RUN_CMD:
 			run_cmd(ev->text, ev->multiplier);
 			input.setmode(INPUT_MODE_COMMAND);
-			wm.statusbar->draw();
-			curses.flush();
+			wm.statusbar->qdraw();
 			return true;
 
 		case ACT_RUN_SEARCH:
 			run_search(ev->text, ev->multiplier);
 			input.setmode(INPUT_MODE_COMMAND);
-			wm.statusbar->draw();
-			wm.active->draw();
+			wm.statusbar->qdraw();
 			curses.flush();
 			return true;
 
@@ -123,7 +118,6 @@ int PMS::run_event(Inputevent * ev)
 			wm.playlist->update_column_length();
 			wm.library->update_column_length();
 			wm.draw();
-			curses.flush();
 			return true;
 
 		case ACT_NEXT_WINDOW:

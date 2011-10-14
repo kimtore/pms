@@ -41,6 +41,7 @@ extern MPD mpd;
 Wstatusbar::Wstatusbar()
 {
 	memset(&cl, 0, sizeof cl);
+	cl_isreset = false;
 }
 
 void Wstatusbar::drawline(int rely)
@@ -60,15 +61,19 @@ void Wstatusbar::drawline(int rely)
 				if ((*i)->level > MSG_LEVEL_INFO)
 					continue;
 
+				memcpy(&cl_reset, &((*i)->tm), sizeof cl_reset);
+
 				/* Expired message - draw playstring instead */
-				if (cl.tv_sec - (*i)->tm.tv_sec >= (int)config.status_reset_interval)
+				if (cl.tv_sec - cl_reset.tv_sec >= (int)config.status_reset_interval)
 				{
+					cl_isreset = true;
 					curses.wipe(rect, config.colors.statusbar);
 					curses.print(rect, config.colors.statusbar, rely, 0, mpd.playstring.c_str());
 					break;
 				}
 
-				/* Draw last debug message */
+				/* Draw last statusbar message */
+				cl_isreset = false;
 				c = (*i)->level == MSG_LEVEL_ERR ? config.colors.error : config.colors.statusbar;
 				curses.wipe(rect, c);
 				curses.print(rect, c, rely, 0, (*i)->line.c_str());

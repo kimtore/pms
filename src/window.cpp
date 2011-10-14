@@ -33,10 +33,17 @@ void Window::draw()
 	if (!rect || !visible())
 		return;
 
+	need_draw = false;
+
 	h = height();
 
 	for (i = 0; i <= h; i++)
 		drawline(i);
+}
+
+inline void Window::qdraw()
+{
+	need_draw = true;
 }
 
 void Window::clear()
@@ -74,7 +81,6 @@ void Wmain::draw()
 	}
 
 	Window::draw();
-
 	wm.readout->draw();
 }
 
@@ -115,8 +121,7 @@ void Wmain::scroll_window(int offset)
 		cursor = position + (height() / 2);
 	}
 	
-	draw();
-	curses.flush();
+	qdraw();
 }
 
 void Wmain::set_position(unsigned int absolute)
@@ -167,8 +172,7 @@ void Wmain::move_cursor(int offset)
 			position = cursor - offset;
 	}
 	
-	draw();
-	curses.flush();
+	qdraw();
 }
 
 void Wmain::set_cursor(unsigned int absolute)

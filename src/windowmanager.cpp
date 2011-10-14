@@ -23,6 +23,7 @@
 #include "command.h"
 #include "mpd.h"
 #include "config.h"
+#include "input.h"
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -31,6 +32,7 @@ using namespace std;
 extern Curses curses;
 extern MPD mpd;
 extern Config config;
+extern Input input;
 
 Windowmanager::Windowmanager()
 {
@@ -66,6 +68,27 @@ void Windowmanager::draw()
 	statusbar->draw();
 	readout->draw();
 	active->draw();
+
+	flush();
+}
+
+void Windowmanager::qdraw()
+{
+	if (input.mode != INPUT_MODE_COMMAND && !statusbar->need_draw &&
+		(topbar->need_draw || active->need_draw || readout->need_draw))
+	{
+		statusbar->qdraw();
+	}
+	if (topbar->need_draw)
+		topbar->draw();
+	if (active->need_draw)
+		active->draw();
+	if (readout->need_draw)
+		readout->draw();
+	if (statusbar->need_draw)
+		statusbar->draw();
+
+	flush();
 }
 
 void Windowmanager::flush()

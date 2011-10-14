@@ -111,7 +111,8 @@ bool MPD::trigerr(int nerrno, const char * format, ...)
 	error = buf;
 	errno = nerrno;
 
-	sterr("MPD: %s", buf);
+	sterr("%s", buf);
+	wm.statusbar->draw();
 
 	return false;
 }
@@ -130,6 +131,7 @@ bool MPD::mpd_connect(string nhost, string nport)
 		mpd_disconnect();
 
 	stinfo("Connecting to server '%s' port '%s'...", host.c_str(), port.c_str());
+	wm.statusbar->draw();
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
@@ -412,8 +414,6 @@ int MPD::get_playlist()
 	playlist.version = status.playlist;
 	update_currentsong();
 	wm.playlist->update_column_length();
-	wm.active->draw();
-	curses.flush();
 
 	debug("Playlist has been updated to version %d", playlist.version);
 
@@ -450,13 +450,14 @@ int MPD::get_library()
 		debug("If this happens often, you might need to increase MPD's `max_output_buffer_size' setting.", NULL);
 	}
 
-	debug("Sorting library by `%s'...", config.default_sort.c_str());
+	/* Manual draw and sort, which may take a while */
+	stinfo("Sorting library by `%s'...", config.default_sort.c_str());
+	wm.statusbar->draw();
 	library.sort(config.default_sort);
 	debug("Library is sorted.", NULL);
 
 	wm.library->update_column_length();
-	wm.active->draw();
-	curses.flush();
+	wm.library->qdraw();
 
 	return s;
 }
@@ -580,8 +581,6 @@ int MPD::get_status()
 	gettimeofday(&last_update, NULL);
 	memcpy(&last_clock, &last_update, sizeof last_clock);
 	update_currentsong();
-	wm.active->draw();
-	curses.flush();
 
 	return s;
 }
@@ -596,6 +595,7 @@ void MPD::run_clock()
 	{
 		status.elapsed += (tm.tv_sec - last_clock.tv_sec);
 		status.elapsed += (tm.tv_usec - last_clock.tv_usec) / 1000000.000000;
+		wm.topbar->qdraw();
 	}
 
 	memcpy(&last_clock, &tm, sizeof last_clock);
@@ -604,7 +604,8 @@ void MPD::run_clock()
 	{
 		if ((song = next_auto_song_in_line()) != NULL)
 		{
-			addid(song->f[FIELD_FILE]);
+			if ((addid(song->f[FIELD_FILE])) != -1)
+				wm.statusbar->qdraw();
 			autoadvance_playlist = playlist.version;
 		}
 	}
@@ -717,6 +718,8 @@ int MPD::poll()
 
 Song * MPD::update_currentsong()
 {
+	wm.topbar->qdraw();
+	wm.active->qdraw();
 	return (currentsong = (int)playlist.songs.size() > status.song ? playlist.songs[status.song] : NULL);
 }
 
@@ -771,7 +774,7 @@ int MPD::activate_songlist(Songlist * list)
 	active_songlist = list;
 	apply_opts();
 	update_playstring();
-	wm.statusbar->draw();
+	wm.statusbar->qdraw();
 
 	return true;
 }

@@ -69,35 +69,39 @@ int main(int argc, char *argv[])
 		{
 			if (cl.tv_sec - conn.tv_sec >= (int)config.reconnect_delay)
 			{
-				mpd.mpd_connect(config.host, config.port);
-				mpd.set_password(config.password);
-				mpd.get_status();
-				mpd.get_playlist();
-				wm.topbar->draw();
-				mpd.get_library();
-				mpd.read_opts();
-				mpd.update_playstring();
-				if (!initialized)
-				{
-					initialized = true;
-					wm.activate(WMAIN(wm.playlist));
-					if (mpd.currentsong)
-						wm.active->set_cursor(mpd.currentsong->pos);
-				}
 				wm.draw();
-				curses.flush();
+				if (mpd.mpd_connect(config.host, config.port))
+				{
+					mpd.set_password(config.password);
+					mpd.get_status();
+					mpd.get_playlist();
+					wm.qdraw();
+					mpd.get_library();
+					mpd.read_opts();
+					mpd.update_playstring();
+					if (!initialized)
+					{
+						initialized = true;
+						wm.activate(WMAIN(wm.playlist));
+						if (mpd.currentsong)
+							wm.active->set_cursor(mpd.currentsong->pos);
+						stinfo("Ready.", NULL);
+					}
+					wm.qdraw();
+				}
 				gettimeofday(&conn, NULL);
 			}
 		}
 
+		/* Check if statusbar needs a reset draw */
+		memcpy(&(wm.statusbar->cl), &cl, sizeof cl);
+		if (wm.statusbar->cl.tv_sec - wm.statusbar->cl_reset.tv_sec >= (int)config.status_reset_interval)
+			wm.statusbar->qdraw();
+
 		/* Get updates from MPD, run clock, do updates */
+		wm.qdraw();
 		mpd.poll();
-
-		/* Draw topbar after poll() */
-		wm.topbar->draw();
-
-		/* Statusbar needs redraw with playstring? */
-		wm.statusbar->draw();
+		wm.qdraw();
 
 		/* Check for any input events and run them */
 		pms.run_event(input.next());

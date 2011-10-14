@@ -60,15 +60,12 @@ void console_log(int level, const char * format, ...)
 	else if (wm.console->visible())
 	{
 		if (wm.console->content_size() < wm.console->height())
-			wm.console->draw();
+			wm.console->qdraw();
 		else
-			wm.readout->draw();
+			wm.readout->qdraw();
 
 	}
 
 	if (level <= MSG_LEVEL_INFO)
-	{
-		wm.statusbar->draw();
-		curses.flush();
-	}
+		wm.statusbar->qdraw();
 }

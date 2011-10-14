@@ -39,6 +39,7 @@ class Window
 		Rect *		rect;
 
 	public:
+		bool		need_draw;
 		void		set_rect(Rect * r) { rect = r; };
 
 		/* Window height */
@@ -46,6 +47,9 @@ class Window
 
 		/* Draw all lines on rect */
 		void		draw();
+
+		/* Queue draw until next tick */
+		void		qdraw();
 
 		/* Clear this window */
 		void		clear();
@@ -145,7 +149,10 @@ class Wstatusbar : public Window
 		Wstatusbar();
 
 		void		drawline(int rely);
+
 		struct timeval	cl;
+		struct timeval	cl_reset;
+		bool		cl_isreset;
 };
 
 class Wreadout : public Window
@@ -170,6 +177,9 @@ class Windowmanager
 
 		/* Redraw all visible windows */
 		void			draw();
+
+		/* Redraw all windows flagged with qdraw */
+		void			qdraw();
 
 		/* Flush ncurses buffer */
 		void			flush();
