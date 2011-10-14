@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
 				mpd.set_password(config.password);
 				mpd.get_status();
 				mpd.get_playlist();
+				wm.topbar->draw();
 				mpd.get_library();
 				mpd.read_opts();
 				mpd.update_playstring();

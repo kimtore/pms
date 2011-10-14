@@ -949,7 +949,7 @@ void MPD::update_playstring()
 
 int MPD::update(string dir)
 {
-	mpd_send("update %s", dir.c_str());
+	mpd_send("update \"%s\"", dir.c_str());
 	while (mpd_getline(NULL) == MPD_GETLINE_MORE);
 	return true;
 }
