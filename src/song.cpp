@@ -256,7 +256,14 @@ string tostring(unsigned int number)
 	return s.str();
 }
 
-string tostring(size_t number)
+string tostring(long number)
+{
+	ostringstream s;
+	s << number;
+	return s.str();
+}
+
+string tostring(unsigned long number)
 {
 	ostringstream s;
 	s << number;

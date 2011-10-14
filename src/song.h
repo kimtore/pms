@@ -64,7 +64,8 @@ string str_replace(string search, string replace, string subject);
 /* Convert number to string */
 string tostring(int number);
 string tostring(unsigned int number);
-string tostring(size_t number);
+string tostring(long number);
+string tostring(unsigned long number);
 
 /* Correctly escape a string so that it can be printed */
 void escape_printf(string &src);
