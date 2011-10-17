@@ -92,31 +92,55 @@ Song * Songlist::search(search_mode_t mode)
 
 Searchresults * Songlist::search(vector<Song *> * source, long mask, string terms)
 {
-	Searchresults * results;
+	Searchresults * results[2];
+	unsigned int resultptr = 0;
 	vector<Field *>::const_iterator fit;
 	vector<Song *>::const_iterator sit;
+	vector<string>::const_iterator tit;
+	vector<string> * t;
 
-	results = new Searchresults;
+	results[0] = new Searchresults;
+	results[1] = new Searchresults;
 
-	for (sit = source->begin(); sit != source->end(); ++sit)
+	if (config.split_search_terms)
 	{
-		for (fit = fieldtypes.fields.begin(); fit != fieldtypes.fields.end(); ++fit)
-		{
-			if (!(mask & (1 << (*fit)->type)))
-				continue;
-
-			if (!strmatch((*sit)->f[(*fit)->type], terms, !config.search_case))
-				continue;
-
-			results->songs.push_back(*sit);
-			break;
-		}
+		t = str_split(terms, " ");
+	}
+	else
+	{
+		t = new vector<string>;
+		t->push_back(terms);
 	}
 
-	results->mask = mask;
-	results->terms = terms;
+	for (tit = t->begin(); tit != t->end(); ++tit)
+	{
+		for (sit = source->begin(); sit != source->end(); ++sit)
+		{
+			for (fit = fieldtypes.fields.begin(); fit != fieldtypes.fields.end(); ++fit)
+			{
+				if (!(mask & (1 << (*fit)->type)))
+					continue;
 
-	return results;
+				if (!strmatch((*sit)->f[(*fit)->type], *tit, !config.search_case))
+					continue;
+
+				results[resultptr]->songs.push_back(*sit);
+				break;
+			}
+		}
+
+		source = &(results[resultptr]->songs);
+		++resultptr %= 2;
+		results[resultptr]->songs.clear();
+	}
+
+	delete t;
+	delete results[resultptr];
+	++resultptr %= 2;
+	results[resultptr]->mask = mask;
+	results[resultptr]->terms = terms;
+
+	return results[resultptr];
 }
 
 Song * Songlist::search(search_mode_t mode, long mask, string terms)

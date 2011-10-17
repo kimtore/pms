@@ -183,6 +183,9 @@ class Config
 		/* What fields to search by default */
 		long		search_field_mask;
 
+		/* Split search terms by space automatically? */
+		bool		split_search_terms;
+
 		/* Advance cursor on add actions */
 		bool		advance_cursor;
 

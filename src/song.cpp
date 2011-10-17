@@ -212,6 +212,31 @@ string zeropad(int i, unsigned int target)
 	return s;
 }
 
+vector<string> * str_split(string source, string delimiter)
+{
+	vector<string> * result = new vector<string>;
+	size_t start = 0, end = 0;
+
+	if (source.empty())
+		return result;
+
+	while (true)
+	{
+		if ((end = source.find(delimiter, start)) == string::npos)
+		{
+			result->push_back(source.substr(start));
+			break;
+		}
+		result->push_back(source.substr(start, end - start));
+		start = end + 1;
+
+		if (start >= source.size())
+			break;
+	}
+
+	return result;
+}
+
 string str_replace(string search, string replace, string subject)
 {
 	string buffer;

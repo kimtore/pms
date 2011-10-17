@@ -54,6 +54,7 @@ void Config::load_default_config()
 	status_reset_interval = 3;
 	playback_follows_window = true;
 	advance_cursor = true;
+	split_search_terms = true;
 	random = false;
 	repeat = false;
 	consume = false;
@@ -107,6 +108,7 @@ Config::Config()
 	add_option("sort", OPTION_TYPE_STRING, (void *)&default_sort, OPT_CHANGE_NONE);
 	add_option("casesort", OPTION_TYPE_BOOL, (void *)&sort_case, OPT_CHANGE_NONE);
 	add_option("casesearch", OPTION_TYPE_BOOL, (void *)&search_case, OPT_CHANGE_NONE);
+	add_option("wordsearch", OPTION_TYPE_BOOL, (void *)&split_search_terms, OPT_CHANGE_NONE);
 
 	add_option("scroll", OPTION_TYPE_SCROLLMODE, (void *)&scroll_mode, OPT_CHANGE_DRAWLIST);
 	add_option("searchfields", OPTION_TYPE_SEARCHFIELDS, (void *)&search_field_mask, OPT_CHANGE_NONE);

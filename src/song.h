@@ -22,6 +22,7 @@
 #define _PMS_SONG_H_
 
 #include "fields.h"
+#include <vector>
 #include <string>
 #include <locale>
 using namespace std;
@@ -57,6 +58,9 @@ string time_format(int seconds);
 
 /* Pad an int with zeroes */
 string zeropad(int i, unsigned int target);
+
+/* Split a string */
+vector<string> * str_split(string source, string delimiter);
 
 /* Search and replace string */
 string str_replace(string search, string replace, string subject);
