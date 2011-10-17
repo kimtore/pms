@@ -33,10 +33,12 @@ using namespace std;
 extern Curses curses;
 extern Config config;
 extern MPD mpd;
+extern Windowmanager wm;
 
 void Wsonglist::draw()
 {
 	unsigned int x = 0, i, it;
+	string wtitle;
 
 	if (!rect || !visible())
 		return;
@@ -52,7 +54,17 @@ void Wsonglist::draw()
 		}
 	}
 
-	Wmain::draw();
+	if (config.show_window_title)
+	{
+		wtitle = title;
+		if (songlist->searchresult)
+			wtitle += "  <<search results>>";
+		curses.clearline(rect, 0, config.colors.windowtitle);
+		curses.print(rect, config.colors.windowtitle, 0, 0, wtitle.c_str());
+	}
+
+	Window::draw();
+	wm.readout->draw();
 }
 
 void Wsonglist::drawline(int rely)
