@@ -78,6 +78,7 @@ int PMS::run_event(Inputevent * ev)
 			return resetsearch();
 
 		case ACT_CONNECT:
+			config.autoconnect = true;
 			mpd.mpd_disconnect();
 			return true;
 

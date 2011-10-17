@@ -63,6 +63,7 @@ void Config::load_default_config()
 	volume = 100;
 	sort_case = false;
 	search_case = false;
+	autoconnect = true;
 	default_sort = "track disc album date albumartistsort";
 	set_column_headers("artist track title album year length");
 	set_search_fields("artist title album");
@@ -85,6 +86,7 @@ Config::Config()
 	add_option("host", OPTION_TYPE_STRING, (void *)&host, OPT_CHANGE_NONE);
 	add_option("port", OPTION_TYPE_STRING, (void *)&port, OPT_CHANGE_NONE);
 	add_option("password", OPTION_TYPE_STRING, (void *)&password, OPT_CHANGE_NONE);
+	add_option("autoconnect", OPTION_TYPE_BOOL, (void *)&autoconnect, OPT_CHANGE_NONE);
 
 	add_option("reconnectdelay", OPTION_TYPE_UINT, (void *)&reconnect_delay, OPT_CHANGE_NONE);
 	add_option("addnextinterval", OPTION_TYPE_UINT, (void *)&add_next_interval, OPT_CHANGE_NONE);

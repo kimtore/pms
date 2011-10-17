@@ -32,6 +32,7 @@
 #define MPD_ERR_NOTMPD 2
 #define MPD_ERR_ACK 3
 #define MPD_ERR_BADPASS 4
+#define MPD_ERR_VERSION 5
 
 /* mpd_getline statuses */
 #define MPD_GETLINE_ERR -1

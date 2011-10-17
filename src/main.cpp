@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 	while(!config.quit)
 	{
 		gettimeofday(&cl, NULL);
-		if (!mpd.is_connected())
+		if (!mpd.is_connected() && config.autoconnect)
 		{
 			if (cl.tv_sec - conn.tv_sec >= (int)config.reconnect_delay)
 			{

@@ -137,6 +137,7 @@ class Config
 		bool		quit;
 
 		/* Autoconnect timeout */
+		bool		autoconnect;
 		unsigned int	reconnect_delay;
 
 		/* How many seconds left of song before adding next song */

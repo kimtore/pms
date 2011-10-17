@@ -168,7 +168,16 @@ bool MPD::mpd_connect(string nhost, string nport)
 
 	stinfo("Connected to server '%s' on port '%s'.", host.c_str(), port.c_str());
 	recv(sock, &buf, 32, 0);
-	set_protocol_version(buf);
+
+	if (!set_protocol_version(buf))
+	{
+		trigerr(MPD_ERR_VERSION, "This MPD server is way too old!");
+		debug("This version of PMS requires `idle' support, which this MPD server does not support.", NULL);
+		debug("Either upgrade your MPD server to version 0.15.0 or newer, or use an older version of PMS (0.42).", NULL);
+		mpd_disconnect();
+		debug("Autoconnect has been disabled.", NULL);
+		config.autoconnect = false;
+	}
 	is_idle = false;
 	currentsong = NULL;
 
@@ -184,7 +193,7 @@ void MPD::mpd_disconnect()
 	currentsong = NULL;
 	memset(&status, 0, sizeof status);
 	memset(&stats, 0, sizeof stats);
-	trigerr(MPD_ERR_CONNECTION, "Connection to MPD server closed.");
+	trigerr(MPD_ERR_CONNECTION, "Connection closed.");
 }
 
 bool MPD::is_connected()
@@ -229,7 +238,10 @@ bool MPD::set_protocol_version(string data)
 		}
 		++i;
 	}
-	debug("MPD server speaking protocol version %d.%d.%d", protocol_version[0], protocol_version[1], protocol_version[2]);
+	debug("MPD server protocol version %d.%d.%d", protocol_version[0], protocol_version[1], protocol_version[2]);
+
+	if (protocol_version[1] < 15)
+		return false;
 
 	return true;
 }
