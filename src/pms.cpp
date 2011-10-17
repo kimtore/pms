@@ -74,6 +74,9 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_EXIT_LIVESEARCH:
 			return livesearch(ev->text, true);
 
+		case ACT_RESET_SEARCH:
+			return resetsearch();
+
 		case ACT_CONNECT:
 			mpd.mpd_disconnect();
 			return true;
@@ -573,6 +576,26 @@ int PMS::livesearch(string terms, bool exitsearch)
 		wm.statusbar->qdraw();
 		curses.flush();
 	}
+
+	win->set_cursor(0);
+	if (song && (i = win->songlist->sfind(song->fhash)) != string::npos)
+		win->set_cursor(i);
+
+	win->qdraw();
+	return true;
+}
+
+int PMS::resetsearch()
+{
+	Wsonglist * win;
+	Song * song;
+	song_t i;
+
+	if ((win = WSONGLIST(wm.active)) == NULL)
+		return false;
+	
+	song = win->cursorsong();
+	win->songlist->search(SEARCH_MODE_NONE);
 
 	win->set_cursor(0);
 	if (song && (i = win->songlist->sfind(song->fhash)) != string::npos)

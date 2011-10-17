@@ -74,6 +74,7 @@ class PMS
 		/* List management */
 		int		sortlist(string sortstr);
 		int		livesearch(string terms, bool exitsearch = false);
+		int		resetsearch();
 		int		add(int count);
 		int		remove(int count);
 
