@@ -66,6 +66,14 @@ int PMS::run_event(Inputevent * ev)
 			wm.statusbar->qdraw();
 			return true;
 
+		case ACT_MODE_LIVESEARCH:
+			input.setmode(INPUT_MODE_LIVESEARCH);
+			wm.statusbar->qdraw();
+			return true;
+
+		case ACT_EXIT_LIVESEARCH:
+			return livesearch(ev->text, true);
+
 		case ACT_CONNECT:
 			mpd.mpd_disconnect();
 			return true;
@@ -99,6 +107,7 @@ int PMS::run_event(Inputevent * ev)
 			run_search(ev->text, ev->multiplier);
 			input.setmode(INPUT_MODE_COMMAND);
 			wm.statusbar->qdraw();
+			wm.active->qdraw();
 			curses.flush();
 			return true;
 
@@ -221,6 +230,9 @@ int PMS::run_event(Inputevent * ev)
 	{
 		wm.statusbar->draw();
 		curses.flush();
+
+		if (input.mode == INPUT_MODE_LIVESEARCH)
+			return livesearch(ev->text);
 	}
 
 
@@ -536,7 +548,37 @@ int PMS::sortlist(string sortstr)
 	}
 
 	win->songlist->sort(sortstr);
-	win->draw();
+	win->qdraw();
+	return true;
+}
+
+int PMS::livesearch(string terms, bool exitsearch)
+{
+	Wsonglist * win;
+	Song * song;
+	song_t i;
+
+	if ((win = WSONGLIST(wm.active)) == NULL)
+	{
+		sterr("Current window is not a song list, and cannot be searched.", NULL);
+		return false;
+	}
+
+	song = win->cursorsong();
+	win->songlist->search(SEARCH_MODE_LIVE, config.search_field_mask, terms);
+	if (exitsearch)
+	{
+		win->songlist->liveclear();
+		input.setmode(INPUT_MODE_COMMAND);
+		wm.statusbar->qdraw();
+		curses.flush();
+	}
+
+	win->set_cursor(0);
+	if (song && (i = win->songlist->sfind(song->fhash)) != string::npos)
+		win->set_cursor(i);
+
+	win->qdraw();
 	return true;
 }
 

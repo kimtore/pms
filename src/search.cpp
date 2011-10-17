@@ -29,9 +29,18 @@ using namespace std;
 extern Fieldtypes fieldtypes;
 extern Config config;
 
-Searchresultset::Searchresultset()
+Searchresults::Searchresults()
 {
 	mask = 0;
+}
+
+Searchresults * Searchresults::operator= (const Searchresults & source)
+{
+	songs = source.songs;
+	terms = source.terms;
+	mask = source.mask;
+	mode = source.mode;
+	return this;
 }
 
 /*
@@ -78,30 +87,16 @@ size_t Songlist::spos(song_t pos)
 
 Song * Songlist::search(search_mode_t mode)
 {
-	searchmode = mode;
-	if (searchmode == SEARCH_MODE_NONE && searchresult)
-	{
-		delete searchresult;
-		searchresult = NULL;
-		return NULL;
-	}
-	return NULL;
+	return search(mode, 0, "");
 }
 
-Song * Songlist::search(search_mode_t mode, long mask, string terms)
+Searchresults * Songlist::search(vector<Song *> * source, long mask, string terms)
 {
-	Searchresultset * results;
+	Searchresults * results;
 	vector<Field *>::const_iterator fit;
 	vector<Song *>::const_iterator sit;
-	vector<Song *> * source;
 
-	results = new Searchresultset;
-
-	/* Check if we can use the current result set */
-	if (searchresult)
-		source = &(searchresult->songs);
-	else
-		source = &songs;
+	results = new Searchresults;
 
 	for (sit = source->begin(); sit != source->end(); ++sit)
 	{
@@ -118,21 +113,103 @@ Song * Songlist::search(search_mode_t mode, long mask, string terms)
 		}
 	}
 
-	if (searchresult)
-		delete searchresult;
-	searchresult = results;
+	results->mask = mask;
+	results->terms = terms;
 
+	return results;
+}
+
+Song * Songlist::search(search_mode_t mode, long mask, string terms)
+{
+	Searchresults * results = NULL;
+	vector<Song *> * source;
+	vector<Searchresults *>::iterator sit;
+
+	/* Check if we can use the current result set */
+	if (searchresult)
+		source = &(searchresult->songs);
+	else
+		source = &songs;
+
+	switch(mode)
+	{
+		case SEARCH_MODE_NONE:
+		default:
+			liveclear();
+			if (searchresult)
+				delete searchresult;
+
+			searchresult = NULL;
+			searchmode = SEARCH_MODE_NONE;
+
+			return NULL;
+
+		case SEARCH_MODE_FILTER:
+			results = search(source, mask, terms);
+			break;
+
+		case SEARCH_MODE_LIVE:
+			/* No search terms and no cached results, fall back to standard song list */
+			if (terms.empty())
+			{
+				if (!livesource)
+					return search(SEARCH_MODE_NONE, mask, terms);
+
+				results = livesource;
+				break;
+			}
+
+			/* Use current search result set as source for all live searching */
+			if (!livesource && liveresults.empty() && searchresult)
+				livesource = searchresult;
+
+			/* Re-use any cached live search? */
+			for (sit = liveresults.begin(); sit != liveresults.end(); ++sit)
+			{
+				if ((*sit)->terms == terms)
+				{
+					results = search(&(*sit)->songs, mask, terms);
+					break;
+				}
+			}
+
+			/* Can't re-use, search through current set */
+			if (!results)
+				results = search(source, mask, terms);
+
+			/* Cache current search */
+			if (!terms.empty() && sit == liveresults.end())
+				liveresults.push_back(results);
+			break;
+	}
+
+	if (searchresult && mode != SEARCH_MODE_LIVE)
+		delete searchresult;
+
+	searchresult = results;
 	searchmode = mode;
 
-	if (searchresult->size() > 0)
+	if (searchresult && searchresult->size() > 0)
 		return searchresult->songs[0];
 
 	return NULL;
 }
 
-/*
- * Performs a case-insensitive match.
- */
+void Songlist::liveclear()
+{
+	vector<Searchresults *>::iterator sit;
+
+	for (sit = liveresults.begin(); sit != liveresults.end(); ++sit)
+		if (*sit != searchresult)
+			delete *sit;
+	liveresults.clear();
+
+	if (livesource && livesource != searchresult)
+		delete livesource;
+
+	livesource = NULL;
+}
+
 inline bool strmatch(const string & haystack, const string & needle, bool ignorecase)
 {
 	bool matched = false;

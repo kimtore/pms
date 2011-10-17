@@ -33,7 +33,8 @@ void Keybindings::load_defaults()
 	truncate();
 
 	add(CONTEXT_ALL, ACT_MODE_INPUT, ":");
-	add(CONTEXT_SONGLIST, ACT_MODE_SEARCH, "/");
+	add(CONTEXT_SONGLIST, ACT_MODE_LIVESEARCH, "/");
+	add(CONTEXT_SONGLIST, ACT_MODE_SEARCH, "<C-f>");
 	add(CONTEXT_ALL, ACT_REPEATACTION, ".");
 	add(CONTEXT_ALL, ACT_QUIT, "q");
 	add(CONTEXT_ALL, ACT_UPDATE, "U");

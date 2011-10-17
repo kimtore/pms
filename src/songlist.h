@@ -39,7 +39,9 @@ class Songlist
 
 		vector<Song *>		songs;
 		string			title;
-		Searchresultset	*	searchresult;
+		Searchresults *		searchresult;
+		Searchresults *		livesource;
+		vector<Searchresults *> liveresults;
 		search_mode_t		searchmode;
 
 		/* Can we make local modifications? */
@@ -85,6 +87,12 @@ class Songlist
 		/* Search for songs using song fields. */
 		Song *			search(search_mode_t mode);
 		Song *			search(search_mode_t mode, long mask, string terms);
+
+		/* Actual search worker, searches through source and returns a result set */
+		Searchresults *		search(vector<Song *> * source, long mask, string terms);
+
+		/* Clear live search cache */
+		void			liveclear();
 
 };
 

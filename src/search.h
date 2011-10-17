@@ -30,13 +30,14 @@ typedef enum
 {
 	SEARCH_MODE_NONE,
 	SEARCH_MODE_JUMP,
-	SEARCH_MODE_FILTER
+	SEARCH_MODE_FILTER,
+	SEARCH_MODE_LIVE
 }
 
 search_mode_t;
 
 /* A set of songs from a search result */
-class Searchresultset
+class Searchresults
 {
 	public:
 		vector<Song *>		songs;
@@ -44,7 +45,8 @@ class Searchresultset
 		long			mask;
 		search_mode_t		mode;
 			
-		Searchresultset();
+		Searchresults();
+		Searchresults *		operator= (const Searchresults & source);
 		size_t			size() { return songs.size(); };
 };
 

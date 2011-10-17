@@ -33,6 +33,7 @@ Commandlist::Commandlist()
 	add(CONTEXT_ALL, ACT_UNMAP, "unm");
 	add(CONTEXT_ALL, ACT_MODE_INPUT, "cmd");
 	add(CONTEXT_SONGLIST, ACT_MODE_SEARCH, "search");
+	add(CONTEXT_SONGLIST, ACT_MODE_LIVESEARCH, "livesearch");
 	add(CONTEXT_ALL, ACT_REPEATACTION, "repeat-action");
 
 	add(CONTEXT_ALL, ACT_SOURCE, "source");

@@ -34,6 +34,7 @@ using namespace std;
 #define INPUT_MODE_COMMAND 0
 #define INPUT_MODE_INPUT 1
 #define INPUT_MODE_SEARCH 2
+#define INPUT_MODE_LIVESEARCH 3
 
 #define KEYBIND_FIND_NOMATCH -1
 #define KEYBIND_FIND_EXACT 0

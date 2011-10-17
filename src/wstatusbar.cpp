@@ -83,6 +83,7 @@ void Wstatusbar::drawline(int rely)
 
 		case INPUT_MODE_INPUT:
 		case INPUT_MODE_SEARCH:
+		case INPUT_MODE_LIVESEARCH:
 			if (input.strbuf.size() >= width)
 				vscroll = input.strbuf.size() - width;
 			if (vscroll > input.cursorpos)
@@ -93,6 +94,8 @@ void Wstatusbar::drawline(int rely)
 				pstr = ":";
 			else if (input.mode == INPUT_MODE_SEARCH)
 				pstr = "Search: ";
+			else if (input.mode == INPUT_MODE_LIVESEARCH)
+				pstr = "/";
 
 			curses.print(rect, config.colors.statusbar, rely, 0, pstr.c_str());
 			curses.print(rect, config.colors.statusbar, rely, pstr.size(), input.strbuf.substr(vscroll).c_str());

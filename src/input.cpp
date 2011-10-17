@@ -134,6 +134,7 @@ Inputevent * Input::next()
 		/* Text input of some sorts */
 		case INPUT_MODE_INPUT:
 		case INPUT_MODE_SEARCH:
+		case INPUT_MODE_LIVESEARCH:
 			handle_text_input();
 			break;
 	}
@@ -204,6 +205,8 @@ void Input::handle_text_input()
 				ev.action = ACT_RUN_CMD;
 			else if (mode == INPUT_MODE_SEARCH)
 				ev.action = ACT_RUN_SEARCH;
+			else if (mode == INPUT_MODE_LIVESEARCH)
+				ev.action = ACT_EXIT_LIVESEARCH;
 
 			ev.result = INPUT_RESULT_RUN;
 			return;
