@@ -38,8 +38,8 @@ Curses::Curses()
 		return;
 	}
 
-	raw();
 	noecho();
+	raw();
 	nodelay(stdscr, true);
 	keypad(stdscr, true);
 	curs_set(0);

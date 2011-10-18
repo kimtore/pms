@@ -118,6 +118,9 @@ class Input
 
 		void			handle_text_input();
 
+		/* Translate input event so that keys are handled the same on different terminals */
+		void			tr_chbuf();
+
 		/* Check if input event is a number, and apply multiplier */
 		bool			run_multiplier(int ch);
 

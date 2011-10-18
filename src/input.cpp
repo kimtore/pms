@@ -23,6 +23,7 @@
 #include "command.h"
 #include "window.h"
 #include "config.h"
+#include "console.h"
 #include <cstring>
 
 Keybindings keybindings;
@@ -90,7 +91,7 @@ Inputevent * Input::next()
 {
 	int m;
 
-	if ((chbuf = getch()) == -1)
+	if ((chbuf = getch()) == ERR)
 		return NULL;
 
 	ev.clear();
@@ -102,6 +103,7 @@ Inputevent * Input::next()
 		ev.action = ACT_RESIZE;
 		return &ev;
 	}
+	tr_chbuf();
 
 	switch(mode)
 	{
@@ -157,6 +159,27 @@ Inputevent * Input::next()
 	}
 	
 	return NULL;
+}
+
+void Input::tr_chbuf()
+{
+	//int old = chbuf;
+	switch(chbuf)
+	{
+		case 8:			/* ^H -- backspace */
+		case 127:		/* ^? -- delete */
+			chbuf = KEY_BACKSPACE;
+			break;
+
+		case 10:		/* Return */
+		case 343:		/* Enter (keypad) */
+			chbuf = KEY_ENTER;
+			break;
+
+		default:
+			return;
+	}
+	//debug("Warning: translating keycode %d to %d", old, chbuf);
 }
 
 void Input::handle_text_input()
@@ -226,8 +249,6 @@ void Input::handle_text_input()
 			ev.action = ACT_MODE_COMMAND;
 			return;
 
-		case 8:			/* ^H -- backspace */
-		case 127:		/* ^? -- delete */
 		case KEY_BACKSPACE:
 			if (buffer.size() > 0)
 			{
@@ -324,6 +345,10 @@ void Input::handle_text_input()
 
 		/* Add normal character to buffer */
 		default:
+			/* Ignore key codes */
+			if (chbuf < 32 || chbuf >= KEY_CODE_YES)
+				return;
+
 			buffer.insert(vector<int>::iterator(buffer.begin() + cursorpos), chbuf);
 			strbuf.insert(string::iterator(strbuf.begin() + cursorpos), chbuf);
 			++cursorpos;

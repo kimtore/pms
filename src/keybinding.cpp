@@ -232,9 +232,7 @@ vector<int> * Keybindings::conv_sequence(string seq)
 			else if (subseq == "insert")
 				r->push_back(KEY_IC);
 			else if (subseq == "cr" || subseq == "return" || subseq == "enter")
-				r->push_back(10);
-			else if (subseq == "kpenter")
-				r->push_back(343);
+				r->push_back(KEY_ENTER);
 			else if (subseq == "space")
 				r->push_back(' ');
 			else if (subseq == "tab")
