@@ -27,6 +27,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <errno.h>
 #include <unistd.h>
 #include <netdb.h>
 #include <cstring>
@@ -644,6 +645,9 @@ int MPD::poll()
 	timeout.tv_sec = 1;
 	if ((s = select(sock+1, &set, NULL, NULL, &timeout)) == -1)
 	{
+		if (errno == EINTR)
+			return false;
+
 		mpd_disconnect();
 		return true;
 	}
