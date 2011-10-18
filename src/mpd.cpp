@@ -73,6 +73,8 @@ MPD::MPD()
 	memset(&last_clock, 0, sizeof last_clock);
 	memset(&status, 0, sizeof status);
 	memset(&stats, 0, sizeof stats);
+	FD_ZERO(&fdset);
+	FD_SET(STDIN_FILENO, &fdset);
 	update_playstring();
 }
 
@@ -193,6 +195,8 @@ void MPD::mpd_disconnect()
 	currentsong = NULL;
 	memset(&status, 0, sizeof status);
 	memset(&stats, 0, sizeof stats);
+	FD_ZERO(&fdset);
+	FD_SET(STDIN_FILENO, &fdset);
 	trigerr(MPD_ERR_CONNECTION, "Connection closed.");
 }
 
