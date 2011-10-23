@@ -827,51 +827,86 @@ int MPD::remove(Songlist * list, int start, int count)
 
 Song * MPD::next_song_in_line(int steps)
 {
-	int i;
+	int i = -1;
 
 	/* Need songs in active list */
 	if (active_songlist->size() == 0)
 		return NULL;
 
-	/* Linear progression */
-	if (!config.random)
+	/* Hold on, are there more songs in the playlist? */
+	if (currentsong && active_songlist != &playlist)
 	{
-		if (!currentsong)
-			return active_songlist->at(0);
+		i = playlist.spos(currentsong->pos);
 
-		if (active_songlist == &playlist)
-			i = active_songlist->spos(currentsong->pos);
-		else
-			i = active_songlist->sfind(currentsong->fhash);
-
-		steps += i;
-
-		/* Reached end of list, wrap around. */
-		if (steps >= (int)active_songlist->size())
+		/* Yes there are. */
+		if (i + 1 != (int)playlist.size())
 		{
-			/* ... unless we are not repeating ourselves. */
+			/* Enough room to step up to that song? */
+			if (steps + i < (int)playlist.size())
+				return playlist.at(steps + i);
+
+			/* Steps exceeds playlist queue size, jump to active list. */
+			else
+			{
+				steps -= (playlist.size() - i);
+				if ((i = active_songlist->sfind(currentsong->fhash)) == -1)
+					i = 0;
+			}
+		}
+		else
+		{
+			i = -1;
+		}
+	}
+
+	if (i == -1)
+	{
+		if (!config.random && currentsong)
+		{
+			if (active_songlist == &playlist)
+				i = playlist.spos(currentsong->pos);
+			else
+				i = active_songlist->sfind(currentsong->fhash);
+		}
+		else if (config.random)
+		{
+			return active_songlist->at(active_songlist->randpos());
+		}
+	}
+
+	if (!currentsong)
+		return active_songlist->at(0);
+
+	steps += i;
+
+	/* Reached end of list, wrap around. */
+	if (steps >= (int)active_songlist->size())
+	{
+		/* ... or continue, if we are not at the end of the playlist */
+		if (active_songlist != &playlist && currentsong->pos + 1 != (int)playlist.size())
+		{
+			steps %= playlist.size();
+		}
+		else
+
+		/* ... unless we are not repeating ourselves. */
+		{
 			if (!status.repeat)
 				return NULL;
 			steps %= active_songlist->size();
 		}
-
-		/* Reached beginning of list, wrap around. */
-		while (steps < 0)
-		{
-			/* ... unless we are not repeating ourselves. */
-			if (!status.repeat)
-				return NULL;
-			steps += active_songlist->size();
-		}
-
-		return active_songlist->at(steps);
 	}
 
-	/* Random progression */
-	else
+	/* Reached beginning of list, wrap around. */
+	while (steps < 0)
 	{
-		return active_songlist->at(active_songlist->randpos());
+		/* ... unless we are not repeating ourselves. */
+		if (!status.repeat)
+			return NULL;
+		steps += active_songlist->size();
 	}
+
+	return active_songlist->at(steps);
 }
 
 Song * MPD::next_auto_song_in_line()
