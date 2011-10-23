@@ -641,7 +641,7 @@ int Config::print_all_options()
 	debug("--- Options ---", NULL);
 
 	for (i = options.begin(); i != options.end(); ++i)
-		if ((*i)->type != OPTION_TYPE_COLOR)
+		if ((*i)->type != OPTION_TYPE_COLOR && (*i)->type != OPTION_TYPE_COLORLIST)
 			print_option(*i);
 
 	return true;
