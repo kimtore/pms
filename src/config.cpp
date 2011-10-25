@@ -168,22 +168,26 @@ void Config::source_default_config()
 {
 	string home;
 	string s;
+	char * env;
 	const string suffix = "/pms/pms.conf";
 	size_t start = 0, end = 0;
 
 	debug("Reading configuration files...", NULL);
 
-	home = getenv("HOME");
+	if ((env = getenv("HOME")) != NULL)
+		home = env;
+	else
+		home.clear();
 
 	// XDG config dirs (colon-separated priority list, defaults to just /etc/xdg)
-	s = getenv("XDG_CONFIG_DIRS");
-	if (!s.size())
+	if ((env = getenv("XDG_CONFIG_DIRS")) == NULL)
 	{
 		source("/usr/local/etc/xdg" + suffix, true);
 		source("/etc/xdg" + suffix, true);
 	}
 	else
 	{
+		s = env;
 		while ((end = s.find(':', start)) != string::npos)
 		{
 			source(s.substr(start, end - start) + suffix, true);
@@ -195,15 +199,14 @@ void Config::source_default_config()
 	}
 
 	// XDG config home (usually $HOME/.config)
-	s = getenv("XDG_CONFIG_HOME");
-	if (!s.size())
+	if ((env = getenv("XDG_CONFIG_HOME")) == NULL)
 	{
 		if (home.size() > 0)
 			source(home + "/.config" + suffix);
 	}
 	else
 	{
-		source(s + suffix);
+		source(env + suffix);
 	}
 }
 
