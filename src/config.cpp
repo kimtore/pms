@@ -70,7 +70,7 @@ void Config::load_default_config()
 	set_scroll_mode("normal");
 	topbar.set("{PMS $volume $state [$modes] $elapsed / $remaining}"
 			"{$artist / $title / $album / $year}"
-			"{Queue has $queuesize songs ($queuelength)}"
+			"{Q:$queuesize/$queuelength S:$listsize/$listlength}"
 			"{$progressbar}{}{}");
 
 	colors.load_defaults();
@@ -158,6 +158,8 @@ Config::Config()
 	add_option("color.state", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_STATE], OPT_CHANGE_NONE);
 	add_option("color.queuesize", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_QUEUESIZE], OPT_CHANGE_NONE);
 	add_option("color.queuelength", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_QUEUELENGTH], OPT_CHANGE_NONE);
+	add_option("color.listsize", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_LISTSIZE], OPT_CHANGE_NONE);
+	add_option("color.listlength", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_LISTLENGTH], OPT_CHANGE_NONE);
 }
 
 void Config::source_default_config()

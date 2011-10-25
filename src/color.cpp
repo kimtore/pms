@@ -69,6 +69,8 @@ void Colortable::load_defaults()
 	field[FIELD_STATE]->set(COLOR_CYAN, -1, 0);
 	field[FIELD_QUEUESIZE]->set(COLOR_YELLOW, -1, 0);
 	field[FIELD_QUEUELENGTH]->set(COLOR_WHITE, -1, 0);
+	field[FIELD_LISTSIZE]->set(COLOR_YELLOW, -1, 0);
+	field[FIELD_LISTLENGTH]->set(COLOR_WHITE, -1, 0);
 }
 
 Colortable::Colortable()

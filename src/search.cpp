@@ -32,6 +32,7 @@ extern Config config;
 Searchresults::Searchresults()
 {
 	mask = 0;
+	songlen = 0;
 }
 
 Searchresults * Searchresults::operator= (const Searchresults & source)
@@ -102,6 +103,9 @@ Searchresults * Songlist::search(vector<Song *> * source, long mask, string term
 	results[0] = new Searchresults;
 	results[1] = new Searchresults;
 
+	poscache = -1;
+	lengthcache = 0;
+
 	if (config.split_search_terms)
 	{
 		t = str_split(terms, " ");
@@ -125,6 +129,8 @@ Searchresults * Songlist::search(vector<Song *> * source, long mask, string term
 					continue;
 
 				results[resultptr]->songs.push_back(*sit);
+				if ((*sit)->time != -1)
+					results[resultptr]->songlen += (*sit)->time;
 				break;
 			}
 		}
@@ -132,6 +138,7 @@ Searchresults * Songlist::search(vector<Song *> * source, long mask, string term
 		source = &(results[resultptr]->songs);
 		++resultptr %= 2;
 		results[resultptr]->songs.clear();
+		results[resultptr]->songlen = 0;
 	}
 
 	delete t;
@@ -159,6 +166,7 @@ Song * Songlist::search(search_mode_t mode, long mask, string terms)
 	{
 		case SEARCH_MODE_NONE:
 		default:
+			/* Clear all search results */
 			liveclear();
 			if (searchresult)
 				delete searchresult;

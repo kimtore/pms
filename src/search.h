@@ -44,6 +44,7 @@ class Searchresults
 		string			terms;
 		long			mask;
 		search_mode_t		mode;
+		unsigned long		songlen;
 			
 		Searchresults();
 		Searchresults *		operator= (const Searchresults & source);

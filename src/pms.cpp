@@ -112,7 +112,7 @@ int PMS::run_event(Inputevent * ev)
 			input.setmode(INPUT_MODE_COMMAND);
 			wm.statusbar->qdraw();
 			wm.active->qdraw();
-			curses.flush();
+			wm.topbar->qdraw();
 			return true;
 
 		case ACT_REPEATACTION:
@@ -234,6 +234,7 @@ int PMS::run_event(Inputevent * ev)
 	{
 		wm.statusbar->draw();
 		curses.flush();
+		wm.topbar->qdraw();
 
 		if (input.mode == INPUT_MODE_LIVESEARCH)
 			return livesearch(ev->text);

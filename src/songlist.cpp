@@ -29,6 +29,7 @@ Songlist::Songlist()
 	readonly = false;
 	playlist = false;
 	version = -1;
+	songlen = 0;
 	searchmode = SEARCH_MODE_NONE;
 }
 
@@ -62,12 +63,25 @@ void Songlist::add(Song * song)
 	/* Replace a song within this list */
 	if (song->pos != -1 && song->pos < (long)songs.size())
 	{
+		if (songs[song->pos]->time != -1)
+		{
+			songlen -= songs[song->pos]->time;
+			if ((int)poscache <= song->pos)
+				lengthcache -= songs[song->pos]->time;
+		}
 		delete songs[song->pos];
 		songs[song->pos] = song;
 	}
 	else
 	{
 		songs.push_back(song);
+	}
+
+	if (song->time != -1)
+	{
+		songlen += song->time;
+		if ((int)poscache <= song->pos)
+			lengthcache += song->time;
 	}
 
 	/* Reset search. TODO: inject into search results */
@@ -80,6 +94,7 @@ void Songlist::clear()
 	for (i = songs.begin(); i != songs.end(); ++i)
 		delete *i;
 	songs.clear();
+	songlen = 0;
 	search(SEARCH_MODE_NONE);
 }
 
@@ -109,4 +124,57 @@ size_t Songlist::size()
 		return songs.size();
 	else
 		return searchresult->size();
+}
+
+unsigned long Songlist::length()
+{
+	if (searchmode == SEARCH_MODE_NONE)
+		return songlen;
+	else
+		return searchresult->songlen;
+}
+
+unsigned long Songlist::length(size_t pos)
+{
+	vector<Song *>::const_iterator it;
+	vector<Song *> * source;
+	size_t cspos = pos;
+
+	if (playlist)
+		pos = spos(pos);
+
+	if (poscache == pos)
+		return lengthcache;
+
+	if (searchmode == SEARCH_MODE_NONE)
+		source = &songs;
+	else
+		source = &(searchresult->songs);
+
+	poscache = pos;
+	lengthcache = 0;
+
+	/* Song position was not found in search results, so we need to count it all. */
+	if (pos == string::npos)
+	{
+		pos = 0;
+
+		/* Add current song time even though it's not part of the search results. */
+		if (playlist && songs[cspos]->time != -1)
+			lengthcache += songs[cspos]->time;
+	}
+
+	if (pos >= source->size())
+		return 0;
+
+	/* Calculate the sum of all time */
+	it = source->begin() + pos;
+	while (it < source->end())
+	{
+		if ((*it)->time != -1)
+			lengthcache += (*it)->time;
+		++it;
+	}
+
+	return lengthcache;
 }

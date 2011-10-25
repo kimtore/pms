@@ -23,6 +23,7 @@
 #include "mpd.h"
 #include "config.h"
 #include "curses.h"
+#include "window.h"
 #include <vector>
 #include <string>
 using namespace std;
@@ -30,6 +31,7 @@ using namespace std;
 extern MPD mpd;
 extern Config config;
 extern Curses curses;
+extern Windowmanager wm;
 
 Field::Field(field_t nfield, string name, string mpd_name, string tit, unsigned int minl, unsigned int maxl)
 {
@@ -43,6 +45,8 @@ Field::Field(field_t nfield, string name, string mpd_name, string tit, unsigned 
 
 string Field::format(Song * song)
 {
+	Wmain * win;
+	Wsonglist * ws;
 	string tmp;
 	int i;
 
@@ -99,10 +103,34 @@ string Field::format(Song * song)
 			break;
 
 		case FIELD_QUEUESIZE:
-			return tostring(mpd.playlist.size());
+			i = mpd.playlist.size();
+			if (mpd.currentsong)
+				i -= mpd.playlist.spos(mpd.currentsong->pos);
+			tmp = tostring(i);
+			if (mpd.status.repeat && mpd.active_songlist == &mpd.playlist)
+				tmp += '+';
+			return tmp;
 
 		case FIELD_QUEUELENGTH:
-			return tostring(mpd.playlist.size());
+			if (mpd.currentsong)
+				tmp = time_format(mpd.playlist.length(mpd.currentsong->pos) - (int)mpd.status.elapsed);
+			else
+				tmp = time_format(mpd.playlist.length());
+			if (mpd.status.repeat && mpd.active_songlist == &mpd.playlist)
+				tmp += '+';
+			return tmp;
+
+		case FIELD_LISTSIZE:
+			if ((win = WMAIN(wm.active)) != NULL)
+				return tostring(win->content_size());
+			else
+				return "0";
+
+		case FIELD_LISTLENGTH:
+			if ((ws = WSONGLIST(wm.active)) != NULL)
+				return time_format(ws->songlist->length());
+			else
+				return time_format(-1);
 
 		default:
 			break;
@@ -142,6 +170,8 @@ Fieldtypes::Fieldtypes()
 	fields.push_back(new Field(FIELD_PROGRESSBAR, "progressbar", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_QUEUESIZE, "queuesize", "", "", 0, 0));
 	fields.push_back(new Field(FIELD_QUEUELENGTH, "queuelength", "", "", 0, 0));
+	fields.push_back(new Field(FIELD_LISTSIZE, "listsize", "", "", 0, 0));
+	fields.push_back(new Field(FIELD_LISTLENGTH, "listlength", "", "", 0, 0));
 }
 
 Fieldtypes::~Fieldtypes()

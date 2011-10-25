@@ -114,9 +114,7 @@ bool Windowmanager::activate(Wmain * nactive)
 			active = nactive;
 			context = active->context;
 			active->clear();
-			active->draw();
-			readout->draw();
-			curses.flush();
+			draw();
 			return true;
 		}
 	}

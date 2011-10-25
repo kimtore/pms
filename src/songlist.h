@@ -30,6 +30,10 @@ using namespace std;
 
 class Songlist
 {
+	private:
+		unsigned int		poscache;
+		unsigned long		lengthcache;
+
 	public:
 		Songlist();
 		~Songlist();
@@ -38,6 +42,7 @@ class Songlist
 		Song *			operator[] (unsigned int spos) { return at(spos); };
 
 		vector<Song *>		songs;
+		unsigned long		songlen;
 		string			title;
 		Searchresults *		searchresult;
 		Searchresults *		livesource;
@@ -67,6 +72,10 @@ class Songlist
 
 		/* Size */
 		size_t			size();
+
+		/* Length of all visible songs */
+		unsigned long		length();
+		unsigned long		length(size_t pos);
 
 		/* Sort the list */
 		void			sort(string sortstr);
