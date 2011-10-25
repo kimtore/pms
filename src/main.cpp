@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <cstring>
 #include <sys/time.h>
-#include <ctime>
 
 Fieldtypes	fieldtypes;
 Curses		curses;

@@ -22,6 +22,7 @@
 #define _PMS_CONSOLE_H_
 
 #include <string>
+#include <sys/time.h>
 using namespace std;
 
 #define MSG_LEVEL_ERR 0

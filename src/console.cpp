@@ -25,8 +25,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include <sys/time.h>
-#include <ctime>
+#include <time.h>
 
 using namespace std;
 

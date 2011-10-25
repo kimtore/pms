@@ -24,6 +24,7 @@
 #include "curses.h"
 #include "songlist.h"
 #include "command.h"
+#include <sys/time.h>
 #include <vector>
 
 using namespace std;

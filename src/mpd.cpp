@@ -27,7 +27,6 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <ctime>
 #include <errno.h>
 #include <unistd.h>
 #include <netdb.h>

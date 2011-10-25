@@ -28,7 +28,6 @@
 #include <string>
 #include <vector>
 #include <sys/time.h>
-#include <ctime>
 
 using namespace std;
 
