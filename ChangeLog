@@ -8,6 +8,7 @@ Added:
  * statusbar can now be scrolled vertically
  * live searches which updates the list instantly
  * configuration file now behaves the same way as the command line
+ * topbar conditionals can be nested in brackets
 
 Changed:
  * most options have new names, so configuration files are incompatible (see UPGRADING for details)

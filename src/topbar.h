@@ -31,8 +31,19 @@ using namespace std;
 enum
 {
 	CONDITION_NONE		= 0,
-	CONDITION_PLAYING	= 1 << 0
+	CONDITION_PLAYING	= 1 << 0,
+	CONDITION_SONG		= 1 << 1,
+	CONDITION_CONNECTED	= 1 << 2
+
 };
+
+typedef struct
+{
+	unsigned int		t; /* conditions that has to evaluate true */
+	unsigned int		f; /* conditions that has to evaluate false */
+}
+condition_t;
+
 
 /*
  * Compiled topbar segment with color info
@@ -48,7 +59,7 @@ class Topbarchunk
 
 
 /*
- * Contains compiled information about fields to print and under which conditions.
+ * One topbar segment. Contains compiled information about fields to print.
  */
 class Topbarsegment
 {
@@ -62,15 +73,14 @@ class Topbarsegment
 		/* Compile segment into string vector */
 		unsigned int		compile(Song * song);
 
-		int			condition;
 		string			format;
 		string			src;
-		string			cache; /* used by Wtopbar to determine length when drawing center */
+		condition_t		condition;
 		vector<Field *>		fields;
 };
 
 /*
- * This class represents one topbar line segment.
+ * This class represents one topbar line.
  */
 class Topbarline
 {

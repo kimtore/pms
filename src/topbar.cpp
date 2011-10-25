@@ -25,10 +25,12 @@
 #include "console.h"
 #include "song.h"
 #include "config.h"
+#include "mpd.h"
 using namespace std;
 
 extern Fieldtypes fieldtypes;
 extern Config config;
+extern MPD mpd;
 
 Topbarchunk::Topbarchunk(string s, Color * c)
 {
@@ -38,7 +40,8 @@ Topbarchunk::Topbarchunk(string s, Color * c)
 
 Topbarsegment::Topbarsegment()
 {
-	condition = 0;
+	condition.t = CONDITION_NONE;
+	condition.f = CONDITION_NONE;
 	format = "";
 }
 
@@ -52,6 +55,7 @@ Topbarsegment::~Topbarsegment()
 unsigned int Topbarsegment::compile(Song * song)
 {
 	string str;
+	unsigned int current_condition = CONDITION_NONE;
 	size_t s = 0, e = 0;
 	unsigned int strl = 0;
 	vector<Topbarchunk *>::iterator i;
@@ -64,8 +68,22 @@ unsigned int Topbarsegment::compile(Song * song)
 	if (!format.size())
 		return 0;
 
-	field = fields.begin();
+	/* What is our current condition? */
+	if (mpd.status.state == MPD_STATE_PLAY)
+		current_condition |= CONDITION_PLAYING;
+	if (mpd.currentsong)
+		current_condition |= CONDITION_SONG;
+	if (mpd.is_connected())
+		current_condition |= CONDITION_CONNECTED;
 
+	/* Evaluate wanted conditions against current conditions */
+	if ((condition.t & current_condition) != condition.t)
+		return 0;
+	if ((condition.f & ~current_condition) != condition.f)
+		return 0;
+
+	/* Iterate through fields and place them into chunks */
+	field = fields.begin();
 	do
 	{
 		if ((e = format.find('$', s)) != string::npos)
@@ -116,10 +134,15 @@ int Topbar::set(string format)
 	string varname = "";
 	bool bracket = false;
 	bool var = false;
+	bool conditional = false;
+	bool invcondition;
+	unsigned int condition = CONDITION_NONE;
+	condition_t lastcondition = { CONDITION_NONE, CONDITION_NONE };
+	vector<condition_t> conditions;
 	unsigned int pos = 0; /* left/center/right */
 	Field * field;
-	Topbarline * line = new Topbarline;
-	Topbarsegment * segment = new Topbarsegment;
+	Topbarline * line;
+	Topbarsegment * segment;
 
 	cached_format = format;
 
@@ -127,6 +150,8 @@ int Topbar::set(string format)
 	if (!format.size())
 		return true;
 
+	line = new Topbarline;
+	segment = new Topbarsegment;
 	lines[pos].push_back(line);
 
 	for (it = format.begin(); it != format.end(); ++it)
@@ -136,15 +161,51 @@ int Topbar::set(string format)
 		{
 			if (*it < 'a' || *it > 'z')
 			{
-				--it;
+				/* End of variable, store this field into segment */
 				if ((field = fieldtypes.find(varname)) != NULL)
 				{
+					--it;
 					segment->fields.push_back(field);
 					segment->format += '$';
 					var = false;
 					varname.clear();
 					continue;
 				}
+
+				/* Open conditional */
+				else if ((*it == '(' && varname == "if") ||
+						(*it == '{' && varname == "else"))
+				{
+					/* Store segment */
+					segment->src = working;
+					line->segments.push_back(segment);
+
+					/* Create new segment */
+					segment = new Topbarsegment;
+					if (conditions.size())
+						segment->condition = conditions.back();
+
+					/* Reverse conditional "else" */
+					if (*it == '{')
+					{
+						--it;
+						if (invcondition)
+							segment->condition.t |= condition;
+						else
+							segment->condition.f |= condition;
+
+						conditions.push_back(segment->condition);
+					}
+
+					/* Open a new segment based on conditional */
+					var = false;
+					conditional = true;
+					working.clear();
+					varname.clear();
+
+					continue;
+				}
+
 				sterr("Topbar: unknown variable `%s' near %s", varname.c_str(), working.c_str());
 				delete segment;
 				return false;
@@ -154,6 +215,53 @@ int Topbar::set(string format)
 			working += *it;
 			continue;
 		}
+
+		/* Conditional name handling */
+		if (conditional && *it != '{')
+		{
+			if ((*it < 'a' || *it > 'z') && *it != '!')
+			{
+				/* Detect conditional name */
+				if (*it != ')')
+				{
+					sterr("Topbar: unexpected `%c', expected `)' near %s", *it, working.c_str());
+					delete segment;
+					return false;
+				}
+
+				if ((invcondition = (varname.size() > 1 && varname[0] == '!')))
+					varname = varname.substr(1);
+
+				if (varname == "playing")
+					condition = CONDITION_PLAYING;
+				else if (varname == "song")
+					condition = CONDITION_SONG;
+				else if (varname == "connected")
+					condition = CONDITION_CONNECTED;
+				else
+				{
+					sterr("Topbar: unknown condition `%s' near %s", varname.c_str(), working.c_str());
+					delete segment;
+					return false;
+				}
+
+				/* Valid condition name, assign to current segment */
+				if (!invcondition)
+					segment->condition.t |= condition;
+				else
+					segment->condition.f |= condition;
+
+				conditions.push_back(segment->condition);
+				varname.clear();
+				working.clear();
+				continue;
+			}
+
+			varname += *it;
+			working += *it;
+			continue;
+		}
+
 		working += *it;
 
 		/*
@@ -166,18 +274,52 @@ int Topbar::set(string format)
 				bracket = true;
 				continue;
 			}
+			if (conditional)
+			{
+				conditional = false;
+				continue;
+			}
 			sterr("Topbar: unexpected `%c', expected identifier near %s", *it, working.c_str());
 			delete segment;
 			return false;
 		}
 		if (*it == '}')
 		{
+			if (conditional)
+			{
+				sterr("Topbar: unexpected `%c', expected `)' near %s", *it, working.c_str());
+				delete segment;
+				return false;
+			}
+
+			/* End conditional bracket */
+			if (conditions.size())
+			{
+				lastcondition = conditions.back();
+				conditions.pop_back();
+
+				/* Store this segment */
+				segment->src = working;
+				line->segments.push_back(segment);
+
+				/* Open a new segment based on previous conditional */
+				segment = new Topbarsegment;
+				if (conditions.size())
+					segment->condition = conditions.back();
+
+				working.clear();
+				continue;
+			}
+
 			if (bracket)
 			{
 				bracket = false;
 				segment->src = working;
 				line->segments.push_back(segment);
 				segment = new Topbarsegment;
+				if (conditions.size())
+					segment->condition = conditions.back();
+
 				line = new Topbarline;
 				if (++pos > 2)
 					pos = 0;
@@ -203,9 +345,23 @@ int Topbar::set(string format)
 		segment->format += *it;
 	}
 
+	if (conditions.size())
+	{
+		sterr("Topbar: unexpected end of line, expected end of conditional `}' near %s", working.c_str());
+		delete segment;
+		return false;
+	}
+
+	if (conditional)
+	{
+		sterr("Topbar: unexpected end of line, expected end of expression `)' near %s", working.c_str());
+		delete segment;
+		return false;
+	}
+
 	if (bracket)
 	{
-		sterr("Topbar: unexpected end of segment, expected `}' near %s", working.c_str());
+		sterr("Topbar: unexpected end of line, expected end of segment `}' near %s", working.c_str());
 		delete segment;
 		return false;
 	}

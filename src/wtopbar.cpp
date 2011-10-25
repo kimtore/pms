@@ -52,16 +52,22 @@ void Wtopbar::drawline(int rely)
 		if (topbar.lines[pos].size() <= y)
 			break;
 
+		/* Find string length */
+		strl = 0;
+		for (seg = topbar.lines[pos].at(y)->segments.begin(); seg != topbar.lines[pos].at(y)->segments.end(); ++seg)
+			strl += (*seg)->compile(mpd.currentsong);
+
+		/* Set draw start position */
+		if (pos == 0)
+			x = 0;
+		else if (pos == 1)
+			x = ((rect->right - rect->left) / 2) - (strl / 2);
+		else if (pos == 2)
+			x = rect->right - rect->left - strl + 1;
+
+		/* Iterate through segments and draw them */
 		for (seg = topbar.lines[pos].at(y)->segments.begin(); seg != topbar.lines[pos].at(y)->segments.end(); ++seg)
 		{
-			strl = (*seg)->compile(mpd.currentsong);
-			if (pos == 0)
-				x = 0;
-			else if (pos == 1)
-				x = ((rect->right - rect->left) / 2) - (strl / 2);
-			else if (pos == 2)
-				x = rect->right - rect->left - strl + 1;
-
 			for (chunk = (*seg)->chunks.begin(); chunk != (*seg)->chunks.end(); ++chunk)
 			{
 				curses.print(rect, (*chunk)->color, rely, x, (*chunk)->str.c_str());

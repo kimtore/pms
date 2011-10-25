@@ -68,9 +68,9 @@ void Config::load_default_config()
 	set_column_headers("artist track title album year length");
 	set_search_fields("artist title album");
 	set_scroll_mode("normal");
-	topbar.set("{PMS $volume $state [$modes] $elapsed / $remaining}"
-			"{$artist / $title / $album / $year}"
-			"{Q:$queuesize/$queuelength S:$listsize/$listlength}"
+	topbar.set("{PMS $if(connected){$if(song){$volume $state [$modes] $elapsed / $remaining}}$else{disconnected}}"
+			"{$if(song){$artist / $title / $album / $year}}"
+			"{$if(connected){Q:$queuesize/$queuelength S:$listsize/$listlength}}"
 			"{$progressbar}{}{}");
 
 	colors.load_defaults();
