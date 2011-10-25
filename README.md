@@ -24,23 +24,23 @@ Your configuration file is ~/.config/pms/pms.conf. A system-wide config
 file can be put in /etc/xdg/pms/pms.conf.
 
 Start PMS and type
-	:set
+    :set
 for a list of options available, or type
-	:set color
+    :set color
 for a list of color options.
 
 #### Setting options
 Options can be set with
-	set option=value
-	set option+=value
-	set option-=value
+    set option=value
+    set option+=value
+    set option-=value
 Boolean options can be set, inverted or unset with
-	set option
-	set nooption
-	set invoption
-	set option!
+    set option
+    set nooption
+    set invoption
+    set option!
 Option values can be queried with
-	set option?
+    set option?
 
 #### Changing colors
 Background colors are black, red, green, brown, blue, magenta, cyan and gray.
@@ -48,7 +48,7 @@ Foreground colors are as background colors, in addition to
 brightred, brightgreen, yellow, brightblue, brightmagenta, brightcyan, white.
 
 Set colors with
-	set color.name=foreground [background]
+    set color.name=foreground [background]
 
 ### Copying
 This program is free software: you can redistribute it and/or modify
