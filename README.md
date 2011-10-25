@@ -6,22 +6,60 @@ interface much like [Vim](http://www.vim.org), and supports custom colors,
 layouts, and key bindings. [PMS](https://github.com/ambientsound/pms) aims to
 be accessible and highly configurable.
 
-### Installing
-    $ cmake . && make && sudo make install
+### Compiling
+    $ cmake . && make
 
 ### Dependencies
 You need to have [MPD](http://mpd.wikia.com/wiki/Music_Player_Daemon_Wiki)
 installed and working before using [PMS](https://github.com/ambientsound/pms),
 but not neccessarily on the same machine.
 
-This client works best with recent
-[MPD](http://mpd.wikia.com/wiki/Music_Player_Daemon_Wiki) versions (>= 0.15.0).
+This client requires 
+[MPD](http://mpd.wikia.com/wiki/Music_Player_Daemon_Wiki) >= 0.15.0.
 
-[PMS](https://github.com/ambientsound/pms) depends on the following libraries:
+[PMS](https://github.com/ambientsound/pms) depends on ncurses >= 5.0 to build.
 
-- ncurses (>= 5.0)
-- glib2 (>= 2.0)
-- boost_regex (>= 1.36.0) to enable regular expression searches
+### Configuration
+Your configuration file is ~/.config/pms/pms.conf. A system-wide config
+file can be put in /etc/xdg/pms/pms.conf.
+
+Start PMS and type
+	:set
+for a list of options available, or type
+	:set color
+for a list of color options.
+
+#### Setting options
+Options can be set with
+	set option=value
+	set option+=value
+	set option-=value
+Boolean options can be set, inverted or unset with
+	set option
+	set nooption
+	set invoption
+	set option!
+Option values can be queried with
+	set option?
+
+#### Changing colors
+Background colors are black, red, green, brown, blue, magenta, cyan and gray.
+Foreground colors are as background colors, in addition to 
+brightred, brightgreen, yellow, brightblue, brightmagenta, brightcyan, white.
+
+Set colors with
+	set color.name=foreground [background]
 
 ### Copying
-Copyright (C) 2006-2011 [Kim Tore Jensen](mailto:kimtjen@gmail.com)
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+See the COPYING file for more information.
+
+### Authors
+Written by [Kim Tore Jensen](http://www.incendio.no). Copyright (c) 2006-2011.
+
+A big thanks to contributors [Bart Nagel](https://github.com/tremby)
+and [Murilo Pereira](https://github.com/mpereira).
