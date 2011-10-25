@@ -11,9 +11,9 @@ configure_file(
 )
 
 set(CURSES_NEED_NCURSES, true)
-include(FindCurses.cmake)
+include(FindCurses)
 if (NOT CURSES_FOUND)
-	message(FATAL_ERROR "PMS requires ncurses to compile.")
+	message(FATAL_ERROR "PMS requires NCurses >= 5.0.")
 endif(NOT CURSES_FOUND)
 include_directories(${CURSES_INCLUDE_DIR})
 target_link_libraries(pms ${CURSES_LIBRARIES})
