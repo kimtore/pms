@@ -6,6 +6,23 @@ Added:
  * support for MPD's «IDLE» mode
  * support for complex key bindings
  * statusbar can now be scrolled vertically
+ * live searches which updates the list instantly
+ * configuration file now behaves the same way as the command line
+
+Changed:
+ * most options have new names, so configuration files are incompatible (see UPGRADING for details)
+
+Fixed:
+ * better connection handling
+ * resizing the window now redraws instantly
+
+Removed:
+ * no longer supports borders around topbar and windows
+ * libmpdclient dependency
+ * glib2 dependency
+ * regular expression searches
+ * mouse support
+ * 'relative' scroll mode
 
 
 ---
