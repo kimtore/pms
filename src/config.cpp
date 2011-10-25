@@ -26,9 +26,11 @@
 #include "topbar.h"
 #include "pms.h"
 #include <cstring>
-#include <stdio.h>
 #include <stdlib.h>
 #include <algorithm>
+#include <string>
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -207,27 +209,24 @@ void Config::source_default_config()
 
 bool Config::source(string filename, bool suppress_errmsg)
 {
-	FILE * fd;
-	char * line = NULL;
-	char * lb;
-	size_t len;
+	ifstream fd;
+	char line[1024];
 
-	if ((fd = fopen(filename.c_str(), "r")) == NULL)
+	fd.open(filename.c_str(), ifstream::in);
+	if (!fd.good())
 	{
 		if (!suppress_errmsg)
 			sterr("Cannot open file `%s'", filename.c_str());
 		return false;
 	}
 
-	while ((getline(&line, &len, fd)) != -1)
+	while (fd.good())
 	{
-		if ((lb = strchr(line, '\n')) != NULL)
-			*lb = '\0';
+		fd.getline(line, sizeof line);
 		pms.run_cmd(line, 1, true);
 	}
 
-	free(line);
-	fclose(fd);
+	fd.close();
 
 	return true;
 }
