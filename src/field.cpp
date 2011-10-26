@@ -113,7 +113,7 @@ string Field::format(Song * song)
 
 		case FIELD_QUEUELENGTH:
 			if (mpd.currentsong)
-				tmp = time_format(mpd.playlist.length(mpd.currentsong->pos) - (int)mpd.status.elapsed);
+				tmp = time_format(mpd.playlist.length(mpd.currentsong->pos) - (mpd.currentsong->time == -1 ? 0 : (int)mpd.status.elapsed));
 			else
 				tmp = time_format(mpd.playlist.length());
 			if (mpd.status.repeat && mpd.active_songlist == &mpd.playlist)
