@@ -155,6 +155,8 @@ int PMS::run_event(Inputevent * ev)
 			return activate_songlist();
 
 		case ACT_ADD:
+			if (ev->text.size())
+				return add(ev->text, ev->multiplier);
 			return add(ev->multiplier);
 
 		case ACT_REMOVE:
@@ -647,6 +649,19 @@ int PMS::add(int count)
 		stinfo("Failed to add some songs to playlist.", NULL);
 	}
 
+	return status;
+}
+
+int PMS::add(string uri, int count)
+{
+	bool status = true;
+
+	while (count-- > 0)
+		if (mpd.addid(uri) != -1)
+			stinfo("`%s' added to playlist.", uri.c_str());
+		else
+			status = false;
+	
 	return status;
 }
 

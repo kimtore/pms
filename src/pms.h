@@ -76,6 +76,7 @@ class PMS
 		int		livesearch(string terms, bool exitsearch = false);
 		int		resetsearch();
 		int		add(int count);
+		int		add(string uri, int count);
 		int		remove(int count);
 
 		/* MPD options */
