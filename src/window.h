@@ -136,7 +136,7 @@ class Wsonglist : public Wmain
 		Song *			cursorsong();
 
 		/* Returns all selected songs, or cursor song if none */
-		selection_t		get_selection();
+		selection_t		get_selection(long multiplier);
 
 		/* Update column lengths */
 		void			update_column_length();

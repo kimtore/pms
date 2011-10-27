@@ -92,10 +92,10 @@ void Wsonglist::drawline(int rely)
 
 	song = songlist->at(linepos);
 
-	if (linepos >= vstart && linepos <= vstop)
-		color = config.colors.selection;
-	else if (linepos == cursor)
+	if (linepos == cursor)
 		color = config.colors.cursor;
+	else if (linepos >= vstart && linepos <= vstop)
+		color = config.colors.selection;
 	else if (song->pos == mpd.status.song)
 		color = config.colors.playing;
 	else if (song->pos == -1 && mpd.currentsong && song->fhash == mpd.currentsong->fhash)
@@ -121,15 +121,26 @@ Song * Wsonglist::cursorsong()
 	return songlist->at(cursor);
 }
 
-selection_t Wsonglist::get_selection()
+selection_t Wsonglist::get_selection(long multiplier)
 {
 	vector<Song *> * sel;
+	unsigned int s;
+	Song * song;
 
 	sel = songlist->get_selection();
 
-	/* Append cursor song if no selection */
+	/* Append cursor song (plus multiplier) if no selection */
 	if (sel->empty() && songlist->size())
-		sel->push_back(cursorsong());
+	{
+		s = cursor;
+		while (--multiplier >= 0)
+		{
+			if ((song = songlist->at(s)) == NULL)
+				break;
+			sel->push_back(song);
+			++s;
+		}
+	}
 
 	return sel;
 }
