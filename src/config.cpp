@@ -667,7 +667,7 @@ int Config::print_all_colors()
 void Config::set_column_headers(string hdr)
 {
 	size_t start = 0;
-	size_t pos;
+	size_t pos = 0;
 	string f;
 	Field * field;
 
@@ -702,7 +702,7 @@ void Config::set_column_headers(string hdr)
 void Config::set_search_fields(string fields)
 {
 	size_t start = 0;
-	size_t pos;
+	size_t pos = 0;
 	string f;
 	Field * field;
 

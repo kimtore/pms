@@ -297,8 +297,8 @@ bool Keybindings::remove(string sequence)
 		if (*it == c)
 		{
 			debug("Removed key mapping `%s'.", sequence.c_str());
-			bindings.erase(it);
 			delete c;
+			bindings.erase(it);
 			return true;
 		}
 	}
