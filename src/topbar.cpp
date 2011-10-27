@@ -42,6 +42,7 @@ Topbarsegment::Topbarsegment()
 {
 	condition.t = CONDITION_NONE;
 	condition.f = CONDITION_NONE;
+	condition.ctl = CONDITION_NONE;
 	format = "";
 }
 
@@ -137,7 +138,7 @@ int Topbar::set(string format)
 	bool conditional = false;
 	bool invcondition;
 	unsigned int condition = CONDITION_NONE;
-	condition_t lastcondition = { CONDITION_NONE, CONDITION_NONE };
+	condition_t lastcondition = { CONDITION_NONE, CONDITION_NONE, CONDITION_NONE };
 	vector<condition_t> conditions;
 	unsigned int pos = 0; /* left/center/right */
 	Field * field;
@@ -189,11 +190,13 @@ int Topbar::set(string format)
 					if (*it == '{')
 					{
 						--it;
-						if (invcondition)
-							segment->condition.t |= condition;
-						else
-							segment->condition.f |= condition;
 
+						if (invcondition)
+							segment->condition.t |= lastcondition.ctl;
+						else
+							segment->condition.f |= lastcondition.ctl;
+
+						segment->condition.ctl = condition;
 						conditions.push_back(segment->condition);
 					}
 
@@ -251,6 +254,7 @@ int Topbar::set(string format)
 				else
 					segment->condition.f |= condition;
 
+				segment->condition.ctl = condition;
 				conditions.push_back(segment->condition);
 				varname.clear();
 				working.clear();

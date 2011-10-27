@@ -41,6 +41,7 @@ typedef struct
 {
 	unsigned int		t; /* conditions that has to evaluate true */
 	unsigned int		f; /* conditions that has to evaluate false */
+	unsigned int		ctl; /* which condition was used to open this? */
 }
 condition_t;
 

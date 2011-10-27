@@ -50,11 +50,12 @@ string Field::format(Song * song)
 	string tmp;
 	int i;
 
-	if (!song)
-		return "";
-
 	if (type < FIELD_COLUMN_VALUES)
+	{
+		if (!song)
+			return "";
 		return song->f[type];
+	}
 
 	switch(type)
 	{
