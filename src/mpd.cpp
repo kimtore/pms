@@ -801,8 +801,13 @@ int MPD::activate_songlist(Songlist * list)
 
 int MPD::remove(Songlist * list, int start, int count)
 {
+	int removed = 0;
+
 	if (!list || start < 0 || start >= (int)list->size() || count == 0)
-		return false;
+		return removed;
+
+	if (list != &playlist)
+		return removed;
 
 	/* Reverse deletion */
 	if (count < 0)
@@ -810,19 +815,61 @@ int MPD::remove(Songlist * list, int start, int count)
 		start += count;
 		count = -count;
 		if (start < 0)
-			return false;
+			return removed;
 	}
 
 	if (start + count > (int)list->size())
 		count = list->size() - start;
 
-	if (list == &playlist)
+	mpd_send("delete %d:%d", start, start + count);
+	if (mpd_getline(NULL) == MPD_GETLINE_OK)
+		removed = count;
+
+	return removed;
+}
+
+int MPD::remove(Songlist * list, selection_t selection)
+{
+	vector<Song *>::reverse_iterator it;
+	size_t rs = -1, re = -1;
+	int removed = 0;
+
+	if (!list || selection->empty())
+		return removed;
+
+	if (list != &playlist)
+		return removed;
+
+	/* Calculate deletion range */
+	for (it = selection->rbegin(); it != selection->rend(); ++it)
 	{
-		mpd_send("delete %d:%d", start, start + count);
-		return (mpd_getline(NULL) == MPD_GETLINE_OK);
+		if ((*it)->pos == -1)
+			continue;
+
+		if (rs == -1)
+			rs = (*it)->pos;
+		if (re == -1)
+			re = (*it)->pos + 1;
+
+		/* Range has skipped an item */
+		if (--rs == -1 || rs > (*it)->pos)
+		{
+			mpd_send("delete %d:%d", rs + 1, re);
+			if (mpd_getline(NULL) == MPD_GETLINE_OK)
+				removed += re - (rs + 1);
+			re = -1;
+			rs = -1;
+		}
 	}
 
-	return false;
+	if (rs != -1 && re != -1)
+	{
+		mpd_send("delete %d:%d", rs + 1, re);
+		if (mpd_getline(NULL) == MPD_GETLINE_OK)
+			removed += re - (rs + 1);
+	}
+
+	return removed;
 }
 
 Song * MPD::next_song_in_line(int steps)

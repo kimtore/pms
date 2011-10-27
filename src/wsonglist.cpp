@@ -74,8 +74,8 @@ void Wsonglist::drawline(int rely)
 	Color * color;
 	unsigned int linepos = rely + position;
 	int x = 0;
-	size_t * vstart;
-	size_t * vstop;
+	size_t vstart;
+	size_t vstop;
 
 	if (config.show_window_title)
 		++rely;
@@ -88,12 +88,11 @@ void Wsonglist::drawline(int rely)
 		return;
 	}
 
-	vstart = &(songlist->visual_start > songlist->visual_stop ? songlist->visual_stop : songlist->visual_start);
-	vstop = &(songlist->visual_start > songlist->visual_stop ? songlist->visual_start : songlist->visual_stop);
+	songlist->visual_pos(&vstart, &vstop);
 
 	song = songlist->at(linepos);
 
-	if (linepos >= *vstart && linepos <= *vstop)
+	if (linepos >= vstart && linepos <= vstop)
 		color = config.colors.selection;
 	else if (linepos == cursor)
 		color = config.colors.cursor;
@@ -120,6 +119,19 @@ Song * Wsonglist::cursorsong()
 	
 	move_cursor(0);
 	return songlist->at(cursor);
+}
+
+selection_t Wsonglist::get_selection()
+{
+	vector<Song *> * sel;
+
+	sel = songlist->get_selection();
+
+	/* Append cursor song if no selection */
+	if (sel->empty() && songlist->size())
+		sel->push_back(cursorsong());
+
+	return sel;
 }
 
 unsigned int Wsonglist::height()

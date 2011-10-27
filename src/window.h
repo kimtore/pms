@@ -123,20 +123,23 @@ class Wsonglist : public Wmain
 	public:
 		Wsonglist() { context = CONTEXT_SONGLIST; };
 
-		void		draw();
-		void		drawline(int rely);
-		unsigned int	height();
-		unsigned int	content_size();
-		void		move_cursor(int offset);
+		void			draw();
+		void			drawline(int rely);
+		unsigned int		height();
+		unsigned int		content_size();
+		void			move_cursor(int offset);
 
 		/* Pointer to connected songlist */
-		Songlist *	songlist;
+		Songlist *		songlist;
 
 		/* Pointer to song beneath cursor */
-		Song *		cursorsong();
+		Song *			cursorsong();
+
+		/* Returns all selected songs, or cursor song if none */
+		selection_t		get_selection();
 
 		/* Update column lengths */
-		void		update_column_length();
+		void			update_column_length();
 };
 
 class Wtopbar : public Window

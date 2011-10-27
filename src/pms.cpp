@@ -671,6 +671,9 @@ int PMS::add(string uri, int count)
 int PMS::remove(int count)
 {
 	Wsonglist * win;
+	selection_t sel;
+	size_t start;
+
 	if ((win = WSONGLIST(wm.active)) == NULL)
 	{
 		sterr("Current window is not a songlist. Cannot remove any songs from here.", NULL);
@@ -682,11 +685,27 @@ int PMS::remove(int count)
 		return false;
 	}
 
-	if (mpd.remove(win->songlist, win->cursor, count))
+	sel = win->songlist->get_selection();
+	if (sel->empty())
 	{
-		if (win->cursor + count >= win->songlist->size())
-			win->set_cursor(win->songlist->size() - count - 1);
-		return true;
+		if ((count = mpd.remove(win->songlist, win->cursor, count)) > 0)
+		{
+			if (win->cursor + count >= win->songlist->size())
+				win->set_cursor(win->songlist->size() - count - 1);
+			return true;
+		}
+	}
+	else
+	{
+		if ((count = mpd.remove(win->songlist, sel)) > 0)
+		{
+			win->songlist->visual_pos(&start, NULL);
+			if (start >= win->songlist->size() - sel->size())
+				--start;
+			win->set_cursor(start);
+			win->songlist->clear_visual();
+			return true;
+		}
 	}
 
 	return false;

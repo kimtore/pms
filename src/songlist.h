@@ -28,11 +28,14 @@
 
 using namespace std;
 
+typedef vector<Song *> *		selection_t;
+
 class Songlist
 {
 	private:
 		unsigned int		poscache;
 		unsigned long		lengthcache;
+		vector<Song *>		selection;
 
 	public:
 		Songlist();
@@ -50,10 +53,13 @@ class Songlist
 		search_mode_t		searchmode;
 
 		/* Visual and selections */
-		vector<unsigned long>	selections; /* songs that are manually selected */
+		vector<unsigned long>	selections; /* hashes of songs that are manually selected */
 		size_t			visual_start;
 		size_t			visual_stop;
 		bool			is_selected(size_t pos);
+		selection_t		get_selection();
+		void			visual_pos(size_t * start, size_t * stop); /* populate start and stop with real visual start/stop */
+		void			clear_visual();
 
 		/* Can we make local modifications? */
 		bool			readonly;

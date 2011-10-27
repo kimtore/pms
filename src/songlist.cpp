@@ -180,3 +180,32 @@ unsigned long Songlist::length(size_t pos)
 
 	return lengthcache;
 }
+
+selection_t Songlist::get_selection()
+{
+	size_t start, stop;
+	selection.clear();
+
+	if (visual_start != -1)
+	{
+		visual_pos(&start, &stop);
+		for ( ; start <= stop; ++start)
+			selection.push_back(at(start));
+	}
+
+	return &selection;
+}
+
+void Songlist::visual_pos(size_t * start, size_t * stop)
+{
+	if (start != NULL)
+		*start = (visual_start > visual_stop ? visual_stop : visual_start);
+	if (stop != NULL)
+		*stop = (visual_start > visual_stop ? visual_start : visual_stop);
+}
+
+void Songlist::clear_visual()
+{
+	visual_start = -1;
+	visual_stop = -1;
+}

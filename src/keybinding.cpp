@@ -50,6 +50,7 @@ void Keybindings::load_defaults()
 	add(CONTEXT_SONGLIST, ACT_ADD, "a");
 	add(CONTEXT_SONGLIST, ACT_REMOVE, "dd");
 	add(CONTEXT_SONGLIST, ACT_REMOVE, "<Delete>");
+	add(CONTEXT_SONGLIST, ACT_REMOVE, "x");
 	add(CONTEXT_SONGLIST, ACT_VISUAL, "v");
 	add(CONTEXT_SONGLIST, ACT_VISUAL, "V");
 
