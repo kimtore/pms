@@ -219,7 +219,7 @@ class MPD
 
 		/* List management */
 		int		remove(Songlist * list, selection_t selection);
-		int		remove(Songlist * list, int start, int count);
+		int		put(Songlist * list, size_t position, selection_t selection);
 
 		/* Returns a pointer to the next song in line according to play mode and config, or NULL if none. */
 		Song *		next_song_in_line(int steps = 1);
@@ -244,7 +244,7 @@ class MPD
 
 		/* Player control */
 		int		pause(bool npause);
-		int		addid(string uri);
+		int		addid(string uri, int position = -1);
 		int		playid(int id);
 		int		stop();
 		int		next();

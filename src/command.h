@@ -83,6 +83,8 @@ typedef enum
 	ACT_ADD,
 	ACT_REMOVE,
 	ACT_VISUAL,
+	ACT_YANK,
+	ACT_PUT,
 
 	/* MPD options */
 	ACT_UPDATE,

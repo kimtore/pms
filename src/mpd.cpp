@@ -799,35 +799,6 @@ int MPD::activate_songlist(Songlist * list)
 	return true;
 }
 
-int MPD::remove(Songlist * list, int start, int count)
-{
-	int removed = 0;
-
-	if (!list || start < 0 || start >= (int)list->size() || count == 0)
-		return removed;
-
-	if (list != &playlist)
-		return removed;
-
-	/* Reverse deletion */
-	if (count < 0)
-	{
-		start += count;
-		count = -count;
-		if (start < 0)
-			return removed;
-	}
-
-	if (start + count > (int)list->size())
-		count = list->size() - start;
-
-	mpd_send("delete %d:%d", start, start + count);
-	if (mpd_getline(NULL) == MPD_GETLINE_OK)
-		removed = count;
-
-	return removed;
-}
-
 int MPD::remove(Songlist * list, selection_t selection)
 {
 	vector<Song *>::reverse_iterator it;
@@ -870,6 +841,20 @@ int MPD::remove(Songlist * list, selection_t selection)
 	}
 
 	return removed;
+}
+
+int MPD::put(Songlist * list, size_t position, selection_t songs)
+{
+	vector<Song *>::iterator it;
+	int added = 0;
+
+	for (it = songs->begin(); it != songs->end(); ++it)
+	{
+		if (addid((*it)->f[FIELD_FILE], position++) != -1)
+			++added;
+	}
+
+	return added;
 }
 
 Song * MPD::next_song_in_line(int steps)
@@ -1116,14 +1101,17 @@ int MPD::pause(bool npause)
 	return (mpd_getline(NULL) == MPD_GETLINE_OK);
 }
 
-int MPD::addid(string uri)
+int MPD::addid(string uri, int position)
 {
 	string buf;
 	string param;
 	string value;
 	int status;
 
-	mpd_send("addid \"%s\"", uri.c_str());
+	if (position == -1)
+		mpd_send("addid \"%s\"", uri.c_str());
+	else
+		mpd_send("addid \"%s\" %d", uri.c_str(), position);
 
 	while ((status = mpd_getline(&buf)) == MPD_GETLINE_MORE);
 

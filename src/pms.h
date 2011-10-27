@@ -24,6 +24,9 @@
 #include "input.h"
 #include "song.h"
 #include "window.h"
+#include <vector>
+
+using namespace std;
 
 /*
  * This class contains all user interface actions,
@@ -33,6 +36,9 @@
 class PMS
 {
 	public:
+		/* Internal clipboard/selection buffer */
+		vector<Song *>	clipboard;
+
 		/* This function handles input events from main(). */
 		int		run_event(Inputevent * ev);
 
@@ -80,6 +86,8 @@ class PMS
 		int		add(string uri, int count);
 		int		remove(int count);
 		int		visual();
+		int		yank(int count);
+		int		put(int count);
 
 		/* MPD options */
 		int		update(string dir = "/");

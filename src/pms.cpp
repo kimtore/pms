@@ -165,6 +165,12 @@ int PMS::run_event(Inputevent * ev)
 		case ACT_REMOVE:
 			return remove(ev->multiplier);
 
+		case ACT_YANK:
+			return yank(ev->multiplier);
+
+		case ACT_PUT:
+			return put(ev->multiplier);
+
 		case ACT_UPDATE:
 			return update(ev->text);
 
@@ -676,12 +682,12 @@ int PMS::remove(int count)
 
 	if ((win = WSONGLIST(wm.active)) == NULL)
 	{
-		sterr("Current window is not a songlist. Cannot remove any songs from here.", NULL);
+		sterr("Current window is not a song list. Cannot remove any songs from here.", NULL);
 		return false;
 	}
 	if (win->songlist->readonly)
 	{
-		sterr("This playlist is read-only.", NULL);
+		sterr("This song list is read-only.", NULL);
 		return false;
 	}
 
@@ -698,6 +704,7 @@ int PMS::remove(int count)
 		if (start >= win->songlist->size() - sel->size())
 			--start;
 		win->set_cursor(start);
+		clipboard = *sel;
 		win->songlist->clear_visual();
 		return true;
 	}
@@ -726,6 +733,58 @@ int PMS::visual()
 	win->qdraw();
 
 	return true;
+}
+
+int PMS::yank(int count)
+{
+	Wsonglist * win;
+
+	if ((win = WSONGLIST(wm.active)) == NULL)
+	{
+		sterr("Only songs can be yanked, and this is not a song list.", NULL);
+		return false;
+	}
+
+	clipboard = *(win->get_selection(count));
+	win->songlist->clear_visual();
+	win->qdraw();
+	stinfo("%d songs yanked to clipboard.", clipboard.size());
+
+	if (config.advance_cursor)
+		win->move_cursor(count);
+
+	return true;
+}
+
+int PMS::put(int count)
+{
+	Wsonglist * win;
+
+	if ((win = WSONGLIST(wm.active)) == NULL)
+	{
+		sterr("Can only put songs into a song list.", NULL);
+		return false;
+	}
+
+	if (clipboard.empty())
+	{
+		sterr("Clipboard is empty.", NULL);
+		return false;
+	}
+
+	if (win->songlist->readonly)
+	{
+		sterr("Cannot put songs into a read-only song list.", NULL);
+		return false;
+	}
+
+	if (mpd.put(win->songlist, win->cursor + 1, &clipboard))
+	{
+		stinfo("Put %d songs into song list.", clipboard.size());
+		return true;
+	}
+
+	return false;
 }
 
 int PMS::update(string dir)
