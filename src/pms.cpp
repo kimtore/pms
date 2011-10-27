@@ -616,9 +616,10 @@ int PMS::add(int count)
 {
 	bool status = true;
 	size_t i;
-	int c = count;
+	int added = 0;
 	Wsonglist * win;
 	selection_t sel;
+	vector<Song *>::iterator it;
 
 	if ((win = WSONGLIST(wm.active)) == NULL)
 	{
@@ -627,25 +628,19 @@ int PMS::add(int count)
 	}
 
 	sel = win->get_selection(count);
-
-	if (win->cursor >= win->songlist->size())
+	if (sel->empty())
 		return false;
 
-	i = win->cursor;
-	while (c > 0 && i < win->songlist->size())
-	{
-		status = status && mpd.addid(win->songlist->at(i)->f[FIELD_FILE]);
-		--c;
-		++i;
-	}
-	count -= c;
+	for (it = sel->begin(); it != sel->end(); ++it)
+		if (mpd.addid((*it)->f[FIELD_FILE]))
+			++added;
 
-	if (status && count >= 1)
+	if (added > 0)
 	{
-		if (count > 1)
-			stinfo("%d songs added to playlist.", count);
-		else if (count == 1)
-			stinfo("`%s' added to playlist.", win->songlist->at(--i)->f[FIELD_TITLE].c_str());
+		if (added > 1)
+			stinfo("%d songs added to playlist.", added);
+		else
+			stinfo("`%s' added to playlist.", (*--it)->f[FIELD_TITLE].c_str());
 
 		if (config.advance_cursor)
 			win->move_cursor(count);
@@ -654,6 +649,8 @@ int PMS::add(int count)
 	{
 		stinfo("Failed to add some songs to playlist.", NULL);
 	}
+
+	win->songlist->clear_visual();
 
 	return status;
 }
