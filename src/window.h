@@ -127,6 +127,7 @@ class Wsonglist : public Wmain
 		void		drawline(int rely);
 		unsigned int	height();
 		unsigned int	content_size();
+		void		move_cursor(int offset);
 
 		/* Pointer to connected songlist */
 		Songlist *	songlist;

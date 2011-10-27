@@ -74,6 +74,8 @@ void Wsonglist::drawline(int rely)
 	Color * color;
 	unsigned int linepos = rely + position;
 	int x = 0;
+	size_t * vstart;
+	size_t * vstop;
 
 	if (config.show_window_title)
 		++rely;
@@ -86,8 +88,14 @@ void Wsonglist::drawline(int rely)
 		return;
 	}
 
+	vstart = &(songlist->visual_start > songlist->visual_stop ? songlist->visual_stop : songlist->visual_start);
+	vstop = &(songlist->visual_start > songlist->visual_stop ? songlist->visual_start : songlist->visual_stop);
+
 	song = songlist->at(linepos);
-	if (linepos == cursor)
+
+	if (linepos >= *vstart && linepos <= *vstop)
+		color = config.colors.selection;
+	else if (linepos == cursor)
 		color = config.colors.cursor;
 	else if (song->pos == mpd.status.song)
 		color = config.colors.playing;
@@ -123,6 +131,13 @@ unsigned int Wsonglist::height()
 unsigned int Wsonglist::content_size()
 {
 	return songlist ? songlist->size() : 0;
+}
+
+void Wsonglist::move_cursor(int offset)
+{
+	Wmain::move_cursor(offset);
+	if (songlist && songlist->visual_stop != -1)
+		songlist->visual_stop = cursor;
 }
 
 void Wsonglist::update_column_length()

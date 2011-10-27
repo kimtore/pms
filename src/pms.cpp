@@ -71,6 +71,9 @@ int PMS::run_event(Inputevent * ev)
 			wm.statusbar->qdraw();
 			return true;
 
+		case ACT_VISUAL:
+			return visual();
+
 		case ACT_EXIT_LIVESEARCH:
 			return livesearch(ev->text, true);
 
@@ -670,7 +673,7 @@ int PMS::remove(int count)
 	Wsonglist * win;
 	if ((win = WSONGLIST(wm.active)) == NULL)
 	{
-		sterr("Current window is not a playlist. Cannot remove any songs from here.", NULL);
+		sterr("Current window is not a songlist. Cannot remove any songs from here.", NULL);
 		return false;
 	}
 	if (win->songlist->readonly)
@@ -687,6 +690,29 @@ int PMS::remove(int count)
 	}
 
 	return false;
+}
+
+int PMS::visual()
+{
+	Wsonglist * win;
+	int pos;
+
+	if ((win = WSONGLIST(wm.active)) == NULL)
+	{
+		sterr("Visual mode can only be used in songlists.", NULL);
+		return false;
+	}
+
+	if (win->songlist->visual_start == -1)
+		pos = win->cursor;
+	else
+		pos = -1;
+
+	win->songlist->visual_start = pos;
+	win->songlist->visual_stop = pos;
+	win->qdraw();
+
+	return true;
 }
 
 int PMS::update(string dir)

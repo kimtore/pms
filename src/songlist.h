@@ -49,6 +49,12 @@ class Songlist
 		vector<Searchresults *> liveresults;
 		search_mode_t		searchmode;
 
+		/* Visual and selections */
+		vector<unsigned long>	selections; /* songs that are manually selected */
+		size_t			visual_start;
+		size_t			visual_stop;
+		bool			is_selected(size_t pos);
+
 		/* Can we make local modifications? */
 		bool			readonly;
 

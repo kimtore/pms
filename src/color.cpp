@@ -40,6 +40,7 @@ void Colortable::load_defaults()
 
 	cursor->set(COLOR_BLACK, COLOR_WHITE, 0);
 	playing->set(COLOR_BLACK, COLOR_YELLOW, 0);
+	selection->set(COLOR_WHITE, COLOR_BLUE, 0);
 
 	field[FIELD_DIRECTORY]->set(COLOR_WHITE, -1, 0);
 	field[FIELD_FILE]->set(COLOR_WHITE, -1, 0);
@@ -88,6 +89,7 @@ Colortable::Colortable()
 
 	cursor = new Color();
 	playing = new Color();
+	selection = new Color();
 
 	for (i = 0; i < FIELD_TOTAL_VALUES; ++i)
 		field[i] = new Color();

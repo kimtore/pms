@@ -30,6 +30,8 @@ Songlist::Songlist()
 	playlist = false;
 	version = -1;
 	songlen = 0;
+	visual_start = -1;
+	visual_stop = -1;
 	searchmode = SEARCH_MODE_NONE;
 }
 

@@ -23,6 +23,7 @@
 
 #include "input.h"
 #include "song.h"
+#include "window.h"
 
 /*
  * This class contains all user interface actions,
@@ -78,6 +79,7 @@ class PMS
 		int		add(int count);
 		int		add(string uri, int count);
 		int		remove(int count);
+		int		visual();
 
 		/* MPD options */
 		int		update(string dir = "/");

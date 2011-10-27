@@ -76,6 +76,7 @@ class Colortable
 		/* List colors */
 		Color *		cursor;
 		Color *		playing;
+		Color *		selection;
 
 		/* Field colors */
 		Color *		field[FIELD_TOTAL_VALUES];

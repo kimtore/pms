@@ -52,6 +52,7 @@ Commandlist::Commandlist()
 	add(CONTEXT_SONGLIST, ACT_ACTIVATE_SONGLIST, "activate-list");
 	add(CONTEXT_SONGLIST, ACT_ADD, "add");
 	add(CONTEXT_SONGLIST, ACT_REMOVE, "remove");
+	add(CONTEXT_SONGLIST, ACT_VISUAL, "visual");
 
 	add(CONTEXT_LIST, ACT_SCROLL_UP, "scroll-up");
 	add(CONTEXT_LIST, ACT_SCROLL_DOWN, "scroll-down");
