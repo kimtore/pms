@@ -28,6 +28,7 @@
 #include "input.h"
 #include "songlist.h"
 #include "search.h"
+#include "clipboard.h"
 #include <stdlib.h>
 
 extern Config		config;
@@ -704,7 +705,7 @@ int PMS::remove(int count)
 		if (start >= win->songlist->size() - sel->size())
 			--start;
 		win->set_cursor(start);
-		clipboard = *sel;
+		clipboard.set(sel);
 		win->songlist->clear_visual();
 		return true;
 	}
@@ -745,7 +746,7 @@ int PMS::yank(int count)
 		return false;
 	}
 
-	clipboard = *(win->get_selection(count));
+	clipboard.set(win->get_selection(count));
 	win->songlist->clear_visual();
 	win->qdraw();
 	stinfo("%d songs yanked to clipboard.", clipboard.size());
@@ -778,7 +779,7 @@ int PMS::put(int count)
 		return false;
 	}
 
-	if (mpd.put(win->songlist, win->cursor + 1, &clipboard))
+	if (mpd.put(win->songlist, win->cursor + 1, &clipboard.songs))
 	{
 		stinfo("Put %d songs into song list.", clipboard.size());
 		return true;

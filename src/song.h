@@ -33,6 +33,7 @@ class Song
 {
 	public:
 		Song();
+		Song *		operator= (const Song & source);
 
 		/* Song fields, see field.h */
 		string		f[FIELD_COLUMN_VALUES];
@@ -43,7 +44,7 @@ class Song
 		int		time;
 
 		/* For quick lookup through filename */
-		long			fhash;
+		long		fhash;
 
 		/* Common function to initialize special fields that MPD don't return */
 		void		init();

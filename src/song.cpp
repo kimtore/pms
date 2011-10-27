@@ -37,6 +37,21 @@ Song::Song()
 	id = -1;
 }
 
+Song * Song::operator= (const Song & source)
+{
+	size_t i;
+
+	pos = source.pos;
+	id = source.id;
+	time = source.time;
+	fhash = source.fhash;
+
+	for (i = 0; i < FIELD_COLUMN_VALUES; i++)
+		f[i] = source.f[i];
+	
+	return this;
+}
+
 void Song::init()
 {
 	size_t			s, e;

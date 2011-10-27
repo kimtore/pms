@@ -24,6 +24,7 @@
 #include "input.h"
 #include "song.h"
 #include "window.h"
+#include "clipboard.h"
 #include <vector>
 
 using namespace std;
@@ -37,7 +38,7 @@ class PMS
 {
 	public:
 		/* Internal clipboard/selection buffer */
-		vector<Song *>	clipboard;
+		Clipboard	clipboard;
 
 		/* This function handles input events from main(). */
 		int		run_event(Inputevent * ev);
