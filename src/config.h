@@ -179,7 +179,7 @@ class Config
 		int		volume;
 
 		/* Redraw play string in statusbar after this long */
-		bool		status_reset_interval;
+		unsigned int	status_reset_interval;
 
 		/* What fields to search by default */
 		long		search_field_mask;

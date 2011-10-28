@@ -53,7 +53,7 @@ void Config::load_default_config()
 	topbar_height = 2;
 	add_next_interval = 5;
 	autoadvance = true;
-	status_reset_interval = 3;
+	status_reset_interval = 2;
 	playback_follows_window = true;
 	advance_cursor = true;
 	split_search_terms = true;
