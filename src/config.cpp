@@ -107,7 +107,7 @@ Config::Config()
 	add_option("consume", OPTION_TYPE_BOOL, (void *)&consume, OPT_CHANGE_MPD);
 	add_option("single", OPTION_TYPE_BOOL, (void *)&single, OPT_CHANGE_MPD);
 	add_option("mute", OPTION_TYPE_BOOL, (void *)&mute, OPT_CHANGE_MPD);
-	add_option("volume", OPTION_TYPE_INT, (void *)&volume, OPT_CHANGE_MPD);
+	add_option("volume", OPTION_TYPE_VOLUME, (void *)&volume, OPT_CHANGE_MPD);
 
 	add_option("sort", OPTION_TYPE_STRING, (void *)&default_sort, OPT_CHANGE_NONE);
 	add_option("casesort", OPTION_TYPE_BOOL, (void *)&sort_case, OPT_CHANGE_NONE);
@@ -416,6 +416,7 @@ string Config::get_opt_str(option_t * opt)
 			break;
 
 		case OPTION_TYPE_UINT:
+		case OPTION_TYPE_VOLUME:
 			ui = (unsigned int *)opt->ptr;
 			str = tostring(*ui);
 			break;
@@ -510,6 +511,15 @@ int Config::add_opt_str(option_t * opt, string value, int arithmetic)
 			*ui = *ui + (arithmetic * atoi(value.c_str()));
 			return true;
 
+		case OPTION_TYPE_VOLUME:
+			ui = (unsigned int *)opt->ptr;
+			*ui = *ui + (arithmetic * atoi(value.c_str()));
+			if (*ui > 100)
+				*ui = 100;
+			if (*ui < 0)
+				*ui = 0;
+			return true;
+
 		default:
 			return false;
 	}
@@ -540,6 +550,15 @@ int Config::set_opt_str(option_t * opt, string value)
 		case OPTION_TYPE_UINT:
 			ui = (unsigned int *)opt->ptr;
 			*ui = atoi(value.c_str());
+			return true;
+
+		case OPTION_TYPE_VOLUME:
+			ui = (unsigned int *)opt->ptr;
+			*ui = atoi(value.c_str());
+			if (*ui > 100)
+				*ui = 100;
+			if (*ui < 0)
+				*ui = 0;
 			return true;
 
 		case OPTION_TYPE_COLUMNHEADERS:
