@@ -376,7 +376,7 @@ int PMS::set_opt(Inputevent * ev)
 {
 	option_t * opt;
 
-	opt = config.readline(ev->text, !ev->silent);
+	opt = config.readline(ev->text, ev->multiplier, !ev->silent);
 	if (!opt)
 		return false;
 

@@ -234,7 +234,7 @@ bool Config::source(string filename, bool suppress_errmsg)
 	return true;
 }
 
-option_t * Config::readline(string line, bool verbose)
+option_t * Config::readline(string line, unsigned int multiplier, bool verbose)
 {
 	string optstr;
 	string optval = "";
@@ -281,10 +281,10 @@ option_t * Config::readline(string line, bool verbose)
 		switch(optstr[optstr.size()-1])
 		{
 			case '+':
-				arithmetic = 1;
+				arithmetic = multiplier;
 				break;
 			case '-':
-				arithmetic = -1;
+				arithmetic = -multiplier;
 				break;
 			default:;
 		}
@@ -416,12 +416,12 @@ string Config::get_opt_str(option_t * opt)
 			break;
 
 		case OPTION_TYPE_UINT:
-		case OPTION_TYPE_VOLUME:
 			ui = (unsigned int *)opt->ptr;
 			str = tostring(*ui);
 			break;
 
 		case OPTION_TYPE_INT:
+		case OPTION_TYPE_VOLUME:
 			i = (int *)opt->ptr;
 			str = tostring(*i);
 			break;
@@ -487,16 +487,16 @@ int Config::add_opt_str(option_t * opt, string value, int arithmetic)
 
 		case OPTION_TYPE_COLUMNHEADERS:
 		case OPTION_TYPE_SEARCHFIELDS:
-			if (arithmetic == 1)
+			if (arithmetic >= 1)
 				value = " " + value;
 			/* break intentionally omitted */
 
 		case OPTION_TYPE_STRING:
 		case OPTION_TYPE_TOPBAR:
 			s = get_opt_str(opt);
-			if (arithmetic == 1)
+			if (arithmetic >= 1)
 				s = s + value;
-			else if (arithmetic == -1)
+			else if (arithmetic <= -1)
 				s = str_replace(value, "", s);
 			set_opt_str(opt, s);
 			return true;
@@ -512,12 +512,12 @@ int Config::add_opt_str(option_t * opt, string value, int arithmetic)
 			return true;
 
 		case OPTION_TYPE_VOLUME:
-			ui = (unsigned int *)opt->ptr;
-			*ui = *ui + (arithmetic * atoi(value.c_str()));
-			if (*ui > 100)
-				*ui = 100;
-			if (*ui < 0)
-				*ui = 0;
+			i = (int *)opt->ptr;
+			*i = *i + (arithmetic * atoi(value.c_str()));
+			if (*i > 100)
+				*i = 100;
+			if (*i < 0)
+				*i = 0;
 			return true;
 
 		default:

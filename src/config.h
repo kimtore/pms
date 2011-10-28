@@ -107,7 +107,7 @@ class Config
 		bool		source(string filename, bool suppress_errmsg = false);
 
 		/* Parse "option=value" */
-		option_t *	readline(string line, bool verbose = true);
+		option_t *	readline(string line, unsigned int multiplier = 1, bool verbose = true);
 
 		/* Option string getter and setter */
 		int		add_opt_str(option_t * opt, string value, int arithmetic);
