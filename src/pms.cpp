@@ -194,16 +194,16 @@ int PMS::run_event(Inputevent * ev)
 			return move_cursor_page(ev->multiplier);
 
 		case ACT_CURSOR_TOP:
-			return set_cursor_top();
+			return set_cursor_top(ev->multiplier);
 
 		case ACT_CURSOR_BOTTOM:
-			return set_cursor_bottom();
+			return set_cursor_bottom(ev->multiplier);
 
 		case ACT_CURSOR_HOME:
-			return set_cursor_home();
+			return set_cursor_home(ev->multiplier);
 
 		case ACT_CURSOR_END:
-			return set_cursor_end();
+			return set_cursor_end(ev->multiplier);
 
 		case ACT_CURSOR_CURRENTSONG:
 			return set_cursor_currentsong();
@@ -451,35 +451,39 @@ int PMS::move_cursor_page(int offset)
 	return true;
 }
 
-int PMS::set_cursor_top()
+int PMS::set_cursor_top(int offset)
 {
 	Wmain * window;
 	window = WMAIN(wm.active);
-	window->set_cursor(window->position);
+	if ((offset = window->position + offset - 1) >= window->position + window->height())
+		offset = window->position + window->height() - 1;
+	window->set_cursor(offset);
 	return true;
 }
 
-int PMS::set_cursor_bottom()
+int PMS::set_cursor_bottom(int offset)
 {
 	Wmain * window;
 	window = WMAIN(wm.active);
-	window->set_cursor(window->position + window->height());
+	if ((offset = window->position + window->height() - offset + 1) < window->position)
+		offset = window->position;
+	window->set_cursor(offset);
 	return true;
 }
 
-int PMS::set_cursor_home()
+int PMS::set_cursor_home(int offset)
 {
 	Wmain * window;
 	window = WMAIN(wm.active);
-	window->set_cursor(0);
+	window->set_cursor(offset - 1);
 	return true;
 }
 
-int PMS::set_cursor_end()
+int PMS::set_cursor_end(int offset)
 {
 	Wmain * window;
 	window = WMAIN(wm.active);
-	window->set_cursor(window->content_size() - 1);
+	window->set_cursor(window->content_size() - offset);
 	return true;
 }
 

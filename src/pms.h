@@ -68,10 +68,10 @@ class PMS
 		int		scroll_window(int offset);
 
 		/* Set cursor absolute position */
-		int		set_cursor_home();
-		int		set_cursor_end();
-		int		set_cursor_top();
-		int		set_cursor_bottom();
+		int		set_cursor_home(int offset);
+		int		set_cursor_end(int offset);
+		int		set_cursor_top(int offset);
+		int		set_cursor_bottom(int offset);
 		int		set_cursor_currentsong();
 		int		set_cursor_random();
 
