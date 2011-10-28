@@ -299,27 +299,27 @@ int PMS::run_cmd(string cmd, unsigned int multiplier, bool batch)
 
 int PMS::run_search(string terms, unsigned int multiplier)
 {
-	Wsonglist * window;
+	Wsonglist * win;
 	Song * song;
 	size_t i;
 
-	if ((window = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm.active)) == NULL)
 	{
-		sterr("Current window is not a playlist, so cannot locate any songs here.", NULL);
+		sterr("Current window is not a song list, so cannot locate any songs here.", NULL);
 		return false;
 	}
 
-	song = window->cursorsong();
+	song = win->cursorsong();
 
 	if (terms.size() > 0)
-		window->songlist->search(SEARCH_MODE_FILTER, config.search_field_mask, terms);
+		win->songlist->search(SEARCH_MODE_FILTER, config.search_field_mask, terms);
 	else
-		window->songlist->search(SEARCH_MODE_NONE);
+		win->songlist->search(SEARCH_MODE_NONE);
 
-	window->set_cursor(0);
-
-	if (song && (i = window->songlist->sfind(song->fhash)) != string::npos)
-		window->set_cursor(i);
+	if (song && (i = win->songlist->sfind(song->fhash)) != string::npos)
+		win->set_cursor(i);
+	else if (win->cursor >= win->content_size())
+		win->set_cursor(win->content_size() - 1);
 
 	return true;
 }
@@ -591,9 +591,10 @@ int PMS::livesearch(string terms, bool exitsearch)
 		curses.flush();
 	}
 
-	win->set_cursor(0);
 	if (song && (i = win->songlist->sfind(song->fhash)) != string::npos)
 		win->set_cursor(i);
+	else if (win->cursor >= win->content_size())
+		win->set_cursor(win->content_size() - 1);
 
 	win->qdraw();
 	return true;
@@ -611,9 +612,10 @@ int PMS::resetsearch()
 	song = win->cursorsong();
 	win->songlist->search(SEARCH_MODE_NONE);
 
-	win->set_cursor(0);
 	if (song && (i = win->songlist->sfind(song->fhash)) != string::npos)
 		win->set_cursor(i);
+	else if (win->cursor >= win->content_size())
+		win->set_cursor(win->content_size() - 1);
 
 	win->qdraw();
 	return true;

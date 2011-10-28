@@ -56,17 +56,11 @@ void Wstatusbar::drawline(int rely)
 	switch(input.mode)
 	{
 		case INPUT_MODE_COMMAND:
-			/* Check if we are in visual selection mode, which is not an input mode */
-			if ((ws = WSONGLIST(wm.active)) != NULL && ws->songlist->visual_start != -1)
-			{
-				pstr = "-- VISUAL --";
-				curses.wipe(rect, config.colors.statusbar);
-				curses.print(rect, config.colors.statusbar, rely, 0, pstr.c_str());
-				break;
-			}
 
 			/* Draw the last console message */
+
 			gettimeofday(&cl, NULL);
+
 			for (i = logbuffer.rbegin(); i != logbuffer.rend(); i++)
 			{
 				if ((*i)->level > MSG_LEVEL_INFO)
@@ -77,6 +71,14 @@ void Wstatusbar::drawline(int rely)
 				/* Expired message - draw playstring instead */
 				if (cl.tv_sec - cl_reset.tv_sec >= (int)config.status_reset_interval)
 				{
+					/* Check if we are in visual selection mode, overriding play string */
+					if ((ws = WSONGLIST(wm.active)) != NULL && ws->songlist->visual_start != -1)
+					{
+						pstr = "-- VISUAL --";
+						curses.wipe(rect, config.colors.statusbar);
+						curses.print(rect, config.colors.statusbar, rely, 0, pstr.c_str());
+						break;
+					}
 					cl_isreset = true;
 					curses.wipe(rect, config.colors.statusbar);
 					curses.print(rect, config.colors.statusbar, rely, 0, mpd.playstring.c_str());

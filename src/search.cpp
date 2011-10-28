@@ -106,6 +106,7 @@ Searchresults * Songlist::search(vector<Song *> * source, long mask, string term
 	poscache = -1;
 	lengthcache = 0;
 
+	/* Split search string into words and search for them separately */
 	if (config.split_search_terms)
 	{
 		t = str_split(terms, " ");
@@ -116,10 +117,13 @@ Searchresults * Songlist::search(vector<Song *> * source, long mask, string term
 		t->push_back(terms);
 	}
 
+	/* Iterate through search words */
 	for (tit = t->begin(); tit != t->end(); ++tit)
 	{
+		/* Iterate through our song source */
 		for (sit = source->begin(); sit != source->end(); ++sit)
 		{
+			/* Check all search fields one by one */
 			for (fit = fieldtypes.fields.begin(); fit != fieldtypes.fields.end(); ++fit)
 			{
 				if (!(mask & (1 << (*fit)->type)))
@@ -135,6 +139,7 @@ Searchresults * Songlist::search(vector<Song *> * source, long mask, string term
 			}
 		}
 
+		/* Use this search result as next source */
 		source = &(results[resultptr]->songs);
 		++resultptr %= 2;
 		results[resultptr]->songs.clear();
@@ -155,12 +160,18 @@ Song * Songlist::search(search_mode_t mode, long mask, string terms)
 	Searchresults * results = NULL;
 	vector<Song *> * source;
 	vector<Searchresults *>::iterator sit;
+	long hashes[2] = { -1, -1 };
 
 	/* Check if we can use the current result set */
 	if (searchresult)
 		source = &(searchresult->songs);
 	else
 		source = &songs;
+
+	if (visual_start != -1 && at(visual_start))
+		hashes[0] = source->at(visual_start)->fhash;
+	if (visual_stop != -1 && at(visual_stop))
+		hashes[1] = source->at(visual_stop)->fhash;
 
 	switch(mode)
 	{
@@ -220,6 +231,15 @@ Song * Songlist::search(search_mode_t mode, long mask, string terms)
 
 	searchresult = results;
 	searchmode = mode;
+
+	/* Visual selection out of range? */
+	if (visual_start != -1)
+	{
+		visual_start = sfind(hashes[0]);
+		visual_stop = sfind(hashes[1]);
+		if (visual_start != -1 || visual_stop == -1)
+			visual_stop = searchresult->size() - 1;
+	}
 
 	if (searchresult && searchresult->size() > 0)
 		return searchresult->songs[0];
