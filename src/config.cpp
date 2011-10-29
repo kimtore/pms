@@ -58,12 +58,6 @@ void Config::load_default_config()
 	advance_cursor = true;
 	split_search_terms = true;
 	add_same_exhaustive = false;
-	random = false;
-	repeat = false;
-	consume = false;
-	single = false;
-	mute = false;
-	volume = 100;
 	sort_case = false;
 	search_case = false;
 	autoconnect = true;
@@ -84,6 +78,14 @@ Config::Config()
 {
 	/* Load internal defaults */
 	load_default_config();
+
+	/* These are part of the default config, but should not be loaded when rehashing */
+	random = false;
+	repeat = false;
+	consume = false;
+	single = false;
+	mute = false;
+	volume = 100;
 
 	/* Set up options array */
 	add_option("host", OPTION_TYPE_STRING, (void *)&host, OPT_CHANGE_NONE);
