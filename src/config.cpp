@@ -57,6 +57,7 @@ void Config::load_default_config()
 	playback_follows_window = true;
 	advance_cursor = true;
 	split_search_terms = true;
+	add_same_exhaustive = false;
 	random = false;
 	repeat = false;
 	consume = false;
@@ -100,6 +101,7 @@ Config::Config()
 	add_option("windowtitle", OPTION_TYPE_BOOL, (void *)&show_window_title, OPT_CHANGE_DRAWLIST);
 	add_option("autoadvance", OPTION_TYPE_BOOL, (void *)&autoadvance, OPT_CHANGE_NONE);
 	add_option("followwindow", OPTION_TYPE_BOOL, (void *)&playback_follows_window, OPT_CHANGE_NONE);
+	add_option("addallsame", OPTION_TYPE_BOOL, (void *)&add_same_exhaustive, OPT_CHANGE_NONE);
 	add_option("resetstatus", OPTION_TYPE_UINT, (void *)&status_reset_interval, OPT_CHANGE_NONE);
 
 	add_option("random", OPTION_TYPE_BOOL, (void *)&random, OPT_CHANGE_MPD | OPT_CHANGE_TOPBAR | OPT_CHANGE_PLAYMODE);
@@ -683,32 +685,38 @@ int Config::print_all_colors()
 	return true;
 }
 
-void Config::set_column_headers(string hdr)
+void Config::get_fields(string fields, vector<Field *> & container)
 {
 	size_t start = 0;
 	size_t pos = 0;
 	string f;
 	Field * field;
 
-	songlist_columns.clear();
-
-	while (start + 1 < hdr.size())
+	while (start + 1 < fields.size())
 	{
 		if (pos == string::npos)
-			break;
+			return;
 
-		if ((pos = hdr.find(' ', start)) != string::npos)
-			f = hdr.substr(start, pos - start);
+		if ((pos = fields.find(' ', start)) != string::npos)
+			f = fields.substr(start, pos - start);
 		else
-			f = hdr.substr(start);
+			f = fields.substr(start);
 
 		if ((field = fieldtypes.find(f)) != NULL && field->type < FIELD_COLUMN_VALUES)
-			songlist_columns.push_back(field);
+			container.push_back(field);
 		else
-			sterr("Ignoring invalid header field '%s'.", f.c_str());
+			sterr("Ignoring invalid song field '%s'.", f.c_str());
 
 		start = pos + 1;
 	}
+}
+
+void Config::set_column_headers(string hdr)
+{
+	string f;
+
+	songlist_columns.clear();
+	get_fields(hdr, songlist_columns);
 
 	if (songlist_columns.size() == 0)
 	{
@@ -720,30 +728,14 @@ void Config::set_column_headers(string hdr)
 
 void Config::set_search_fields(string fields)
 {
-	size_t start = 0;
-	size_t pos = 0;
-	string f;
-	Field * field;
+	vector<Field *> f;
+	vector<Field *>::iterator it;
 
 	search_field_mask = 0;
+	get_fields(fields, f);
 
-	while (start + 1 < fields.size())
-	{
-		if (pos == string::npos)
-			break;
-
-		if ((pos = fields.find(' ', start)) != string::npos)
-			f = fields.substr(start, pos - start);
-		else
-			f = fields.substr(start);
-
-		if ((field = fieldtypes.find(f)) != NULL && field->type < FIELD_COLUMN_VALUES)
-			search_field_mask |= (1 << field->type);
-		else
-			sterr("Ignoring invalid header field '%s'.", f.c_str());
-
-		start = pos + 1;
-	}
+	for (it = f.begin(); it != f.end(); ++it)
+		search_field_mask |= (1 << (*it)->type);
 
 	if (search_field_mask == 0)
 	{

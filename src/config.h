@@ -97,6 +97,9 @@ class Config
 
 		Config();
 
+		/* Parse a list of fields into a vector. */
+		void		get_fields(string fields, vector<Field *> & container);
+
 		/* Load internal default config. */
 		void		load_default_config();
 
@@ -187,6 +190,9 @@ class Config
 
 		/* Split search terms by space automatically? */
 		bool		split_search_terms;
+
+		/* Does the ADD_SAME command do an exhaustive search through the entire library? */
+		bool		add_same_exhaustive;
 
 		/* Advance cursor on add actions */
 		bool		advance_cursor;

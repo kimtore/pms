@@ -51,6 +51,7 @@ Commandlist::Commandlist()
 	add(CONTEXT_SONGLIST, ACT_SORT, "sort");
 	add(CONTEXT_SONGLIST, ACT_ACTIVATE_SONGLIST, "activate-list");
 	add(CONTEXT_SONGLIST, ACT_ADD, "add");
+	add(CONTEXT_SONGLIST, ACT_ADD_SAME, "add-same");
 	add(CONTEXT_SONGLIST, ACT_REMOVE, "remove");
 	add(CONTEXT_SONGLIST, ACT_VISUAL, "visual");
 	add(CONTEXT_SONGLIST, ACT_YANK, "yank");

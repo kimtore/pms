@@ -163,6 +163,9 @@ int PMS::run_event(Inputevent * ev)
 				return add(ev->text, ev->multiplier);
 			return add(ev->multiplier);
 
+		case ACT_ADD_SAME:
+			return add_same(ev->text, ev->multiplier);
+
 		case ACT_REMOVE:
 			return remove(ev->multiplier);
 
@@ -679,6 +682,134 @@ int PMS::add(string uri, int count)
 			status = false;
 	
 	return status;
+}
+
+int PMS::add_same(string fields, int count)
+{
+	vector<Field *> fieldlist;
+	vector<Field *>::const_iterator it;
+	size_t i, j;
+	int added = 0;
+	Wsonglist * win;
+	Song * source;
+	Song * song;
+	Song * lastsong;
+
+	if ((win = WSONGLIST(wm.active)) == NULL)
+	{
+		sterr("Current window is not a song list, so cannot add songs from here.", NULL);
+		return false;
+	}
+
+	if ((source = win->cursorsong()) == NULL)
+		return false;
+
+	/* Always use library to locate songs */
+	if (config.add_same_exhaustive)
+		i = 0;
+	else if (win->songlist == &mpd.library)
+		i = win->cursor;
+	else
+	{
+		if ((i = mpd.library.find(source->fhash)) == string::npos)
+		{
+			sterr("This song is not in the library.", NULL);
+			return false;
+		}
+	}
+
+	config.get_fields(fields, fieldlist);
+	if (fieldlist.empty())
+	{
+		sterr("Missing parameters. What do you want to add more of?", NULL);
+		return false;
+	}
+
+	/* Find the hash of the last song in the playlist */
+	if (mpd.playlist.size() > 0)
+		lastsong = mpd.playlist.at(mpd.playlist.size() - 1);
+
+	/* Iterate backwards and find the first song that doesn't match. */
+	if (!config.add_same_exhaustive)
+	{
+		while (--i >= 0)
+		{
+			if ((song = mpd.library.at(i)) == NULL)
+				return false;
+
+			for (it = fieldlist.begin(); it != fieldlist.end(); ++it)
+			{
+				if (song->f[(*it)->type] != source->f[(*it)->type])
+				{
+					song = NULL;
+					break;
+				}
+			}
+
+			if (song == NULL)
+				break;
+		}
+		++i;
+
+		/* Check if the last song in the playlist is part of the set */
+		for (it = fieldlist.begin(); it != fieldlist.end(); ++it)
+		{
+			if (lastsong->f[(*it)->type] != source->f[(*it)->type])
+				break;
+		}
+
+		/* Yes, it is: start from next song. */
+		if (it == fieldlist.end())
+		{
+			j = mpd.library.find(lastsong->fhash) + 1;
+
+			/* But is the next song part of the set? If not, start from the beginning. */
+			for (it = fieldlist.begin(); it != fieldlist.end(); ++it)
+			{
+				if ((song = mpd.library.at(j)) == NULL)
+				{
+					it = fieldlist.end();
+					break;
+				}
+
+				if (song->f[(*it)->type] == source->f[(*it)->type])
+					break;
+			}
+			if (it != fieldlist.end())
+				i = j;
+		}
+	}
+
+	/* Iterate through list and add all songs that match. */
+	while (i < mpd.library.size())
+	{
+		if ((song = mpd.library.at(i)) == NULL)
+			return false;
+
+		for (it = fieldlist.begin(); it != fieldlist.end(); ++it)
+		{
+			if (song->f[(*it)->type] != source->f[(*it)->type])
+			{
+				/* Exit loop if not doing exhaustive search */
+				if (!config.add_same_exhaustive)
+					i = mpd.library.size();
+				break;
+			}
+
+			if (mpd.addid(song->f[FIELD_FILE]))
+				++added;
+
+			break;
+		}
+		++i;
+	}
+
+	if (added == 0)
+		sterr("All songs have already been added.", NULL);
+	else
+		stinfo("%d songs added to playlist.", added);
+
+	return true;
 }
 
 int PMS::remove(int count)

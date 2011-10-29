@@ -85,6 +85,7 @@ class PMS
 		int		resetsearch();
 		int		add(int count);
 		int		add(string uri, int count);
+		int		add_same(string fields, int count);
 		int		remove(int count);
 		int		visual();
 		int		yank(int count);
