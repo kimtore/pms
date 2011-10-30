@@ -927,7 +927,18 @@ int PMS::put(int count)
 
 int PMS::update(string dir)
 {
-	return mpd.update(dir);
+	if (dir.empty())
+		dir = "/";
+
+	if (mpd.update(dir))
+	{
+		if (dir == "/")
+			stinfo("Updating music library...", NULL);
+		else
+			stinfo("Updating %s...", dir.c_str());
+		return true;
+	}
+	return false;
 }
 
 int PMS::set_crossfade(string crossfade)
