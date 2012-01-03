@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * Practical Music Search
  * Copyright (c) 2006-2011  Kim Tore Jensen
