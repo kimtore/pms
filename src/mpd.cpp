@@ -445,7 +445,7 @@ int MPD::get_library()
 
 	if ((unsigned long long)library.version == stats.db_update)
 	{
-		debug("Request for library update, but local copy is the same as server.", NULL);
+		debug("Local library is already synhronised with server.", NULL);
 		return MPD_GETLINE_OK;
 	}
 
@@ -470,6 +470,8 @@ int MPD::get_library()
 	/* Manual draw and sort, which may take a while */
 	stinfo("Sorting library by `%s'...", config.default_sort.c_str());
 	wm.statusbar->draw();
+	wm.console->draw();
+	wm.flush();
 	library.sort(config.default_sort);
 	debug("Library is sorted.", NULL);
 
