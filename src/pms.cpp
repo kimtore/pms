@@ -732,8 +732,9 @@ int PMS::add_same(string fields, int count)
 	/* Iterate backwards and find the first song that doesn't match. */
 	if (!config.add_same_exhaustive)
 	{
-		while (--i >= 0)
+		while (i > 0)
 		{
+			--i;
 			if ((song = mpd.library.at(i)) == NULL)
 				return false;
 
@@ -747,9 +748,11 @@ int PMS::add_same(string fields, int count)
 			}
 
 			if (song == NULL)
+			{
+				++i;
 				break;
+			}
 		}
-		++i;
 
 		/* Check if the last song in the playlist is part of the set */
 		for (it = fieldlist.begin(); it != fieldlist.end(); ++it)
