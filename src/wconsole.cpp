@@ -28,27 +28,27 @@
 using namespace std;
 
 extern vector<Logline *> logbuffer;
-extern Curses curses;
-extern Config config;
+extern Curses * curses;
+extern Config * config;
 
 void Wconsole::drawline(int rely)
 {
 	Color * c;
 	unsigned int linepos = rely + position;
 
-	if (config.show_window_title)
+	if (config->show_window_title)
 		++rely;
 
 	if (rely + rect->top > rect->bottom || linepos >= logbuffer.size())
 	{
-		curses.clearline(rect, rely, config.colors.console);
+		curses->clearline(rect, rely, config->colors.console);
 		return;
 	}
 
-	c = logbuffer[linepos]->level == MSG_LEVEL_ERR ? config.colors.error : config.colors.console;
+	c = logbuffer[linepos]->level == MSG_LEVEL_ERR ? config->colors.error : config->colors.console;
 
-	curses.clearline(rect, rely, c);
-	curses.print(rect, c, rely, 0, logbuffer[linepos]->line.c_str());
+	curses->clearline(rect, rely, c);
+	curses->print(rect, c, rely, 0, logbuffer[linepos]->line.c_str());
 }
 
 unsigned int Wconsole::content_size()

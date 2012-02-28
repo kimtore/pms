@@ -25,10 +25,10 @@
 #include "field.h"
 #include "mpd.h"
 
-extern Config config;
-extern Curses curses;
-extern Topbar topbar;
-extern MPD mpd;
+extern Config * config;
+extern Curses * curses;
+extern Topbar * topbar;
+extern MPD * mpd;
 
 void Wtopbar::drawline(int rely)
 {
@@ -44,18 +44,18 @@ void Wtopbar::drawline(int rely)
 
 	y = (unsigned int)rely;
 
-	curses.clearline(rect, y, config.colors.topbar);
+	curses->clearline(rect, y, config->colors.topbar);
 
 	/* Cycle left, center, right */
 	for (pos = 0; pos < 3; pos++)
 	{
-		if (topbar.lines[pos].size() <= y)
+		if (topbar->lines[pos].size() <= y)
 			break;
 
 		/* Find string length */
 		strl = 0;
-		for (seg = topbar.lines[pos].at(y)->segments.begin(); seg != topbar.lines[pos].at(y)->segments.end(); ++seg)
-			strl += (*seg)->compile(mpd.currentsong);
+		for (seg = topbar->lines[pos].at(y)->segments.begin(); seg != topbar->lines[pos].at(y)->segments.end(); ++seg)
+			strl += (*seg)->compile(mpd->currentsong);
 
 		/* Set draw start position */
 		if (pos == 0)
@@ -66,11 +66,11 @@ void Wtopbar::drawline(int rely)
 			x = rect->right - rect->left - strl + 1;
 
 		/* Iterate through segments and draw them */
-		for (seg = topbar.lines[pos].at(y)->segments.begin(); seg != topbar.lines[pos].at(y)->segments.end(); ++seg)
+		for (seg = topbar->lines[pos].at(y)->segments.begin(); seg != topbar->lines[pos].at(y)->segments.end(); ++seg)
 		{
 			for (chunk = (*seg)->chunks.begin(); chunk != (*seg)->chunks.end(); ++chunk)
 			{
-				curses.print(rect, (*chunk)->color, rely, x, (*chunk)->str.c_str());
+				curses->print(rect, (*chunk)->color, rely, x, (*chunk)->str.c_str());
 				x += (*chunk)->str.size();
 			}
 		}

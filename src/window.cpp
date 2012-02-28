@@ -22,9 +22,9 @@
 #include "curses.h"
 #include "config.h"
 
-extern Windowmanager wm;
-extern Curses curses;
-extern Config config;
+extern Windowmanager * wm;
+extern Curses * curses;
+extern Config * config;
 
 void Window::draw()
 {
@@ -48,7 +48,7 @@ inline void Window::qdraw()
 
 void Window::clear()
 {
-	curses.wipe(rect, config.colors.standard);
+	curses->wipe(rect, config->colors.standard);
 }
 
 unsigned int Window::height()
@@ -66,7 +66,7 @@ Wmain::Wmain()
 unsigned int Wmain::height()
 {
 	if (!rect) return 0;
-	return rect->bottom - rect->top - (config.show_window_title ? 1 : 0);
+	return rect->bottom - rect->top - (config->show_window_title ? 1 : 0);
 }
 
 void Wmain::draw()
@@ -74,14 +74,14 @@ void Wmain::draw()
 	if (!rect || !visible())
 		return;
 
-	if (config.show_window_title)
+	if (config->show_window_title)
 	{
-		curses.clearline(rect, 0, config.colors.windowtitle);
-		curses.print(rect, config.colors.windowtitle, 0, 0, title.c_str());
+		curses->clearline(rect, 0, config->colors.windowtitle);
+		curses->print(rect, config->colors.windowtitle, 0, 0, title.c_str());
 	}
 
 	Window::draw();
-	wm.readout->draw();
+	wm->readout->draw();
 }
 
 void Wmain::scroll_window(int offset)
@@ -96,12 +96,12 @@ void Wmain::scroll_window(int offset)
 	if (offset < 0)
 	{
 		offset = 0;
-		curses.bell();
+		curses->bell();
 	}
 	if (offset > limit)
 	{
 		offset = limit;
-		curses.bell();
+		curses->bell();
 	}
 	
 	if ((int)position == offset)
@@ -109,14 +109,14 @@ void Wmain::scroll_window(int offset)
 
 	position = offset;
 
-	if (config.scroll_mode == SCROLL_MODE_NORMAL)
+	if (config->scroll_mode == SCROLL_MODE_NORMAL)
 	{
 		if (cursor < position)
 			cursor = position;
 		else if (cursor > position + height())
 			cursor = position + height();
 	}
-	else if (config.scroll_mode == SCROLL_MODE_CENTERED)
+	else if (config->scroll_mode == SCROLL_MODE_CENTERED)
 	{
 		cursor = position + (height() / 2);
 	}
@@ -136,12 +136,12 @@ void Wmain::move_cursor(int offset)
 	if (offset < 0)
 	{
 		offset = 0;
-		curses.bell();
+		curses->bell();
 	}
 	else if (offset > (int)content_size() - 1)
 	{
 		offset = content_size() - 1;
-		curses.bell();
+		curses->bell();
 	}
 
 	if ((int)cursor == offset)
@@ -149,14 +149,14 @@ void Wmain::move_cursor(int offset)
 
 	cursor = offset;
 
-	if (config.scroll_mode == SCROLL_MODE_NORMAL)
+	if (config->scroll_mode == SCROLL_MODE_NORMAL)
 	{
 		if (cursor < position)
 			set_position(cursor);
 		else if (cursor > position + height())
 			set_position(cursor - height());
 	}
-	else if (config.scroll_mode == SCROLL_MODE_CENTERED)
+	else if (config->scroll_mode == SCROLL_MODE_CENTERED)
 	{
 		offset = height() / 2;
 		if ((int)cursor < offset)
@@ -182,5 +182,5 @@ void Wmain::set_cursor(unsigned int absolute)
 
 bool Wmain::visible()
 {
-	return wm.active == this;
+	return wm->active == this;
 }

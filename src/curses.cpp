@@ -28,7 +28,7 @@
 
 using namespace std;
 
-extern Config config;
+extern Config * config;
 
 Curses::Curses()
 {
@@ -51,7 +51,6 @@ Curses::Curses()
 		hascolors = true;
 	}
 
-	detect_dimensions();
 	clear();
 	refresh();
 
@@ -77,7 +76,7 @@ void Curses::detect_dimensions()
 	self.bottom = LINES - 1;
 
 	topbar.top = 0;
-	topbar.bottom = topbar.top + config.topbar_height - 1;
+	topbar.bottom = topbar.top + config->topbar_height - 1;
 	if (topbar.bottom < 0)
 		topbar.bottom = 0;
 	topbar.right = self.right;
@@ -143,10 +142,10 @@ void Curses::wipe(Rect * rect, Color * c)
 
 void Curses::bell()
 {
-	if (!config.use_bell)
+	if (!config->use_bell)
 		return;
 	
-	if (config.visual_bell)
+	if (config->visual_bell)
 	{
 		if (flash() == ERR)
 			beep();

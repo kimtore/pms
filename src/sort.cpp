@@ -27,8 +27,8 @@
 #include <algorithm>
 using namespace std;
 
-extern Fieldtypes fieldtypes;
-extern Config config;
+extern Fieldtypes * fieldtypes;
+extern Config * config;
 
 static Field * sort_field;
 static bool sort_numeric_compare;
@@ -41,7 +41,7 @@ static inline bool sort_cmp(Song * a, Song * b)
 	if (sort_numeric_compare)
 		return (atoi(a->f[sort_field->type].c_str()) < atoi(b->f[sort_field->type].c_str()));
 
-	if (config.sort_case)
+	if (config->sort_case)
 		return (a->f[sort_field->type] < b->f[sort_field->type]);
 
 	sa = a->f[sort_field->type];
@@ -68,7 +68,7 @@ void Songlist::sort(string sortstr)
 		else
 			s = sortstr.substr(start);
 
-		if ((sort_field = fieldtypes.find(s)) != NULL)
+		if ((sort_field = fieldtypes->find(s)) != NULL)
 		{
 			switch(sort_field->type)
 			{

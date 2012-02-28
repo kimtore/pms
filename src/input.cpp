@@ -26,10 +26,10 @@
 #include "console.h"
 #include <cstring>
 
-Keybindings keybindings;
-Commandlist commandlist;
-extern Windowmanager wm;
-extern Config config;
+Keybindings * keybindings;
+Commandlist * commandlist;
+extern Windowmanager * wm;
+extern Config * config;
 
 Inputevent::Inputevent()
 {
@@ -118,7 +118,7 @@ Inputevent * Input::next()
 
 			buffer.push_back(chbuf);
 			strbuf.push_back(chbuf);
-			m = keybindings.find(wm.context, &buffer, &ev.action, &strbuf);
+			m = keybindings->find(wm->context, &buffer, &ev.action, &strbuf);
 
 			if (m == KEYBIND_FIND_EXACT)
 				ev.result = INPUT_RESULT_RUN;
@@ -143,7 +143,7 @@ Inputevent * Input::next()
 
 	if (ev.result != INPUT_RESULT_NOINPUT)
 	{
-		ev.context = wm.context;
+		ev.context = wm->context;
 		ev.text = strbuf;
 		ev.multiplier = multiplier > 0 ? multiplier : 1;
 
@@ -285,7 +285,7 @@ void Input::handle_text_input()
 					}
 					else
 					{
-						config.grep_opt(strbuf.substr(fpos), &option_tab_results, &option_tab_prefix);
+						config->grep_opt(strbuf.substr(fpos), &option_tab_results, &option_tab_prefix);
 						if (option_tab_results.size() > 0)
 						{
 							is_option_tab_completing = true;
@@ -303,9 +303,9 @@ void Input::handle_text_input()
 				/* Equal sign found, print option if none given. */
 				else if (pos + 1 == strbuf.size())
 				{
-					opt = config.get_opt_ptr(strbuf.substr(fpos, pos - fpos));
+					opt = config->get_opt_ptr(strbuf.substr(fpos, pos - fpos));
 					if (opt && opt->type != OPTION_TYPE_BOOL)
-						strbuf = strbuf + config.get_opt_str(opt);
+						strbuf = strbuf + config->get_opt_str(opt);
 				}
 
 			}
@@ -320,7 +320,7 @@ void Input::handle_text_input()
 				}
 				else
 				{
-					tab_results = commandlist.grep(wm.context, strbuf);
+					tab_results = commandlist->grep(wm->context, strbuf);
 					if (tab_results->size() > 0)
 					{
 						is_tab_completing = true;

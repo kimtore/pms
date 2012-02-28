@@ -29,37 +29,34 @@
 #include <algorithm>
 using namespace std;
 
-extern Curses curses;
-extern MPD mpd;
-extern Config config;
-extern Input input;
+extern Curses * curses;
+extern MPD * mpd;
+extern Config * config;
+extern Input * input;
 
 Windowmanager::Windowmanager()
 {
 	/* Setup static windows that are not in the window list */
 	topbar = new Wtopbar;
-	topbar->set_rect(&curses.topbar);
+	topbar->set_rect(&curses->topbar);
 	statusbar = new Wstatusbar;
-	statusbar->set_rect(&curses.statusbar);
+	statusbar->set_rect(&curses->statusbar);
 	readout = new Wreadout;
-	readout->set_rect(&curses.readout);
+	readout->set_rect(&curses->readout);
 
 	/* Setup static windows that appear in the window list */
 	console = new Wconsole;
-	console->set_rect(&curses.main);
+	console->set_rect(&curses->main);
 	console->title = "Console";
 	playlist = new Wsonglist;
-	playlist->set_rect(&curses.main);
+	playlist->set_rect(&curses->main);
 	playlist->title = "Playlist";
 	library = new Wsonglist;
-	library->set_rect(&curses.main);
+	library->set_rect(&curses->main);
 	library->title = "Library";
 	windows.push_back(WMAIN(console));
 	windows.push_back(WMAIN(playlist));
 	windows.push_back(WMAIN(library));
-
-	/* Activate playlist window */
-	activate(WMAIN(console));
 }
 
 void Windowmanager::draw()
@@ -74,7 +71,7 @@ void Windowmanager::draw()
 
 void Windowmanager::qdraw()
 {
-	if (input.mode != INPUT_MODE_COMMAND && !statusbar->need_draw &&
+	if (input->mode != INPUT_MODE_COMMAND && !statusbar->need_draw &&
 		(topbar->need_draw || active->need_draw || readout->need_draw))
 	{
 		statusbar->qdraw();
@@ -93,7 +90,7 @@ void Windowmanager::qdraw()
 
 void Windowmanager::flush()
 {
-	curses.flush();
+	curses->flush();
 }
 
 bool Windowmanager::activate(Wmain * nactive)
@@ -105,8 +102,8 @@ bool Windowmanager::activate(Wmain * nactive)
 	{
 		if (windows[i] == nactive)
 		{
-			if ((ws = WSONGLIST(nactive)) != NULL && config.playback_follows_window)
-				mpd.activate_songlist(ws->songlist);
+			if ((ws = WSONGLIST(nactive)) != NULL && config->playback_follows_window)
+				mpd->activate_songlist(ws->songlist);
 
 			if (nactive != active)
 				last_active = active;
@@ -173,12 +170,12 @@ void Windowmanager::cycle(int offset)
 	active = windows[active_index];
 	context = active->context;
 
-	if ((ws = WSONGLIST(active)) != NULL && config.playback_follows_window)
-		mpd.activate_songlist(ws->songlist);
+	if ((ws = WSONGLIST(active)) != NULL && config->playback_follows_window)
+		mpd->activate_songlist(ws->songlist);
 
 	active->draw();
 	readout->draw();
-	curses.flush();
+	curses->flush();
 }
 
 void Windowmanager::update_column_length()

@@ -30,8 +30,8 @@
 using namespace std;
 
 vector<Logline *> logbuffer;
-extern Curses curses;
-extern Windowmanager wm;
+extern Curses * curses;
+extern Windowmanager * wm;
 
 Logline::Logline(int lvl, const char * ln)
 {
@@ -52,20 +52,20 @@ void console_log(int level, const char * format, ...)
 	logbuffer.push_back(new Logline(level, buffer));
 
 	/* Make it possible to log stuff before window system is brought up */
-	if (wm.console == NULL)
+	if (wm->console == NULL)
 		return;
 
-	if (wm.console->position == wm.console->content_size() - wm.console->height() - 2)
-		wm.console->scroll_window(1);
-	else if (wm.console->visible())
+	if (wm->console->position == wm->console->content_size() - wm->console->height() - 2)
+		wm->console->scroll_window(1);
+	else if (wm->console->visible())
 	{
-		if (wm.console->content_size() < wm.console->height())
-			wm.console->qdraw();
+		if (wm->console->content_size() < wm->console->height())
+			wm->console->qdraw();
 		else
-			wm.readout->qdraw();
+			wm->readout->qdraw();
 
 	}
 
 	if (level <= MSG_LEVEL_INFO)
-		wm.statusbar->qdraw();
+		wm->statusbar->qdraw();
 }

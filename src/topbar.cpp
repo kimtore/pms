@@ -28,9 +28,9 @@
 #include "mpd.h"
 using namespace std;
 
-extern Fieldtypes fieldtypes;
-extern Config config;
-extern MPD mpd;
+extern Fieldtypes * fieldtypes;
+extern Config * config;
+extern MPD * mpd;
 
 Topbarchunk::Topbarchunk(string s, Color * c)
 {
@@ -70,11 +70,11 @@ unsigned int Topbarsegment::compile(Song * song)
 		return 0;
 
 	/* What is our current condition? */
-	if (mpd.status.state == MPD_STATE_PLAY)
+	if (mpd->status.state == MPD_STATE_PLAY)
 		current_condition |= CONDITION_PLAYING;
-	if (mpd.currentsong)
+	if (mpd->currentsong)
 		current_condition |= CONDITION_SONG;
-	if (mpd.is_connected())
+	if (mpd->is_connected())
 		current_condition |= CONDITION_CONNECTED;
 
 	/* Evaluate wanted conditions against current conditions */
@@ -90,8 +90,8 @@ unsigned int Topbarsegment::compile(Song * song)
 		if ((e = format.find('$', s)) != string::npos)
 		{
 			/* our string */
-			chunks.push_back(new Topbarchunk(format.substr(s, e - s), config.colors.topbar));
-			chunks.push_back(new Topbarchunk((*field)->format(song), config.colors.field[(*field)->type]));
+			chunks.push_back(new Topbarchunk(format.substr(s, e - s), config->colors.topbar));
+			chunks.push_back(new Topbarchunk((*field)->format(song), config->colors.field[(*field)->type]));
 			++field;
 			s = e + 1;
 			continue;
@@ -100,7 +100,7 @@ unsigned int Topbarsegment::compile(Song * song)
 	while(field != fields.end());
 
 	if (s != string::npos)
-		chunks.push_back(new Topbarchunk(format.substr(s), config.colors.topbar));
+		chunks.push_back(new Topbarchunk(format.substr(s), config->colors.topbar));
 	
 	for (i = chunks.begin(); i != chunks.end(); ++i)
 		strl += (*i)->str.size();
@@ -163,7 +163,7 @@ int Topbar::set(string format)
 			if (*it < 'a' || *it > 'z')
 			{
 				/* End of variable, store this field into segment */
-				if ((field = fieldtypes.find(varname)) != NULL)
+				if ((field = fieldtypes->find(varname)) != NULL)
 				{
 					--it;
 					segment->fields.push_back(field);

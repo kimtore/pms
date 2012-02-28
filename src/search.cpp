@@ -26,8 +26,8 @@
 #include <stdlib.h>
 using namespace std;
 
-extern Fieldtypes fieldtypes;
-extern Config config;
+extern Fieldtypes * fieldtypes;
+extern Config * config;
 
 Searchresults::Searchresults()
 {
@@ -107,7 +107,7 @@ Searchresults * Songlist::search(vector<Song *> * source, long mask, string term
 	lengthcache = 0;
 
 	/* Split search string into words and search for them separately */
-	if (config.split_search_terms)
+	if (config->split_search_terms)
 	{
 		t = str_split(terms, " ");
 	}
@@ -124,12 +124,12 @@ Searchresults * Songlist::search(vector<Song *> * source, long mask, string term
 		for (sit = source->begin(); sit != source->end(); ++sit)
 		{
 			/* Check all search fields one by one */
-			for (fit = fieldtypes.fields.begin(); fit != fieldtypes.fields.end(); ++fit)
+			for (fit = fieldtypes->fields.begin(); fit != fieldtypes->fields.end(); ++fit)
 			{
 				if (!(mask & (1 << (*fit)->type)))
 					continue;
 
-				if (!strmatch((*sit)->f[(*fit)->type], *tit, !config.search_case))
+				if (!strmatch((*sit)->f[(*fit)->type], *tit, !config->search_case))
 					continue;
 
 				results[resultptr]->songs.push_back(*sit);

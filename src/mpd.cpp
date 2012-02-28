@@ -39,19 +39,19 @@
 
 using namespace std;
 
-extern Config config;
-extern Windowmanager wm;
-extern Fieldtypes fieldtypes;
-extern Curses curses;
-extern MPD mpd;
+extern Config * config;
+extern Windowmanager * wm;
+extern Fieldtypes * fieldtypes;
+extern Curses * curses;
+extern MPD * mpd;
 
 void update_library_statusbar()
 {
 	unsigned int percent;
-	percent = round(((float)mpd.library.size() / mpd.stats.songs) * 100.00);
-	curses.wipe(&curses.statusbar, config.colors.statusbar);
-	curses.print(&curses.statusbar, config.colors.statusbar, 0, 0, "Retrieving library: %d%%", percent);
-	curses.flush();
+	percent = round(((float)mpd->library.size() / mpd->stats.songs) * 100.00);
+	curses->wipe(&(curses->statusbar), config->colors.statusbar);
+	curses->print(&(curses->statusbar), config->colors.statusbar, 0, 0, "Retrieving library: %d%%", percent);
+	curses->flush();
 }
 
 MPD::MPD()
@@ -115,7 +115,7 @@ bool MPD::trigerr(int nerrno, const char * format, ...)
 	errno = nerrno;
 
 	sterr("%s", buf);
-	wm.statusbar->draw();
+	wm->statusbar->draw();
 
 	return false;
 }
@@ -134,7 +134,7 @@ bool MPD::mpd_connect(string nhost, string nport)
 		mpd_disconnect();
 
 	stinfo("Connecting to server '%s' port '%s'...", host.c_str(), port.c_str());
-	wm.statusbar->draw();
+	wm->statusbar->draw();
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
@@ -179,7 +179,7 @@ bool MPD::mpd_connect(string nhost, string nport)
 		debug("Either upgrade your MPD server to version 0.15.0 or newer, or use an older version of PMS (0.42).", NULL);
 		mpd_disconnect();
 		debug("Autoconnect has been disabled.", NULL);
-		config.autoconnect = false;
+		config->autoconnect = false;
 	}
 	is_idle = false;
 	currentsong = NULL;
@@ -378,7 +378,7 @@ int MPD::recv_songs_to_list(Songlist * slist, void (*func) ())
 		if (!split_pair(&buf, &param, &value))
 			continue;
 
-		field = fieldtypes.find_mpd(param);
+		field = fieldtypes->find_mpd(param);
 		if (field == NULL)
 		{
 			//debug("Unhandled song metadata field '%s' in response from MPD", param.c_str());
@@ -430,7 +430,7 @@ int MPD::get_playlist()
 
 	playlist.version = status.playlist;
 	update_currentsong();
-	wm.playlist->update_column_length();
+	wm->playlist->update_column_length();
 
 	debug("Playlist has been updated to version %d", playlist.version);
 
@@ -468,15 +468,15 @@ int MPD::get_library()
 	}
 
 	/* Manual draw and sort, which may take a while */
-	stinfo("Sorting library by `%s'...", config.default_sort.c_str());
-	wm.statusbar->draw();
-	wm.console->draw();
-	wm.flush();
-	library.sort(config.default_sort);
+	stinfo("Sorting library by `%s'...", config->default_sort.c_str());
+	wm->statusbar->draw();
+	wm->console->draw();
+	wm->flush();
+	library.sort(config->default_sort);
 	debug("Library is sorted.", NULL);
 
-	wm.library->update_column_length();
-	wm.library->qdraw();
+	wm->library->update_column_length();
+	wm->library->qdraw();
 
 	return s;
 }
@@ -614,17 +614,17 @@ void MPD::run_clock()
 	{
 		status.elapsed += (tm.tv_sec - last_clock.tv_sec);
 		status.elapsed += (tm.tv_usec - last_clock.tv_usec) / 1000000.000000;
-		wm.topbar->qdraw();
+		wm->topbar->qdraw();
 	}
 
 	memcpy(&last_clock, &tm, sizeof last_clock);
 
-	if (config.autoadvance && autoadvance_playlist < playlist.version && status.length - status.elapsed < (int)config.add_next_interval)
+	if (config->autoadvance && autoadvance_playlist < playlist.version && status.length - status.elapsed < (int)(config->add_next_interval))
 	{
 		if ((song = next_auto_song_in_line()) != NULL)
 		{
 			if ((addid(song->f[FIELD_FILE])) != -1)
-				wm.statusbar->qdraw();
+				wm->statusbar->qdraw();
 			autoadvance_playlist = playlist.version;
 		}
 	}
@@ -740,8 +740,8 @@ int MPD::poll()
 
 Song * MPD::update_currentsong()
 {
-	wm.topbar->qdraw();
-	wm.active->qdraw();
+	wm->topbar->qdraw();
+	wm->active->qdraw();
 	return (currentsong = (int)playlist.songs.size() > status.song ? playlist.songs[status.song] : NULL);
 }
 
@@ -750,40 +750,40 @@ int MPD::apply_opts()
 	bool r;
 
 	/* FIXME: maybe these should be sanitized before being allowed to set them? */
-	if (config.volume > 100)
-		config.volume = 100;
-	else if (config.volume < 0)
-		config.volume = 0;
+	if (config->volume > 100)
+		config->volume = 100;
+	else if (config->volume < 0)
+		config->volume = 0;
 
-	if (mpd.status.volume != (config.mute ? 0 : config.volume))
-		set_volume(config.mute ? 0 : config.volume);
-	if (mpd.status.single != config.single)
-		set_single(config.single);
-	if (mpd.status.repeat != config.repeat)
-		set_repeat(config.repeat);
-	if (mpd.status.consume != config.consume)
-		set_consume(config.consume);
+	if (mpd->status.volume != (config->mute ? 0 : config->volume))
+		set_volume(config->mute ? 0 : config->volume);
+	if (mpd->status.single != config->single)
+		set_single(config->single);
+	if (mpd->status.repeat != config->repeat)
+		set_repeat(config->repeat);
+	if (mpd->status.consume != config->consume)
+		set_consume(config->consume);
 
 	/* Shuffle/random is a special case, since PMS has it's own random functions. */
-	if (config.random)
+	if (config->random)
 	{
-		if ((r = active_songlist == &playlist) != mpd.status.random)
+		if ((r = active_songlist == &playlist) != mpd->status.random)
 			set_random(r);
 	}
-	else if (mpd.status.random)
-		set_random(config.random);
+	else if (mpd->status.random)
+		set_random(config->random);
 
 	return true;
 }
 
 int MPD::read_opts()
 {
-	config.volume = mpd.status.volume;
-	config.single = mpd.status.single;
-	config.repeat = mpd.status.repeat;
-	config.consume = mpd.status.consume;
+	config->volume = mpd->status.volume;
+	config->single = mpd->status.single;
+	config->repeat = mpd->status.repeat;
+	config->consume = mpd->status.consume;
 	if (active_songlist == &playlist)
-		config.random = mpd.status.random;
+		config->random = mpd->status.random;
 
 	return true;
 }
@@ -796,7 +796,7 @@ int MPD::activate_songlist(Songlist * list)
 	active_songlist = list;
 	apply_opts();
 	update_playstring();
-	wm.statusbar->qdraw();
+	wm->statusbar->qdraw();
 
 	return true;
 }
@@ -895,14 +895,14 @@ Song * MPD::next_song_in_line(int steps)
 
 	if (i == -1)
 	{
-		if (!config.random && currentsong)
+		if (!config->random && currentsong)
 		{
 			if (active_songlist == &playlist)
 				i = playlist.spos(currentsong->pos);
 			else
 				i = active_songlist->sfind(currentsong->fhash);
 		}
-		else if (config.random)
+		else if (config->random)
 		{
 			return active_songlist->at(active_songlist->randpos());
 		}
@@ -984,7 +984,7 @@ void MPD::update_playstring()
 		return;
 	}
 
-	list = config.autoadvance && !status.random ? active_songlist : &playlist;
+	list = config->autoadvance && !status.random ? active_songlist : &playlist;
 
 	if (status.consume)
 		playstring = "Consuming ";
@@ -1026,7 +1026,7 @@ void MPD::update_playstring()
 			playstring += "playlist, then playing ";
 	}
 
-	if (config.random)
+	if (config->random)
 		playstring += "random ";
 		
 	playstring += "songs from " + list->title;

@@ -32,11 +32,11 @@
 using namespace std;
 
 extern vector<Logline *> logbuffer;
-extern Curses curses;
-extern Windowmanager wm;
-extern Input input;
-extern Config config;
-extern MPD mpd;
+extern Curses * curses;
+extern Windowmanager * wm;
+extern Input * input;
+extern Config * config;
+extern MPD * mpd;
 
 Wstatusbar::Wstatusbar()
 {
@@ -53,7 +53,7 @@ void Wstatusbar::drawline(int rely)
 	vector<Logline *>::reverse_iterator i;
 	Color * c;
 
-	switch(input.mode)
+	switch(input->mode)
 	{
 		case INPUT_MODE_COMMAND:
 
@@ -69,27 +69,27 @@ void Wstatusbar::drawline(int rely)
 				memcpy(&cl_reset, &((*i)->tm), sizeof cl_reset);
 
 				/* Expired message - draw playstring instead */
-				if (cl.tv_sec - cl_reset.tv_sec >= (int)config.status_reset_interval)
+				if (cl.tv_sec - cl_reset.tv_sec >= (int)config->status_reset_interval)
 				{
 					/* Check if we are in visual selection mode, overriding play string */
-					if ((ws = WSONGLIST(wm.active)) != NULL && ws->songlist->visual_start != -1)
+					if ((ws = WSONGLIST(wm->active)) != NULL && ws->songlist->visual_start != -1)
 					{
 						pstr = "-- VISUAL --";
-						curses.wipe(rect, config.colors.statusbar);
-						curses.print(rect, config.colors.statusbar, rely, 0, pstr.c_str());
+						curses->wipe(rect, config->colors.statusbar);
+						curses->print(rect, config->colors.statusbar, rely, 0, pstr.c_str());
 						break;
 					}
 					cl_isreset = true;
-					curses.wipe(rect, config.colors.statusbar);
-					curses.print(rect, config.colors.statusbar, rely, 0, mpd.playstring.c_str());
+					curses->wipe(rect, config->colors.statusbar);
+					curses->print(rect, config->colors.statusbar, rely, 0, mpd->playstring.c_str());
 					break;
 				}
 
 				/* Draw last statusbar message */
 				cl_isreset = false;
-				c = (*i)->level == MSG_LEVEL_ERR ? config.colors.error : config.colors.statusbar;
-				curses.wipe(rect, c);
-				curses.print(rect, c, rely, 0, (*i)->line.c_str());
+				c = (*i)->level == MSG_LEVEL_ERR ? config->colors.error : config->colors.statusbar;
+				curses->wipe(rect, c);
+				curses->print(rect, c, rely, 0, (*i)->line.c_str());
 				break;
 			}
 			break;
@@ -97,22 +97,22 @@ void Wstatusbar::drawline(int rely)
 		case INPUT_MODE_INPUT:
 		case INPUT_MODE_SEARCH:
 		case INPUT_MODE_LIVESEARCH:
-			if (input.strbuf.size() >= width)
-				vscroll = input.strbuf.size() - width;
-			if (vscroll > input.cursorpos)
-				vscroll = input.cursorpos;
-			curses.wipe(rect, config.colors.standard);
+			if (input->strbuf.size() >= width)
+				vscroll = input->strbuf.size() - width;
+			if (vscroll > input->cursorpos)
+				vscroll = input->cursorpos;
+			curses->wipe(rect, config->colors.standard);
 
-			if (input.mode == INPUT_MODE_INPUT)
+			if (input->mode == INPUT_MODE_INPUT)
 				pstr = ":";
-			else if (input.mode == INPUT_MODE_SEARCH)
+			else if (input->mode == INPUT_MODE_SEARCH)
 				pstr = "Search: ";
-			else if (input.mode == INPUT_MODE_LIVESEARCH)
+			else if (input->mode == INPUT_MODE_LIVESEARCH)
 				pstr = "/";
 
-			curses.print(rect, config.colors.statusbar, rely, 0, pstr.c_str());
-			curses.print(rect, config.colors.statusbar, rely, pstr.size(), input.strbuf.substr(vscroll).c_str());
-			curses.setcursor(rect, rely, input.cursorpos - vscroll + pstr.size());
+			curses->print(rect, config->colors.statusbar, rely, 0, pstr.c_str());
+			curses->print(rect, config->colors.statusbar, rely, pstr.size(), input->strbuf.substr(vscroll).c_str());
+			curses->setcursor(rect, rely, input->cursorpos - vscroll + pstr.size());
 			break;
 	}
 }
@@ -122,7 +122,7 @@ void Wreadout::drawline(int rely)
 	char		buf[4];
 	Wmain *		win;
 
-	win = WMAIN(wm.active);
+	win = WMAIN(wm->active);
 
 	if (win->content_size() <= win->height())
 		strcpy(buf, "All");
@@ -133,5 +133,5 @@ void Wreadout::drawline(int rely)
 	else
 		sprintf(buf, "%2d%%%%", 100 * win->position / (win->content_size() - win->height() - 1));
 
-	curses.print(rect, config.colors.readout, 0, 0, buf);
+	curses->print(rect, config->colors.readout, 0, 0, buf);
 }

@@ -32,13 +32,15 @@
 #include <cstring>
 #include <sys/time.h>
 
-Fieldtypes	fieldtypes;
-Curses		curses;
-Config		config;
-MPD		mpd;
-Windowmanager	wm;
-Input		input;
-PMS		pms;
+Fieldtypes *	fieldtypes;
+Curses *	curses;
+Config *	config;
+MPD *		mpd;
+Windowmanager *	wm;
+Input *		input;
+PMS *		pms;
+extern Keybindings * keybindings;
+extern Commandlist * commandlist;
 
 int main(int argc, char *argv[])
 {
@@ -46,63 +48,79 @@ int main(int argc, char *argv[])
 	struct timeval conn;
 	bool initialized = false;
 
-	if (!curses.ready)
+	curses = new Curses();
+	if (!curses->ready)
 	{
 		perror("Fatal: failed to initialise ncurses.\n");
 		return 1;
 	}
 
+	fieldtypes = new Fieldtypes();
+	keybindings = new Keybindings();
+	commandlist = new Commandlist();
+	config = new Config();
+	mpd = new MPD();
+	input = new Input();
+	wm = new Windowmanager();
+	wm->activate(WMAIN(wm->console));
+
+	pms = new PMS();
+	config->source_default_config();
+
+	curses->detect_dimensions();
+
 	stinfo("%s %d.%d", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
-	config.source_default_config();
 
 	memset(&conn, 0, sizeof conn);
-	curses.detect_dimensions();
-	wm.playlist->songlist = &mpd.playlist;
-	wm.library->songlist = &mpd.library;
-	wm.draw();
+	curses->detect_dimensions();
+	wm->playlist->songlist = &(mpd->playlist);
+	wm->library->songlist = &(mpd->library);
+	wm->draw();
 
-	while(!config.quit)
+	while(!config->quit)
 	{
 		gettimeofday(&cl, NULL);
-		if (!mpd.is_connected() && config.autoconnect)
+		if (!mpd->is_connected() && config->autoconnect)
 		{
-			if (cl.tv_sec - conn.tv_sec >= (int)config.reconnect_delay)
+			if (cl.tv_sec - conn.tv_sec >= (int)(config->reconnect_delay))
 			{
-				wm.draw();
-				if (mpd.mpd_connect(config.host, config.port))
+				wm->draw();
+				if (mpd->mpd_connect(config->host, config->port))
 				{
-					mpd.set_password(config.password);
-					mpd.get_status();
-					mpd.get_playlist();
-					wm.qdraw();
-					mpd.get_library();
-					mpd.read_opts();
-					mpd.update_playstring();
+					mpd->set_password(config->password);
+					mpd->get_status();
+					mpd->get_playlist();
+					wm->qdraw();
+					mpd->get_library();
+					mpd->read_opts();
+					mpd->update_playstring();
 					if (!initialized)
 					{
 						initialized = true;
-						wm.activate(WMAIN(wm.playlist));
-						if (mpd.currentsong)
-							wm.active->set_cursor(mpd.currentsong->pos);
+						wm->activate(WMAIN(wm->playlist));
+						if (mpd->currentsong)
+							wm->active->set_cursor(mpd->currentsong->pos);
 						stinfo("Ready.", NULL);
 					}
-					wm.qdraw();
+					wm->qdraw();
 				}
 				gettimeofday(&conn, NULL);
 			}
 		}
 
 		/* Check if statusbar needs a reset draw */
-		memcpy(&(wm.statusbar->cl), &cl, sizeof cl);
-		if (wm.statusbar->cl.tv_sec - wm.statusbar->cl_reset.tv_sec >= (int)config.status_reset_interval)
-			wm.statusbar->qdraw();
+		memcpy(&(wm->statusbar->cl), &cl, sizeof cl);
+		if (wm->statusbar->cl.tv_sec - wm->statusbar->cl_reset.tv_sec >= (int)(config->status_reset_interval))
+			wm->statusbar->qdraw();
 
 		/* Get updates from MPD, run clock, do updates */
-		wm.qdraw();
-		mpd.poll();
-		wm.qdraw();
+		wm->qdraw();
+		mpd->poll();
+		wm->qdraw();
 
 		/* Check for any input events and run them */
-		pms.run_event(input.next());
+		pms->run_event(input->next());
 	}
+
+	delete curses;
 }

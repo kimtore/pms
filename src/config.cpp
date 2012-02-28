@@ -34,11 +34,11 @@
 
 using namespace std;
 
-extern Fieldtypes fieldtypes;
-extern Windowmanager wm;
-extern PMS pms;
-extern Keybindings keybindings;
-Topbar topbar;
+extern Fieldtypes * fieldtypes;
+extern Windowmanager * wm;
+extern PMS * pms;
+extern Keybindings * keybindings;
+Topbar * topbar;
 
 void Config::load_default_config()
 {
@@ -65,18 +65,19 @@ void Config::load_default_config()
 	set_column_headers("artist track title album year length");
 	set_search_fields("artist title album");
 	set_scroll_mode("normal");
-	topbar.set("{PMS $if(connected){$if(song){$volume $state [$modes] $elapsed / $remaining}}$else{disconnected}}"
+	topbar->set("{PMS $if(connected){$if(song){$volume $state [$modes] $elapsed / $remaining}}$else{disconnected}}"
 			"{$if(song){$artist / $title / $album / $year}}"
 			"{$if(connected){Q:$queuesize/$queuelength S:$listsize/$listlength}}"
 			"{$progressbar}{}{}");
 
 	colors.load_defaults();
-	keybindings.load_defaults();
+	keybindings->load_defaults();
 }
 
 Config::Config()
 {
 	/* Load internal defaults */
+	topbar = new Topbar();
 	load_default_config();
 
 	/* These are part of the default config, but should not be loaded when rehashing */
@@ -230,7 +231,7 @@ bool Config::source(string filename, bool suppress_errmsg)
 	while (fd.good())
 	{
 		fd.getline(line, sizeof line);
-		pms.run_cmd(line, 1, true);
+		pms->run_cmd(line, 1, true);
 	}
 
 	fd.close();
@@ -451,14 +452,14 @@ string Config::get_opt_str(option_t * opt)
 			break;
 
 		case OPTION_TYPE_SEARCHFIELDS:
-			for (field_it = fieldtypes.fields.begin(); field_it != fieldtypes.fields.end(); ++field_it)
+			for (field_it = fieldtypes->fields.begin(); field_it != fieldtypes->fields.end(); ++field_it)
 				if (search_field_mask & (1 << (*field_it)->type))
 					str = str + (*field_it)->str + " ";
 			str = str.substr(0, str.size() - 1);
 			break;
 
 		case OPTION_TYPE_TOPBAR:
-			str = topbar.cached_format;
+			str = topbar->cached_format;
 			break;
 
 		default:
@@ -567,7 +568,7 @@ int Config::set_opt_str(option_t * opt, string value)
 
 		case OPTION_TYPE_COLUMNHEADERS:
 			set_column_headers(value);
-			wm.update_column_length();
+			wm->update_column_length();
 			return true;
 
 		case OPTION_TYPE_SEARCHFIELDS:
@@ -584,10 +585,10 @@ int Config::set_opt_str(option_t * opt, string value)
 			return true;
 
 		case OPTION_TYPE_TOPBAR:
-			topbar.set(value);
-			if (topbar.lines[0].size() > topbar_height)
+			topbar->set(value);
+			if (topbar->lines[0].size() > topbar_height)
 			{
-				topbar_height = topbar.lines[0].size();
+				topbar_height = topbar->lines[0].size();
 				print_option(get_opt_ptr("topbarlines"));
 			}
 			return true;
@@ -704,7 +705,7 @@ void Config::get_fields(string fields, vector<Field *> & container)
 		else
 			f = fields.substr(start);
 
-		if ((field = fieldtypes.find(f)) != NULL && field->type < FIELD_COLUMN_VALUES)
+		if ((field = fieldtypes->find(f)) != NULL && field->type < FIELD_COLUMN_VALUES)
 			container.push_back(field);
 		else
 			sterr("Ignoring invalid song field '%s'.", f.c_str());
@@ -724,7 +725,7 @@ void Config::set_column_headers(string hdr)
 	{
 		f = "title";
 		sterr("Warning: at least one column type needs to be specified, falling back to `%s'.", f.c_str());
-		songlist_columns.push_back(fieldtypes.find(f));
+		songlist_columns.push_back(fieldtypes->find(f));
 	}
 }
 

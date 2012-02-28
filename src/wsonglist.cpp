@@ -30,10 +30,10 @@
 
 using namespace std;
 
-extern Curses curses;
-extern Config config;
-extern MPD mpd;
-extern Windowmanager wm;
+extern Curses * curses;
+extern Config * config;
+extern MPD * mpd;
+extern Windowmanager * wm;
 
 void Wsonglist::draw()
 {
@@ -43,28 +43,28 @@ void Wsonglist::draw()
 	if (!rect || !visible())
 		return;
 
-	if (config.show_column_headers)
+	if (config->show_column_headers)
 	{
-		i = config.show_window_title ? 1 : 0;
-		curses.clearline(rect, i, config.colors.columnheader);
+		i = config->show_window_title ? 1 : 0;
+		curses->clearline(rect, i, config->colors.columnheader);
 		for (it = 0; it < column_len.size(); ++it)
 		{
-			curses.print(rect, config.colors.columnheader, i, x, config.songlist_columns[it]->title.c_str());
+			curses->print(rect, config->colors.columnheader, i, x, config->songlist_columns[it]->title.c_str());
 			x += column_len[it] + 1;
 		}
 	}
 
-	if (config.show_window_title)
+	if (config->show_window_title)
 	{
 		wtitle = title;
 		if (songlist->searchresult)
 			wtitle += "  <<search results>>";
-		curses.clearline(rect, 0, config.colors.windowtitle);
-		curses.print(rect, config.colors.windowtitle, 0, 0, wtitle.c_str());
+		curses->clearline(rect, 0, config->colors.windowtitle);
+		curses->print(rect, config->colors.windowtitle, 0, 0, wtitle.c_str());
 	}
 
 	Window::draw();
-	wm.readout->draw();
+	wm->readout->draw();
 }
 
 void Wsonglist::drawline(int rely)
@@ -77,14 +77,14 @@ void Wsonglist::drawline(int rely)
 	size_t vstart;
 	size_t vstop;
 
-	if (config.show_window_title)
+	if (config->show_window_title)
 		++rely;
-	if (config.show_column_headers)
+	if (config->show_column_headers)
 		++rely;
 
 	if (!songlist || rely + rect->top > rect->bottom || linepos >= songlist->size())
 	{
-		curses.clearline(rect, rely, config.colors.standard);
+		curses->clearline(rect, rely, config->colors.standard);
 		return;
 	}
 
@@ -93,21 +93,21 @@ void Wsonglist::drawline(int rely)
 	song = songlist->at(linepos);
 
 	if (linepos == cursor)
-		color = config.colors.cursor;
+		color = config->colors.cursor;
 	else if (linepos >= vstart && linepos <= vstop)
-		color = config.colors.selection;
-	else if (song->pos == mpd.status.song)
-		color = config.colors.playing;
-	else if (song->pos == -1 && mpd.currentsong && song->fhash == mpd.currentsong->fhash)
-		color = config.colors.playing;
+		color = config->colors.selection;
+	else if (song->pos == mpd->status.song)
+		color = config->colors.playing;
+	else if (song->pos == -1 && mpd->currentsong && song->fhash == mpd->currentsong->fhash)
+		color = config->colors.playing;
 	else
 		color = NULL;
 
-	curses.clearline(rect, rely, color ? color : config.colors.standard);
+	curses->clearline(rect, rely, color ? color : config->colors.standard);
 
 	for (it = 0; it < column_len.size(); ++it)
 	{
-		curses.print(rect, color ? color : config.colors.field[config.songlist_columns[it]->type], rely, x, song->f[config.songlist_columns[it]->type].c_str());
+		curses->print(rect, color ? color : config->colors.field[config->songlist_columns[it]->type], rely, x, song->f[config->songlist_columns[it]->type].c_str());
 		x += column_len[it] + 1;
 	}
 }
@@ -148,7 +148,7 @@ selection_t Wsonglist::get_selection(long multiplier)
 unsigned int Wsonglist::height()
 {
 	if (!rect) return 0;
-	return Wmain::height() - (config.show_column_headers ? 1 : 0);
+	return Wmain::height() - (config->show_column_headers ? 1 : 0);
 }
 
 unsigned int Wsonglist::content_size()
@@ -176,9 +176,9 @@ void Wsonglist::update_column_length()
 	if (!rect || !songlist)
 		return;
 
-	max = rect->right - rect->left - config.songlist_columns.size() + 1;
+	max = rect->right - rect->left - config->songlist_columns.size() + 1;
 
-	for (column = config.songlist_columns.begin(); column != config.songlist_columns.end(); ++column)
+	for (column = config->songlist_columns.begin(); column != config->songlist_columns.end(); ++column)
 	{
 		column_len.push_back((*column)->minlen);
 		len += (*column)->minlen;
@@ -191,7 +191,7 @@ void Wsonglist::update_column_length()
 		{
 			if (len > max)
 				break;
-			if (config.songlist_columns[it]->maxlen > 0 && column_len[it] >= config.songlist_columns[it]->maxlen)
+			if (config->songlist_columns[it]->maxlen > 0 && column_len[it] >= config->songlist_columns[it]->maxlen)
 				continue;
 
 			column_len[it]++;

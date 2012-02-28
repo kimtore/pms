@@ -31,13 +31,13 @@
 #include "clipboard.h"
 #include <stdlib.h>
 
-extern Config		config;
-extern MPD		mpd;
-extern Curses		curses;
-extern Windowmanager	wm;
-extern Input		input;
-extern Commandlist 	commandlist;
-extern Keybindings 	keybindings;
+extern Config		* config;
+extern MPD		* mpd;
+extern Curses		* curses;
+extern Windowmanager	* wm;
+extern Input		* input;
+extern Commandlist 	* commandlist;
+extern Keybindings 	* keybindings;
 
 int PMS::run_event(Inputevent * ev)
 {
@@ -53,23 +53,23 @@ int PMS::run_event(Inputevent * ev)
 	switch(ev->action)
 	{
 		case ACT_MODE_INPUT:
-			input.setmode(INPUT_MODE_INPUT);
-			wm.statusbar->qdraw();
+			input->setmode(INPUT_MODE_INPUT);
+			wm->statusbar->qdraw();
 			return true;
 
 		case ACT_MODE_COMMAND:
-			input.setmode(INPUT_MODE_COMMAND);
-			wm.statusbar->qdraw();
+			input->setmode(INPUT_MODE_COMMAND);
+			wm->statusbar->qdraw();
 			return true;
 
 		case ACT_MODE_SEARCH:
-			input.setmode(INPUT_MODE_SEARCH);
-			wm.statusbar->qdraw();
+			input->setmode(INPUT_MODE_SEARCH);
+			wm->statusbar->qdraw();
 			return true;
 
 		case ACT_MODE_LIVESEARCH:
-			input.setmode(INPUT_MODE_LIVESEARCH);
-			wm.statusbar->qdraw();
+			input->setmode(INPUT_MODE_LIVESEARCH);
+			wm->statusbar->qdraw();
 			return true;
 
 		case ACT_VISUAL:
@@ -82,20 +82,20 @@ int PMS::run_event(Inputevent * ev)
 			return resetsearch();
 
 		case ACT_CONNECT:
-			config.autoconnect = true;
-			mpd.mpd_disconnect();
+			config->autoconnect = true;
+			mpd->mpd_disconnect();
 			return true;
 
 		case ACT_REHASH:
 			sev = *ev;
-			config.load_default_config();
-			config.source_default_config();
+			config->load_default_config();
+			config->source_default_config();
 			lastev = sev;
 			return true;
 
 		case ACT_SOURCE:
 			sev = *ev;
-			config.source(ev->text);
+			config->source(ev->text);
 			lastev = sev;
 			return true;
 
@@ -103,20 +103,20 @@ int PMS::run_event(Inputevent * ev)
 			return map_keys(ev->text);
 
 		case ACT_UNMAP:
-			return keybindings.remove(ev->text);
+			return keybindings->remove(ev->text);
 
 		case ACT_RUN_CMD:
 			run_cmd(ev->text, ev->multiplier);
-			input.setmode(INPUT_MODE_COMMAND);
-			wm.statusbar->qdraw();
+			input->setmode(INPUT_MODE_COMMAND);
+			wm->statusbar->qdraw();
 			return true;
 
 		case ACT_RUN_SEARCH:
 			run_search(ev->text, ev->multiplier);
-			input.setmode(INPUT_MODE_COMMAND);
-			wm.statusbar->qdraw();
-			wm.active->qdraw();
-			wm.topbar->qdraw();
+			input->setmode(INPUT_MODE_COMMAND);
+			wm->statusbar->qdraw();
+			wm->active->qdraw();
+			wm->topbar->qdraw();
 			return true;
 
 		case ACT_REPEATACTION:
@@ -131,10 +131,10 @@ int PMS::run_event(Inputevent * ev)
 			return quit();
 
 		case ACT_RESIZE:
-			curses.detect_dimensions();
-			wm.playlist->update_column_length();
-			wm.library->update_column_length();
-			wm.draw();
+			curses->detect_dimensions();
+			wm->playlist->update_column_length();
+			wm->library->update_column_length();
+			wm->draw();
 			return true;
 
 		case ACT_NEXT_WINDOW:
@@ -144,16 +144,16 @@ int PMS::run_event(Inputevent * ev)
 			return cycle_windows(-ev->multiplier);
 
 		case ACT_TOGGLE_WINDOW:
-			return wm.toggle();
+			return wm->toggle();
 
 		case ACT_GOTO_WINDOW:
-			return wm.go(ev->text);
+			return wm->go(ev->text);
 
 		case ACT_GOTO_WINDOW_POS:
-			return wm.go((ev->text.size() ? atoi(ev->text.c_str()) : ev->multiplier) - 1);
+			return wm->go((ev->text.size() ? atoi(ev->text.c_str()) : ev->multiplier) - 1);
 
 		case ACT_SORT:
-			return sortlist(ev->text.size() ? ev->text : config.default_sort);
+			return sortlist(ev->text.size() ? ev->text : config->default_sort);
 
 		case ACT_ACTIVATE_SONGLIST:
 			return activate_songlist();
@@ -247,11 +247,11 @@ int PMS::run_event(Inputevent * ev)
 
 	else if (ev->result == INPUT_RESULT_BUFFERED)
 	{
-		wm.statusbar->draw();
-		curses.flush();
-		wm.topbar->qdraw();
+		wm->statusbar->draw();
+		curses->flush();
+		wm->topbar->qdraw();
 
-		if (input.mode == INPUT_MODE_LIVESEARCH)
+		if (input->mode == INPUT_MODE_LIVESEARCH)
 			return livesearch(ev->text);
 	}
 
@@ -285,7 +285,7 @@ int PMS::run_cmd(string cmd, unsigned int multiplier, bool batch)
 	if (!cmd.size() || cmd[0] == '#')
 		return false;
 
-	c = commandlist.find(wm.context, cmd);
+	c = commandlist->find(wm->context, cmd);
 	if (!c)
 	{
 		sterr("Undefined command '%s'", cmd.c_str());
@@ -293,7 +293,7 @@ int PMS::run_cmd(string cmd, unsigned int multiplier, bool batch)
 	}
 
 	ev.action = c->action;
-	ev.context = wm.context;
+	ev.context = wm->context;
 	ev.result = INPUT_RESULT_RUN;
 	ev.silent = batch;
 	ev.multiplier = multiplier > 0 ? multiplier : 1;
@@ -306,7 +306,7 @@ int PMS::run_search(string terms, unsigned int multiplier)
 	Song * song;
 	size_t i;
 
-	if ((win = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm->active)) == NULL)
 	{
 		sterr("Current window is not a song list, so cannot locate any songs here.", NULL);
 		return false;
@@ -315,7 +315,7 @@ int PMS::run_search(string terms, unsigned int multiplier)
 	song = win->cursorsong();
 
 	if (terms.size() > 0)
-		win->songlist->search(SEARCH_MODE_FILTER, config.search_field_mask, terms);
+		win->songlist->search(SEARCH_MODE_FILTER, config->search_field_mask, terms);
 	else
 		win->songlist->search(SEARCH_MODE_NONE);
 
@@ -365,13 +365,13 @@ int PMS::map_keys(string params)
 		return false;
 	}
 
-	if ((cmd = commandlist.find(context, s[2])) == NULL)
+	if ((cmd = commandlist->find(context, s[2])) == NULL)
 	{
 		sterr("Invalid command `%s' for context `%s'", s[2].c_str(), s[0].c_str());
 		return false;
 	}
 
-	return (keybindings.add(context, cmd->action, s[1], (s.size() == 4 ? s[3] : "")) != NULL);
+	return (keybindings->add(context, cmd->action, s[1], (s.size() == 4 ? s[3] : "")) != NULL);
 
 }
 
@@ -379,50 +379,50 @@ int PMS::set_opt(Inputevent * ev)
 {
 	option_t * opt;
 
-	opt = config.readline(ev->text, ev->multiplier, !ev->silent);
+	opt = config->readline(ev->text, ev->multiplier, !ev->silent);
 	if (!opt)
 		return false;
 
 	if (opt->mask & OPT_CHANGE_MPD)
-		mpd.apply_opts();
+		mpd->apply_opts();
 	if (opt->mask & OPT_CHANGE_DIMENSIONS)
-		curses.detect_dimensions();
+		curses->detect_dimensions();
 	if (opt->mask & OPT_CHANGE_PLAYMODE)
 	{
-		mpd.update_playstring();
-		wm.statusbar->draw();
+		mpd->update_playstring();
+		wm->statusbar->draw();
 	}
 
 	if (opt->mask & OPT_CHANGE_REDRAW)
 	{
-		wm.draw();
+		wm->draw();
 	}
 	else
 	{
 		if (opt->mask & OPT_CHANGE_DRAWLIST)
-			wm.active->draw();
+			wm->active->draw();
 		if (opt->mask & OPT_CHANGE_TOPBAR)
-			wm.topbar->draw();
+			wm->topbar->draw();
 
 		if (!(opt->mask & OPT_CHANGE_DRAWLIST) && !(opt->mask & OPT_CHANGE_TOPBAR))
 			return true;
 	}
 
-	curses.flush();
+	curses->flush();
 
 	return true;
 }
 
 int PMS::quit()
 {
-	config.quit = true;
+	config->quit = true;
 	return true;
 }
 
 int PMS::scroll_window(int offset)
 {
 	Wmain * window;
-	window = WMAIN(wm.active);
+	window = WMAIN(wm->active);
 	window->scroll_window(offset);
 	return true;
 }
@@ -430,7 +430,7 @@ int PMS::scroll_window(int offset)
 int PMS::move_cursor(int offset)
 {
 	Wmain * window;
-	window = WMAIN(wm.active);
+	window = WMAIN(wm->active);
 	window->move_cursor(offset);
 	return true;
 }
@@ -439,10 +439,10 @@ int PMS::move_cursor_page(int offset)
 {
 	bool beep;
 	Wmain * window;
-	window = WMAIN(wm.active);
+	window = WMAIN(wm->active);
 
-	beep = config.use_bell;
-	config.use_bell = false;
+	beep = config->use_bell;
+	config->use_bell = false;
 	window->move_cursor(offset * window->height());
 
 	if (offset < 0)
@@ -450,14 +450,14 @@ int PMS::move_cursor_page(int offset)
 	else
 		window->set_position(window->cursor);
 
-	config.use_bell = beep;
+	config->use_bell = beep;
 	return true;
 }
 
 int PMS::set_cursor_top(int offset)
 {
 	Wmain * window;
-	window = WMAIN(wm.active);
+	window = WMAIN(wm->active);
 	if ((offset = window->position + offset - 1) >= window->position + window->height())
 		offset = window->position + window->height() - 1;
 	window->set_cursor(offset);
@@ -467,7 +467,7 @@ int PMS::set_cursor_top(int offset)
 int PMS::set_cursor_bottom(int offset)
 {
 	Wmain * window;
-	window = WMAIN(wm.active);
+	window = WMAIN(wm->active);
 	if ((offset = window->position + window->height() - offset + 1) < window->position)
 		offset = window->position;
 	window->set_cursor(offset);
@@ -477,7 +477,7 @@ int PMS::set_cursor_bottom(int offset)
 int PMS::set_cursor_home(int offset)
 {
 	Wmain * window;
-	window = WMAIN(wm.active);
+	window = WMAIN(wm->active);
 	window->set_cursor(offset - 1);
 	return true;
 }
@@ -485,7 +485,7 @@ int PMS::set_cursor_home(int offset)
 int PMS::set_cursor_end(int offset)
 {
 	Wmain * window;
-	window = WMAIN(wm.active);
+	window = WMAIN(wm->active);
 	window->set_cursor(window->content_size() - offset);
 	return true;
 }
@@ -497,11 +497,11 @@ int PMS::set_cursor_currentsong()
 	size_t pos;
 
 	/* Silently ignore if there is no song playing. */
-	if ((song = mpd.currentsong) == NULL)
+	if ((song = mpd->currentsong) == NULL)
 		return false;
 
 	/* Get current window */
-	window = WSONGLIST(wm.active);
+	window = WSONGLIST(wm->active);
 	if (window == NULL)
 	{
 		sterr("Current window is not a playlist, so cannot locate any songs here.", NULL);
@@ -530,7 +530,7 @@ int PMS::set_cursor_random()
 	Wsonglist * window;
 
 	/* Get current window */
-	window = WSONGLIST(wm.active);
+	window = WSONGLIST(wm->active);
 	if (window == NULL)
 	{
 		sterr("Current window is not a playlist, so cannot locate any songs here.", NULL);
@@ -546,26 +546,26 @@ int PMS::set_cursor_random()
 
 int PMS::cycle_windows(int offset)
 {
-	wm.cycle(offset);
+	wm->cycle(offset);
 	return true;
 }
 
 int PMS::activate_songlist()
 {
 	Wsonglist * win;
-	if ((win = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm->active)) == NULL)
 	{
 		sterr("Current window is not a song list, and cannot be set as the primary playback list.", NULL);
 		return false;
 	}
 
-	return mpd.activate_songlist(win->songlist);
+	return mpd->activate_songlist(win->songlist);
 }
 
 int PMS::sortlist(string sortstr)
 {
 	Wsonglist * win;
-	if ((win = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm->active)) == NULL)
 	{
 		sterr("Current window is not a song list, and cannot be sorted.", NULL);
 		return false;
@@ -582,20 +582,20 @@ int PMS::livesearch(string terms, bool exitsearch)
 	Song * song;
 	song_t i;
 
-	if ((win = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm->active)) == NULL)
 	{
 		sterr("Current window is not a song list, and cannot be searched.", NULL);
 		return false;
 	}
 
 	song = win->cursorsong();
-	win->songlist->search(SEARCH_MODE_LIVE, config.search_field_mask, terms);
+	win->songlist->search(SEARCH_MODE_LIVE, config->search_field_mask, terms);
 	if (exitsearch)
 	{
 		win->songlist->liveclear();
-		input.setmode(INPUT_MODE_COMMAND);
-		wm.statusbar->qdraw();
-		curses.flush();
+		input->setmode(INPUT_MODE_COMMAND);
+		wm->statusbar->qdraw();
+		curses->flush();
 	}
 
 	if (song && (i = win->songlist->sfind(song->fhash)) != string::npos)
@@ -613,7 +613,7 @@ int PMS::resetsearch()
 	Song * song;
 	song_t i;
 
-	if ((win = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm->active)) == NULL)
 		return false;
 	
 	song = win->cursorsong();
@@ -637,7 +637,7 @@ int PMS::add(int count)
 	selection_t sel;
 	vector<Song *>::iterator it;
 
-	if ((win = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm->active)) == NULL)
 	{
 		sterr("Current window is not a playlist. Cannot add any songs from here.", NULL);
 		return false;
@@ -648,7 +648,7 @@ int PMS::add(int count)
 		return false;
 
 	for (it = sel->begin(); it != sel->end(); ++it)
-		if (mpd.addid((*it)->f[FIELD_FILE]))
+		if (mpd->addid((*it)->f[FIELD_FILE]))
 			++added;
 
 	if (added > 0)
@@ -658,7 +658,7 @@ int PMS::add(int count)
 		else
 			stinfo("`%s' added to playlist.", (*--it)->f[FIELD_TITLE].c_str());
 
-		if (config.advance_cursor)
+		if (config->advance_cursor)
 			win->move_cursor(count);
 	}
 	else
@@ -676,7 +676,7 @@ int PMS::add(string uri, int count)
 	bool status = true;
 
 	while (count-- > 0)
-		if (mpd.addid(uri) != -1)
+		if (mpd->addid(uri) != -1)
 			stinfo("`%s' added to playlist.", uri.c_str());
 		else
 			status = false;
@@ -695,7 +695,7 @@ int PMS::add_same(string fields, int count)
 	Song * song;
 	Song * lastsong;
 
-	if ((win = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm->active)) == NULL)
 	{
 		sterr("Current window is not a song list, so cannot add songs from here.", NULL);
 		return false;
@@ -705,20 +705,20 @@ int PMS::add_same(string fields, int count)
 		return false;
 
 	/* Always use library to locate songs */
-	if (config.add_same_exhaustive)
+	if (config->add_same_exhaustive)
 		i = 0;
-	else if (win->songlist == &mpd.library)
+	else if (win->songlist == &mpd->library)
 		i = win->cursor;
 	else
 	{
-		if ((i = mpd.library.find(source->fhash)) == string::npos)
+		if ((i = mpd->library.find(source->fhash)) == string::npos)
 		{
 			sterr("This song is not in the library.", NULL);
 			return false;
 		}
 	}
 
-	config.get_fields(fields, fieldlist);
+	config->get_fields(fields, fieldlist);
 	if (fieldlist.empty())
 	{
 		sterr("Missing parameters. What do you want to add more of?", NULL);
@@ -726,16 +726,16 @@ int PMS::add_same(string fields, int count)
 	}
 
 	/* Find the hash of the last song in the playlist */
-	if (mpd.playlist.size() > 0)
-		lastsong = mpd.playlist.at(mpd.playlist.size() - 1);
+	if (mpd->playlist.size() > 0)
+		lastsong = mpd->playlist.at(mpd->playlist.size() - 1);
 
 	/* Iterate backwards and find the first song that doesn't match. */
-	if (!config.add_same_exhaustive)
+	if (!config->add_same_exhaustive)
 	{
 		while (i > 0)
 		{
 			--i;
-			if ((song = mpd.library.at(i)) == NULL)
+			if ((song = mpd->library.at(i)) == NULL)
 				return false;
 
 			for (it = fieldlist.begin(); it != fieldlist.end(); ++it)
@@ -764,12 +764,12 @@ int PMS::add_same(string fields, int count)
 		/* Yes, it is: start from next song. */
 		if (it == fieldlist.end())
 		{
-			j = mpd.library.find(lastsong->fhash) + 1;
+			j = mpd->library.find(lastsong->fhash) + 1;
 
 			/* But is the next song part of the set? If not, start from the beginning. */
 			for (it = fieldlist.begin(); it != fieldlist.end(); ++it)
 			{
-				if ((song = mpd.library.at(j)) == NULL)
+				if ((song = mpd->library.at(j)) == NULL)
 				{
 					it = fieldlist.end();
 					break;
@@ -784,9 +784,9 @@ int PMS::add_same(string fields, int count)
 	}
 
 	/* Iterate through list and add all songs that match. */
-	while (i < mpd.library.size())
+	while (i < mpd->library.size())
 	{
-		if ((song = mpd.library.at(i)) == NULL)
+		if ((song = mpd->library.at(i)) == NULL)
 			return false;
 
 		for (it = fieldlist.begin(); it != fieldlist.end(); ++it)
@@ -794,12 +794,12 @@ int PMS::add_same(string fields, int count)
 			if (song->f[(*it)->type] != source->f[(*it)->type])
 			{
 				/* Exit loop if not doing exhaustive search */
-				if (!config.add_same_exhaustive)
-					i = mpd.library.size();
+				if (!config->add_same_exhaustive)
+					i = mpd->library.size();
 				break;
 			}
 
-			if (mpd.addid(song->f[FIELD_FILE]))
+			if (mpd->addid(song->f[FIELD_FILE]))
 				++added;
 
 			break;
@@ -821,7 +821,7 @@ int PMS::remove(int count)
 	selection_t sel;
 	size_t start;
 
-	if ((win = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm->active)) == NULL)
 	{
 		sterr("Current window is not a song list. Cannot remove any songs from here.", NULL);
 		return false;
@@ -837,7 +837,7 @@ int PMS::remove(int count)
 	if (sel->empty())
 		return false;
 
-	if ((count = mpd.remove(win->songlist, sel)) > 0)
+	if ((count = mpd->remove(win->songlist, sel)) > 0)
 	{
 		win->songlist->visual_pos(&start, NULL);
 		if (start == -1)
@@ -858,7 +858,7 @@ int PMS::visual()
 	Wsonglist * win;
 	int pos;
 
-	if ((win = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm->active)) == NULL)
 	{
 		sterr("Visual mode can only be used in songlists.", NULL);
 		return false;
@@ -880,7 +880,7 @@ int PMS::yank(int count)
 {
 	Wsonglist * win;
 
-	if ((win = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm->active)) == NULL)
 	{
 		sterr("Only songs can be yanked, and this is not a song list.", NULL);
 		return false;
@@ -891,7 +891,7 @@ int PMS::yank(int count)
 	win->qdraw();
 	stinfo("%d songs yanked to clipboard.", clipboard.size());
 
-	if (config.advance_cursor)
+	if (config->advance_cursor)
 		win->move_cursor(count);
 
 	return true;
@@ -901,7 +901,7 @@ int PMS::put(int count)
 {
 	Wsonglist * win;
 
-	if ((win = WSONGLIST(wm.active)) == NULL)
+	if ((win = WSONGLIST(wm->active)) == NULL)
 	{
 		sterr("Can only put songs into a song list.", NULL);
 		return false;
@@ -919,7 +919,7 @@ int PMS::put(int count)
 		return false;
 	}
 
-	if (mpd.put(win->songlist, win->cursor + 1, &clipboard.songs))
+	if (mpd->put(win->songlist, win->cursor + 1, &clipboard.songs))
 	{
 		stinfo("Put %d songs into song list.", clipboard.size());
 		return true;
@@ -933,7 +933,7 @@ int PMS::update(string dir)
 	if (dir.empty())
 		dir = "/";
 
-	if (mpd.update(dir))
+	if (mpd->update(dir))
 	{
 		if (dir == "/")
 			stinfo("Updating music library...", NULL);
@@ -946,20 +946,20 @@ int PMS::update(string dir)
 
 int PMS::set_crossfade(string crossfade)
 {
-	return mpd.set_crossfade(atoi(crossfade.c_str()));
+	return mpd->set_crossfade(atoi(crossfade.c_str()));
 }
 
 int PMS::set_password(string password)
 {
 	int i;
-	if ((i = mpd.set_password(password)) == true)
-		mpd.apply_opts(); /* any option desynch should be fixed here. */
+	if ((i = mpd->set_password(password)) == true)
+		mpd->apply_opts(); /* any option desynch should be fixed here. */
 	return i;
 }
 
 int PMS::toggle_play()
 {
-	return mpd.pause(mpd.status.state == MPD_STATE_PLAY ? true : false);
+	return mpd->pause(mpd->status.state == MPD_STATE_PLAY ? true : false);
 }
 
 int PMS::play()
@@ -969,38 +969,38 @@ int PMS::play()
 		return false;
 
 	if (s->id != -1)
-		return (mpd.playid(s->id) == MPD_GETLINE_OK);
+		return (mpd->playid(s->id) == MPD_GETLINE_OK);
 	else
-		return (mpd.playid(mpd.addid(s->f[FIELD_FILE])) == MPD_GETLINE_OK);
+		return (mpd->playid(mpd->addid(s->f[FIELD_FILE])) == MPD_GETLINE_OK);
 }
 
 int PMS::stop()
 {
-	return mpd.stop();
+	return mpd->stop();
 }
 
 int PMS::change_song(int steps)
 {
 	Song * song;
 
-	if (mpd.status.single && mpd.status.repeat && mpd.currentsong)
-		return mpd.playid(mpd.currentsong->id);
+	if (mpd->status.single && mpd->status.repeat && mpd->currentsong)
+		return mpd->playid(mpd->currentsong->id);
 
-	if ((song = mpd.next_song_in_line(steps)) == NULL)
+	if ((song = mpd->next_song_in_line(steps)) == NULL)
 	{
 		sterr("There is no candidate for %s song, try switching lists or setting repeat mode.", string(steps > 0 ? "next" : "previous").c_str());
 		return false;
 	}
 
 	if (song->id != -1)
-		return mpd.playid(song->id);
+		return mpd->playid(song->id);
 	else
-		return mpd.playid(mpd.addid(song->f[FIELD_FILE]));
+		return mpd->playid(mpd->addid(song->f[FIELD_FILE]));
 }
 
 int PMS::seek(int seconds)
 {
-	return mpd.seek(seconds);
+	return mpd->seek(seconds);
 }
 
 
@@ -1008,7 +1008,7 @@ int PMS::seek(int seconds)
 Song * cursorsong()
 {
 	Wsonglist * win;
-	win = WSONGLIST(wm.active);
+	win = WSONGLIST(wm->active);
 	if (win == NULL)
 		return NULL;
 	return win->cursorsong();
