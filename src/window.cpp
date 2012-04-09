@@ -18,6 +18,7 @@
  *
  */
 
+#include <math.h>
 #include "window.h"
 #include "curses.h"
 #include "config.h"
@@ -158,18 +159,17 @@ void Wmain::move_cursor(int offset)
 	}
 	else if (config->scroll_mode == SCROLL_MODE_CENTERED)
 	{
-		offset = height() / 2;
-		if ((int)cursor < offset)
+		offset = floorl(height() / 2);
+		if ((int)cursor < offset) {
 			position = 0;
-		else if (cursor + offset >= content_size())
-		{
+		} else if (cursor + offset + 1 >= content_size()) {
 			if (content_size() > height())
 				position = content_size() - height() - 1;
 			else
 				position = 0;
-		}
-		else
+		} else {
 			position = cursor - offset;
+		}
 	}
 	
 	qdraw();
