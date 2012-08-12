@@ -27,6 +27,7 @@
 #include "input.h"
 #include "pms.h"
 #include "field.h"
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
@@ -47,6 +48,8 @@ int main(int argc, char *argv[])
 	struct timeval cl;
 	struct timeval conn;
 	bool initialized = false;
+
+	setlocale(LC_ALL, "");
 
 	curses = new Curses();
 	if (!curses->ready)
