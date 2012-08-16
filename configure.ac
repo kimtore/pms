@@ -13,6 +13,10 @@ AC_PROG_CXX
 AC_PROG_CC
 
 # Checks for libraries.
+AX_WITH_CURSES
+if test "x$ax_cv_ncursesw" != xyes && test "x$ax_cv_ncurses" != xyes; then
+    AC_MSG_ERROR([requires either NcursesW or Ncurses library])
+fi
 
 # Checks for header files.
 AC_CHECK_HEADERS([locale.h netdb.h stdlib.h sys/socket.h sys/time.h unistd.h])

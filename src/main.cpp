@@ -18,7 +18,7 @@
  *
  */
 
-#include "build.h"
+#include "../build.h"
 #include "console.h"
 #include "curses.h"
 #include "config.h"
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 
 	curses->detect_dimensions();
 
-	stinfo("%s %d.%d", PMS_APP_NAME, PMS_VERSION_MAJOR, PMS_VERSION_MINOR);
+	stinfo("%s", PACKAGE_STRING);
 
 	memset(&conn, 0, sizeof conn);
 	curses->detect_dimensions();
