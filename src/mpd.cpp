@@ -50,7 +50,7 @@ void update_library_statusbar()
 	unsigned int percent;
 	percent = round(((float)mpd->library.size() / mpd->stats.songs) * 100.00);
 	curses->wipe(&(curses->statusbar), config->colors.statusbar);
-	curses->print(&(curses->statusbar), config->colors.statusbar, 0, 0, "Retrieving library: %d%%", percent);
+	curses->print(&(curses->statusbar), config->colors.statusbar, 0, 0, "Retrieving library: %d%%%%", percent);
 	curses->flush();
 }
 

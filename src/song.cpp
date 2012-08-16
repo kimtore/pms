@@ -102,10 +102,6 @@ void Song::init()
 		f[FIELD_TRACKSHORT] = f[FIELD_TRACK];
 	}
 
-	/* replace % with %% for fast printing */
-	for (s = 0; s < FIELD_COLUMN_VALUES; ++s)
-		escape_printf(f[s]);
-
 	/* fill out empty fields that might be used for sorting */
 	if (f[FIELD_ALBUMARTIST].empty())
 		f[FIELD_ALBUMARTIST] = f[FIELD_ARTIST];
@@ -308,14 +304,6 @@ string tostring(unsigned long number)
 	ostringstream s;
 	s << number;
 	return s.str();
-}
-
-void escape_printf(string &src)
-{
-	size_t pos = -2;
-
-	while ((pos = src.find('%', pos + 2)) != string::npos)
-		src.replace(pos, 1, "%%");
 }
 
 long songhash(string const &str)

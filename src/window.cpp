@@ -42,7 +42,7 @@ void Window::draw()
 		drawline(i);
 }
 
-inline void Window::qdraw()
+void Window::qdraw()
 {
 	need_draw = true;
 }

@@ -77,9 +77,9 @@ string Field::format(Song * song)
 
 		case FIELD_VOLUME:
 			if (mpd->status.volume == 0 && config->mute)
-				tmp = "Muted (" + tostring(config->volume) + "%%)";
+				tmp = "Muted (" + tostring(config->volume) + "%%%%)";
 			else
-				tmp = tostring(mpd->status.volume) + "%%";
+				tmp = tostring(mpd->status.volume) + "%%%%";
 			return tmp;
 
 		case FIELD_MODES:

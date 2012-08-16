@@ -131,7 +131,7 @@ void Wreadout::drawline(int rely)
 	else if (win->position >= win->content_size() - win->height() - 1)
 		strcpy(buf, "Bot");
 	else
-		sprintf(buf, "%2d%%%%", 100 * win->position / (win->content_size() - win->height() - 1));
+		sprintf(buf, "%2d", 100 * win->position / (win->content_size() - win->height() - 1));
 
-	curses->print(rect, config->colors.readout, 0, 0, buf);
+	curses->print(rect, config->colors.readout, 0, 0, "%s%%%%", buf);
 }
