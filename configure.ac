@@ -1,5 +1,6 @@
 AC_INIT([pms], [0.42], [kimtjen@gmail.com])
 AC_CONFIG_SRCDIR([src/pms.cpp])
+AC_CONFIG_AUX_DIR
 MP_WITH_CURSES
 HAVE_CURS=$mp_cv_curses
 if test x$HAVE_CURS != xyes; then
@@ -13,7 +14,7 @@ AC_ARG_ENABLE([regex],
        esac])
 
 AC_PREFIX_PROGRAM(man)
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([-Wall foreign])
 AC_PROG_CXX
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile po/Makefile.in])
