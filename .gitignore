@@ -29,3 +29,4 @@ missing
 po/Makefile*
 po/POTFILES
 install-sh
+/build/
