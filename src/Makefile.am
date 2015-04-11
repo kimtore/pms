@@ -1,0 +1,11 @@
+bin_PROGRAMS = pms
+EXTRA_pms_SOURCES = action.h color.h command.h config.h conn.h display.h input.h list.h song.h types.h libmpdclient.h i18n.h topbar.h pms.h settings.h field.h mycurses.h mediator.h message.h filter.h
+pms_SOURCES = action.cpp color.cpp command.cpp config.cpp conn.cpp display.cpp input.cpp list.cpp pms.cpp song.cpp libmpdclient.c field.cpp settings.cpp mediator.cpp message.cpp
+
+AM_CXXFLAGS = \
+	@GLIB_CFLAGS@ \
+	-DLOCALE_DIR=\""$(datadir)/locale"\"
+
+pms_LDADD = @CURSES_LIB@ $(GLIB_LIBS)
+
+ACLOCAL_AMFLAGS = -I m4
