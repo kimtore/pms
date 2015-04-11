@@ -416,12 +416,10 @@ void		pms_window::setcursor(int absolute)
 	cursor = absolute;
 	if (cursor < 0)
 	{
-		beep();
 		cursor = 0;
 	}
 	else if (cursor >= (int)size())
 	{
-		beep();
 		cursor = (int)(size() - 1);
 	}
 
@@ -444,7 +442,6 @@ void		pms_window::scrollwin(int offset)
 
 	if (size() <= bheight() - 1)
 	{
-		beep();
 		return;
 	}
 
@@ -460,9 +457,7 @@ void		pms_window::scrollwin(int offset)
 		i = -cursordrawstart();
 		if (offset < i)
 			offset = i;
-		if (offset == 0)
-		{
-			beep();
+		if (offset == 0) {
 			return;
 		}
 
@@ -476,9 +471,7 @@ void		pms_window::scrollwin(int offset)
 		i = size() - (bheight() - 1) - cursordrawstart();
 		if (offset > i)
 			offset = i;
-		if (offset == 0)
-		{
-			beep();
+		if (offset == 0) {
 			return;
 		}
 

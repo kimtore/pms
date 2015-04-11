@@ -692,14 +692,9 @@ void Songlist::clear()
  */
 int		Songlist::setcursor(song_t pos)
 {
-	if (pos < 0)
-	{
-		beep();
+	if (pos < 0) {
 		pos = 0;
-	}
-	else if (pos >= filtersongs.size())
-	{
-		beep();
+	} else if (pos >= filtersongs.size()) {
 		pos = filtersongs.size() - 1;
 	}
 
@@ -934,9 +929,7 @@ void		Songlist::movecursor(song_t offset)
 {
 	if (wrap == true)
 	{
-		if (filtersongs.size() == 0)
-		{
-			beep();
+		if (filtersongs.size() == 0) {
 			position = 0;
 			return;
 		}
@@ -951,18 +944,13 @@ void		Songlist::movecursor(song_t offset)
 	{
 		offset = position + offset;
 
-		if (offset < 0)
-		{
-			beep();
+		if (offset < 0) {
 			position = 0;
-		}
-		else if ((unsigned int)offset >= filtersongs.size())
-		{
-			beep();
+		} else if ((unsigned int)offset >= filtersongs.size()) {
 			position = filtersongs.size() - 1;
-		}
-		else
+		} else {
 			position = offset;
+                }
 	}
 }
 
