@@ -115,6 +115,7 @@ void		Options::reset()
 	set_bool("topbarborders", false);
 	set_bool("topbarspace", true);
 	set_bool("columnspace", true);
+	set_bool("columnborders", false);
 	set_bool("mouse", false);
 
 	set_string("directoryformat", "%artist% – %title%");
