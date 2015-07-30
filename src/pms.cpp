@@ -82,7 +82,7 @@ int			Pms::main()
 	time_t			timer = 0;
 
 	/* Connection */
-	printf(_("Connecting to host %s, port %ld..."), options->get_string("hostname").c_str(), options->get_long("port"));
+	printf(_("Connecting to host %s, port %ld..."), options->get_string("host").c_str(), options->get_long("port"));
 
 	if (conn->connect() != 0)
 	{
@@ -416,13 +416,13 @@ int			Pms::init()
 	config = new Configurator(options, bindings);
 
 	/* Some default options */
-	options->set_string("hostname", (host ? host : "127.0.0.1"));
+	options->set_string("host", (host ? host : "127.0.0.1"));
 	if (!password && host)
 	{
 		tok = splitstr(host, "@");
 		if (tok->size() == 2)
 		{
-			options->set_string("hostname", (*tok)[0]);
+			options->set_string("host", (*tok)[0]);
 			options->set_string("password", (*tok)[1]);
 		}
 		delete tok;
@@ -452,7 +452,7 @@ int			Pms::init()
 	srand(time(NULL));
 
 	/* Setup some important stuff */
-	conn	= new Connection(options->get_string("hostname"), options->get_long("port"), options->get_long("mpd_timeout"));
+	conn	= new Connection(options->get_string("host"), options->get_long("port"), options->get_long("mpd_timeout"));
 	comm	= new Control(conn);
 	disp	= new Display(comm);
 	input	= new Input();
@@ -1214,7 +1214,7 @@ void			Pms::print_usage()
 	printf("  -%s\t\t%s\n", "? --help", "display command-line options");
 	printf("  -%s\t\t\t%s\n", "d", "turn on debugging to stderr");
 	printf("  -%s\t\t%s\n", "c <filename>", "use an alternative config file");
-	printf("  -%s\t\t%s\n", "h <hostname>", "connect to this MPD server");
+	printf("  -%s\t\t%s\n", "h <host>", "connect to this MPD server");
 	printf("  -%s\t\t%s\n", "p <port>", "connect to this port");
 	printf("  -%s\t\t%s\n", "P <password>", "give this password to MPD server");
 }
@@ -1281,7 +1281,7 @@ bool			Pms::parse_args(int argc, char * argv[])
 				case 'h':
 					if (++argn >= argc)
 						return require_arg(*i);
-					options->set_string("hostname", argv[argn]);
+					options->set_string("host", argv[argn]);
 					break;
 				case 'p':
 					if (++argn >= argc)

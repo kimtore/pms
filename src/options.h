@@ -54,7 +54,7 @@ public:
 
 	/* These are all the options */
 
-	string			hostname;
+	string			host;
 	unsigned int		port;
 	string			password;
 	string			configfile;		// Custom config file
