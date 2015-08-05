@@ -244,9 +244,12 @@ public:
 	bool			alive();
 	const char *		err();		// Reports errors from mpd server
 
+	/* True if mpd connection object has errors */
+	bool			get_error_bool();
+
 	/* Server management */
 	int			authlevel();
-	void			get_available_commands();
+	bool			get_available_commands();
 	bool			rescandb(string = "/");
 	bool			sendpassword(string);
 	void			clearerror();

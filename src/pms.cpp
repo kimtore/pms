@@ -23,6 +23,8 @@
 
 #include "pms.h"
 
+#include <unistd.h>
+
 using namespace std;
 
 Pms *		pms;
@@ -98,34 +100,40 @@ int			Pms::main()
 	if (options->get_string("password").size() > 0)
 	{
 		printf(_("Sending password..."));
-		if (comm->sendpassword(options->get_string("password")))
+		if (comm->sendpassword(options->get_string("password"))) {
 			printf(_("password accepted.\n"));
-		else
+		} else {
 			printf(_("wrong password.\n"));
+                        conn->clear_error();
+                }
 	}
 
-	comm->get_available_commands();
-	if (!(comm->authlevel() & AUTH_READ))
-	{
-		printf(_("This mpd server requires a password.\n"));
-		while(true)
-		{
-			printf(_("Password: "));
+        do {
+                if (!comm->get_available_commands()) {
+                        printf(_("Failed to get a list of available commands, retrying...\n"));
+                        conn->clear_error();
+                        sleep(1);
+                        continue;
+                }
 
-			fgets(pass, 512, stdin) ? 1 : 0; //ternary here is a hack to get rid of a warn_unused_result warning
-			if (pass[strlen(pass)-1] == '\n')
-				pass[strlen(pass)-1] = '\0';
+                if (comm->authlevel() & AUTH_READ) {
+                        break;
+                }
 
-			options->set_string("password", pass);
+                printf(_("This mpd server requires a password.\n"));
+                printf(_("Password: "));
 
-			comm->sendpassword(pass);
-			comm->get_available_commands();
-			if (!(comm->authlevel() & AUTH_READ))
-				printf(_("Wrong password, try again.\n"));
-			else
-				break;
-		}
-	}
+                fgets(pass, 512, stdin) ? 1 : 0; //ternary here is a hack to get rid of a warn_unused_result warning
+                if (pass[strlen(pass)-1] == '\n') {
+                        pass[strlen(pass)-1] = '\0';
+                }
+
+                options->set_string("password", pass);
+                if (!comm->sendpassword(pass)) {
+                        printf(_("Wrong password, try again.\n"));
+                        conn->clear_error();
+                }
+	} while(true);
 
 	printf(_("Successfully logged in.\n"));
 
@@ -453,7 +461,7 @@ int			Pms::init()
 	srand(time(NULL));
 
 	/* Setup some important stuff */
-	conn	= new Connection(options->get_string("host"), options->get_long("port"), options->get_long("mpd_timeout"));
+	conn	= new Connection(options->get_string("host"), options->get_long("port"), options->get_long("mpd_timeout") * 1000);
 	comm	= new Control(conn);
 	disp	= new Display(comm);
 	input	= new Input();

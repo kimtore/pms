@@ -90,7 +90,6 @@ Mpd_status::assign_status(struct mpd_status * status)
 	time_elapsed		= mpd_status_get_elapsed_time(status);
 	time_total		= mpd_status_get_total_time(status);
 	db_updating		= mpd_status_get_update_id(status);
-	errstr			= mpd_status_get_error(status);
 
 	/* Audio format */
 	format			= mpd_status_get_audio_format(status);
@@ -226,6 +225,12 @@ const char *	Control::err()
 	return st->errstr.c_str();
 }
 
+bool
+Control::get_error_bool()
+{
+	return (mpd_connection_get_error(conn->h()) == MPD_ERROR_SUCCESS);
+}
+
 /*
  * Return authorisation level in mpd server
  */
@@ -248,16 +253,16 @@ int		Control::authlevel()
 /*
  * Retrieve available commands
  */
-void		Control::get_available_commands()
+bool
+Control::get_available_commands()
 {
-	mpd_pair *	pair;
-
-	memset(&commands, 0, sizeof(commands));
+	mpd_pair * pair;
 
 	if (!mpd_send_allowed_commands(conn->h())) {
-		// FIXME
-		assert(0);
+		return false;
 	}
+
+	memset(&commands, 0, sizeof(commands));
 
 	while ((pair = mpd_recv_command_pair(conn->h())) != NULL)
 	{
@@ -401,8 +406,7 @@ void		Control::get_available_commands()
 		mpd_return_pair(conn->h(), pair);
 	}
 
-	// FIXME: check for errors
-	finish();
+	return get_error_bool();
 }
 
 /*
@@ -1613,9 +1617,10 @@ Control::rescandb(string dest)
 
 /*
  * Sends a password to the mpd server
- * FIXME: should retrieve updated privileges list
+ * FIXME: should retrieve updated privileges list?
  */
-bool		Control::sendpassword(string pw)
+bool
+Control::sendpassword(string pw)
 {
 	return mpd_run_password(conn->h(), pw.c_str());
 }

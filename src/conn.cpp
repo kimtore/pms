@@ -46,13 +46,23 @@ Connection::~Connection()
 /*
  * Returns connection state
  */
-bool		Connection::connected()
+bool
+Connection::connected()
 {
 	if (handle == NULL) {
 		return false;
 	}
 
 	return (mpd_connection_get_error(handle) == MPD_ERROR_SUCCESS);
+}
+
+/**
+ * Clear any non-fatal error
+ */
+bool
+Connection::clear_error()
+{
+	return mpd_connection_clear_error(handle);
 }
 
 int Connection::connect()

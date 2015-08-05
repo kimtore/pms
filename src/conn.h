@@ -45,6 +45,7 @@ public:
 	bool		connected();
 	int		connect();
 	int		disconnect();
+	bool		clear_error();
 };
  
 #endif /* _PMS_CONN_H_ */

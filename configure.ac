@@ -8,6 +8,9 @@ AC_CONFIG_SRCDIR([src/pms.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
+# Enable debugging?
+AX_CHECK_ENABLE_DEBUG
+
 # Checks for programs.
 AC_PROG_AWK
 AC_PROG_CXX
