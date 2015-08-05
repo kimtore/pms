@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@
 
 #include <string>
 #include <time.h>
-#include "libmpdclient.h"
+#include <mpd/client.h>
+
 #include "conn.h"
 #include "list.h"
 
@@ -125,15 +126,12 @@ Mpd_allowed_commands;
 class Mpd_status
 {
 private:
-	mpd_Stats *	stats;
-	mpd_Status *	status;
 public:
 			Mpd_status();
-			~Mpd_status();
 
 	bool		alive() const;
-	void		assign_status(mpd_Status *);
-	void		assign_stats(mpd_Stats *);
+	void		assign_status(mpd_status *);
+	void		assign_stats(mpd_stats *);
 
 	bool		muted;
 	int		volume;
@@ -142,7 +140,6 @@ public:
 	bool		random;
 	int		playlist_length;
 	long long	playlist;
-	long long	storedplaylist;
 	int		state;
 	int		crossfade;
 	song_t		song;
@@ -211,7 +208,6 @@ private:
 	Mpd_status *		st;
 	Mpd_allowed_commands	commands;
 
-	mpd_Stats		*_stats;
 	Song			*_song;
 	Songlist		*_playlist;
 	Songlist		*_library;
@@ -300,7 +296,6 @@ public:
 
 
 	Mpd_status	*status() { return st; };
-	mpd_Stats	*stats() { return _stats; };
 	Song		*song() { return _song; };
 	Songlist	*playlist() { return _playlist; };
 	Songlist	*library() { return _library; };

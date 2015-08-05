@@ -29,7 +29,6 @@
 #include "list.h"
 #include "song.h"
 #include "config.h"
-#include "libmpdclient.h"
 #include "pms.h"
 
 extern Pms *			pms;

@@ -84,10 +84,10 @@ int			Pms::main()
 	/* Connection */
 	printf(_("Connecting to host %s, port %ld..."), options->get_string("host").c_str(), options->get_long("port"));
 
-	if (conn->connect() != 0)
+	if (conn->connect() != MPD_ERROR_SUCCESS)
 	{
 		printf(_("failed.\n"));
-		printf("%s\n", conn->errorstr().c_str());
+                printf("%s\n", mpd_connection_get_error_message(conn->h()));
 
 		return PMS_EXIT_CANTCONNECT;
 	}
@@ -212,8 +212,9 @@ int			Pms::main()
 
 				if (conn->connect() != 0)
 				{
-					if (timer != 0)
-						log(MSG_STATUS, STERR, conn->errorstr().c_str());
+					if (timer != 0) {
+						log(MSG_STATUS, STERR, mpd_connection_get_error_message(conn->h()));
+                                        }
 
 					time(&timer);
 					continue;
@@ -280,7 +281,7 @@ int			Pms::main()
 			if (options->get_string("onplaylistfinish").size() > 0 && cursong() && cursong()->pos == comm->playlist()->end())
 			{
 				/* If a manual stop was issued, don't do anything */
-				if (comm->status()->state == MPD_STATUS_STATE_STOP && pending != PEND_STOP)
+				if (comm->status()->state == MPD_STATE_STOP && pending != PEND_STOP)
 				{
 					/* soak up return value to suppress 
 					 * warning */
@@ -496,6 +497,15 @@ string			Pms::tostring(int number)
 	ostringstream s;
 	s << number;
 	return s.str();
+}
+
+/**
+ * Convert a const char * to string
+ */
+string
+Pms::tostring(const char *src)
+{
+        return src ? src : "";
 }
 
 /*
@@ -824,12 +834,12 @@ string			Pms::playstring()
 		return s;
 	}
 
-	if (comm->status()->state == MPD_STATUS_STATE_STOP || !cursong())
+	if (comm->status()->state == MPD_STATE_STOP || !cursong())
 	{
 		s = "Stopped.";
 		return s;
 	}
-	else if (comm->status()->state == MPD_STATUS_STATE_PAUSE)
+	else if (comm->status()->state == MPD_STATE_PAUSE)
 	{
 		s = "Paused...";
 		return s;
@@ -1005,7 +1015,7 @@ bool			Pms::progress_nextsong()
 
 	if (!cursong())		return false;
 
-	if (comm->status()->state != MPD_STATUS_STATE_PLAY)
+	if (comm->status()->state != MPD_STATE_PLAY)
 		return false;
 
 	remaining = (comm->status()->time_total - comm->status()->time_elapsed - comm->status()->crossfade);

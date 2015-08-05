@@ -32,6 +32,9 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([gethostbyname memmove memset select setlocale socket strchr strdup strerror strstr strtol])
 
+# Check for libmpdclient
+AC_CHECK_LIB([mpdclient], [mpd_connection_new])
+
 # Gettext
 IT_PROG_INTLTOOL
 AM_GNU_GETTEXT([external])

@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #ifndef _PMS_CONN_H_
 #define _PMS_CONN_H_
 
-#include "libmpdclient.h"
+#include <mpd/client.h>
 #include <string>
 
 using namespace std;
@@ -30,7 +30,7 @@ using namespace std;
 class Connection
 {
 private:
-	mpd_Connection	*handle;
+	mpd_connection	*handle;
 	string		host;
 	unsigned int	port;
 	int		timeout;
@@ -40,8 +40,7 @@ public:
 			Connection(string, long, long);
 			~Connection();
 
-	mpd_Connection	*h() { return handle; };
-	string		errorstr();
+	mpd_connection	*h() { return handle; };
 
 	bool		connected();
 	int		connect();

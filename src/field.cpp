@@ -316,15 +316,15 @@ string			Formatter::evalconditionals(string fmt)
 									break;
 
 								case COND_IFPLAYING:
-									satisfied = pms->comm->status()->state == MPD_STATUS_STATE_PLAY;
+									satisfied = pms->comm->status()->state == MPD_STATE_PLAY;
 									break;
 
 								case COND_IFPAUSED:
-									satisfied = pms->comm->status()->state == MPD_STATUS_STATE_PAUSE;
+									satisfied = pms->comm->status()->state == MPD_STATE_PAUSE;
 									break;
 
 								case COND_IFSTOPPED:
-									satisfied = pms->comm->status()->state == MPD_STATUS_STATE_STOP;
+									satisfied = pms->comm->status()->state == MPD_STATE_STOP;
 									break;
 
 								default:
@@ -741,8 +741,8 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 
 			switch (pms->comm->status()->state)
 			{
-				case MPD_STATUS_STATE_PLAY:
-				case MPD_STATUS_STATE_PAUSE:
+				case MPD_STATE_PLAY:
+				case MPD_STATE_PAUSE:
 					tmp = Pms::timeformat(pms->comm->playlist()->qlength() + pms->comm->status()->time_total - pms->comm->status()->time_elapsed);
 					tmpint = pms->comm->playlist()->qnumber() + 1;
 					break;
@@ -767,16 +767,16 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			switch (pms->comm->status()->state)
 			{
 				default:
-				case MPD_STATUS_STATE_UNKNOWN:
+				case MPD_STATE_UNKNOWN:
 					retstr = pms->options->get_string("status_unknown");
 					break;
-				case MPD_STATUS_STATE_STOP:
+				case MPD_STATE_STOP:
 					retstr = pms->options->get_string("status_stop");
 					break;
-				case MPD_STATUS_STATE_PLAY:
+				case MPD_STATE_PLAY:
 					retstr = pms->options->get_string("status_play");
 					break;
-				case MPD_STATUS_STATE_PAUSE:
+				case MPD_STATE_PAUSE:
 					retstr = pms->options->get_string("status_pause");
 					break;
 			}

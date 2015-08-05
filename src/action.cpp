@@ -895,7 +895,7 @@ long		Interface::crossfade(int seconds)
  */
 long		Interface::seek(int seconds)
 {
-	if (!pms->cursong() || pms->comm->status()->state < MPD_STATUS_STATE_PLAY)
+	if (!pms->cursong() || pms->comm->status()->state < MPD_STATE_PLAY)
 	{
 		pms->log(MSG_STATUS, STERR, _("Can't seek when player is stopped."));
 		return STERR;

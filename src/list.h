@@ -27,7 +27,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include "libmpdclient.h"
+#include <mpd/client.h>
 #include "song.h"
 #include "types.h"
 #include "field.h"

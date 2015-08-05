@@ -43,9 +43,9 @@
 #include <string>
 #include <sstream>
 #include <stdio.h>
-#include "i18n.h"
-#include "libmpdclient.h"
+#include <mpd/client.h>
 
+#include "i18n.h"
 #include "types.h"
 #include "settings.h"
 #include "song.h"
@@ -124,6 +124,7 @@ public:
 	static string			tostring(long);
 	static string			tostring(int);
 	static string			tostring(size_t);
+	static string			tostring(const char *);
 	static vector<string> *		splitstr(string, string = " ");
 	static string			joinstr(vector<string> *, vector<string>::iterator, vector<string>::iterator, string = " ");
 	static string			timeformat(int);

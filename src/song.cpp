@@ -24,41 +24,49 @@
 
 #include "song.h"
 #include "list.h"
+#include "pms.h"
 #include <string>
 #include <vector>
 
 
-Song::Song(mpd_Song * song)
+Song::Song(const mpd_song * song)
 {
 	selected	= false;
 
-	file			= (song->file ? song->file : "");
-	artist			= (song->artist ? song->artist : "");
-	albumartist		= (song->albumartist ? song->albumartist : artist);
-	artistsort		= (song->artistsort ? song->artistsort : "");
-	albumartistsort		= (song->albumartistsort ? song->albumartistsort : "");
-	title			= (song->title ? song->title : "");
-	album			= (song->album ? song->album : "");
-	track			= (song->track ? song->track : "");
+        assert(mpd_song_get_uri(song) != NULL);
+
+	file			= Pms::tostring(mpd_song_get_uri(song));
+	artist			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ARTIST, 0));
+	albumartist		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ALBUM_ARTIST, 0));
+        /* FIXME: libmpdclient support for .*sort? */
+	//artistsort		= Pms::tostring(mpd_song_get_tag(ARTISTSORT));
+	//albumartistsort		= Pms::tostring(mpd_song_get_tag(ALBUMARTISTSORT));
+        artistsort = artist;
+        albumartistsort = albumartist;
+
+	title			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_TITLE, 0));
+	album			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ALBUM, 0));
+	track			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_TRACK, 0));
 	trackshort		= "";
-	name			= (song->name ? song->name : "");
-	date			= (song->date ? song->date : "");
-	year			= (song->year ? song->year : "");
+	name			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_NAME, 0));
+	date			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_DATE, 0));
+	//year			= Pms::tostring(mpd_song_get_tag(YEAR));
+        year = date;
 
-	genre			= (song->genre ? song->genre : "");
-	composer		= (song->composer ? song->composer : "");
-	performer		= (song->performer ? song->performer : "");
-	disc			= (song->disc ? song->disc : "");
-	comment			= (song->comment ? song->comment : "");
+	genre			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_GENRE, 0));
+	composer		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_COMPOSER, 0));
+	performer		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_PERFORMER, 0));
+	disc			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_DISC, 0));
+	comment			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_COMMENT, 0));
 
-	time			= song->time;
-	pos			= song->pos;
-	id			= song->id;
+	time			= mpd_song_get_duration(song);
+	pos			= mpd_song_get_pos(song);
+	id			= mpd_song_get_id(song);
 
 	init();
 }
 
-Song::Song(Song * song)
+Song::Song(const Song * song)
 {
 	selected		= false;
 
@@ -87,7 +95,7 @@ Song::Song(Song * song)
 	init();
 }
 
-Song::Song(string uri)
+Song::Song(const string uri)
 {
 	selected		= false;
 

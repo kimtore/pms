@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set noet ts=8 sts=8 sw=8:
  *
  * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
  * conn.cpp
  * 	connection handle to MPD
  */
+
+#include <mpd/client.h>
 
 #include "conn.h"
 #include "pms.h"
@@ -41,70 +43,46 @@ Connection::~Connection()
 	this->disconnect();
 }
 
-string Connection::errorstr()
-{
-	string		mystr = "";
-
-	if (handle != NULL)
-	{
-		mystr += handle->errorStr;
-	}
-
-	return mystr;
-}
-
 /*
  * Returns connection state
  */
 bool		Connection::connected()
 {
-	if (handle == NULL)
+	if (handle == NULL) {
 		return false;
-
-	switch(handle->error)
-	{
-		case 0:
-		default:
-			return true;
-
-		case MPD_ERROR_CONNCLOSED:
-		case MPD_ERROR_TIMEOUT:
-		case MPD_ERROR_CONNPORT:
-		case MPD_ERROR_NOTMPD:
-		case MPD_ERROR_NORESPONSE:
-			return false;
 	}
+
+	return (mpd_connection_get_error(handle) == MPD_ERROR_SUCCESS);
 }
 
 int Connection::connect()
 {
+	enum mpd_error err;
+
 	pms->log(MSG_DEBUG, 0, "Connecting to %s:%d, handle=%p...\n", host.c_str(), port, handle);
-	if (handle != NULL)
-	{
-		if (handle->error == 0)
-			return 0;
 
-		mpd_clearError(handle);
-		disconnect();
-	}
-	if (handle == NULL)
-	{
-		handle = mpd_newConnection(host.c_str(), port, timeout);
-		pms->log(MSG_DEBUG, 0, "New connection handle is %p, error code %d\n", handle, handle->error);
-		error = handle->error;
+	disconnect();
 
-		return error;
+	if ((handle = mpd_connection_new(host.c_str(), port, timeout)) == NULL) {
+		fprintf(stderr, "Out of memory\n");
+		abort();
 	}
 
-	return handle->error;
+	err = mpd_connection_get_error(handle);
+
+	pms->log(MSG_DEBUG, 0, "New connection handle is %p, error %d\n", handle, err);
+
+	return err;
 }
 
+/**
+ * FIXME: return value void
+ */
 int Connection::disconnect()
 {
-	pms->log(MSG_DEBUG, 0, "Closing connection.\n");
-	if (handle != NULL)
-	{
-		mpd_closeConnection(handle);
+	if (handle != NULL) {
+		pms->log(MSG_DEBUG, 0, "Closing connection to MPD server.\n");
+		mpd_connection_free(handle);
 		handle = NULL;
 	}
 
