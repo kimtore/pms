@@ -69,9 +69,9 @@ int Connection::connect()
 {
 	enum mpd_error err;
 
-	pms->log(MSG_DEBUG, 0, "Connecting to %s:%d, handle=%p...\n", host.c_str(), port, handle);
-
 	disconnect();
+
+	pms->log(MSG_DEBUG, 0, "Connecting to %s:%d, handle=%p...\n", host.c_str(), port, handle);
 
 	if ((handle = mpd_connection_new(host.c_str(), port, timeout)) == NULL) {
 		fprintf(stderr, "Out of memory\n");

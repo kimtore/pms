@@ -83,6 +83,10 @@ int			Pms::main()
 	pms_window *		win = NULL;
 	time_t			timer = 0;
 
+	/* Error codes returned from MPD */
+	enum mpd_error		error;
+	enum mpd_server_error	server_error;
+
 	/* Connection */
 	printf(_("Connecting to host %s, port %ld..."), options->get_string("host").c_str(), options->get_long("port"));
 
@@ -150,13 +154,10 @@ int			Pms::main()
 	/* Set up library and playlist windows */
 	playlist = disp->create_playlist();
 	library = disp->create_playlist();
-//	dirlist = disp->create_directorylist();
-	if (!playlist || !library)
-	{
-		delete disp;
-		printf(_("Can't initialize windows!\n"));
-		return PMS_EXIT_NOWINDOWS;
-	}
+
+	assert(playlist != NULL);
+	assert(library != NULL);
+
 	playlist->settitle(_("Playlist"));
 	library->settitle(_("Library"));
 	playlist->list = comm->playlist();
@@ -205,35 +206,27 @@ int			Pms::main()
 	 */
 	do
 	{
-		/* Has to have valid connection. */
-		if (!conn->connected() || !comm->update(false) == -1)
-		{
-			if (timer == 0)
-			{
-				log(MSG_STATUS, STERR, "Disconnected from mpd: %s", comm->err());
-			}
-			if (difftime(time(NULL), timer) >= options->get_long("reconnectdelay"))
-			{
-				if (timer != 0)
-					log(MSG_STATUS, STOK, _("Attempting reconnect..."));
+		/* Test if some error has occurred */
+		if ((error = mpd_connection_get_error(conn->h())) != MPD_ERROR_SUCCESS) {
 
-				if (conn->connect() != 0)
-				{
-					if (timer != 0) {
-						log(MSG_STATUS, STERR, mpd_connection_get_error_message(conn->h()));
-					}
+			log(MSG_STATUS, STERR, "Error: %s", mpd_connection_get_error_message(conn->h()));
 
-					time(&timer);
-					continue;
-				}
-				else
-				{
-					log(MSG_STATUS, STOK, _("Reconnected successfully."));
-					comm->clearerror();
-					timer = 0;
-				}
+			/* Try to recover from error. If the error is
+			 * non-recoverable, reconnect to the MPD server.
+			 */
+			if (!mpd_connection_clear_error(conn->h())) {
+
+				/* FIXME: gradually increase connection attempts? */
+				/* FIXME: use reconnectdelay setting */
+				/* FIXME: separate thread */
+				sleep(1);
+				conn->connect();
+				continue;
 			}
 		}
+
+		/* FIXME */
+		comm->update(false);
 
 		/* Get updated info about state and playlists */
 		if (comm->has_new_library())
