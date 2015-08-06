@@ -944,7 +944,8 @@ void			Pms::putlog(Message * m)
  *  1 = console
  *  2 = debug
  */
-void			Pms::log(int verbosity, long code, const char * format, ...)
+void
+Pms::log(int verbosity, long code, const char * format, ...)
 {
 	long		loglines;
 	va_list		ap;
@@ -981,6 +982,7 @@ void			Pms::log(int verbosity, long code, const char * format, ...)
 		disp->statusbar->clear(false, pair);
 		colprint(disp->statusbar, 0, 0, pair, "%s", buffer);
 		resetstatus(1);
+		disp->refresh();
 	}
 
 	if (verbosity <= MSG_DEBUG && pms->options->get_bool("debug"))
