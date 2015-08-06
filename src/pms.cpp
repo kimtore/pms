@@ -1,6 +1,6 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
- * PMS  <<Practical Music Search>>
+ * PMS	<<Practical Music Search>>
  * Copyright (C) 2006-2010  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
@@ -89,7 +89,7 @@ int			Pms::main()
 	if (conn->connect() != MPD_ERROR_SUCCESS)
 	{
 		printf(_("failed.\n"));
-                printf("%s\n", mpd_connection_get_error_message(conn->h()));
+		printf("%s\n", mpd_connection_get_error_message(conn->h()));
 
 		return PMS_EXIT_CANTCONNECT;
 	}
@@ -104,53 +104,38 @@ int			Pms::main()
 			printf(_("password accepted.\n"));
 		} else {
 			printf(_("wrong password.\n"));
-                        conn->clear_error();
-                }
+			conn->clear_error();
+		}
 	}
 
-        do {
-                if (!comm->get_available_commands()) {
-                        printf(_("Failed to get a list of available commands, retrying...\n"));
-                        conn->clear_error();
-                        sleep(1);
-                        continue;
-                }
+	do {
+		if (!comm->get_available_commands()) {
+			printf(_("Failed to get a list of available commands, retrying...\n"));
+			conn->clear_error();
+			sleep(1);
+			continue;
+		}
 
-                if (comm->authlevel() & AUTH_READ) {
-                        break;
-                }
+		if (comm->authlevel() & AUTH_READ) {
+			break;
+		}
 
-                printf(_("This mpd server requires a password.\n"));
-                printf(_("Password: "));
+		printf(_("This mpd server requires a password.\n"));
+		printf(_("Password: "));
 
-                fgets(pass, 512, stdin) ? 1 : 0; //ternary here is a hack to get rid of a warn_unused_result warning
-                if (pass[strlen(pass)-1] == '\n') {
-                        pass[strlen(pass)-1] = '\0';
-                }
+		fgets(pass, 512, stdin) ? 1 : 0; //ternary here is a hack to get rid of a warn_unused_result warning
+		if (pass[strlen(pass)-1] == '\n') {
+			pass[strlen(pass)-1] = '\0';
+		}
 
-                options->set_string("password", pass);
-                if (!comm->sendpassword(pass)) {
-                        printf(_("Wrong password, try again.\n"));
-                        conn->clear_error();
-                }
+		options->set_string("password", pass);
+		if (!comm->sendpassword(pass)) {
+			printf(_("Wrong password, try again.\n"));
+			conn->clear_error();
+		}
 	} while(true);
 
 	printf(_("Successfully logged in.\n"));
-
-	/* Update lists */
-	printf(_("Retrieving library and all playlists..."));
-	comm->update(true);
-	printf(_("done.\n"));
-
-	comm->has_new_library();
-	comm->has_new_playlist();
-	printf(_("Sorting library..."));
-	comm->library()->sort(options->get_string("sort"));
-	printf(_("done.\n"));
-
-	/* Center attention to current song */
-	comm->library()->gotocurrent();
-	comm->playlist()->gotocurrent();
 
 	_shutdown = false;
 	if (!disp->init())
@@ -201,6 +186,20 @@ int			Pms::main()
 	disp->forcedraw();
 	disp->refresh();
 
+	/* Update lists */
+	log(MSG_STATUS, STOK, "Retrieving library and all playlists...");
+	comm->update(true);
+	comm->has_new_library();
+	comm->has_new_playlist();
+
+	/* Sort library */
+	log(MSG_STATUS, STOK, _("Sorting library..."));
+	comm->library()->sort(options->get_string("sort"));
+
+	/* Center attention to current song */
+	comm->library()->gotocurrent();
+	comm->playlist()->gotocurrent();
+
 	/*
 	 * Main loop
 	 */
@@ -222,7 +221,7 @@ int			Pms::main()
 				{
 					if (timer != 0) {
 						log(MSG_STATUS, STERR, mpd_connection_get_error_message(conn->h()));
-                                        }
+					}
 
 					time(&timer);
 					continue;
@@ -513,7 +512,7 @@ string			Pms::tostring(int number)
 string
 Pms::tostring(const char *src)
 {
-        return src ? src : "";
+	return src ? src : "";
 }
 
 /*
@@ -807,8 +806,8 @@ void			Pms::drawstatus()
  */
 int			Pms::resetstatus(int set)
 {
-	static time_t 		stored = time(NULL);
-	static time_t 		now = time(NULL);
+	static time_t		stored = time(NULL);
+	static time_t		now = time(NULL);
 
 	if (set == 1)
 		time(&stored);
@@ -1216,10 +1215,11 @@ void			Pms::init_default_keymap()
 /*
  * Print the version string
  */
-void			Pms::print_version()
+void
+Pms::print_version()
 {
-   	printf("Uses libmpdclient (c) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)\n");
-	printf("This program is licensed under the GNU General Public License 3.\n");
+	printf("Uses libmpdclient (c) 2003-2015 The Music Player Daemon Project.\n");
+	printf("This program is licensed under the GNU General Public License version 3.\n");
 }
 
 /*
