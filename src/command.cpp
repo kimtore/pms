@@ -92,11 +92,16 @@ Mpd_status::assign_status(struct mpd_status * status)
 	db_updating		= mpd_status_get_update_id(status);
 
 	/* Audio format */
+	bitrate			= mpd_status_get_kbit_rate(status);
 	format			= mpd_status_get_audio_format(status);
+
+	if (!format) {
+		return;
+	}
+
 	samplerate		= format->sample_rate;
 	bits			= format->bits;
 	channels		= format->channels;
-	bitrate			= mpd_status_get_kbit_rate(status);
 }
 
 void
