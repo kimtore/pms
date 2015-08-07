@@ -1021,7 +1021,14 @@ Control::get_status()
 		st->last_db_update_time = st->db_update_time;
 		st->playlist = -1;
 		st->update_job_id = -1;
-		update_library();
+
+		if (!update_library()) {
+			return false;
+		}
+
+		if (!update_playlists()) {
+			return false;
+		}
 	}
 
 	return true;
@@ -1030,7 +1037,8 @@ Control::get_status()
 /*
  * Query MPD server for updated information
  */
-int		Control::update(bool force)
+int
+Control::update(bool force)
 {
 	/* Need >= 1 second to update. */
 	time(&(mytime[usetime]));
@@ -1050,6 +1058,7 @@ int		Control::update(bool force)
 	/* New playlist? */
 	if (st->playlist != st->last_playlist || st->last_playlist == -1)
 	{
+		/* FIXME */
 		pms->log(MSG_DEBUG, 0, "Playlist needs to be updated from version %d to %d\n", st->last_playlist, st->playlist);
 		update_playlist();
 		get_status();
@@ -1150,7 +1159,8 @@ void		Directory::debug_tree()
  * Retrieves the entire library from MPD
  * FIXME: return value
  */
-void Control::update_library()
+bool
+Control::update_library()
 {
 	Song *				song;
 	struct mpd_entity *		ent;
@@ -1160,12 +1170,12 @@ void Control::update_library()
 	Directory *			dir = rootdir;
 
 	pms->log(MSG_DEBUG, 0, "Retrieving library from mpd...\n");
-	_library->clear();
 
-	if (!mpd_send_list_all_meta(conn->h(), "/")) {
-		/* FIXME: error message */
-		return;
+	if (!mpd_send_list_all_meta(conn->h(), "")) {
+		return false;
 	}
+
+	_library->clear();
 
 	while ((ent = mpd_recv_entity(conn->h())) != NULL)
 	{
@@ -1204,11 +1214,9 @@ void Control::update_library()
 		mpd_entity_free(ent);
 	}
 
-	/* FIXME: check for errors! */
-
-	update_playlists();
-
 	_has_new_library = true;
+
+	return get_error_bool();
 }
 
 /*
@@ -1450,14 +1458,12 @@ bool		Control::activatelist(Songlist * list)
  * Retrieves current playlist from MPD
  * FIXME: return value
  */
-void
+bool
 Control::update_playlist()
 {
 	Song *			song;
 	struct mpd_entity *	ent;
 	const struct mpd_song *	ent_song;
-
-	if (!alive())		return;
 
 	pms->log(MSG_DEBUG, 0, "Quering playlist changes.\n");
 
@@ -1467,8 +1473,7 @@ Control::update_playlist()
 	}
 
 	if (!mpd_send_queue_changes_meta(conn->h(), st->last_playlist)) {
-		/* FIXME: error handling */
-		return;
+		return false;
 	}
 
 	while ((ent = mpd_recv_entity(conn->h())) != NULL)
@@ -1490,11 +1495,10 @@ Control::update_playlist()
 		mpd_entity_free(ent);
 	}
 
-	/* FIXME: check for errors */
-
 	_playlist->truncate(st->playlist_length);
-
 	_has_new_playlist = true;
+
+	return get_error_bool();
 }
 
 /*

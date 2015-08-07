@@ -230,8 +230,8 @@ private:
 	int			get_stats();
 	void			retrieve_lists(vector<Songlist *> &);
 	unsigned int		update_playlists();
-	void			update_playlist();
-	void			update_library();
+	bool			update_playlist();
+	bool			update_library();
 	bool			finish();
 
 public:

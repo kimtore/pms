@@ -203,6 +203,7 @@ int			Pms::main()
 
 	/*
 	 * Main loop
+	 * FIXME: reduce the size of this behemoth
 	 */
 	do
 	{
