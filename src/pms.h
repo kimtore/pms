@@ -69,6 +69,9 @@ using namespace std;
  * Global functions
  */
 void					debug(const char *, ...);
+void *                                  idle_thread_main(void *);
+void *                                  input_thread_main(void *);
+
 
 /*
  * This is the program itself, everything is run within here.
@@ -82,7 +85,6 @@ private:
 	char **				argv;
 
 	bool				_shutdown;
-	Connection *			conn;
 	pms_win_playlist *		playlist;
 	pms_win_playlist *		library;
 	vector<Message *>		msglog;
@@ -105,6 +107,7 @@ public:
 
 	/* Public variables */
 	//FIXME: program should be rewritten so that none of these should have to be public
+	Connection *			conn;
 	Options	*			options;
 	Control *			comm;
 	Display *			disp;

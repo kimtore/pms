@@ -8,6 +8,6 @@ AM_CXXFLAGS = \
 	@libmpdclient_CFLAGS@ \
 	-DLOCALE_DIR=\""$(datadir)/locale"\"
 
-pms_LDADD = @CURSES_LIB@ $(glib_LIBS) $(libzmq_LIBS) $(libmpdclient_LIBS)
+pms_LDADD = @CURSES_LIB@ $(glib_LIBS) $(libzmq_LIBS) $(libmpdclient_LIBS) -lpthread
 
 ACLOCAL_AMFLAGS = -I m4

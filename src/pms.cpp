@@ -24,8 +24,13 @@
 #include "pms.h"
 
 #include <unistd.h>
+#include <zmq.h>
+#include <pthread.h>
 
 using namespace std;
+
+#define ZEROMQ_SOCKET_IDLE "inproc://idle"
+#define ZEROMQ_SOCKET_INPUT "inproc://input"
 
 Pms *		pms;
 
@@ -53,6 +58,59 @@ int main(int argc, char *argv[])
 	return exitcode;	
 }
 
+/**
+ * MPD IDLE thread. Reads the reply from MPD's IDLE command, and makes sure the
+ * main thread gets to know about it.
+ */
+void *
+idle_thread_main(void * zeromq_context)
+{
+	enum mpd_idle idle_reply;
+	void * socket;
+	int rc;
+
+	socket = zmq_socket(zeromq_context, ZMQ_REP);
+	assert(socket != NULL);
+
+	assert(zmq_bind(socket, ZEROMQ_SOCKET_IDLE) == 0);
+
+	do {
+		/* Receive from main thread */
+		rc = zmq_recv(socket, NULL, 0, 0);
+		if (rc == -1) {
+			if (errno == EINTR) {
+				continue;
+			}
+			abort();
+		}
+
+		/* Receive IDLE reply */
+		idle_reply = mpd_recv_idle(pms->conn->h(), true);
+
+		/* Send reply to main thread */
+		rc = zmq_send(socket, (void *)&idle_reply, sizeof(enum mpd_idle *), 0);
+		if (rc == -1) {
+			if (errno == EINTR) {
+				continue;
+			}
+			abort();
+		}
+
+	} while(1);
+
+	return NULL;
+}
+
+/**
+ * Input thread. Handles all user input and makes sure the
+ * main thread gets to know about it.
+ */
+void *
+input_thread_main(void * zeromq_context)
+{
+	return NULL;
+}
+
 /*
  * Init
  */
@@ -73,7 +131,8 @@ Pms::~Pms()
 /*
  * Connection and main loop
  */
-int			Pms::main()
+int
+Pms::main()
 {
 	string			t_str;
 	pms_pending_keys	pending = PEND_NONE;
@@ -82,6 +141,17 @@ int			Pms::main()
 	bool			songchanged = false;
 	pms_window *		win = NULL;
 	time_t			timer = 0;
+
+	/* ZeroMQ inter-thread communication */
+	void *			zeromq_context;
+	void *			zeromq_socket_idle;
+	void *			zeromq_socket_input;
+	char			zeromq_buf[100];
+	zmq_pollitem_t		zeromq_poll_items[2];
+
+	/* Threads */
+	pthread_t		idle_thread;
+	pthread_t		input_thread;
 
 	/* Error codes returned from MPD */
 	enum mpd_error		error;
@@ -201,6 +271,26 @@ int			Pms::main()
 	comm->library()->gotocurrent();
 	comm->playlist()->gotocurrent();
 
+	/* Initialize ZeroMQ context and sockets */
+	zeromq_context = zmq_ctx_new();
+	assert(zeromq_context != NULL);
+	zeromq_socket_idle = zmq_socket(zeromq_context, ZMQ_REQ);
+	assert(zeromq_socket_idle != NULL);
+	zeromq_socket_input = zmq_socket(zeromq_context, ZMQ_REQ);
+	assert(zeromq_socket_input != NULL);
+	assert(zmq_connect(zeromq_socket_idle, ZEROMQ_SOCKET_IDLE) == 0);
+	assert(zmq_connect(zeromq_socket_input, ZEROMQ_SOCKET_INPUT) == 0);
+
+	/* Set up ZeroMQ poller */
+	zeromq_poll_items[0].socket = zeromq_socket_idle;
+	zeromq_poll_items[0].events = ZMQ_POLLIN;
+	zeromq_poll_items[1].socket = zeromq_socket_input;
+	zeromq_poll_items[1].events = ZMQ_POLLIN;
+
+	/* Initialize threads */
+	assert(pthread_create(&idle_thread, NULL, idle_thread_main, zeromq_context) == 0);
+	assert(pthread_create(&input_thread, NULL, input_thread_main, zeromq_context) == 0);
+
 	/*
 	 * Main loop
 	 * FIXME: reduce the size of this behemoth
@@ -210,7 +300,7 @@ int			Pms::main()
 		/* Test if some error has occurred */
 		if ((error = mpd_connection_get_error(conn->h())) != MPD_ERROR_SUCCESS) {
 
-			log(MSG_STATUS, STERR, "Error: %s", mpd_connection_get_error_message(conn->h()));
+			log(MSG_STATUS, STERR, "MPD error: %s", mpd_connection_get_error_message(conn->h()));
 
 			/* Try to recover from error. If the error is
 			 * non-recoverable, reconnect to the MPD server.
@@ -225,6 +315,30 @@ int			Pms::main()
 				continue;
 			}
 		}
+
+		/* Send IDLE command to the server. */
+		if (!mpd_send_idle(conn->h())) {
+			continue;
+		}
+
+		/* Expect IDLE replies from the MPD server. */
+		assert(zmq_send(zeromq_socket_idle, zeromq_buf, 0, 0) == 0);
+
+		/* Poll the input and IDLE subsystems for events. */
+		if (zmq_poll(zeromq_poll_items, 2, -1) == -1) {
+			if (errno == EINTR) {
+				continue;
+			}
+			abort();
+		}
+
+		/* Any events on the IDLE socket? */
+		enum mpd_idle idle_reply;
+		if (zeromq_poll_items[0].revents & ZMQ_POLLIN) {
+			assert(zmq_recv(zeromq_socket_idle, (void *)&idle_reply, sizeof(enum mpd_idle *), 0) == 0);
+		}
+
+		continue;
 
 		/* FIXME */
 		comm->update(false);
