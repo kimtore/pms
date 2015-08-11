@@ -152,6 +152,8 @@ Control::Control(Connection * n_conn)
 	usetime = 0;
 	time(&(mytime[0]));
 	mytime[1] = 0; // Update immedately
+
+	need_status = true;
 }
 
 Control::~Control()
@@ -230,10 +232,49 @@ const char *	Control::err()
 	return st->errstr.c_str();
 }
 
+/**
+ * Return the success or error status of the last MPD command sent.
+ */
 bool
 Control::get_error_bool()
 {
 	return (mpd_connection_get_error(conn->h()) == MPD_ERROR_SUCCESS);
+}
+
+/**
+ * Set pending updates based on which IDLE events were returned from the server.
+ */
+bool
+Control::set_mpd_idle_events(enum mpd_idle idle_reply)
+{
+	pms->log(MSG_DEBUG, 0, "Setting MPD IDLE events: " "MPD_IDLE_DATABASE=%d " "MPD_IDLE_STORED_PLAYLIST=%d " "MPD_IDLE_QUEUE=%d " "MPD_IDLE_PLAYLIST=%d "
+				"MPD_IDLE_PLAYER=%d " "MPD_IDLE_MIXER=%d " "MPD_IDLE_OUTPUT=%d " "MPD_IDLE_OPTIONS=%d " "MPD_IDLE_UPDATE=%d "
+				"MPD_IDLE_STICKER=%d " "MPD_IDLE_SUBSCRIPTION=%d " "MPD_IDLE_MESSAGE=%d\n",
+				(bool)(idle_reply & MPD_IDLE_DATABASE), (bool)(idle_reply & MPD_IDLE_STORED_PLAYLIST), (bool)(idle_reply & MPD_IDLE_QUEUE),
+				(bool)(idle_reply & MPD_IDLE_PLAYLIST), (bool)(idle_reply & MPD_IDLE_PLAYER), (bool)(idle_reply & MPD_IDLE_MIXER),
+				(bool)(idle_reply & MPD_IDLE_OUTPUT), (bool)(idle_reply & MPD_IDLE_OPTIONS), (bool)(idle_reply & MPD_IDLE_UPDATE),
+				(bool)(idle_reply & MPD_IDLE_STICKER), (bool)(idle_reply & MPD_IDLE_SUBSCRIPTION), (bool)(idle_reply & MPD_IDLE_MESSAGE)
+	);
+
+	if (idle_reply & MPD_IDLE_PLAYER) {
+		need_status = true;
+	}
+}
+
+/**
+ * Run all pending updates.
+ */
+bool
+Control::run_pending_updates()
+{
+	if (need_status) {
+		if (!get_status()) {
+			return false;
+		}
+		need_status = false;
+	}
+
+	return true;
 }
 
 /*

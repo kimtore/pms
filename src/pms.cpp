@@ -85,7 +85,9 @@ idle_thread_main(void * zeromq_context)
 		}
 
 		/* Receive IDLE reply */
+		pms->log(MSG_DEBUG, 0, "Waiting for IDLE reply from server...\n");
 		idle_reply = mpd_recv_idle(pms->conn->h(), true);
+		pms->log(MSG_DEBUG, 0, "IDLE reply received from server, code = %d\n", idle_reply);
 
 		/* Send reply to main thread */
 		rc = zmq_send(socket, (void *)&idle_reply, sizeof(enum mpd_idle *), 0);
@@ -128,6 +130,26 @@ Pms::~Pms()
 {
 }
 
+/* Check for events on the IDLE socket. */
+bool
+Pms::has_zeromq_idle_events()
+{
+	return (zeromq_poll_items[0].revents & ZMQ_POLLIN);
+}
+
+/* Retrieve events from the IDLE socket. */
+enum mpd_idle
+Pms::get_zeromq_idle_events()
+{
+	int rc;
+	enum mpd_idle idle_reply;
+
+	rc = zmq_recv(zeromq_socket_idle, (void *)&idle_reply, sizeof(enum mpd_idle *), 0);
+	assert(rc == sizeof(enum mpd_idle *));
+
+	return idle_reply;
+}
+
 /*
  * Connection and main loop
  */
@@ -141,17 +163,8 @@ Pms::main()
 	bool			songchanged = false;
 	pms_window *		win = NULL;
 	time_t			timer = 0;
-
-	/* ZeroMQ inter-thread communication */
-	void *			zeromq_context;
-	void *			zeromq_socket_idle;
-	void *			zeromq_socket_input;
-	char			zeromq_buf[100];
-	zmq_pollitem_t		zeromq_poll_items[2];
-
-	/* Threads */
-	pthread_t		idle_thread;
-	pthread_t		input_thread;
+	int			rc;
+	enum mpd_idle		idle_reply;
 
 	/* Error codes returned from MPD */
 	enum mpd_error		error;
@@ -316,13 +329,14 @@ Pms::main()
 			}
 		}
 
-		/* Send IDLE command to the server. */
-		if (!mpd_send_idle(conn->h())) {
-			continue;
+		/* Ensure that we are in IDLE mode. */
+		if (!conn->is_idle()) {
+			if (!conn->idle()) {
+				continue;
+			}
+			rc = zmq_send(zeromq_socket_idle, NULL, 0, 0);
+			assert(rc == 0);
 		}
-
-		/* Expect IDLE replies from the MPD server. */
-		assert(zmq_send(zeromq_socket_idle, zeromq_buf, 0, 0) == 0);
 
 		/* Poll the input and IDLE subsystems for events. */
 		if (zmq_poll(zeromq_poll_items, 2, -1) == -1) {
@@ -333,9 +347,16 @@ Pms::main()
 		}
 
 		/* Any events on the IDLE socket? */
-		enum mpd_idle idle_reply;
-		if (zeromq_poll_items[0].revents & ZMQ_POLLIN) {
-			assert(zmq_recv(zeromq_socket_idle, (void *)&idle_reply, sizeof(enum mpd_idle *), 0) == 0);
+		if (has_zeromq_idle_events()) {
+			idle_reply = get_zeromq_idle_events();
+			comm->set_mpd_idle_events(idle_reply);
+			conn->set_is_idle(false);
+		}
+
+		/* Run any pending updates */
+		if (!comm->run_pending_updates()) {
+			log(MSG_DEBUG, 0, "Failed running pending updates, MPD error follows:\n");
+			continue;
 		}
 
 		continue;

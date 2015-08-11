@@ -34,7 +34,7 @@ Connection::Connection(string n_hostname, long n_port, long n_timeout)
 	this->host = n_hostname;
 	this->port = static_cast<unsigned int>(n_port);
 	this->timeout = static_cast<int>(n_timeout);
-
+	this->_is_idle = false;
 	this->handle = NULL;
 }
 
@@ -94,7 +94,38 @@ int Connection::disconnect()
 		pms->log(MSG_DEBUG, 0, "Closing connection to MPD server.\n");
 		mpd_connection_free(handle);
 		handle = NULL;
+		_is_idle = false;
 	}
 
 	return 0;
+}
+
+/**
+ * Set client in IDLE mode
+ */
+bool
+Connection::idle()
+{
+	/* Programming error if fails assertion */
+	assert(!_is_idle);
+
+	pms->log(MSG_DEBUG, 0, "Entering IDLE mode.\n");
+	_is_idle = mpd_send_idle(handle);
+
+	return _is_idle;
+}
+
+/**
+ * Take client out of IDLE mode
+ */
+bool
+Connection::noidle()
+{
+	/* Programming error if fails assertion */
+	assert(_is_idle);
+
+	pms->log(MSG_DEBUG, 0, "Leaving IDLE mode.\n");
+	_is_idle = mpd_send_noidle(handle);
+
+	return _is_idle;
 }

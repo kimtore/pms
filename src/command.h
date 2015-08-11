@@ -222,6 +222,9 @@ private:
 	int			mutevolume;
 	int			crossfadetime;
 
+	/* Flags denoting outdated information, for use in IDLE */
+	bool			need_status;
+
 	/* Update interval timer */
 	time_t			mytime[2];
 	int			usetime;
@@ -243,6 +246,10 @@ public:
 
 	bool			alive();
 	const char *		err();		// Reports errors from mpd server
+
+	/* IDLE dispatcher */
+	bool			set_mpd_idle_events(enum mpd_idle);
+	bool			run_pending_updates();
 
 	/* True if mpd connection object has errors */
 	bool			get_error_bool();

@@ -1,6 +1,6 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
- * PMS  <<Practical Music Search>>
+ * PMS	<<Practical Music Search>>
  * Copyright (C) 2006-2010  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,6 +44,8 @@
 #include <sstream>
 #include <stdio.h>
 #include <mpd/client.h>
+#include <zmq.h>
+#include <pthread.h>
 
 #include "i18n.h"
 #include "types.h"
@@ -69,8 +71,8 @@ using namespace std;
  * Global functions
  */
 void					debug(const char *, ...);
-void *                                  idle_thread_main(void *);
-void *                                  input_thread_main(void *);
+void *					idle_thread_main(void *);
+void *					input_thread_main(void *);
 
 
 /*
@@ -89,10 +91,22 @@ private:
 	pms_win_playlist *		library;
 	vector<Message *>		msglog;
 
+	/* ZeroMQ inter-thread communication */
+	void *				zeromq_context;
+	void *				zeromq_socket_idle;
+	void *				zeromq_socket_input;
+	zmq_pollitem_t			zeromq_poll_items[2];
+
+	/* Threads */
+	pthread_t			idle_thread;
+	pthread_t			input_thread;
+
 	/* Private functions */
 	void				init_default_keymap();
 	bool				connect_window_list();
 	bool				progress_nextsong();
+	bool				has_zeromq_idle_events();
+	enum mpd_idle			get_zeromq_idle_events();
 
 	/* Options/arguments */
 	void				print_version();
@@ -108,7 +122,7 @@ public:
 	/* Public variables */
 	//FIXME: program should be rewritten so that none of these should have to be public
 	Connection *			conn;
-	Options	*			options;
+	Options *			options;
 	Control *			comm;
 	Display *			disp;
 	Input *				input;

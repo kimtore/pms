@@ -35,6 +35,7 @@ private:
 	unsigned int	port;
 	int		timeout;
 	int		error;
+	bool		_is_idle;
 
 public:
 			Connection(string, long, long);
@@ -46,6 +47,11 @@ public:
 	int		connect();
 	int		disconnect();
 	bool		clear_error();
+
+	bool		idle();
+	bool		noidle();
+	bool		is_idle() { return _is_idle; };
+	bool		set_is_idle(bool i) { _is_idle = i; };
 };
  
 #endif /* _PMS_CONN_H_ */
