@@ -151,10 +151,6 @@ Control::Control(Connection * n_conn)
 
 	/* Set all bits in mpd_idle event */
 	set_mpd_idle_events((enum mpd_idle) 0xffffffff);
-
-	usetime = 0;
-	time(&(mytime[0]));
-	mytime[1] = 0; // Update immedately
 }
 
 Control::~Control()
@@ -1099,41 +1095,6 @@ Control::get_status()
 	}
 
 	return true;
-}
-
-/*
- * Query MPD server for updated information
- * FIXME: obsolete, remove
- */
-int
-Control::update(bool force)
-{
-	/* Need >= 1 second to update. */
-	time(&(mytime[usetime]));
-	if (!force && difftime(mytime[0], mytime[1]) == 0)
-	{
-		return 1;
-	}
-	usetime = (usetime + 1) % 2;
-
-	/* Get vital signs */
-	if (!get_status())
-	{
-		return -1;
-	}
-	get_current_playing();
-
-	/* New playlist? */
-	if (st->playlist != st->last_playlist || st->last_playlist == -1)
-	{
-		/* FIXME */
-		pms->log(MSG_DEBUG, 0, "Playlist needs to be updated from version %d to %d\n", st->last_playlist, st->playlist);
-		update_playlist();
-		get_status();
-		st->last_playlist = st->playlist;
-	}
-
-	return 0;
 }
 
 Directory::Directory(Directory * par, string n)

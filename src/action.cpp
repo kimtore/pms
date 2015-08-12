@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
- * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * PMS	<<Practical Music Search>>
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  *
  *
  * action.cpp
- * 	Executes key-bound actions
+ *	Executes key-bound actions
  */
 
 #include "action.h"
@@ -913,9 +913,12 @@ long		Interface::seek(int seconds)
 		/* Skip backwards */
 		if (prev() == STOK)
 		{
-			pms->comm->update(true);
-			if (pms->comm->seek(pms->cursong()->time + seconds))
+			if (!pms->comm->get_status()) {
+				return STERR;
+			}
+			if (pms->comm->seek(pms->cursong()->time + seconds)) {
 				return STOK;
+			}
 		}
 		else
 		{

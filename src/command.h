@@ -225,10 +225,6 @@ private:
 	/* Flags denoting outdated information, for use in IDLE */
 	uint32_t		idle_events;
 
-	/* Update interval timer */
-	time_t			mytime[2];
-	int			usetime;
-
 	int			get_current_playing();
 	int			get_stats();
 	void			retrieve_lists(vector<Songlist *> &);
@@ -311,7 +307,6 @@ public:
 	Songlist	*library() { return _library; };
 
 	bool		increment();
-	int		update(bool);
 	bool		get_status();
 	bool		has_new_playlist();
 	bool		has_new_library();

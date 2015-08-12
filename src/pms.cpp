@@ -483,7 +483,7 @@ Pms::main()
 			if (pending != PEND_NONE)
 			{
 				handle_command(pending);
-				comm->update(true);
+				//comm->update(true);
 			}
 		}
 
