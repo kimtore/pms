@@ -348,33 +348,9 @@ Pms::main()
 			continue;
 		}
 
-		/* Ensure that we are in IDLE mode. */
-		if (!conn->is_idle()) {
-			if (!conn->idle()) {
-				continue;
-			}
-			rc = zmq_send(zeromq_socket_idle, NULL, 0, 0);
-			assert(rc == 0);
-		}
-
-		/* Poll the input and IDLE subsystems for events. */
-		if (zmq_poll(zeromq_poll_items, 2, -1) == -1) {
-			if (errno == EINTR) {
-				continue;
-			}
-			abort();
-		}
-
-		/* Any events on the IDLE socket? */
-		if (has_zeromq_idle_events()) {
-			idle_reply = get_zeromq_idle_events();
-			comm->set_mpd_idle_events(idle_reply);
-			conn->set_is_idle(false);
-		}
-
 		/* Library updates triggers re-calculation of column sizes,
 		 * triggers draw, etc. */
-		/* FIXME: move some of this code? */
+		/* FIXME: move responsibilities? */
 		if (comm->has_new_library()) {
 			log(MSG_STATUS, STOK, _("Library has been updated."));
 			disp->actwin()->wantdraw = true;
@@ -385,14 +361,55 @@ Pms::main()
 
 		/* Playlist updates triggers re-calculation of column sizes,
 		 * triggers draw, etc. */
-		if (comm->has_new_playlist())
-		{
+		/* FIXME: move responsibilities? */
+		if (comm->has_new_playlist()) {
 			disp->actwin()->wantdraw = true;
 			playlist->set_column_size();
 		}
 
 
+		/* Redraw the screen. */
+		/* FIXME: where to put this? */
+		disp->topbar->wantdraw = true;
+		if (mediator->changed("redraw")) {
+			disp->forcedraw();
+		} else {
+			disp->draw();
+		}
+		disp->refresh();
 
+
+
+
+		/**
+		 * Start IDLE mode and polling. Keep this code at the end of
+		 * the main loop.
+		 */
+
+		/* Ensure that we are in IDLE mode. */
+		if (!conn->is_idle()) {
+			if (!conn->idle()) {
+				continue;
+			}
+			rc = zmq_send(zeromq_socket_idle, NULL, 0, 0);
+			assert(rc == 0);
+		}
+
+		/* Poll the input and IDLE subsystems for events. This function
+		 * will block until either MPD or the user makes some noise. */
+		if (zmq_poll(zeromq_poll_items, 2, -1) == -1) {
+			if (errno == EINTR) {
+				continue;
+			}
+			abort();
+		}
+
+		/* Process events from the IDLE socket. */
+		if (has_zeromq_idle_events()) {
+			idle_reply = get_zeromq_idle_events();
+			comm->set_mpd_idle_events(idle_reply);
+			conn->set_is_idle(false);
+		}
 
 		continue;
 
@@ -475,14 +492,6 @@ Pms::main()
 			if (options->get_bool("topbarclear"))
 				options->topbar.clear();
 		}
-
-		/* Draw */
-		disp->topbar->wantdraw = true;
-		if (mediator->changed("redraw"))
-			disp->forcedraw();
-		else
-			disp->draw();
-		disp->refresh();
 
 	}
 	while (!_shutdown);
