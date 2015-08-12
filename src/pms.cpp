@@ -271,18 +271,18 @@ Pms::main()
 	disp->refresh();
 
 	/* Update lists */
-	log(MSG_STATUS, STOK, "Retrieving library and all playlists...");
-	comm->update(true);
-	comm->has_new_library();
-	comm->has_new_playlist();
+	//log(MSG_STATUS, STOK, "Retrieving library and all playlists...");
+	//comm->update(true);
+	//comm->has_new_library();
+	//comm->has_new_playlist();
 
 	/* Sort library */
-	log(MSG_STATUS, STOK, _("Sorting library..."));
-	comm->library()->sort(options->get_string("sort"));
+	//log(MSG_STATUS, STOK, _("Sorting library..."));
+	//comm->library()->sort(options->get_string("sort"));
 
 	/* Center attention to current song */
-	comm->library()->gotocurrent();
-	comm->playlist()->gotocurrent();
+	//comm->library()->gotocurrent();
+	//comm->playlist()->gotocurrent();
 
 	/* Initialize ZeroMQ context and sockets */
 	zeromq_context = zmq_ctx_new();
@@ -329,6 +329,12 @@ Pms::main()
 			}
 		}
 
+		/* Run any pending updates */
+		if (!comm->run_pending_updates()) {
+			log(MSG_DEBUG, 0, "Failed running pending updates, MPD error follows:\n");
+			continue;
+		}
+
 		/* Ensure that we are in IDLE mode. */
 		if (!conn->is_idle()) {
 			if (!conn->idle()) {
@@ -351,12 +357,6 @@ Pms::main()
 			idle_reply = get_zeromq_idle_events();
 			comm->set_mpd_idle_events(idle_reply);
 			conn->set_is_idle(false);
-		}
-
-		/* Run any pending updates */
-		if (!comm->run_pending_updates()) {
-			log(MSG_DEBUG, 0, "Failed running pending updates, MPD error follows:\n");
-			continue;
 		}
 
 		continue;

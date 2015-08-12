@@ -106,8 +106,9 @@ int Connection::disconnect()
 bool
 Connection::idle()
 {
-	/* Programming error if fails assertion */
-	assert(!_is_idle);
+	if(_is_idle) {
+		return true;
+	}
 
 	pms->log(MSG_DEBUG, 0, "Entering IDLE mode.\n");
 	_is_idle = mpd_send_idle(handle);
@@ -121,8 +122,9 @@ Connection::idle()
 bool
 Connection::noidle()
 {
-	/* Programming error if fails assertion */
-	assert(_is_idle);
+	if(!_is_idle) {
+		return true;
+	}
 
 	pms->log(MSG_DEBUG, 0, "Leaving IDLE mode.\n");
 	_is_idle = mpd_send_noidle(handle);

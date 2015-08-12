@@ -223,7 +223,7 @@ private:
 	int			crossfadetime;
 
 	/* Flags denoting outdated information, for use in IDLE */
-	bool			need_status;
+	uint32_t		idle_events;
 
 	/* Update interval timer */
 	time_t			mytime[2];
@@ -248,7 +248,7 @@ public:
 	const char *		err();		// Reports errors from mpd server
 
 	/* IDLE dispatcher */
-	bool			set_mpd_idle_events(enum mpd_idle);
+	void			set_mpd_idle_events(enum mpd_idle);
 	bool			run_pending_updates();
 
 	/* True if mpd connection object has errors */

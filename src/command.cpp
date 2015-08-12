@@ -149,11 +149,12 @@ Control::Control(Connection * n_conn)
 	mutevolume = 0;
 	crossfadetime = pms->options->get_long("crossfade");
 
+	/* Set all bits in mpd_idle event */
+	set_mpd_idle_events((enum mpd_idle) 0xffffffff);
+
 	usetime = 0;
 	time(&(mytime[0]));
 	mytime[1] = 0; // Update immedately
-
-	need_status = true;
 }
 
 Control::~Control()
@@ -244,21 +245,32 @@ Control::get_error_bool()
 /**
  * Set pending updates based on which IDLE events were returned from the server.
  */
-bool
+void
 Control::set_mpd_idle_events(enum mpd_idle idle_reply)
 {
-	pms->log(MSG_DEBUG, 0, "Setting MPD IDLE events: " "MPD_IDLE_DATABASE=%d " "MPD_IDLE_STORED_PLAYLIST=%d " "MPD_IDLE_QUEUE=%d " "MPD_IDLE_PLAYLIST=%d "
-				"MPD_IDLE_PLAYER=%d " "MPD_IDLE_MIXER=%d " "MPD_IDLE_OUTPUT=%d " "MPD_IDLE_OPTIONS=%d " "MPD_IDLE_UPDATE=%d "
-				"MPD_IDLE_STICKER=%d " "MPD_IDLE_SUBSCRIPTION=%d " "MPD_IDLE_MESSAGE=%d\n",
-				(bool)(idle_reply & MPD_IDLE_DATABASE), (bool)(idle_reply & MPD_IDLE_STORED_PLAYLIST), (bool)(idle_reply & MPD_IDLE_QUEUE),
-				(bool)(idle_reply & MPD_IDLE_PLAYLIST), (bool)(idle_reply & MPD_IDLE_PLAYER), (bool)(idle_reply & MPD_IDLE_MIXER),
-				(bool)(idle_reply & MPD_IDLE_OUTPUT), (bool)(idle_reply & MPD_IDLE_OPTIONS), (bool)(idle_reply & MPD_IDLE_UPDATE),
-				(bool)(idle_reply & MPD_IDLE_STICKER), (bool)(idle_reply & MPD_IDLE_SUBSCRIPTION), (bool)(idle_reply & MPD_IDLE_MESSAGE)
-	);
+	uint32_t event = 1;
+	const char *idle_name;
+	char buffer[2048];
+	char *ptr = buffer;
 
-	if (idle_reply & MPD_IDLE_PLAYER) {
-		need_status = true;
-	}
+	idle_events |= idle_reply;
+
+	/* Code below only prints debug statement. TODO: return if not debugging? */
+	do {
+		idle_name = mpd_idle_name((enum mpd_idle) event);
+		if (!idle_name) {
+			break;
+		}
+		if (!(idle_reply & event)) {
+			continue;
+		}
+		ptr += sprintf(ptr, "%s ", idle_name);
+
+	} while(event = event << 1);
+
+	*ptr = '\0';
+
+	pms->log(MSG_DEBUG, 0, "Set pending MPD IDLE events: %s\n", buffer);
 }
 
 /**
@@ -267,11 +279,38 @@ Control::set_mpd_idle_events(enum mpd_idle idle_reply)
 bool
 Control::run_pending_updates()
 {
-	if (need_status) {
+	/* MPD has new current song */
+	if (idle_events & MPD_IDLE_PLAYER) {
+		if (!get_current_playing()) {
+			return false;
+		}
+		/* MPD_IDLE_PLAYER will be subtracted below */
+	}
+
+	/* MPD has new status information */
+	if (idle_events & MPD_IDLE_PLAYER || idle_events & MPD_IDLE_MIXER || idle_events & MPD_IDLE_OPTIONS) {
 		if (!get_status()) {
 			return false;
 		}
-		need_status = false;
+		idle_events &= ~MPD_IDLE_PLAYER;
+		idle_events &= ~MPD_IDLE_MIXER;
+		idle_events &= ~MPD_IDLE_OPTIONS;
+	}
+
+	/* MPD has new playlist */
+	if (idle_events & MPD_IDLE_QUEUE) {
+		if (!update_playlist()) {
+			return false;
+		}
+		idle_events &= ~MPD_IDLE_QUEUE;
+	}
+
+	/* MPD has new song database */
+	if (idle_events & MPD_IDLE_DATABASE) {
+		if (!update_library()) {
+			return false;
+		}
+		idle_events &= ~MPD_IDLE_DATABASE;
 	}
 
 	return true;
@@ -1019,6 +1058,10 @@ Control::get_status()
 	mpd_status *	status;
 	mpd_stats *	stats;
 
+	pms->log(MSG_DEBUG, 0, "Retrieving MPD status from server.\n");
+
+	pms->conn->noidle();
+
 	if ((status = mpd_run_status(conn->h())) == NULL) {
 		/* FIXME: error handling? */
 		pms->log(MSG_DEBUG, 0, "mpd_run_status returned NULL pointer.\n");
@@ -1055,28 +1098,12 @@ Control::get_status()
 		}
 	}
 
-	if (st->db_update_time != st->last_db_update_time)
-	{
-		pms->log(MSG_DEBUG, 0, "DB time was updated from %d to %d\n", st->db_update_time, st->last_db_update_time);
-		pms->log(MSG_DEBUG, 0, "Server playlist version is now %d, local is %d\n", st->playlist, st->last_playlist);
-		st->last_db_update_time = st->db_update_time;
-		st->playlist = -1;
-		st->update_job_id = -1;
-
-		if (!update_library()) {
-			return false;
-		}
-
-		if (!update_playlists()) {
-			return false;
-		}
-	}
-
 	return true;
 }
 
 /*
  * Query MPD server for updated information
+ * FIXME: obsolete, remove
  */
 int
 Control::update(bool force)
@@ -1197,8 +1224,7 @@ void		Directory::debug_tree()
 */
 
 /*
- * Retrieves the entire library from MPD
- * FIXME: return value
+ * Retrieves the entire song library from MPD
  */
 bool
 Control::update_library()
@@ -1210,7 +1236,11 @@ Control::update_library()
 	const struct mpd_playlist *	ent_playlist;
 	Directory *			dir = rootdir;
 
-	pms->log(MSG_DEBUG, 0, "Retrieving library from mpd...\n");
+	pms->log(MSG_DEBUG, 0, "Updating library from DB time %d to %d\n", st->last_db_update_time, st->db_update_time);
+	st->last_db_update_time = st->db_update_time;
+	/* FIXME? */
+	//st->playlist = -1;
+	//st->update_job_id = -1;
 
 	if (!mpd_send_list_all_meta(conn->h(), "")) {
 		return false;
@@ -1497,19 +1527,19 @@ bool		Control::activatelist(Songlist * list)
 
 /*
  * Retrieves current playlist from MPD
- * FIXME: return value
+ * TODO: implement more entity types
  */
 bool
 Control::update_playlist()
 {
+	bool			rc;
 	Song *			song;
 	struct mpd_entity *	ent;
 	const struct mpd_song *	ent_song;
 
-	pms->log(MSG_DEBUG, 0, "Quering playlist changes.\n");
+	pms->log(MSG_DEBUG, 0, "Updating playlist from version %d to %d\n", st->last_playlist, st->playlist);
 
-	if (st->last_playlist == -1)
-	{
+	if (st->last_playlist == -1) {
 		_playlist->clear();
 	}
 
@@ -1536,10 +1566,13 @@ Control::update_playlist()
 		mpd_entity_free(ent);
 	}
 
-	_playlist->truncate(st->playlist_length);
-	_has_new_playlist = true;
+	if ((rc = get_error_bool()) == true) {
+		_playlist->truncate(st->playlist_length);
+		_has_new_playlist = true;
+		st->last_playlist = st->playlist;
+	}
 
-	return get_error_bool();
+	return rc;
 }
 
 /*
