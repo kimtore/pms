@@ -150,6 +150,36 @@ Pms::get_zeromq_idle_events()
 	return idle_reply;
 }
 
+/**
+ * Initialize threads and their ZeroMQ socket REQ sockets.
+ *
+ * If this function fails any assertions, there is no point in continuing
+ * program execution.
+ */
+void
+Pms::setup_zeromq_threads()
+{
+	/* Initialize ZeroMQ context and sockets */
+	zeromq_context = zmq_ctx_new();
+	assert(zeromq_context != NULL);
+	zeromq_socket_idle = zmq_socket(zeromq_context, ZMQ_REQ);
+	assert(zeromq_socket_idle != NULL);
+	zeromq_socket_input = zmq_socket(zeromq_context, ZMQ_REQ);
+	assert(zeromq_socket_input != NULL);
+	assert(zmq_connect(zeromq_socket_idle, ZEROMQ_SOCKET_IDLE) == 0);
+	assert(zmq_connect(zeromq_socket_input, ZEROMQ_SOCKET_INPUT) == 0);
+
+	/* Set up ZeroMQ poller */
+	zeromq_poll_items[0].socket = zeromq_socket_idle;
+	zeromq_poll_items[0].events = ZMQ_POLLIN;
+	zeromq_poll_items[1].socket = zeromq_socket_input;
+	zeromq_poll_items[1].events = ZMQ_POLLIN;
+
+	/* Initialize threads */
+	assert(pthread_create(&idle_thread, NULL, idle_thread_main, zeromq_context) == 0);
+	assert(pthread_create(&input_thread, NULL, input_thread_main, zeromq_context) == 0);
+}
+
 /*
  * Connection and main loop
  */
@@ -284,25 +314,8 @@ Pms::main()
 	//comm->library()->gotocurrent();
 	//comm->playlist()->gotocurrent();
 
-	/* Initialize ZeroMQ context and sockets */
-	zeromq_context = zmq_ctx_new();
-	assert(zeromq_context != NULL);
-	zeromq_socket_idle = zmq_socket(zeromq_context, ZMQ_REQ);
-	assert(zeromq_socket_idle != NULL);
-	zeromq_socket_input = zmq_socket(zeromq_context, ZMQ_REQ);
-	assert(zeromq_socket_input != NULL);
-	assert(zmq_connect(zeromq_socket_idle, ZEROMQ_SOCKET_IDLE) == 0);
-	assert(zmq_connect(zeromq_socket_input, ZEROMQ_SOCKET_INPUT) == 0);
-
-	/* Set up ZeroMQ poller */
-	zeromq_poll_items[0].socket = zeromq_socket_idle;
-	zeromq_poll_items[0].events = ZMQ_POLLIN;
-	zeromq_poll_items[1].socket = zeromq_socket_input;
-	zeromq_poll_items[1].events = ZMQ_POLLIN;
-
-	/* Initialize threads */
-	assert(pthread_create(&idle_thread, NULL, idle_thread_main, zeromq_context) == 0);
-	assert(pthread_create(&input_thread, NULL, input_thread_main, zeromq_context) == 0);
+	/* Set up inter-thread communication */
+	setup_zeromq_threads();
 
 	/*
 	 * Main loop
@@ -359,27 +372,30 @@ Pms::main()
 			conn->set_is_idle(false);
 		}
 
-		continue;
-
-		/* FIXME */
-		comm->update(false);
-
-		/* Get updated info about state and playlists */
-		if (comm->has_new_library())
-		{
-			log(MSG_STATUS, STOK, _("Library updated."));
-			if (disp->actwin())
-				disp->actwin()->wantdraw = true;
+		/* Library updates triggers re-calculation of column sizes,
+		 * triggers draw, etc. */
+		/* FIXME: move some of this code? */
+		if (comm->has_new_library()) {
+			log(MSG_STATUS, STOK, _("Library has been updated."));
+			disp->actwin()->wantdraw = true;
 			library->list->sort(options->get_string("sort"));
 			library->set_column_size();
 			connect_window_list();
 		}
+
+		/* Playlist updates triggers re-calculation of column sizes,
+		 * triggers draw, etc. */
 		if (comm->has_new_playlist())
 		{
-			if (disp->actwin())
-				disp->actwin()->wantdraw = true;
+			disp->actwin()->wantdraw = true;
 			playlist->set_column_size();
 		}
+
+
+
+
+		continue;
+
 
 		/* Progress to next song? */
 		progress_nextsong();

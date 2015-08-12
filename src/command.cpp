@@ -1229,6 +1229,7 @@ void		Directory::debug_tree()
 bool
 Control::update_library()
 {
+	uint32_t			total = 0;
 	Song *				song;
 	struct mpd_entity *		ent;
 	const struct mpd_directory *	ent_directory;
@@ -1238,9 +1239,6 @@ Control::update_library()
 
 	pms->log(MSG_DEBUG, 0, "Updating library from DB time %d to %d\n", st->last_db_update_time, st->db_update_time);
 	st->last_db_update_time = st->db_update_time;
-	/* FIXME? */
-	//st->playlist = -1;
-	//st->update_job_id = -1;
 
 	if (!mpd_send_list_all_meta(conn->h(), "")) {
 		return false;
@@ -1283,7 +1281,11 @@ Control::update_library()
 		}
 
 		mpd_entity_free(ent);
+
+		++total;
 	}
+
+	pms->log(MSG_DEBUG, 0, "Processed a total of %d entities during library update\n", total);
 
 	_has_new_library = true;
 

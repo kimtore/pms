@@ -107,6 +107,7 @@ private:
 	bool				progress_nextsong();
 	bool				has_zeromq_idle_events();
 	enum mpd_idle			get_zeromq_idle_events();
+	void				setup_zeromq_threads();
 
 	/* Options/arguments */
 	void				print_version();
