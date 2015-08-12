@@ -23,8 +23,10 @@
 
 #include "pms.h"
 
+#include <mpd/client.h>
 #include <unistd.h>
 #include <zmq.h>
+#include <time.h>
 #include <pthread.h>
 
 using namespace std;
@@ -56,6 +58,24 @@ int main(int argc, char *argv[])
 	}
 	delete pms;
 	return exitcode;	
+}
+
+/**
+ * Return the time difference between two timespec structs.
+ */
+struct timespec difftime(struct timespec start, struct timespec end)
+{
+	struct timespec temp;
+
+	if ((end.tv_nsec - start.tv_nsec) < 0) {
+		temp.tv_sec = end.tv_sec - start.tv_sec - 1;
+		temp.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
+	} else {
+		temp.tv_sec = end.tv_sec - start.tv_sec;
+		temp.tv_nsec = end.tv_nsec - start.tv_nsec;
+	}
+
+	return temp;
 }
 
 /**
@@ -180,6 +200,19 @@ Pms::setup_zeromq_threads()
 	assert(pthread_create(&input_thread, NULL, input_thread_main, zeromq_context) == 0);
 }
 
+struct timespec
+Pms::get_clock()
+{
+	struct timespec now;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) {
+		perror("Failed to increase internal timer");
+		abort();
+	}
+
+	return now;
+}
+
 /*
  * Connection and main loop
  */
@@ -199,6 +232,11 @@ Pms::main()
 	/* Error codes returned from MPD */
 	enum mpd_error		error;
 	enum mpd_server_error	server_error;
+
+	/* Timers */
+	struct timespec		timer_now;
+	struct timespec		timer_elapsed;
+	struct timespec		timer_tmp;
 
 	/* Connection */
 	printf(_("Connecting to host %s, port %ld..."), options->get_string("host").c_str(), options->get_long("port"));
@@ -317,12 +355,22 @@ Pms::main()
 	/* Set up inter-thread communication */
 	setup_zeromq_threads();
 
+	/* Reset all clocks */
+	timer_now = get_clock();
+	timer_elapsed = get_clock();
+
 	/*
 	 * Main loop
 	 * FIXME: reduce the size of this behemoth
 	 */
 	do
 	{
+		/* Set timer */
+		timer_now = get_clock();
+
+		/* For debugging the main loop */
+		log(MSG_DEBUG, 0, "--> Main loop iteration, clock = %ld.%ld\n", timer_now.tv_sec, timer_now.tv_nsec);
+
 		/* Test if some error has occurred */
 		if ((error = mpd_connection_get_error(conn->h())) != MPD_ERROR_SUCCESS) {
 
@@ -340,6 +388,17 @@ Pms::main()
 				conn->connect();
 				continue;
 			}
+		}
+
+		/* Increase time elapsed. */
+		/* FIXME: this is inaccurate and will cause clock skew if
+		 * running for long enough. Use mpd_status_get_elapsed_ms() to
+		 * get time from MPD in milliseconds, and use the .tv_nsec
+		 * member as well. */
+		if (comm->status()->state == MPD_STATE_PLAY) {
+			timer_tmp = difftime(timer_elapsed, timer_now);
+			comm->status()->time_elapsed += timer_tmp.tv_sec;
+			timer_elapsed = get_clock();
 		}
 
 		/* Run any pending updates */
@@ -366,7 +425,6 @@ Pms::main()
 			disp->actwin()->wantdraw = true;
 			playlist->set_column_size();
 		}
-
 
 		/* Redraw the screen. */
 		/* FIXME: where to put this? */
@@ -396,8 +454,9 @@ Pms::main()
 		}
 
 		/* Poll the input and IDLE subsystems for events. This function
-		 * will block until either MPD or the user makes some noise. */
-		if (zmq_poll(zeromq_poll_items, 2, -1) == -1) {
+		 * will block for 1000ms, or until either MPD or the user makes
+		 * some noise. */
+		if (zmq_poll(zeromq_poll_items, 2, 1000) == -1) {
 			if (errno == EINTR) {
 				continue;
 			}

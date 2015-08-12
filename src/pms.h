@@ -45,6 +45,7 @@
 #include <stdio.h>
 #include <mpd/client.h>
 #include <zmq.h>
+#include <time.h>
 #include <pthread.h>
 
 #include "i18n.h"
@@ -73,6 +74,7 @@ using namespace std;
 void					debug(const char *, ...);
 void *					idle_thread_main(void *);
 void *					input_thread_main(void *);
+struct timespec				difftime(struct timespec, struct timespec);
 
 
 /*
@@ -100,6 +102,9 @@ private:
 	/* Threads */
 	pthread_t			idle_thread;
 	pthread_t			input_thread;
+
+	/* Internal timer */
+	struct timespec			get_clock();
 
 	/* Private functions */
 	void				init_default_keymap();
