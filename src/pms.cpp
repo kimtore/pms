@@ -495,8 +495,8 @@ Pms::main()
 		 */
 
 		/* Ensure that we are in IDLE mode. */
-		if (!conn->is_idle()) {
-			if (!conn->idle()) {
+		if (!comm->is_idle()) {
+			if (!comm->idle()) {
 				continue;
 			}
 			rc = zmq_send(zeromq_socket_idle, NULL, 0, 0);
@@ -517,7 +517,7 @@ Pms::main()
 		if (has_zeromq_idle_events()) {
 			idle_reply = get_zeromq_idle_events();
 			comm->set_mpd_idle_events(idle_reply);
-			conn->set_is_idle(false);
+			comm->set_is_idle(false);
 		}
 
 		/* Process events from the input socket. */
@@ -526,7 +526,6 @@ Pms::main()
 			pending = input->dispatch();
 			if (pending != PEND_NONE) {
 				handle_command(pending);
-				//comm->update(true);
 			}
 		}
 

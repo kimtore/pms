@@ -207,6 +207,7 @@ private:
 	Connection *		conn;
 	Mpd_status *		st;
 	Mpd_allowed_commands	commands;
+	bool			_is_idle;
 
 	Song			*_song;
 	Songlist		*_playlist;
@@ -285,6 +286,12 @@ public:
 	bool			mute();
 	bool			muted();
 	int			mvolume() { return mutevolume; };
+
+	/* IDLE management */
+	bool			idle();
+	bool			noidle();
+	bool			is_idle();
+	bool			set_is_idle(bool);
 
 	/* List management */
 	Songlist *	findplaylist(string filename);

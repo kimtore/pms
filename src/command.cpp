@@ -145,6 +145,7 @@ Control::Control(Connection * n_conn)
 	_playlist->role = LIST_ROLE_MAIN;
 	_library->role = LIST_ROLE_LIBRARY;
 	_active = NULL;
+	_is_idle = false;
 	command_mode = 0;
 	mutevolume = 0;
 	crossfadetime = pms->options->get_long("crossfade");
@@ -1056,7 +1057,7 @@ Control::get_status()
 
 	pms->log(MSG_DEBUG, 0, "Retrieving MPD status from server.\n");
 
-	pms->conn->noidle();
+	noidle();
 
 	if ((status = mpd_run_status(conn->h())) == NULL) {
 		/* FIXME: error handling? */
@@ -1687,3 +1688,46 @@ Control::increment()
 	return true;
 }
 
+/**
+ * Set client in IDLE mode
+ */
+bool
+Control::idle()
+{
+	if(_is_idle) {
+		return true;
+	}
+
+	pms->log(MSG_DEBUG, 0, "Entering IDLE mode.\n");
+	_is_idle = mpd_send_idle(conn->h());
+
+	return _is_idle;
+}
+
+/**
+ * Take client out of IDLE mode
+ */
+bool
+Control::noidle()
+{
+	if(!_is_idle) {
+		return true;
+	}
+
+	pms->log(MSG_DEBUG, 0, "Leaving IDLE mode.\n");
+	_is_idle = mpd_send_noidle(conn->h());
+
+	return _is_idle;
+}
+
+bool
+Control::is_idle()
+{
+	return _is_idle;
+}
+
+bool
+Control::set_is_idle(bool i)
+{
+	_is_idle = i;
+}
