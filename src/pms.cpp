@@ -110,12 +110,15 @@ idle_thread_main(void * zeromq_context)
 		pms->log(MSG_DEBUG, 0, "IDLE reply received from server, code = %d\n", idle_reply);
 
 		/* Send reply to main thread */
-		rc = zmq_send(socket, (void *)&idle_reply, sizeof(enum mpd_idle *), 0);
-		if (rc == -1) {
-			if (errno == EINTR) {
-				continue;
+		while(true) {
+			rc = zmq_send(socket, (void *)&idle_reply, sizeof(enum mpd_idle *), 0);
+			if (rc == -1) {
+				if (errno == EINTR) {
+					continue;
+				}
+				abort();
 			}
-			abort();
+			break;
 		}
 
 	} while(1);
@@ -130,6 +133,32 @@ idle_thread_main(void * zeromq_context)
 void *
 input_thread_main(void * zeromq_context)
 {
+	wchar_t ch;
+	void * socket;
+	int rc;
+
+	socket = zmq_socket(zeromq_context, ZMQ_PUB);
+	assert(socket != NULL);
+
+	assert(zmq_connect(socket, ZEROMQ_SOCKET_INPUT) == 0);
+
+	do {
+		/* Poll for user input */
+		pms->log(MSG_DEBUG, 0, "Waiting for input keystroke from ncurses...\n");
+		ch = pms->input->get_keystroke();
+		pms->log(MSG_DEBUG, 0, "Keystroke registered: chr(%d) = '%c'\n", ch, ch);
+
+		/* Send keystroke to main thread */
+		rc = zmq_send(socket, (void *)&ch, sizeof(wchar_t *), 0);
+		if (rc == -1) {
+			if (errno == EINTR) {
+				continue;
+			}
+			abort();
+		}
+
+	} while(1);
+
 	return NULL;
 }
 
@@ -170,8 +199,28 @@ Pms::get_zeromq_idle_events()
 	return idle_reply;
 }
 
+/* Check for events on the input socket. */
+bool
+Pms::has_zeromq_input_events()
+{
+	return (zeromq_poll_items[1].revents & ZMQ_POLLIN);
+}
+
+/* Retrieve events from the input socket. */
+wchar_t
+Pms::get_zeromq_input_events()
+{
+	int rc;
+	wchar_t reply;
+
+	rc = zmq_recv(zeromq_socket_input, (void *)&reply, sizeof(wchar_t *), 0);
+	assert(rc == sizeof(wchar_t *));
+
+	return reply;
+}
+
 /**
- * Initialize threads and their ZeroMQ socket REQ sockets.
+ * Initialize threads, and the main thread's ZeroMQ REQ/SUB sockets.
  *
  * If this function fails any assertions, there is no point in continuing
  * program execution.
@@ -184,10 +233,11 @@ Pms::setup_zeromq_threads()
 	assert(zeromq_context != NULL);
 	zeromq_socket_idle = zmq_socket(zeromq_context, ZMQ_REQ);
 	assert(zeromq_socket_idle != NULL);
-	zeromq_socket_input = zmq_socket(zeromq_context, ZMQ_REQ);
+	zeromq_socket_input = zmq_socket(zeromq_context, ZMQ_SUB);
 	assert(zeromq_socket_input != NULL);
+	assert(zmq_setsockopt(zeromq_socket_input, ZMQ_SUBSCRIBE, "", 0) == 0);
 	assert(zmq_connect(zeromq_socket_idle, ZEROMQ_SOCKET_IDLE) == 0);
-	assert(zmq_connect(zeromq_socket_input, ZEROMQ_SOCKET_INPUT) == 0);
+	assert(zmq_bind(zeromq_socket_input, ZEROMQ_SOCKET_INPUT) == 0);
 
 	/* Set up ZeroMQ poller */
 	zeromq_poll_items[0].socket = zeromq_socket_idle;
@@ -300,7 +350,7 @@ Pms::main()
 	}
 
 	/* Workaround for buggy ncurses clearing the screen on first getch() */
-	getch();
+	//getch();
 
 	/* Set up library and playlist windows */
 	playlist = disp->create_playlist();
@@ -470,22 +520,21 @@ Pms::main()
 			conn->set_is_idle(false);
 		}
 
+		/* Process events from the input socket. */
+		if (has_zeromq_input_events()) {
+			get_zeromq_input_events();
+			pending = input->dispatch();
+			if (pending != PEND_NONE) {
+				handle_command(pending);
+				//comm->update(true);
+			}
+		}
+
 		continue;
 
 
 		/* Progress to next song? */
 		progress_nextsong();
-
-		/* Any pending keystrokes? */
-		if (input->get_keystroke())
-		{
-			pending = input->dispatch();
-			if (pending != PEND_NONE)
-			{
-				handle_command(pending);
-				//comm->update(true);
-			}
-		}
 
 		songchanged = comm->song_changed();
 		statechanged = comm->state_changed();

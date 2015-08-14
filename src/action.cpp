@@ -1127,7 +1127,8 @@ long		Interface::select(pms_window * win, int mode, string param)
 /*
  * Executes actions. This is the last bit of the user interface.
  */
-bool		handle_command(pms_pending_keys action)
+bool
+handle_command(pms_pending_keys action)
 {
 	Message		err;
 	Song *		song = NULL;

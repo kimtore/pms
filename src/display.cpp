@@ -1156,7 +1156,6 @@ bool		Display::init()
 	initscr();
 	raw();
 	noecho();
-	halfdelay(5);
 	keypad(stdscr, true);
 	setmousemask();
 
