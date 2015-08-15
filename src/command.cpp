@@ -612,6 +612,8 @@ Control::stop()
 {
 	EXIT_IDLE;
 
+	pms->log(MSG_DEBUG, 0, "Stopping playback.\n");
+
 	return mpd_run_stop(conn->h());
 }
 
@@ -621,6 +623,10 @@ Control::stop()
 bool
 Control::shuffle()
 {
+	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Shuffling playlist.\n");
+
 	return mpd_run_shuffle(conn->h());
 }
 
@@ -630,6 +636,10 @@ Control::shuffle()
 bool
 Control::repeat(bool on)
 {
+	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Set repeat to %d\n", on);
+
 	return mpd_run_repeat(conn->h(), on);
 }
 
@@ -639,6 +649,10 @@ Control::repeat(bool on)
 bool
 Control::single(bool on)
 {
+	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Set single to %d\n", on);
+
 	return mpd_run_single(conn->h(), on);
 }
 
@@ -656,9 +670,9 @@ Control::setvolume(int vol)
 		vol = 100;
 	}
 
-	pms->log(MSG_DEBUG, 0, "Setting volume to %d%%\n", vol);
-
 	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Setting volume to %d%%\n", vol);
 
 	if (mpd_run_set_volume(conn->h(), vol)) {
 		mutevolume = 0;
@@ -705,6 +719,10 @@ Control::muted()
 bool
 Control::random(int set)
 {
+	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Set random to %d\n", set);
+
 	if (set == -1) {
 		set = (st->random == false ? true : false);
 	}
@@ -947,6 +965,8 @@ Control::clear(Songlist * list)
 
 	EXIT_IDLE;
 
+	pms->log(MSG_DEBUG, 0, "Clearing playlist\n");
+
 	if (list == _playlist) {
 		if ((r = mpd_run_clear(conn->h()))) {
 			st->last_playlist = -1;
@@ -964,6 +984,8 @@ bool
 Control::seek(int offset)
 {
 	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Seeking by %d seconds\n", offset);
 
 	/* FIXME: perhaps this check should be performed at an earlier stage? */
 	if (!song()) {
@@ -984,6 +1006,8 @@ Control::crossfade()
 {
 	EXIT_IDLE;
 
+	pms->log(MSG_DEBUG, 0, "Toggling crossfade\n");
+
 	if (st->crossfade == 0) {
 		return mpd_run_crossfade(conn->h(), crossfadetime);
 	}
@@ -1000,6 +1024,8 @@ int
 Control::crossfade(int interval)
 {
 	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Set crossfade to %d seconds\n", interval);
 
 	if (interval < 0) {
 		return false;
@@ -1152,9 +1178,9 @@ Control::get_status()
 	mpd_status *	status;
 	mpd_stats *	stats;
 
-	pms->log(MSG_DEBUG, 0, "Retrieving MPD status from server.\n");
-
 	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Retrieving MPD status from server.\n");
 
 	if ((status = mpd_run_status(conn->h())) == NULL) {
 		/* FIXME: error handling? */
@@ -1296,10 +1322,10 @@ Control::update_library()
 	const struct mpd_playlist *	ent_playlist;
 	Directory *			dir = rootdir;
 
+	EXIT_IDLE;
+
 	pms->log(MSG_DEBUG, 0, "Updating library from DB time %d to %d\n", st->last_db_update_time, st->db_update_time);
 	st->last_db_update_time = st->db_update_time;
-
-	EXIT_IDLE;
 
 	if (!mpd_send_list_all_meta(conn->h(), "")) {
 		return false;
@@ -1362,9 +1388,9 @@ Control::update_playlists()
 	vector<Songlist *>		newlist;
 	vector<Songlist *>::iterator	i;
 
-	pms->log(MSG_DEBUG, 0, "Refreshing playlists.\n");
-
 	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Refreshing playlists.\n");
 
 	if (!mpd_send_list_playlists(conn->h())) {
 		/* FIXME */
@@ -1584,11 +1610,30 @@ bool		Control::activatelist(Songlist * list)
 	}
 
 	/* Have MPD manage random inside playlist */
+	/* FIXME: custom function */
+	/* FIXME: not our responsibility! */
+	/* FIXME: wrong return codes */
+	bool set_repeat;
+	bool set_single;
+	bool set_random;
+
 	if (changed)
 	{
-		repeat((pms->options->get_long("repeat") == REPEAT_LIST || pms->options->get_long("repeat") == REPEAT_ONE) && activelist() == playlist());
-		single(pms->options->get_long("repeat") == REPEAT_ONE && activelist() == playlist());
-		random(pms->options->get_long("playmode") == PLAYMODE_RANDOM && activelist() == playlist());
+		set_repeat = ((pms->options->get_long("repeat") == REPEAT_LIST || pms->options->get_long("repeat") == REPEAT_ONE) && activelist() == playlist());
+		set_single = (pms->options->get_long("repeat") == REPEAT_ONE && activelist() == playlist());
+		set_random = (pms->options->get_long("playmode") == PLAYMODE_RANDOM && activelist() == playlist());
+
+		if (set_repeat != st->repeat && !repeat(set_repeat)) {
+			return false;
+		}
+
+		if (set_single != st->single && !single(set_single)) {
+			return false;
+		}
+
+		if (set_random != st->random && !random(set_random)) {
+			return false;
+		}
 	}
 
 	return changed;
@@ -1781,7 +1826,7 @@ Control::increment()
 bool
 Control::idle()
 {
-	if(is_idle()) {
+	if (is_idle()) {
 		return true;
 	}
 
@@ -1797,7 +1842,7 @@ Control::idle()
 bool
 Control::noidle()
 {
-	if(!is_idle()) {
+	if (!is_idle()) {
 		return true;
 	}
 
@@ -1814,7 +1859,7 @@ bool
 Control::wait_until_noidle()
 {
 	pms->zeromq->poll_events(NOIDLE_POLL_TIMEOUT);
-	return pms->zeromq->has_idle_events();
+	return pms->run_has_idle_events();
 }
 
 bool

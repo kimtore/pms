@@ -93,6 +93,11 @@ private:
 	pms_win_playlist *		library;
 	vector<Message *>		msglog;
 
+	/* Timers */
+	struct timespec			timer_now;
+	struct timespec			timer_elapsed;
+	struct timespec			timer_tmp;
+
 	/* Internal timer */
 	struct timespec			get_clock();
 
@@ -145,6 +150,7 @@ public:
 	static bool			unicode();
 
 	/* Public member functions */
+	bool				run_has_idle_events();
 	void				setstatus(statusbar_mode, const char *, ...);
 	void				drawstatus();
 	int				resetstatus(int);

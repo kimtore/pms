@@ -189,6 +189,29 @@ Pms::get_clock()
 	return now;
 }
 
+/**
+ * Check if there is an MPD IDLE event on the ZeroMQ socket.
+ * Set pending flags on the Control class, and sets real idle status.
+ *
+ * Returns true if there was an IDLE event, false if none.
+ */
+bool
+Pms::run_has_idle_events()
+{
+	enum mpd_idle idle_reply;
+
+	if (!zeromq->has_idle_events()) {
+		return false;
+	}
+
+	idle_reply = zeromq->get_idle_events();
+	comm->set_mpd_idle_events(idle_reply);
+	comm->set_is_idle(false);
+	timer_elapsed = get_clock();
+
+	return true;
+}
+
 /*
  * Connection and main loop
  */
@@ -203,16 +226,10 @@ Pms::main()
 	pms_window *		win = NULL;
 	time_t			timer = 0;
 	int			rc;
-	enum mpd_idle		idle_reply;
 
 	/* Error codes returned from MPD */
 	enum mpd_error		error;
 	enum mpd_server_error	server_error;
-
-	/* Timers */
-	struct timespec		timer_now;
-	struct timespec		timer_elapsed;
-	struct timespec		timer_tmp;
 
 	/* Connection */
 	printf(_("Connecting to host %s, port %ld..."), options->get_string("host").c_str(), options->get_long("port"));
@@ -443,12 +460,7 @@ Pms::main()
 		zeromq->poll_events(1000);
 
 		/* Process events from the IDLE socket. */
-		if (zeromq->has_idle_events()) {
-			idle_reply = zeromq->get_idle_events();
-			comm->set_mpd_idle_events(idle_reply);
-			comm->set_is_idle(false);
-			timer_elapsed = get_clock();
-		}
+		run_has_idle_events();
 
 		/* Process events from the input socket. */
 		if (zeromq->has_input_events()) {
