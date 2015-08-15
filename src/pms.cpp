@@ -495,6 +495,7 @@ Pms::main()
 
 		/* Draw topbar on mixer update. */
 		if (comm->has_finished_update(MPD_IDLE_MIXER)) {
+			log(MSG_STATUS, STOK, _("Volume: %d%%%%"), comm->status()->volume); // FIXME: duplicated
 			disp->topbar->wantdraw = true;
 			comm->clear_finished_update(MPD_IDLE_MIXER);
 		}

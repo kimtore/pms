@@ -608,24 +608,28 @@ Control::single(bool on)
 }
 
 /*
- * Set an absolute volume
+ * Set the volume to an integer between 0 and 100.
+ *
+ * Return true on success, false on failure.
  */
 bool
 Control::setvolume(int vol)
 {
-	bool r;
-
 	if (vol < 0) {
 		vol = 0;
 	} else if (vol > 100) {
 		vol = 100;
 	}
 
-	r = mpd_run_set_volume(conn->h(), vol);
-	if (r) {
+	pms->log(MSG_DEBUG, 0, "Setting volume to %d%%\n", vol);
+
+	EXIT_IDLE;
+
+	if (mpd_run_set_volume(conn->h(), vol)) {
 		mutevolume = 0;
 	}
-	return r;
+
+	return get_error_bool();
 }
 
 /*
