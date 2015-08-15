@@ -132,6 +132,8 @@ public:
 	bool		alive() const;
 	void		assign_status(mpd_status *);
 	void		assign_stats(mpd_stats *);
+	void		set_time_elapsed_ms(uint32_t ms);
+	void		increase_time_elapsed(struct timespec ts);
 
 	bool		muted;
 	int		volume;
@@ -145,6 +147,7 @@ public:
 	song_t		song;
 	song_t		songid;
 	int		time_elapsed;
+	struct timespec	time_elapsed_hires;
 	int		time_total;
 	bool		db_updating;
 	int		error;

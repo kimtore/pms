@@ -359,15 +359,11 @@ Pms::main()
 		}
 
 		/* Increase time elapsed. */
-		/* FIXME: this is inaccurate and will cause clock skew if
-		 * running for long enough. Use mpd_status_get_elapsed_ms() to
-		 * get time from MPD in milliseconds, and use the .tv_nsec
-		 * member as well. */
 		if (comm->status()->state == MPD_STATE_PLAY) {
 			timer_tmp = difftime(timer_elapsed, timer_now);
-			comm->status()->time_elapsed += timer_tmp.tv_sec;
-			timer_elapsed = get_clock();
+			comm->status()->increase_time_elapsed(timer_tmp);
 		}
+		timer_elapsed = get_clock();
 
 		/* Run any pending updates */
 		if (!comm->run_pending_updates()) {
@@ -451,6 +447,7 @@ Pms::main()
 			idle_reply = zeromq->get_idle_events();
 			comm->set_mpd_idle_events(idle_reply);
 			comm->set_is_idle(false);
+			timer_elapsed = get_clock();
 		}
 
 		/* Process events from the input socket. */

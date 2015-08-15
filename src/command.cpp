@@ -22,6 +22,7 @@
  */
 
 #include <unistd.h>
+#include <math.h>
 #include <mpd/client.h>
 
 #include "command.h"
@@ -51,6 +52,8 @@ Mpd_status::Mpd_status()
 	song			= MPD_SONG_NO_NUM;
 	songid			= MPD_SONG_NO_ID;
 	time_elapsed		= 0;
+	time_elapsed_hires.tv_sec = 0;
+	time_elapsed_hires.tv_nsec = 0;
 	time_total		= 0;
 	db_updating		= false;
 	error			= 0;
@@ -81,6 +84,7 @@ void
 Mpd_status::assign_status(struct mpd_status * status)
 {
 	const struct mpd_audio_format	*format;
+	uint32_t ms;
 
 	volume			= mpd_status_get_volume(status);
 	repeat			= mpd_status_get_repeat(status);
@@ -92,9 +96,12 @@ Mpd_status::assign_status(struct mpd_status * status)
 	crossfade		= mpd_status_get_crossfade(status);
 	song			= mpd_status_get_song_pos(status);
 	songid			= mpd_status_get_song_id(status);
-	time_elapsed		= mpd_status_get_elapsed_time(status);
 	time_total		= mpd_status_get_total_time(status);
 	db_updating		= mpd_status_get_update_id(status);
+
+	/* Time elapsed */
+	ms = mpd_status_get_elapsed_ms(status);
+	set_time_elapsed_ms(ms);
 
 	/* Audio format */
 	bitrate			= mpd_status_get_kbit_rate(status);
@@ -120,6 +127,34 @@ Mpd_status::assign_stats(struct mpd_stats * stats)
 	db_update_time		= mpd_stats_get_db_update_time(stats);
 	playtime		= mpd_stats_get_play_time(stats);
 	db_playtime		= mpd_stats_get_db_play_time(stats);
+}
+
+void
+Mpd_status::set_time_elapsed_ms(uint32_t ms)
+{
+	time_elapsed_hires.tv_sec = ms / 1000;
+	time_elapsed_hires.tv_nsec = (ms * 10e5) - (time_elapsed_hires.tv_sec * 10e8);
+	time_elapsed = round(time_elapsed_hires.tv_sec);
+	// pms->log(MSG_DEBUG, 0, "Time elapsed %dms converted to %lus %luns\n", ms, time_elapsed_hires.tv_sec, time_elapsed_hires.tv_nsec);
+}
+
+void
+Mpd_status::increase_time_elapsed(struct timespec ts)
+{
+	time_t seconds;
+
+	// pms->log(MSG_DEBUG, 0, "Increasing time elapsed by %lus %9luns\n", ts.tv_sec, ts.tv_nsec);
+	time_elapsed_hires.tv_sec += ts.tv_sec;
+	time_elapsed_hires.tv_nsec += ts.tv_nsec;
+
+	seconds = time_elapsed_hires.tv_nsec / 10e8;
+	if (seconds > 0) {
+		time_elapsed_hires.tv_sec += seconds;
+		time_elapsed_hires.tv_nsec -= (seconds * 10e8);
+	}
+
+	time_elapsed = round(time_elapsed_hires.tv_sec);
+	// pms->log(MSG_DEBUG, 0, "Time elapsed set to %lus %9luns\n", time_elapsed_hires.tv_sec, time_elapsed_hires.tv_nsec);
 }
 
 bool
