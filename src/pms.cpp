@@ -486,6 +486,25 @@ Pms::main()
 			comm->clear_finished_update(MPD_IDLE_PLAYLIST);
 		}
 
+		/* Draw statusbar and topbar on player update. */
+		if (comm->has_finished_update(MPD_IDLE_PLAYER)) {
+			disp->topbar->wantdraw = true;
+			drawstatus();
+			comm->clear_finished_update(MPD_IDLE_PLAYER);
+		}
+
+		/* Draw topbar on mixer update. */
+		if (comm->has_finished_update(MPD_IDLE_MIXER)) {
+			disp->topbar->wantdraw = true;
+			comm->clear_finished_update(MPD_IDLE_MIXER);
+		}
+
+		/* Draw topbar on options update. */
+		if (comm->has_finished_update(MPD_IDLE_OPTIONS)) {
+			disp->topbar->wantdraw = true;
+			comm->clear_finished_update(MPD_IDLE_OPTIONS);
+		}
+
 		/* Redraw the screen. */
 		/* FIXME: where to put this? */
 		disp->topbar->wantdraw = true;
