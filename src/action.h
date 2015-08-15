@@ -90,7 +90,7 @@ public:
 	long			add(string); // play + add to, add all
 	long			next(bool);
 	long			prev();
-	long			pause(bool);
+	bool			pause(bool);
 	long			stop();
 	long			setvolume(string);
 	long			mute();

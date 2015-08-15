@@ -585,7 +585,7 @@ long		Interface::play()
 	}
 	if (pms->comm->playid(s))
 	{
-		pms->drawstatus();
+		//pms->drawstatus();
 		return STOK;
 	}
 	generr();
@@ -719,7 +719,7 @@ long		Interface::next(bool ignore_playmode = false)
 		pms->log(MSG_STATUS, STERR, _("You have reached the end of the list."));
 		return STERR;
 	}
-	pms->drawstatus();
+	//pms->drawstatus();
 	return STOK;
 }
 
@@ -771,7 +771,7 @@ long		Interface::prev()
 
 	cs = pms->comm->playlist()->song(i);
 	pms->comm->playid(cs->id);
-	pms->drawstatus();
+	//pms->drawstatus();
 
 	return STOK;
 }
@@ -780,15 +780,10 @@ long		Interface::prev()
  * Pause playback.
  * If tryplay is true, toggle playback instead.
  */
-long
+bool
 Interface::pause(bool tryplay = false)
 {
-	if (pms->comm->pause(tryplay)) {
-		pms->drawstatus();
-		return STOK;
-	}
-	pms->log(MSG_DEBUG, STERR, _("Unable to control play state.\n"));
-	return STERR;
+	return pms->comm->pause(tryplay);
 }
 
 /*
@@ -798,7 +793,7 @@ long		Interface::stop()
 {
 	if (pms->comm->stop())
 	{
-		pms->drawstatus();
+		//pms->drawstatus();
 		return STOK;
 	}
 	generr();
@@ -971,7 +966,7 @@ long		Interface::crop(int crop_mode)
 	if (pms->comm->crop(pms->disp->actwin()->plist(), crop_mode))
 	{
 		pms->log(MSG_CONSOLE, STOK, _("Playlist cropped.\n"));
-		pms->drawstatus();
+		//pms->drawstatus();
 		pms->disp->actwin()->wantdraw = true;
 		return STOK;
 	}
@@ -1164,7 +1159,7 @@ handle_command(pms_pending_keys action)
 			if (pms->input->mode() == INPUT_COMMAND || pms->input->mode() == INPUT_JUMP)
 			{
 				pms->input->goprev();
-				pms->drawstatus();
+				//pms->drawstatus();
 				break;
 			}
 			pms->disp->movecursor(action == PEND_MOVE_DOWN ? 1 : -1);
@@ -1314,7 +1309,7 @@ handle_command(pms_pending_keys action)
 				pms->comm->playid(sn);
 			if (win)
 				win->wantdraw = true;
-			pms->drawstatus();
+			//pms->drawstatus();
 			break;
 
 		case PEND_GOTORANDOM:
@@ -1348,7 +1343,7 @@ handle_command(pms_pending_keys action)
 			{
 				win->wantdraw = true;
 			}
-			pms->drawstatus();
+			//pms->drawstatus();
 			break;
 
 		case PEND_REPEAT:
@@ -1394,7 +1389,7 @@ handle_command(pms_pending_keys action)
 				}
 			}
 
-			pms->drawstatus();
+			//pms->drawstatus();
 			break;
 
 
@@ -1816,7 +1811,7 @@ handle_command(pms_pending_keys action)
 			/* Have MPD manage random inside playlist */
 			pms->comm->random(pms->options->get_long("playmode") == PLAYMODE_RANDOM && pms->comm->activelist() == pms->comm->playlist());
 
-			pms->drawstatus();
+			//pms->drawstatus();
 			break;
 
 		case PEND_RESIZE:
