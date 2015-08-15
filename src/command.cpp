@@ -21,12 +21,17 @@
  * 	mediates all commands between UI and mpd
  */
 
+#include <unistd.h>
 #include <mpd/client.h>
 
 #include "command.h"
 #include "pms.h"
 
 extern Pms *			pms;
+
+#define EXIT_IDLE		if (is_idle() && (!noidle() || !wait_until_noidle())) { return false; }
+
+#define NOIDLE_POLL_TIMEOUT	20  /* time to wait for zmq_poll() to finish after calling noidle() */
 
 
 /*
@@ -340,6 +345,8 @@ Control::get_available_commands()
 {
 	mpd_pair * pair;
 
+	EXIT_IDLE;
+
 	if (!mpd_send_allowed_commands(conn->h())) {
 		return false;
 	}
@@ -497,24 +504,34 @@ Control::get_available_commands()
 bool
 Control::play()
 {
+	EXIT_IDLE;
+
 	return mpd_run_play(conn->h());
 }
 
 bool
 Control::playid(song_t songid)
 {
+	EXIT_IDLE;
+
 	return mpd_run_play_id(conn->h(), songid);
 }
 
 bool
 Control::playpos(song_t songpos)
 {
+	EXIT_IDLE;
+
 	return mpd_run_play_pos(conn->h(), songpos);
 }
 
 bool
 Control::pause(bool tryplay)
 {
+	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Toggling pause, tryplay=%d\n", tryplay);
+
 	switch(st->state)
 	{
 		case MPD_STATE_PLAY:
@@ -531,6 +548,8 @@ Control::pause(bool tryplay)
 bool
 Control::stop()
 {
+	EXIT_IDLE;
+
 	return mpd_run_stop(conn->h());
 }
 
@@ -856,7 +875,11 @@ Control::clear(Songlist * list)
 	assert(list != NULL);
 
 	/* FIXME: error message */
-	if (list == _library)	return false;
+	if (list == _library) {
+		return false;
+	}
+
+	EXIT_IDLE;
 
 	if (list == _playlist) {
 		if ((r = mpd_run_clear(conn->h()))) {
@@ -874,6 +897,8 @@ Control::clear(Songlist * list)
 bool
 Control::seek(int offset)
 {
+	EXIT_IDLE;
+
 	/* FIXME: perhaps this check should be performed at an earlier stage? */
 	if (!song()) {
 		return false;
@@ -891,6 +916,8 @@ Control::seek(int offset)
 int
 Control::crossfade()
 {
+	EXIT_IDLE;
+
 	if (st->crossfade == 0) {
 		return mpd_run_crossfade(conn->h(), crossfadetime);
 	}
@@ -906,6 +933,8 @@ Control::crossfade()
 int
 Control::crossfade(int interval)
 {
+	EXIT_IDLE;
+
 	if (interval < 0) {
 		return false;
 	}
@@ -938,6 +967,8 @@ Control::move(Songlist * list, int offset)
 	} else {
 		song = list->getprevselected();
 	}
+
+	EXIT_IDLE;
 
 	list_start();
 
@@ -1057,7 +1088,7 @@ Control::get_status()
 
 	pms->log(MSG_DEBUG, 0, "Retrieving MPD status from server.\n");
 
-	noidle();
+	EXIT_IDLE;
 
 	if ((status = mpd_run_status(conn->h())) == NULL) {
 		/* FIXME: error handling? */
@@ -1202,6 +1233,8 @@ Control::update_library()
 	pms->log(MSG_DEBUG, 0, "Updating library from DB time %d to %d\n", st->last_db_update_time, st->db_update_time);
 	st->last_db_update_time = st->db_update_time;
 
+	EXIT_IDLE;
+
 	if (!mpd_send_list_all_meta(conn->h(), "")) {
 		return false;
 	}
@@ -1267,6 +1300,8 @@ Control::update_playlists()
 
 	pms->log(MSG_DEBUG, 0, "Refreshing playlists.\n");
 
+	EXIT_IDLE;
+
 	if (!mpd_send_list_playlists(conn->h())) {
 		/* FIXME */
 		return -1;
@@ -1304,22 +1339,23 @@ Control::update_playlists()
 
 /*
  * Get all contents from server playlists playlists
- * FIXME: return value
  */
-void		Control::retrieve_lists(vector<Songlist *> &lists)
+bool
+Control::retrieve_lists(vector<Songlist *> &lists)
 {
 	vector<Songlist *>::iterator	i;
 	Song *				song;
 	mpd_entity *			ent;
 	const mpd_song *		ent_song;
 
+	EXIT_IDLE;
+
 	i = lists.begin();
 
 	while (i != lists.end())
 	{
 		if (!mpd_send_list_playlist_meta(conn->h(), (*i)->filename.c_str())) {
-			/* FIXME: error handling */
-			return;
+			return false;
 		}
 
 		(*i)->clear();
@@ -1342,10 +1378,15 @@ void		Control::retrieve_lists(vector<Songlist *> &lists)
 			}
 			mpd_entity_free(ent);
 		}
+
+		if (!get_error_bool()) {
+			return false;
+		}
+
 		++i;
 	}
 
-	/* FIXME: return value */
+	return get_error_bool();
 }
 
 /*
@@ -1501,6 +1542,8 @@ Control::update_playlist()
 	struct mpd_entity *	ent;
 	const struct mpd_song *	ent_song;
 
+	EXIT_IDLE;
+
 	pms->log(MSG_DEBUG, 0, "Updating playlist from version %d to %d\n", st->last_playlist, st->playlist);
 
 	if (st->last_playlist == -1) {
@@ -1566,7 +1609,6 @@ bool Control::has_new_playlist()
  */
 bool		Control::song_changed()
 {
-	if (!alive())	return false;
 	if (last_song == oldsong)
 		return false;
 
@@ -1596,6 +1638,8 @@ Control::get_current_playing()
 {
 	Song *			current_song;
 	struct mpd_song *	song;
+
+	EXIT_IDLE;
 
 	if ((song = mpd_run_current_song(conn->h())) == NULL) {
 		return MPD_SONG_NO_ID;
@@ -1648,6 +1692,8 @@ Control::rescandb(string dest)
 
 	unsigned int job_id;
 
+	EXIT_IDLE;
+
 	job_id = mpd_run_update(conn->h(), dest.c_str());
 	if (job_id == 0) {
 		/* FIXME: handle errors */
@@ -1669,6 +1715,8 @@ Control::rescandb(string dest)
 bool
 Control::sendpassword(string pw)
 {
+	EXIT_IDLE;
+
 	return mpd_run_password(conn->h(), pw.c_str());
 }
 
@@ -1694,14 +1742,14 @@ Control::increment()
 bool
 Control::idle()
 {
-	if(_is_idle) {
+	if(is_idle()) {
 		return true;
 	}
 
 	pms->log(MSG_DEBUG, 0, "Entering IDLE mode.\n");
-	_is_idle = mpd_send_idle(conn->h());
+	set_is_idle(mpd_send_idle(conn->h()));
 
-	return _is_idle;
+	return is_idle();
 }
 
 /**
@@ -1710,14 +1758,24 @@ Control::idle()
 bool
 Control::noidle()
 {
-	if(!_is_idle) {
+	if(!is_idle()) {
 		return true;
 	}
 
 	pms->log(MSG_DEBUG, 0, "Leaving IDLE mode.\n");
-	_is_idle = mpd_send_noidle(conn->h());
+	set_is_idle(mpd_send_noidle(conn->h()));
 
-	return _is_idle;
+	return is_idle();
+}
+
+/**
+ * Block until MPD is ready to receieve requests.
+ */
+bool
+Control::wait_until_noidle()
+{
+	pms->zeromq_poll_events(NOIDLE_POLL_TIMEOUT);
+	return pms->has_zeromq_idle_events();
 }
 
 bool

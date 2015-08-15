@@ -228,7 +228,7 @@ private:
 
 	int			get_current_playing();
 	int			get_stats();
-	void			retrieve_lists(vector<Songlist *> &);
+	bool			retrieve_lists(vector<Songlist *> &);
 	unsigned int		update_playlists();
 	bool			update_playlist();
 	bool			update_library();
@@ -290,6 +290,7 @@ public:
 	/* IDLE management */
 	bool			idle();
 	bool			noidle();
+	bool			wait_until_noidle();
 	bool			is_idle();
 	bool			set_is_idle(bool);
 

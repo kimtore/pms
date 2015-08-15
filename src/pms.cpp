@@ -179,6 +179,24 @@ Pms::~Pms()
 {
 }
 
+/**
+ * Poll the input and IDLE subsystems for events, and block for up to `timeout'
+ * milliseconds, or or until either MPD or the user makes some noise.
+ */
+void
+Pms::zeromq_poll_events(int timeout)
+{
+	while(true) {
+		if (zmq_poll(zeromq_poll_items, 2, 1000) == -1) {
+			if (errno == EINTR) {
+				continue;
+			}
+			abort();
+		}
+		return;
+	}
+}
+
 /* Check for events on the IDLE socket. */
 bool
 Pms::has_zeromq_idle_events()
@@ -503,15 +521,9 @@ Pms::main()
 			assert(rc == 0);
 		}
 
-		/* Poll the input and IDLE subsystems for events. This function
-		 * will block for 1000ms, or until either MPD or the user makes
-		 * some noise. */
-		if (zmq_poll(zeromq_poll_items, 2, 1000) == -1) {
-			if (errno == EINTR) {
-				continue;
-			}
-			abort();
-		}
+		/* Wait for events for up to 1000ms before running the
+		 * main loop again. */
+		zeromq_poll_events(1000);
 
 		/* Process events from the IDLE socket. */
 		if (has_zeromq_idle_events()) {

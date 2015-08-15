@@ -780,14 +780,14 @@ long		Interface::prev()
  * Pause playback.
  * If tryplay is true, toggle playback instead.
  */
-long		Interface::pause(bool tryplay = false)
+long
+Interface::pause(bool tryplay = false)
 {
-	if (pms->comm->pause(tryplay))
-	{
+	if (pms->comm->pause(tryplay)) {
 		pms->drawstatus();
 		return STOK;
 	}
-	pms->log(MSG_DEBUG, STERR, _("Unable to control play/pause state."));
+	pms->log(MSG_DEBUG, STERR, _("Unable to control play state.\n"));
 	return STERR;
 }
 

@@ -110,11 +110,6 @@ private:
 	void				init_default_keymap();
 	bool				connect_window_list();
 	bool				progress_nextsong();
-	bool				has_zeromq_idle_events();
-	enum mpd_idle			get_zeromq_idle_events();
-	bool				has_zeromq_input_events();
-	wchar_t				get_zeromq_input_events();
-	void				setup_zeromq_threads();
 
 	/* Options/arguments */
 	void				print_version();
@@ -172,6 +167,14 @@ public:
 	/* Main loop and initialization */
 	int				init();
 	int				main();
+
+	/* ZeroMQ stuff - should be refactored into separate class */
+	bool				has_zeromq_idle_events();
+	enum mpd_idle			get_zeromq_idle_events();
+	bool				has_zeromq_input_events();
+	wchar_t				get_zeromq_input_events();
+	void				setup_zeromq_threads();
+	void				zeromq_poll_events(int timeout);
 };
 
 #endif
