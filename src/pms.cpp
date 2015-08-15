@@ -1,7 +1,7 @@
 /* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS	<<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,17 +22,14 @@
  */
 
 #include "pms.h"
+#include "zeromq.h"
 
 #include <mpd/client.h>
 #include <unistd.h>
 #include <zmq.h>
 #include <time.h>
-#include <pthread.h>
 
 using namespace std;
-
-#define ZEROMQ_SOCKET_IDLE "inproc://idle"
-#define ZEROMQ_SOCKET_INPUT "inproc://input"
 
 Pms *		pms;
 
@@ -179,95 +176,6 @@ Pms::~Pms()
 {
 }
 
-/**
- * Poll the input and IDLE subsystems for events, and block for up to `timeout'
- * milliseconds, or or until either MPD or the user makes some noise.
- */
-void
-Pms::zeromq_poll_events(int timeout)
-{
-	while(true) {
-		if (zmq_poll(zeromq_poll_items, 2, 1000) == -1) {
-			if (errno == EINTR) {
-				continue;
-			}
-			abort();
-		}
-		return;
-	}
-}
-
-/* Check for events on the IDLE socket. */
-bool
-Pms::has_zeromq_idle_events()
-{
-	return (zeromq_poll_items[0].revents & ZMQ_POLLIN);
-}
-
-/* Retrieve events from the IDLE socket. */
-enum mpd_idle
-Pms::get_zeromq_idle_events()
-{
-	int rc;
-	enum mpd_idle idle_reply;
-
-	rc = zmq_recv(zeromq_socket_idle, (void *)&idle_reply, sizeof(enum mpd_idle *), 0);
-	assert(rc == sizeof(enum mpd_idle *));
-
-	return idle_reply;
-}
-
-/* Check for events on the input socket. */
-bool
-Pms::has_zeromq_input_events()
-{
-	return (zeromq_poll_items[1].revents & ZMQ_POLLIN);
-}
-
-/* Retrieve events from the input socket. */
-wchar_t
-Pms::get_zeromq_input_events()
-{
-	int rc;
-	wchar_t reply;
-
-	rc = zmq_recv(zeromq_socket_input, (void *)&reply, sizeof(wchar_t *), 0);
-	assert(rc == sizeof(wchar_t *));
-
-	return reply;
-}
-
-/**
- * Initialize threads, and the main thread's ZeroMQ REQ/SUB sockets.
- *
- * If this function fails any assertions, there is no point in continuing
- * program execution.
- */
-void
-Pms::setup_zeromq_threads()
-{
-	/* Initialize ZeroMQ context and sockets */
-	zeromq_context = zmq_ctx_new();
-	assert(zeromq_context != NULL);
-	zeromq_socket_idle = zmq_socket(zeromq_context, ZMQ_REQ);
-	assert(zeromq_socket_idle != NULL);
-	zeromq_socket_input = zmq_socket(zeromq_context, ZMQ_SUB);
-	assert(zeromq_socket_input != NULL);
-	assert(zmq_setsockopt(zeromq_socket_input, ZMQ_SUBSCRIBE, "", 0) == 0);
-	assert(zmq_connect(zeromq_socket_idle, ZEROMQ_SOCKET_IDLE) == 0);
-	assert(zmq_bind(zeromq_socket_input, ZEROMQ_SOCKET_INPUT) == 0);
-
-	/* Set up ZeroMQ poller */
-	zeromq_poll_items[0].socket = zeromq_socket_idle;
-	zeromq_poll_items[0].events = ZMQ_POLLIN;
-	zeromq_poll_items[1].socket = zeromq_socket_input;
-	zeromq_poll_items[1].events = ZMQ_POLLIN;
-
-	/* Initialize threads */
-	assert(pthread_create(&idle_thread, NULL, idle_thread_main, zeromq_context) == 0);
-	assert(pthread_create(&input_thread, NULL, input_thread_main, zeromq_context) == 0);
-}
-
 struct timespec
 Pms::get_clock()
 {
@@ -411,7 +319,9 @@ Pms::main()
 	//comm->playlist()->gotocurrent();
 
 	/* Set up inter-thread communication */
-	setup_zeromq_threads();
+	zeromq = new ZeroMQ();
+	zeromq->start_thread_idle(idle_thread_main);
+	zeromq->start_thread_input(input_thread_main);
 
 	/* Reset all clocks */
 	timer_now = get_clock();
@@ -529,24 +439,23 @@ Pms::main()
 			if (!comm->idle()) {
 				continue;
 			}
-			rc = zmq_send(zeromq_socket_idle, NULL, 0, 0);
-			assert(rc == 0);
+			zeromq->continue_idle();
 		}
 
 		/* Wait for events for up to 1000ms before running the
 		 * main loop again. */
-		zeromq_poll_events(1000);
+		zeromq->poll_events(1000);
 
 		/* Process events from the IDLE socket. */
-		if (has_zeromq_idle_events()) {
-			idle_reply = get_zeromq_idle_events();
+		if (zeromq->has_idle_events()) {
+			idle_reply = zeromq->get_idle_events();
 			comm->set_mpd_idle_events(idle_reply);
 			comm->set_is_idle(false);
 		}
 
 		/* Process events from the input socket. */
-		if (has_zeromq_input_events()) {
-			get_zeromq_input_events();
+		if (zeromq->has_input_events()) {
+			zeromq->get_input_events();
 			pending = input->dispatch();
 			if (pending != PEND_NONE) {
 				handle_command(pending);

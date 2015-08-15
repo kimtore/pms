@@ -54,13 +54,13 @@
 #include "song.h"
 #include "message.h"
 #include "topbar.h"
-
 #include "config.h"
 #include "color.h"
 #include "list.h"
 #include "action.h"
 #include "input.h"
 #include "mediator.h"
+#include "zeromq.h"
 
 #ifdef __FreeBSD__
 	#include <sys/wait.h>
@@ -93,16 +93,6 @@ private:
 	pms_win_playlist *		library;
 	vector<Message *>		msglog;
 
-	/* ZeroMQ inter-thread communication */
-	void *				zeromq_context;
-	void *				zeromq_socket_idle;
-	void *				zeromq_socket_input;
-	zmq_pollitem_t			zeromq_poll_items[2];
-
-	/* Threads */
-	pthread_t			idle_thread;
-	pthread_t			input_thread;
-
 	/* Internal timer */
 	struct timespec			get_clock();
 
@@ -134,6 +124,7 @@ public:
 	Fieldtypes *			fieldtypes;
 	Formatter *			formatter;
 	Configurator *			config;
+	ZeroMQ *			zeromq;
 
 	/* FIXME: this is an attempt on the above */
 	Mediator *			mediator;
@@ -167,14 +158,6 @@ public:
 	/* Main loop and initialization */
 	int				init();
 	int				main();
-
-	/* ZeroMQ stuff - should be refactored into separate class */
-	bool				has_zeromq_idle_events();
-	enum mpd_idle			get_zeromq_idle_events();
-	bool				has_zeromq_input_events();
-	wchar_t				get_zeromq_input_events();
-	void				setup_zeromq_threads();
-	void				zeromq_poll_events(int timeout);
 };
 
 #endif
