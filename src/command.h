@@ -217,14 +217,13 @@ private:
 	long long		last_playlist_version;
 	int			last_song;
 	int			oldsong;
-	bool			_has_new_playlist;
-	bool			_has_new_library;
 	int			command_mode;
 	int			mutevolume;
 	int			crossfadetime;
 
 	/* Flags denoting outdated information, for use in IDLE */
 	uint32_t		idle_events;
+	uint32_t		finished_idle_events;
 
 	int			get_current_playing();
 	int			get_stats();
@@ -247,6 +246,9 @@ public:
 	/* IDLE dispatcher */
 	void			set_mpd_idle_events(enum mpd_idle);
 	bool			run_pending_updates();
+	void			set_update_done(enum mpd_idle);
+	bool			has_finished_update(enum mpd_idle);
+	void			clear_finished_update(enum mpd_idle);
 
 	/* True if mpd connection object has errors */
 	bool			get_error_bool();
@@ -316,8 +318,6 @@ public:
 
 	bool		increment();
 	bool		get_status();
-	bool		has_new_playlist();
-	bool		has_new_library();
 	bool		song_changed();
 	bool		state_changed();
 	Songlist *	plist(int);

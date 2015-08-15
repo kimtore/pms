@@ -143,8 +143,6 @@ Control::Control(Connection * n_conn)
 	st->last_playlist = -1;
 	last_song = MPD_SONG_NO_NUM;
 	oldsong = MPD_SONG_NO_NUM;
-	_has_new_playlist = false;
-	_has_new_library = false;
 	_playlist = new Songlist;
 	_library = new Songlist;
 	_playlist->role = LIST_ROLE_MAIN;
@@ -157,6 +155,7 @@ Control::Control(Connection * n_conn)
 
 	/* Set all bits in mpd_idle event */
 	set_mpd_idle_events((enum mpd_idle) 0xffffffff);
+	finished_idle_events = 0;
 }
 
 Control::~Control()
@@ -294,9 +293,9 @@ Control::run_pending_updates()
 		if (!get_status()) {
 			return false;
 		}
-		idle_events &= ~MPD_IDLE_PLAYER;
-		idle_events &= ~MPD_IDLE_MIXER;
-		idle_events &= ~MPD_IDLE_OPTIONS;
+		set_update_done(MPD_IDLE_PLAYER);
+		set_update_done(MPD_IDLE_MIXER);
+		set_update_done(MPD_IDLE_OPTIONS);
 	}
 
 	/* MPD has new playlist */
@@ -304,7 +303,7 @@ Control::run_pending_updates()
 		if (!update_playlist()) {
 			return false;
 		}
-		idle_events &= ~MPD_IDLE_QUEUE;
+		set_update_done(MPD_IDLE_QUEUE);
 	}
 
 	/* MPD has new song database */
@@ -312,10 +311,38 @@ Control::run_pending_updates()
 		if (!update_library()) {
 			return false;
 		}
-		idle_events &= ~MPD_IDLE_DATABASE;
+		set_update_done(MPD_IDLE_DATABASE);
 	}
 
 	return true;
+}
+
+/**
+ * Mark an MPD IDLE update as retrieved.
+ */
+void
+Control::set_update_done(enum mpd_idle flags)
+{
+	idle_events &= ~flags;
+	finished_idle_events |= flags;
+}
+
+/**
+ * Check whether an MPD IDLE update is retrieved.
+ */
+bool
+Control::has_finished_update(enum mpd_idle flags)
+{
+	return (finished_idle_events & flags);
+}
+
+/**
+ * Remove a finished MPD IDLE update.
+ */
+void
+Control::clear_finished_update(enum mpd_idle flags)
+{
+	finished_idle_events &= ~flags;
 }
 
 /*
@@ -1282,8 +1309,6 @@ Control::update_library()
 
 	pms->log(MSG_DEBUG, 0, "Processed a total of %d entities during library update\n", total);
 
-	_has_new_library = true;
-
 	return get_error_bool();
 }
 
@@ -1575,33 +1600,10 @@ Control::update_playlist()
 
 	if ((rc = get_error_bool()) == true) {
 		_playlist->truncate(st->playlist_length);
-		_has_new_playlist = true;
 		st->last_playlist = st->playlist;
 	}
 
 	return rc;
-}
-
-/*
- * Info for display class whether playlist has changed and needs a redraw
- */
-bool Control::has_new_library()
-{
-	if (_has_new_library)
-	{
-		_has_new_library = false;
-		return true;
-	}
-	return false;
-}
-bool Control::has_new_playlist()
-{
-	if (_has_new_playlist)
-	{
-		_has_new_playlist = false;
-		return true;
-	}
-	return false;
 }
 
 /*
@@ -1648,7 +1650,6 @@ Control::get_current_playing()
 	/* FIXME: wtf is this?
 	ent = mpd_getNextInfoEntity(conn->h());
 	if (ent == NULL || ent->type != MPD_INFO_ENTITY_TYPE_SONG) {
-		_has_new_playlist = true;
 		last_song = MPD_SONG_NO_NUM;
 		_song = NULL;
 		return MPD_SONG_NO_ID;
@@ -1664,7 +1665,6 @@ Control::get_current_playing()
 	/* FIXME: sketchy */
 	/* better implement set_current_song or something */
 	if (_song->id != last_song) {
-		_has_new_playlist = true;
 		oldsong = last_song;
 		last_song = _song->id;
 	}

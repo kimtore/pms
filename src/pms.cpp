@@ -406,16 +406,6 @@ Pms::main()
 	disp->forcedraw();
 	disp->refresh();
 
-	/* Update lists */
-	//log(MSG_STATUS, STOK, "Retrieving library and all playlists...");
-	//comm->update(true);
-	//comm->has_new_library();
-	//comm->has_new_playlist();
-
-	/* Sort library */
-	//log(MSG_STATUS, STOK, _("Sorting library..."));
-	//comm->library()->sort(options->get_string("sort"));
-
 	/* Center attention to current song */
 	//comm->library()->gotocurrent();
 	//comm->playlist()->gotocurrent();
@@ -478,20 +468,22 @@ Pms::main()
 		/* Library updates triggers re-calculation of column sizes,
 		 * triggers draw, etc. */
 		/* FIXME: move responsibilities? */
-		if (comm->has_new_library()) {
+		if (comm->has_finished_update(MPD_IDLE_DATABASE)) {
 			log(MSG_STATUS, STOK, _("Library has been updated."));
 			disp->actwin()->wantdraw = true;
 			library->list->sort(options->get_string("sort"));
 			library->set_column_size();
 			connect_window_list();
+			comm->clear_finished_update(MPD_IDLE_DATABASE);
 		}
 
 		/* Playlist updates triggers re-calculation of column sizes,
 		 * triggers draw, etc. */
 		/* FIXME: move responsibilities? */
-		if (comm->has_new_playlist()) {
+		if (comm->has_finished_update(MPD_IDLE_PLAYLIST)) {
 			disp->actwin()->wantdraw = true;
 			playlist->set_column_size();
+			comm->clear_finished_update(MPD_IDLE_PLAYLIST);
 		}
 
 		/* Redraw the screen. */
