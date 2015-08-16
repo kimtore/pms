@@ -409,18 +409,19 @@ Pms::main()
 			comm->clear_finished_update(MPD_IDLE_PLAYLIST);
 		}
 
-		/* Draw statusbar and topbar on player update. */
-		if (comm->has_finished_update(MPD_IDLE_PLAYER)) {
-			disp->topbar->wantdraw = true;
-			drawstatus();
-			comm->clear_finished_update(MPD_IDLE_PLAYER);
-		}
-
 		/* Draw topbar on mixer update. */
 		if (comm->has_finished_update(MPD_IDLE_MIXER)) {
 			log(MSG_STATUS, STOK, _("Volume: %d%%%%"), comm->status()->volume); // FIXME: duplicated
 			disp->topbar->wantdraw = true;
 			comm->clear_finished_update(MPD_IDLE_MIXER);
+		}
+
+		/* Draw statusbar and topbar on player update. */
+		if (comm->has_finished_update(MPD_IDLE_PLAYER)) {
+			disp->topbar->wantdraw = true;
+			disp->actwin()->wantdraw = true;
+			drawstatus();
+			comm->clear_finished_update(MPD_IDLE_PLAYER);
 		}
 
 		/* Draw topbar on options update. */
