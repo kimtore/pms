@@ -768,6 +768,8 @@ Control::add(Songlist * list, Song * song)
 	assert(list != NULL);
 	assert(song != NULL);
 
+	EXIT_IDLE;
+
 	if (list == _playlist) {
 		return mpd_run_add_id(conn->h(), song->file.c_str());
 	} else if (list != _library) {

@@ -565,10 +565,10 @@ long		Interface::play()
 	song_t		s;
 
 	list = pms->disp->actwin()->plist();
-	if (!list) return STERR;
+	assert(list != NULL);
 
 	song = list->cursorsong();
-	if (song == NULL) return STERR;
+	assert(song != NULL);
 
 	pms->log(MSG_CONSOLE, STOK, "Playing %s\n", song->file.c_str());
 
