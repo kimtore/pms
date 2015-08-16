@@ -1340,6 +1340,8 @@ Control::update_library()
 			case MPD_ENTITY_TYPE_SONG:
 				ent_song = mpd_entity_get_song(ent);
 				song = new Song(ent_song);
+				song->id = MPD_SONG_NO_ID;
+				song->pos = MPD_SONG_NO_NUM;
 				_library->add(song);
 				dir->songs.push_back(song);
 				break;
