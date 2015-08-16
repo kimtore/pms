@@ -260,7 +260,7 @@ long		Interface::exec(string s)
 	{
 		if (pms->config->readline(s))
 		{
-			pms->resetstatus(-1);
+			//pms->resetstatus(-1);
 		}
 		else
 		{

@@ -96,6 +96,7 @@ private:
 	/* Timers */
 	struct timespec			timer_now;
 	struct timespec			timer_elapsed;
+	struct timespec			timer_statusbar;
 	struct timespec			timer_tmp;
 
 	/* Internal timer */
@@ -153,7 +154,7 @@ public:
 	bool				run_has_idle_events();
 	void				setstatus(statusbar_mode, const char *, ...);
 	void				drawstatus();
-	int				resetstatus(int);
+	bool				needs_statusbar_reset();
 	void				shutdown() { _shutdown = true; };
 	bool				run_shell(string);
 	Song *				cursong();

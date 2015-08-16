@@ -307,9 +307,6 @@ Pms::main()
 	playlist->list = comm->playlist();
 	library->list = comm->library();
 
-	resetstatus(-1);
-	drawstatus();
-
 	playlist->set_column_size();
 	library->set_column_size();
 
@@ -430,6 +427,11 @@ Pms::main()
 			comm->clear_finished_update(MPD_IDLE_OPTIONS);
 		}
 
+		/* Reset status */
+		if (needs_statusbar_reset()) {
+			drawstatus();
+		}
+
 		/* Redraw the screen. */
 		/* FIXME: where to put this? */
 		if (mediator->changed("redraw")) {
@@ -508,10 +510,6 @@ Pms::main()
 			}
 		}
 
-
-		/* Reset status */
-		if (resetstatus(0) >= options->get_long("resetstatus") || songchanged || statechanged)
-			drawstatus();
 
 		/* Draw XTerm window title */
 		disp->set_xterm_title();
@@ -988,42 +986,41 @@ Song *			Pms::cursong()
 }
 
 /* 
- * Reset status to its original state
+ * Reset status to its natural state.
  */
-void			Pms::drawstatus()
+void
+Pms::drawstatus()
 {
-	if (input->mode() == INPUT_JUMP)
+	if (input->mode() == INPUT_JUMP) {
 		log(MSG_STATUS, STOK, "/%s", formtext(input->text).c_str());
-	else if (input->mode() == INPUT_FILTER)
+	} else if (input->mode() == INPUT_FILTER) {
 		log(MSG_STATUS, STOK, ":g/%s", formtext(input->text).c_str());
-	else if (input->mode() == INPUT_COMMAND)
+	} else if (input->mode() == INPUT_COMMAND) {
 		log(MSG_STATUS, STOK, ":%s", formtext(input->text).c_str());
-	else
+	} else {
 		log(MSG_STATUS, STOK, "%s", playstring().c_str());
+	}
 
-	resetstatus(-1);
+	/* Do not redraw statusbar anymore */
+	timer_statusbar.tv_sec = 0;
+	timer_statusbar.tv_nsec = 0;
 }
 
-/*
- * Measures time from last statusbar text
+/**
+ * Determine whether the statusbar text should be reset to its natural state.
+ *
+ * Returns true if the statusbar is due for an update, false if not.
  */
-int			Pms::resetstatus(int set)
+bool
+Pms::needs_statusbar_reset()
 {
-	static time_t		stored = time(NULL);
-	static time_t		now = time(NULL);
+	/* Check if redraw is disabled */
+	if (timer_statusbar.tv_sec == 0 && timer_statusbar.tv_nsec == 0) {
+		return false;
+	}
 
-	if (set == 1)
-		time(&stored);
-	else if (set == -1)
-		stored = 0;
-
-	if (stored == 0)
-		return 0;
-
-	if (time(&now) == -1)
-		return -1;
-
-	return (static_cast<int>(difftime(now, stored)));
+	timer_tmp = difftime(timer_statusbar, timer_now);
+	return (timer_tmp.tv_sec >= options->get_long("resetstatus"));
 }
 
 /*
@@ -1184,7 +1181,7 @@ Pms::log(int verbosity, long code, const char * format, ...)
 
 		disp->statusbar->clear(false, pair);
 		colprint(disp->statusbar, 0, 0, pair, "%s", buffer);
-		resetstatus(1);
+		timer_statusbar = get_clock();
 		disp->refresh();
 	}
 
