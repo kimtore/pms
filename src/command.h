@@ -217,8 +217,6 @@ private:
 	Songlist		*_active;
 
 	long long		last_playlist_version;
-	int			last_song;
-	int			oldsong;
 	int			command_mode;
 	int			mutevolume;
 	int			crossfadetime;
@@ -227,7 +225,7 @@ private:
 	uint32_t		idle_events;
 	uint32_t		finished_idle_events;
 
-	int			get_current_playing();
+	bool			get_current_song();
 	int			get_stats();
 	bool			retrieve_lists(vector<Songlist *> &);
 	unsigned int		update_playlists();

@@ -215,6 +215,50 @@ Pms::run_has_idle_events()
 	return true;
 }
 
+/**
+ * Check if currently playing song has changed since last call.
+ *
+ * Returns true if song has changed, false if not.
+ */
+bool
+Pms::song_changed()
+{
+	Song * song;
+	static song_t last_song_id = MPD_SONG_NO_ID;
+	song_t current_song_id;
+	bool rc;
+
+	song = cursong();
+	if (song) {
+		current_song_id = song->id;
+	} else {
+		current_song_id = MPD_SONG_NO_ID;
+	}
+
+	rc = (current_song_id != last_song_id);
+
+	last_song_id = current_song_id;
+
+	return rc;
+}
+
+/**
+ * Center the cursor on the currently playing song.
+ */
+void
+Pms::run_cursor_follow_playback()
+{
+	pms_window * win;
+
+	win = disp->findwlist(comm->activelist());
+	if (!win) {
+		return;
+	}
+
+	setwin(win);
+	win->gotocurrent();
+}
+
 /*
  * Connection and main loop
  */
@@ -225,7 +269,6 @@ Pms::main()
 	pms_pending_keys	pending = PEND_NONE;
 	char			pass[512] = "";
 	bool			songchanged = false;
-	pms_window *		win = NULL;
 	time_t			timer = 0;
 	int			rc;
 
@@ -427,6 +470,11 @@ Pms::main()
 				}
 			}
 
+			/* Execute 'cursor follows playback'. */
+			if (song_changed() && options->get_bool("followplayback")) {
+				run_cursor_follow_playback();
+			}
+
 			disp->topbar->wantdraw = true;
 			disp->actwin()->wantdraw = true;
 			drawstatus();
@@ -489,21 +537,6 @@ Pms::main()
 
 		/* Progress to next song? */
 		progress_nextsong();
-
-		songchanged = comm->song_changed();
-		if (songchanged)
-		{
-			/* Cursor follows playback if song changed */
-			if (options->get_bool("followplayback"))
-			{
-				win = disp->findwlist(comm->activelist());
-				if (win)
-				{
-					setwin(win);
-					win->gotocurrent();
-				}
-			}
-		}
 
 		/* Draw XTerm window title */
 		disp->set_xterm_title();

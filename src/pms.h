@@ -155,6 +155,8 @@ public:
 	void				setstatus(statusbar_mode, const char *, ...);
 	void				drawstatus();
 	bool				needs_statusbar_reset();
+	bool				song_changed();
+	void				run_cursor_follow_playback();
 	void				shutdown() { _shutdown = true; };
 	bool				run_shell(string);
 	Song *				cursong();

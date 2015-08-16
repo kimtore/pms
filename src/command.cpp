@@ -175,8 +175,6 @@ Control::Control(Connection * n_conn)
 	rootdir = new Directory(NULL, "");
 	_song = NULL;
 	st->last_playlist = -1;
-	last_song = MPD_SONG_NO_NUM;
-	oldsong = MPD_SONG_NO_NUM;
 	_playlist = new Songlist;
 	_library = new Songlist;
 	_playlist->role = LIST_ROLE_MAIN;
@@ -316,7 +314,7 @@ Control::run_pending_updates()
 {
 	/* MPD has new current song */
 	if (idle_events & MPD_IDLE_PLAYER) {
-		if (!get_current_playing()) {
+		if (!get_current_song()) {
 			return false;
 		}
 		/* MPD_IDLE_PLAYER will be subtracted below */
@@ -1201,7 +1199,6 @@ Control::get_status()
 		_song = NULL;
 		st->song = MPD_SONG_NO_NUM;
 		st->songid = MPD_SONG_NO_ID;
-		last_song = MPD_SONG_NO_ID;
 		return false;
 	}
 
@@ -1705,41 +1702,19 @@ Control::update_playlist()
 }
 
 /*
- * Tells whether the currently playing song has changed since last call
- */
-bool		Control::song_changed()
-{
-	if (last_song == oldsong)
-		return false;
-
-	oldsong = last_song;
-	return true;
-}
-
-/*
  * Stores the currently playing song in _song
  * FIXME: dubious return value
  */
-int
-Control::get_current_playing()
+bool
+Control::get_current_song()
 {
-	Song *			current_song;
-	struct mpd_song *	song;
+	struct mpd_song * song;
 
 	EXIT_IDLE;
 
 	if ((song = mpd_run_current_song(conn->h())) == NULL) {
-		return MPD_SONG_NO_ID;
+		return false;
 	}
-
-	/* FIXME: wtf is this?
-	ent = mpd_getNextInfoEntity(conn->h());
-	if (ent == NULL || ent->type != MPD_INFO_ENTITY_TYPE_SONG) {
-		last_song = MPD_SONG_NO_NUM;
-		_song = NULL;
-		return MPD_SONG_NO_ID;
-	}
-	*/
 
 	if (_song != NULL) {
 		delete _song;
@@ -1747,16 +1722,9 @@ Control::get_current_playing()
 
 	_song = new Song(song);
 
-	/* FIXME: sketchy */
-	/* better implement set_current_song or something */
-	if (_song->id != last_song) {
-		oldsong = last_song;
-		last_song = _song->id;
-	}
-
 	mpd_song_free(song);
 
-	return _song->id;
+	return get_error_bool();
 }
 
 /*
