@@ -418,6 +418,16 @@ Pms::main()
 
 		/* Draw statusbar and topbar on player update. */
 		if (comm->has_finished_update(MPD_IDLE_PLAYER)) {
+
+			/* Shell command when song finishes */
+			/* FIXME: move into separate function */
+			if (comm->status()->state == MPD_STATE_STOP && pending != PEND_STOP) {
+				if (options->get_string("onplaylistfinish").size() > 0 && cursong() && cursong()->pos == comm->playlist()->end()) {
+					log(MSG_CONSOLE, STOK, _("Reached end of playlist, running automation command: %s"), options->get_string("onplaylistfinish").c_str());
+					int code = system(options->get_string("onplaylistfinish").c_str());
+				}
+			}
+
 			disp->topbar->wantdraw = true;
 			disp->actwin()->wantdraw = true;
 			drawstatus();
@@ -496,22 +506,6 @@ Pms::main()
 				}
 			}
 		}
-
-		if (statechanged)
-		{
-			/* Shell command when song finishes */
-			if (options->get_string("onplaylistfinish").size() > 0 && cursong() && cursong()->pos == comm->playlist()->end())
-			{
-				/* If a manual stop was issued, don't do anything */
-				if (comm->status()->state == MPD_STATE_STOP && pending != PEND_STOP)
-				{
-					/* soak up return value to suppress 
-					 * warning */
-					int code = system(options->get_string("onplaylistfinish").c_str());
-				}
-			}
-		}
-
 
 		/* Draw XTerm window title */
 		disp->set_xterm_title();
