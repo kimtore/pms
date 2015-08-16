@@ -169,7 +169,6 @@ public:
 	unsigned long	db_playtime;
 
 	/* Cache to detect changes */
-	int		last_state;
 	long long	last_playlist;
 	unsigned long	last_db_update_time;
 	bool		last_db_updating;
@@ -322,7 +321,6 @@ public:
 	bool		increment();
 	bool		get_status();
 	bool		song_changed();
-	bool		state_changed();
 	Songlist *	plist(int);
 };
  

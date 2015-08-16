@@ -74,7 +74,6 @@ Mpd_status::Mpd_status()
 	db_playtime		= 0;
 
 	last_playlist		= playlist;
-	last_state		= state;
 	last_db_update_time	= db_update_time;
 	last_db_updating	= db_updating;
 	update_job_id		= -1;
@@ -1716,19 +1715,6 @@ bool		Control::song_changed()
 	oldsong = last_song;
 	return true;
 }
-
-/*
- * Tells whether the play state changed since last call
- */
-bool		Control::state_changed()
-{
-	if (!alive() || st->last_state == st->state)
-		return false;
-
-	st->last_state = st->state;
-	return true;
-}
-
 
 /*
  * Stores the currently playing song in _song

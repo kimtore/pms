@@ -224,7 +224,6 @@ Pms::main()
 	string			t_str;
 	pms_pending_keys	pending = PEND_NONE;
 	char			pass[512] = "";
-	bool			statechanged = false;
 	bool			songchanged = false;
 	pms_window *		win = NULL;
 	time_t			timer = 0;
@@ -492,7 +491,6 @@ Pms::main()
 		progress_nextsong();
 
 		songchanged = comm->song_changed();
-		statechanged = comm->state_changed();
 		if (songchanged)
 		{
 			/* Cursor follows playback if song changed */
