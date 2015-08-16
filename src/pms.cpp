@@ -29,6 +29,9 @@
 #include <zmq.h>
 #include <time.h>
 
+/* Maximum time to spend waiting for events in main loop */
+#define MAIN_LOOP_INTERVAL 1000
+
 using namespace std;
 
 Pms *		pms;
@@ -457,9 +460,8 @@ Pms::main()
 			zeromq->continue_idle();
 		}
 
-		/* Wait for events for up to 1000ms before running the
-		 * main loop again. */
-		zeromq->poll_events(1000);
+		/* Block until events received or timeout reached. */
+		zeromq->poll_events(MAIN_LOOP_INTERVAL);
 
 		/* Process events from the IDLE socket. */
 		run_has_idle_events();
