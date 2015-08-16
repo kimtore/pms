@@ -1958,21 +1958,31 @@ int		multiplay(long mode, int playmode)
 
 	listend = static_cast<int>(list->end());
 
-	pms->comm->list_start();
+	/* FIXME */
+	//if (!pms->comm->list_start()) {
+		//return false;
+	//}
+
 	while (true)
 	{
 		i = list->match(pattern, i, list->end(), mode | MATCH_EXACT);
 		if (i == MATCH_FAILED) break;
-		if (first == -1)
+		if (first == -1) {
 			first = pms->comm->playlist()->size();
-		pms->comm->add(pms->comm->playlist(), list->song(i));
+		}
+		if (pms->comm->add(pms->comm->playlist(), list->song(i)) == MPD_SONG_NO_ID) {
+			return false;
+		}
 		if (++i > listend) break;
 	}
-	if (!pms->comm->list_end())
-		return false;
 
-	if (first != -1 && playmode == 0)
+	//if (!pms->comm->list_end()) {
+		//return false;
+	//}
+
+	if (first != -1 && playmode == 0) {
 		pms->comm->playpos(first);
+	}
 
 	return true;
 }

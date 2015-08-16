@@ -739,18 +739,19 @@ song_t		Control::add(Songlist * source, Songlist * dest)
 	song_t			result;
 	unsigned int		i;
 
-	if (source == NULL || dest == NULL)
-		return MPD_SONG_NO_ID;
+	assert(source != NULL);
+	assert(dest != NULL);
 
-	list_start();
 	for (i = 0; i < source->size(); i++)
 	{
 		result = add(dest, source->song(i));
-		if (first == MPD_SONG_NO_ID && result != MPD_SONG_NO_ID)
+		if (result == MPD_SONG_NO_ID) {
+			return result;
+		}
+		if (first == MPD_SONG_NO_ID) {
 			first = result;
+		}
 	}
-	if (!list_end())
-		return MPD_SONG_NO_ID;
 
 	return first;
 }
@@ -899,7 +900,7 @@ Control::crop(Songlist * list, int mode)
 		}
 		upos = static_cast<unsigned int>(pos);
 
-		list_start();
+		//list_start();
 		for (i = list->end(); i < list->size(); i--)
 		{
 			if (upos != i) {
@@ -926,7 +927,7 @@ Control::crop(Songlist * list, int mode)
 			}
 		}
 
-		list_start();
+		//list_start();
 		for (i = list->end(); i < list->size(); i--)
 		{
 			if (list->song(i)->selected == false)
@@ -1064,7 +1065,7 @@ Control::move(Songlist * list, int offset)
 
 	EXIT_IDLE;
 
-	list_start();
+	//list_start();
 
 	while (song != NULL)
 	{
@@ -1143,32 +1144,42 @@ int		Control::prune(Songlist * list1, Songlist * list2)
 
 /*
  * Starts mpd command list/queue mode
+ * FIXME: not implemented
  */
 bool
 Control::list_start()
 {
-	bool r;
+	assert(0);
 
-	if ((r = mpd_command_list_begin(conn->h(), true))) {
+	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Entering command list mode.\n");
+
+	if (mpd_command_list_begin(conn->h(), true)) {
 		command_mode = 1;
 	}
 
-	return r;
+	return get_error_bool();
 }
 
 /*
  * Ends mpd command list/queue mode
+ * FIXME: not implemented
  */
 bool
 Control::list_end()
 {
-	bool r;
+	assert(0);
 
-	if ((r = mpd_command_list_end(conn->h()))) {
+	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Leaving command list mode.\n");
+
+	if (mpd_command_list_end(conn->h())) {
 		command_mode = 0;
 	}
 
-	return r;
+	return get_error_bool();
 }
 
 /*
