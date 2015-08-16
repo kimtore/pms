@@ -379,6 +379,7 @@ Pms::main()
 		if (comm->status()->state == MPD_STATE_PLAY) {
 			timer_tmp = difftime(timer_elapsed, timer_now);
 			comm->status()->increase_time_elapsed(timer_tmp);
+			disp->topbar->wantdraw = true;
 		}
 		timer_elapsed = get_clock();
 
@@ -432,7 +433,6 @@ Pms::main()
 
 		/* Redraw the screen. */
 		/* FIXME: where to put this? */
-		disp->topbar->wantdraw = true;
 		if (mediator->changed("redraw")) {
 			disp->forcedraw();
 		} else {
