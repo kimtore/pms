@@ -321,13 +321,14 @@ Control::run_pending_updates()
 	}
 
 	/* MPD has new status information */
-	if (idle_events & MPD_IDLE_PLAYER || idle_events & MPD_IDLE_MIXER || idle_events & MPD_IDLE_OPTIONS) {
+	if (idle_events & (MPD_IDLE_PLAYER | MPD_IDLE_MIXER | MPD_IDLE_OPTIONS | MPD_IDLE_QUEUE)) {
 		if (!get_status()) {
 			return false;
 		}
 		set_update_done(MPD_IDLE_PLAYER);
 		set_update_done(MPD_IDLE_MIXER);
 		set_update_done(MPD_IDLE_OPTIONS);
+		/* MPD_IDLE_QUEUE will be subtracted below */
 	}
 
 	/* MPD has new playlist */
