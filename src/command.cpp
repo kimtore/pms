@@ -332,7 +332,7 @@ Control::run_pending_updates()
 
 	/* MPD has new playlist */
 	if (idle_events & MPD_IDLE_QUEUE) {
-		if (!update_playlist()) {
+		if (!update_queue()) {
 			return false;
 		}
 		set_update_done(MPD_IDLE_QUEUE);
@@ -1655,7 +1655,7 @@ bool		Control::activatelist(Songlist * list)
  * TODO: implement more entity types
  */
 bool
-Control::update_playlist()
+Control::update_queue()
 {
 	bool			rc;
 	Song *			song;
@@ -1684,10 +1684,10 @@ Control::update_playlist()
 				_playlist->add(song);
 				break;
 			case MPD_ENTITY_TYPE_UNKNOWN:
-				pms->log(MSG_DEBUG, 0, "BUG in update_playlist(): entity type not implemented by libmpdclient\n");
+				pms->log(MSG_DEBUG, 0, "BUG in update_queue(): entity type not implemented by libmpdclient\n");
 				break;
 			default:
-				pms->log(MSG_DEBUG, 0, "BUG in update_playlist(): entity type not implemented by PMS\n");
+				pms->log(MSG_DEBUG, 0, "BUG in update_queue(): entity type not implemented by PMS\n");
 				break;
 		}
 		mpd_entity_free(ent);

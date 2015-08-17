@@ -229,7 +229,7 @@ private:
 	int			get_stats();
 	bool			retrieve_lists(vector<Songlist *> &);
 	unsigned int		update_playlists();
-	bool			update_playlist();
+	bool			update_queue();
 	bool			update_library();
 	bool			finish();
 
