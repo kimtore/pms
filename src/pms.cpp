@@ -271,6 +271,7 @@ Pms::main()
 	bool			songchanged = false;
 	time_t			timer = 0;
 	int			rc;
+	bool need_init_follow_playback = true;
 
 	/* Error codes returned from MPD */
 	enum mpd_error		error;
@@ -373,10 +374,6 @@ Pms::main()
 	disp->forcedraw();
 	disp->refresh();
 
-	/* Center attention to current song */
-	//comm->library()->gotocurrent();
-	//comm->playlist()->gotocurrent();
-
 	/* Set up inter-thread communication */
 	zeromq = new ZeroMQ();
 	zeromq->start_thread_idle(idle_thread_main);
@@ -471,8 +468,9 @@ Pms::main()
 			}
 
 			/* Execute 'cursor follows playback'. */
-			if (song_changed() && options->get_bool("followplayback")) {
+			if (song_changed() && (need_init_follow_playback || options->get_bool("followplayback"))) {
 				run_cursor_follow_playback();
+				need_init_follow_playback = false;
 			}
 
 			disp->topbar->wantdraw = true;
