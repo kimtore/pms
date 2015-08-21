@@ -38,11 +38,8 @@ Song::Song(const mpd_song * song)
 	file			= Pms::tostring(mpd_song_get_uri(song));
 	artist			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ARTIST, 0));
 	albumartist		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ALBUM_ARTIST, 0));
-        /* FIXME: libmpdclient support for .*sort? */
-	//artistsort		= Pms::tostring(mpd_song_get_tag(ARTISTSORT));
-	//albumartistsort		= Pms::tostring(mpd_song_get_tag(ALBUMARTISTSORT));
-        artistsort = artist;
-        albumartistsort = albumartist;
+	artistsort		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ARTIST_SORT, 0));
+	albumartistsort		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ALBUM_ARTIST_SORT, 0));
 
 	title			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_TITLE, 0));
 	album			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ALBUM, 0));
