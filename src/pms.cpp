@@ -1006,7 +1006,7 @@ bool			Pms::run_shell(string cmd)
  */
 Song *			Pms::cursong()
 {
-	if (!comm) return NULL;
+	assert(comm != NULL);
 	return comm->song();
 }
 

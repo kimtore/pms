@@ -1703,27 +1703,34 @@ Control::update_queue()
 }
 
 /*
- * Stores the currently playing song in _song
- * FIXME: dubious return value
+ * Retrieves the currently playing song from MPD, and caches it locally.
+ *
+ * Returns true on success, false on failure.
  */
 bool
 Control::get_current_song()
 {
+	bool status_ok;
 	struct mpd_song * song;
 
 	EXIT_IDLE;
 
-	if ((song = mpd_run_current_song(conn->h())) == NULL) {
-		return false;
+	song = mpd_run_current_song(conn->h());
+	status_ok = get_error_bool();
+
+	if (!status_ok) {
+		return status_ok;
 	}
 
 	if (_song != NULL) {
 		delete _song;
+		_song = NULL;
 	}
 
-	_song = new Song(song);
-
-	mpd_song_free(song);
+	if (song) {
+		_song = new Song(song);
+		mpd_song_free(song);
+	}
 
 	return get_error_bool();
 }
