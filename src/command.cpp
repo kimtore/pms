@@ -689,11 +689,7 @@ Control::setvolume(int vol)
 
 	pms->log(MSG_DEBUG, 0, "Setting volume to %d%%\n", vol);
 
-	if (mpd_run_set_volume(conn->h(), vol)) {
-		mutevolume = 0;
-	}
-
-	return get_error_bool();
+	return mpd_run_set_volume(conn->h(), vol);
 }
 
 /*
@@ -712,11 +708,16 @@ bool
 Control::mute()
 {
 	if (muted()) {
-		return setvolume(mutevolume);
+		if (setvolume(mutevolume)) {
+			mutevolume = 0;
+		}
+	} else {
+		if (setvolume(0)) {
+			mutevolume = st->volume;
+		}
 	}
 
-	mutevolume = st->volume;
-	return setvolume(0);
+	return get_error_bool();
 }
 
 /*
@@ -725,7 +726,7 @@ Control::mute()
 bool
 Control::muted()
 {
-	return (st->volume == -1 || mutevolume != 0);
+	return (st->volume <= 0);
 }
 
 /*
