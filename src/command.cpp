@@ -45,6 +45,7 @@ Mpd_status::Mpd_status()
 	repeat			= false;
 	single			= false;
 	random			= false;
+	consume			= false;
 	playlist_length		= 0;
 	playlist		= -1;
 	state			= MPD_STATE_UNKNOWN;
@@ -89,6 +90,7 @@ Mpd_status::assign_status(struct mpd_status * status)
 	repeat			= mpd_status_get_repeat(status);
 	single			= mpd_status_get_single(status);
 	random			= mpd_status_get_random(status);
+	consume			= mpd_status_get_consume(status);
 	playlist_length		= mpd_status_get_queue_length(status);
 	playlist		= mpd_status_get_queue_version(status);
 	state			= mpd_status_get_state(status);
@@ -430,6 +432,8 @@ Control::get_available_commands()
 			commands.close = true;
 		} else if (!strcmp(pair->value, "commands")) {
 			commands.commands = true;
+		} else if (!strcmp(pair->value, "consume")) {
+			commands.commands = true;
 		} else if (!strcmp(pair->value, "count")) {
 			commands.count = true;
 		} else if (!strcmp(pair->value, "crossfade")) {
@@ -652,6 +656,19 @@ Control::single(bool on)
 	pms->log(MSG_DEBUG, 0, "Set single to %d\n", on);
 
 	return mpd_run_single(conn->h(), on);
+}
+
+/*
+ * Sets consume mode
+ */
+bool
+Control::consume(bool on)
+{
+	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Set consume to %d\n", on);
+
+	return mpd_run_consume(conn->h(), on);
 }
 
 /*
@@ -1209,19 +1226,6 @@ Control::get_status()
 	st->assign_stats(stats);
 	mpd_stats_free(stats);
 
-	/* Override local settings if MPD mode changed */
-	if (st->random) {
-		pms->options->set_long("playmode", PLAYMODE_RANDOM);
-	}
-
-	if (st->repeat) {
-		if (st->single) {
-			pms->options->set_long("repeat", REPEAT_ONE);
-		} else {
-			pms->options->set_long("repeat", REPEAT_LIST);
-		}
-	}
-
 	return true;
 }
 
@@ -1589,60 +1593,30 @@ Control::activelist()
 
 /*
  * Sets the active playlist
+ *
+ * FIXME: why all the logic below?
  */
-bool		Control::activatelist(Songlist * list)
+bool
+Control::activatelist(Songlist * list)
 {
 	vector<Songlist *>::iterator	i;
-	bool				changed = false;
 
-	if (list == _playlist || list == _library)
-	{
+	if (list == _playlist || list == _library) {
 		_active = list;
-		changed = true;
+		return true;
 	}
-	else
+
+	i = playlists.begin();
+	while (i != playlists.end())
 	{
-		i = playlists.begin();
-		while (i != playlists.end())
-		{
-			if (*i == list)
-			{
-				_active = list;
-				changed = true;
-				break;
-			}
-			++i;
+		if (*i == list) {
+			_active = list;
+			return true;
 		}
+		++i;
 	}
 
-	/* Have MPD manage random inside playlist */
-	/* FIXME: custom function */
-	/* FIXME: not our responsibility! */
-	/* FIXME: wrong return codes */
-	bool set_repeat;
-	bool set_single;
-	bool set_random;
-
-	if (changed)
-	{
-		set_repeat = ((pms->options->get_long("repeat") == REPEAT_LIST || pms->options->get_long("repeat") == REPEAT_ONE) && activelist() == playlist());
-		set_single = (pms->options->get_long("repeat") == REPEAT_ONE && activelist() == playlist());
-		set_random = (pms->options->get_long("playmode") == PLAYMODE_RANDOM && activelist() == playlist());
-
-		if (set_repeat != st->repeat && !repeat(set_repeat)) {
-			return false;
-		}
-
-		if (set_single != st->single && !single(set_single)) {
-			return false;
-		}
-
-		if (set_random != st->random && !random(set_random)) {
-			return false;
-		}
-	}
-
-	return changed;
+	assert(false);
 }
 
 /*

@@ -712,10 +712,10 @@ long		Interface::add(string param)
 /*
  * Skip to the next song in line.
  */
-long		Interface::next(bool ignore_playmode = false)
+long
+Interface::next(bool ignore_playmode = false)
 {
-	if (playnext(ignore_playmode ? PLAYMODE_LINEAR : pms->options->get_long("playmode"), true) == MPD_SONG_NO_ID)
-	{
+	if (playnext(true) == MPD_SONG_NO_ID) {
 		pms->log(MSG_STATUS, STERR, _("You have reached the end of the list."));
 		return STERR;
 	}
@@ -725,9 +725,10 @@ long		Interface::next(bool ignore_playmode = false)
 
 /*
  * Skip to the previous song in playlist.
- * If repeat is set to REPEAT_LIST, wrap around.
+ * If repeat mode is set, wrap around to the last song.
  */
-long		Interface::prev()
+long
+Interface::prev()
 {
 	Song *		cs;
 	song_t		i;
@@ -735,9 +736,8 @@ long		Interface::prev()
 	cs = pms->cursong();
 	if (cs == NULL)
 	{
-		if (pms->comm->playlist()->size() == 0)
-		{
-			pms->log(MSG_STATUS, STERR, _("Can't skip backwards - there are no songs in the playlist."));
+		if (pms->comm->playlist()->size() == 0) {
+			pms->log(MSG_STATUS, STERR, _("Can't skip backwards because the playlist is empty."));
 			return STERR;
 		}
 		i = pms->comm->activelist()->size();
@@ -746,8 +746,7 @@ long		Interface::prev()
 	{
 		if (cs->pos <= 0)
 		{
-			if (pms->options->get_long("repeat") == REPEAT_LIST)
-			{
+			if (pms->comm->status()->repeat) {
 				i = pms->comm->playlist()->size();
 			}
 			else
@@ -902,7 +901,7 @@ long		Interface::seek(int seconds)
 	/* Overflow handling */
 	if (pms->comm->status()->time_elapsed + seconds >= pms->comm->status()->time_total)
 		/* Skip forwards */
-		playnext(pms->options->get_long("playmode"), true);
+		playnext(true);
 	else if (pms->comm->status()->time_elapsed + seconds < 0)
 	{
 		/* Skip backwards */
@@ -1340,53 +1339,20 @@ handle_command(pms_pending_keys action)
 			break;
 
 		case PEND_REPEAT:
-			switch(pms->options->get_long("repeat"))
-			{
-				case REPEAT_NONE:
-					pms->options->set("repeat", "single");
-					break;
-				case REPEAT_ONE:
-					pms->options->set("repeat", "yes");
-					break;
-				case REPEAT_LIST:
-				default:
-					pms->options->set("repeat", "no");
-					break;
-			}
-
-			pms->log(MSG_DEBUG, 0, "Repeatmode set to %d\n", pms->options->get_long("repeat"));
-
-			/* Have MPD manage repeat inside playlist and repeat 
-			 * single song
-			 * Beware: value of the repeat option may change after 
-			 * either of these commands runs, hence not a single 
-			 * line each for repeat and single with checks for 
-			 * repeat mode within each */
-			if (pms->comm->activelist() == pms->comm->playlist())
-			{
-				switch (pms->options->get_long("repeat"))
-				{
-					case REPEAT_NONE:
-						pms->comm->repeat(false);
-						pms->comm->single(false);
-						break;
-					case REPEAT_ONE:
-						pms->comm->repeat(true);
-						pms->comm->single(true);
-						break;
-					case REPEAT_LIST:
-					default:
-						pms->comm->repeat(true);
-						pms->comm->single(false);
-						break;
-				}
-			}
-
-			//pms->drawstatus();
+			pms->comm->repeat(!pms->comm->status()->repeat);
 			break;
 
+		case PEND_RANDOM:
+			pms->comm->random(!pms->comm->status()->random);
+			break;
 
+		case PEND_SINGLE:
+			pms->comm->single(!pms->comm->status()->single);
+			break;
 
+		case PEND_CONSUME:
+			pms->comm->consume(!pms->comm->status()->consume);
+			break;
 
 		case PEND_TEXT_UPDATED:
 			pms->drawstatus();
@@ -1785,28 +1751,6 @@ handle_command(pms_pending_keys action)
 
 			break;
 
-		/* Cycle through between linear play, random and play single song */
-		case PEND_CYCLE_PLAYMODE:
-			switch(pms->options->get_long("playmode"))
-			{
-				default:
-				case PLAYMODE_MANUAL:
-					pms->options->set_long("playmode", PLAYMODE_LINEAR);
-					break;
-				case PLAYMODE_LINEAR:
-					pms->options->set_long("playmode", PLAYMODE_RANDOM);
-					break;
-				case PLAYMODE_RANDOM:
-					pms->options->set_long("playmode", PLAYMODE_MANUAL);
-					break;
-			}
-
-			/* Have MPD manage random inside playlist */
-			pms->comm->random(pms->options->get_long("playmode") == PLAYMODE_RANDOM && pms->comm->activelist() == pms->comm->playlist());
-
-			//pms->drawstatus();
-			break;
-
 		case PEND_RESIZE:
 			pms->disp->resized();
 			pms->disp->forcedraw();
@@ -1830,14 +1774,17 @@ void		generr()
 
 /*
  * Adds or enqueues the next song based on play mode
+ *
+ * FIXME: misleading function name, too many responsibilities
+ *
+ * Returns the id of the song that was added.
  */
-int		playnext(long mode, int playnow)
+int		playnext(int playnow)
 {
 	Song *		song;
 	int		i;
 
-	if (mode == PLAYMODE_LINEAR)
-	{
+	if (!pms->comm->status()->random) {
 		if (!pms->cursong() || (int)pms->comm->playlist()->end() != pms->cursong()->pos)
 			song = pms->comm->playlist()->nextsong();
 		else
@@ -1849,9 +1796,7 @@ int		playnext(long mode, int playnow)
 			i = pms->comm->add(pms->comm->playlist(), song);
 		else
 			i = song->id;
-	}
-	else if (mode == PLAYMODE_RANDOM)
-	{
+	} else {
 		if (pms->cursong() && static_cast<int>(pms->comm->playlist()->end()) != pms->cursong()->pos)
 		{
 			song = pms->comm->playlist()->nextsong();
@@ -1865,11 +1810,11 @@ int		playnext(long mode, int playnow)
 			i = pms->comm->add(pms->comm->playlist(), song);
 		}
 	}
-	else	return MPD_SONG_NO_ID;
 
 	if (i == MPD_SONG_NO_NUM)
 		return MPD_SONG_NO_ID;
 
+	/* FIXME: error handling */
 	if (playnow == true)
 		pms->comm->playid(i);
 
@@ -2112,12 +2057,14 @@ bool init_commandmap()
 	pms->commands->add("clear", "Clear the list", PEND_CLEAR);
 	pms->commands->add("crop", "Crops list to currently playing song", PEND_CROP);
 	pms->commands->add("cropsel", "Crops list to selected songs", PEND_CROPSELECTION);
-	pms->commands->add("repeat", "Toggle repeat mode", PEND_REPEAT);
+	pms->commands->add("repeat", "Toggle repeat on/off", PEND_REPEAT);
+	pms->commands->add("random", "Toggle random on/off", PEND_RANDOM);
+	pms->commands->add("single", "Toggle single on/off", PEND_SINGLE);
+	pms->commands->add("consume", "Toggle consume on/off", PEND_CONSUME);
 	pms->commands->add("volume", "Increase or decrease volume", PEND_VOLUME);
 	pms->commands->add("mute", "Toggle mute", PEND_MUTE);
 	pms->commands->add("crossfade", "Set crossfade time", PEND_CROSSFADE);
 	pms->commands->add("seek", "Seek in stream", PEND_SEEK);
-	pms->commands->add("playmode", "Cycle play mode", PEND_CYCLE_PLAYMODE);
 
 	/* Movement */
 	pms->commands->add("next-window", "Go to next playlist", PEND_NEXTWIN);

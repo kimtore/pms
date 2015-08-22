@@ -128,7 +128,7 @@ bool		handle_command(pms_pending_keys);
 bool		init_commandmap();
 
 void		generr();
-int		playnext(long, int);
+int		playnext(int);
 song_t		gotonextentry(string, bool);
 int		multiplay(long, int);
 bool		setwin(pms_window *);

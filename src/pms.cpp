@@ -1049,104 +1049,114 @@ Pms::needs_statusbar_reset()
 }
 
 /*
- * Return a textual description on how song progression works
+ * Return a textual description on how song progression works.
+ *
+ * FIXME: this function is a mess. De-duplicate and use common code for this
+ * function and progress_nextsong().
  */
-string			Pms::playstring()
+string
+Pms::playstring()
 {
 	string		s;
-	string		list = "<unknown>";
-	bool		is_last;
+	string		list_name = "<unknown>";
+	bool		is_last_in_playlist;
+	bool		playlist_is_active;
+	bool		library_is_active;
+	Mpd_status *	status;
 
-	long		playmode = options->get_long("playmode");
-	long		repeatmode = options->get_long("repeat");
+	status = comm->status();
 
-	if (!comm->status() || !conn->connected())
-	{
+	assert(status != NULL);
+
+	if (!conn->connected()) {
 		s = "Not connected.";
 		return s;
 	}
 
-	if (comm->status()->state == MPD_STATE_STOP || !cursong())
-	{
+	if (status->state == MPD_STATE_STOP || !cursong()) {
 		s = "Stopped.";
 		return s;
 	}
-	else if (comm->status()->state == MPD_STATE_PAUSE)
-	{
+
+	if (status->state == MPD_STATE_PAUSE) {
 		s = "Paused...";
 		return s;
 	}
 
-	if (comm->activelist())
-		list = comm->activelist()->filename;
+	if (comm->activelist()) {
+		list_name = comm->activelist()->filename;
+	}
 
-	if (list.size() == 0)
-	{
-		if (comm->activelist() == comm->library())
-			list = "library";
-		else if (comm->activelist() == comm->playlist())
-			list = "playlist";
+	playlist_is_active = (comm->activelist() == comm->playlist());
+	library_is_active = (comm->activelist() == comm->library());
+
+	/* FIXME: playlist should give the correct name in a name() function */
+	if (list_name.size() == 0) {
+		if (playlist_is_active) {
+			list_name = "playlist";
+		} else if (library_is_active) {
+			list_name = "library";
+		}
 	}
 
 	s = "Playing ";
 
-	if (playmode == PLAYMODE_MANUAL)
-	{
-		s += "this song, then stopping.";
+	if (status->consume) {
+		s += "and consuming ";
+	}
+
+	if (status->random) {
+		s += "random songs from playlist.";
 		return s;
 	}
 
-	if (repeatmode == REPEAT_ONE)
-	{
-		s += "the same song indefinitely.";
-		return s;
-	}
-
-	is_last = (cursong()->pos == static_cast<int>(comm->playlist()->end()));
-
-	if (!is_last && !(comm->activelist() == comm->playlist() && repeatmode == REPEAT_LIST))
-	{
-		s += "through playlist, then ";
-	}
-
-	if (playmode == PLAYMODE_RANDOM)
-	{
-		s += "random songs from " + list + ".";
-		return s;
-	}
-
-	if (repeatmode == REPEAT_LIST)
-	{
-		s += "songs from " + list + " repeatedly.";
-		return s;
-	}
-
-	if (repeatmode == REPEAT_NONE)
-	{
-		if (comm->activelist() == comm->playlist())
-		{
-			if (options->get_bool("followcursor"))
-			{
-				if (is_last)
-					s += "this song, then ";
-
-				s += "following cursor.";
-				return s;
-			}
-
-			if (is_last)
-				s += "this song, then stopping.";
-			else
-				s += "stopping.";
-
-			return s;
+	if (status->single) {
+		if (status->repeat && !status->consume) {
+			s += "the current song repeatedly.";
+		} else {
+			s += "this song, then stopping.";
 		}
-		else
-		{
-			s += "songs from " + list + ".";
+		return s;
+	}
+
+	/* FIXME: separate function? */
+	is_last_in_playlist = (cursong()->pos == static_cast<song_t>(comm->playlist()->end()));
+
+	if (status->repeat) {
+		s += "songs from playlist repeatedly.";
+		return s;
+	}
+
+	if (playlist_is_active) {
+		if (is_last_in_playlist) {
+			s += "this song, then stopping.";
+		} else {
+			s += "songs from playlist.";
+		}
+		return s;
+	}
+
+	if (is_last_in_playlist) {
+		s += "this song, then ";
+		if (!status->repeat && playlist_is_active) {
+			s += "stopping.";
 			return s;
 		}
 	}
+
+	if (!is_last_in_playlist) {
+		if (!status->consume) {
+			s += "through ";
+		}
+		s += "playlist, then ";
+	}
+
+	if (!playlist_is_active && options->get_bool("followcursor")) {
+		s += "following cursor.";
+		return s;
+	}
+
+	s += "songs from " + list_name + ".";
 
 	return s;
 }
@@ -1235,67 +1245,54 @@ Pms::log(int verbosity, long code, const char * format, ...)
 }
 
 /*
- * Checks if time is right for song progression, and takes necessary action
+ * Checks if time is right for song progression, and takes necessary action.
+ *
+ * FIXME: split into two functions
+ * FIXME: dubious return value
  */
 bool			Pms::progress_nextsong()
 {
-	static song_t		lastid = MPD_SONG_NO_ID;
+	static song_t		last_song_id = MPD_SONG_NO_ID;
 	static Song *		lastcursor = NULL;
 	Songlist *		list = NULL;
-	unsigned int		remaining;
+	unsigned int		song_time_remaining;
+	Mpd_status *		status = comm->status();
 
-	long			repeatmode;
-	long			playmode;
-
-	if (!cursong())		return false;
-
-	if (comm->status()->state != MPD_STATE_PLAY)
+	/* No song progression without an active song, probably meaning that
+	 * the player is stopped or something is wrong. */
+	if (!cursong()) {
 		return false;
-
-	remaining = (comm->status()->time_total - comm->status()->time_elapsed - comm->status()->crossfade);
-
-	repeatmode = options->get_long("repeat");
-	playmode = options->get_long("playmode");
-
-	/* Too early */
-	if (remaining > options->get_long("nextinterval") || lastid == cursong()->id)
-		return false;
-
-	/* No auto-progression, even when in the middle of playlist */
-	if (playmode == PLAYMODE_MANUAL)
-	{
-		if (remaining <= options->get_long("stopdelay"))
-		{
-			pms->log(MSG_DEBUG, 0, "Manual playmode, stopping playback.\n");
-			comm->stop();
-			lastid = cursong()->id;
-			return true;
-		}
-		else
-		{
-			return false;
-		}
 	}
+
+	/* No song progression if not playing. */
+	if (status->state != MPD_STATE_PLAY) {
+		return false;
+	}
+
+	/* If the active list is the playlist, PMS doesn't need to do anything,
+	 * because MPD handles the rest. */
+	list = comm->activelist();
+	assert(list != NULL);
+	if (list == comm->playlist()) {
+		return false;
+	}
+
+	/* Only add songs when there the currently playing song is near the end. */
+	song_time_remaining = status->time_total - status->time_elapsed - status->crossfade;
+	if (song_time_remaining > options->get_long("nextinterval")) {
+		return false;
+	}
+
+	/* No auto-progression in single mode */
+	if (status->single) {
+		return false;
+	}
+
 	/* Defeat desync with server */
-	lastid = cursong()->id;
+	last_song_id = cursong()->id;
 
 	/* Normal progression: reached end of playlist */
-	if (comm->status()->song == static_cast<int>(playlist->list->end()))
-	{
-		/* List to play from */
-		list = comm->activelist();
-		if (!list) return false;
-
-		if (list == comm->playlist())
-		{
-			/* Let MPD handle repeating of the playlist itself */
-			if (repeatmode == REPEAT_LIST)
-				return false;
-
-			/* Let MPD handle random songs from playlist */
-			if (playmode == PLAYMODE_RANDOM)
-				return false;
-		}
+	if (cursong()->pos == static_cast<int>(playlist->list->end())) { 
 
 		pms->log(MSG_DEBUG, 0, "Auto-progressing to next song.\n");
 
@@ -1304,19 +1301,18 @@ bool			Pms::progress_nextsong()
 		{
 			pms->log(MSG_DEBUG, 0, "Playback follows cursor: last cursor=%p, now cursor=%p.\n", lastcursor, disp->cursorsong());
 			lastcursor = disp->cursorsong();
-			lastid = comm->add(comm->playlist(), lastcursor);
+			last_song_id = comm->add(comm->playlist(), lastcursor);
 		}
 
 		/* Normal song progression */
-		lastid = playnext(playmode, false);
+		last_song_id = playnext(false);
 	}
 
-	if (lastcursor == NULL)
-	{
+	if (lastcursor == NULL) {
 		lastcursor = disp->cursorsong();
 	}
 
-	return (lastid != MPD_SONG_NO_ID);
+	return (last_song_id != MPD_SONG_NO_ID);
 }
 
 /*
@@ -1394,7 +1390,6 @@ void			Pms::init_default_keymap()
 	bindings->add("b", "add-album");
 	bindings->add("B", "play-album");
 	bindings->add("delete", "remove");
-	bindings->add("c", "cropsel");
 	bindings->add("C", "crop");
 	bindings->add("insert", "toggle-select");
 	bindings->add("F12", "activate-list");
@@ -1411,8 +1406,10 @@ void			Pms::init_default_keymap()
 	bindings->add("l", "next");
 	bindings->add("h", "prev");
 	bindings->add("M", "mute");
-	bindings->add("m", "playmode");
 	bindings->add("r", "repeat");
+	bindings->add("z", "random");
+	bindings->add("c", "consume");
+	bindings->add("s", "single");
 	bindings->add("+", "volume +5");
 	bindings->add("-", "volume -5");
 	bindings->add("left", "seek -5");

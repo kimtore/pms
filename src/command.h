@@ -56,6 +56,7 @@ typedef struct
 	bool		clearerror;
 	bool		close;
 	bool		commands;
+	bool		consume;
 	bool		count;
 	bool		crossfade;
 	bool		currentsong;
@@ -140,6 +141,7 @@ public:
 	bool		repeat;
 	bool		single;
 	bool		random;
+	bool		consume;
 	int		playlist_length;
 	long long	playlist;
 	int		state;
@@ -283,6 +285,7 @@ public:
 	bool			random(int);
 	bool			repeat(bool);
 	bool			single(bool);
+	bool			consume(bool);
 	bool			setvolume(int);
 	bool			volume(int);
 	bool			mute();

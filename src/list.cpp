@@ -1,7 +1,7 @@
 /* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,7 +76,8 @@ Song *			Songlist::song(song_t n)
 /*
  * Returns the next song in line, starting from current song
  */
-Song *			Songlist::nextsong(song_t * id)
+Song *
+Songlist::nextsong(song_t * id)
 {
 	song_t		i = MATCH_FAILED;
 	Song *		s;
@@ -104,12 +105,14 @@ Song *			Songlist::nextsong(song_t * id)
 	}
 
 	/* Wrap around */
+	/* FIXME: not our responsibility */
 	if (++i >= static_cast<song_t>(size()))
 	{
-		if (pms->options->get_long("repeat") == REPEAT_LIST)
+		if (pms->comm->status()->repeat) {
 			i = 0;
-		else
+		} else {
 			return NULL;
+		}
 	}
 
 	if (id != NULL)
@@ -149,12 +152,14 @@ Song *			Songlist::prevsong(song_t * id)
 	}
 
 	/* Wrap around */
+	/* FIXME: not our responsibility */
 	if (--i < 0)
 	{
-		if (pms->options->get_long("repeat") == REPEAT_LIST)
+		if (pms->comm->status()->repeat) {
 			i = end();
-		else
+		} else {
 			return NULL;
+		}
 	}
 
 	if (id != NULL)

@@ -75,11 +75,13 @@ void			Colortable::clear()
 
 	delete topbar.repeat;
 	delete topbar.random;
-	delete topbar.manualprogression;
+	delete topbar.single;
+	delete topbar.consume;
 	delete topbar.mute;
 	delete topbar.repeatshort;
 	delete topbar.randomshort;
-	delete topbar.manualprogressionshort;
+	delete topbar.singleshort;
+	delete topbar.consumeshort;
 	delete topbar.muteshort;
 
 	/* field types */
@@ -167,11 +169,13 @@ void			Colortable::defaults()
 
 	topbar.repeat				= new color(COLOR_BLACK, -1, A_BOLD);
 	topbar.random				= new color(COLOR_BLACK, -1, A_BOLD);
-	topbar.manualprogression		= new color(COLOR_BLACK, -1, A_BOLD);
+	topbar.single           		= new color(COLOR_BLACK, -1, A_BOLD);
+	topbar.consume           		= new color(COLOR_BLACK, -1, A_BOLD);
 	topbar.mute				= new color(COLOR_BLACK, -1, A_BOLD);
 	topbar.repeatshort			= new color(COLOR_CYAN, -1, 0);
 	topbar.randomshort			= new color(COLOR_CYAN, -1, 0);
-	topbar.manualprogressionshort		= new color(COLOR_CYAN, -1, 0);
+	topbar.singleshort      		= new color(COLOR_CYAN, -1, 0);
+	topbar.consumeshort      		= new color(COLOR_CYAN, -1, 0);
 	topbar.muteshort			= new color(COLOR_CYAN, -1, 0);
 
 	/* field types */
