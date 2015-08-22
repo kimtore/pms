@@ -807,43 +807,37 @@ Control::add(Songlist * list, Song * song)
 /*
  * Remove a song from the playlist
  */
-int
+bool
 Control::remove(Songlist * list, Song * song)
 {
 	int		pos = MATCH_FAILED;
 
 	assert(song != NULL);
 	assert(list != NULL);
+	assert(list != _library);
 
-	if (list == _library) {
+	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Removing song with id=%d pos=%d uri=%s from list %s.\n", song->id, song->pos, song->file.c_str(), list->filename.c_str());
+
+	/* Remove song from queue */
+	if (list == _playlist) {
+		// All songs must have ID's
+		// FIXME: version requirement
+		assert(song->id != MPD_SONG_NO_ID);
+		return mpd_run_delete_id(conn->h(), song->id);
+	}
+
+	/* Remove song from stored playlist */
+	assert(list->filename.size() == 0);
+
+	pos = list->locatesong(song);
+	if (pos == MATCH_FAILED) {
 		// FIXME: error message
 		return false;
 	}
 
-	if (list == _playlist && song->id == MPD_SONG_NO_ID) {
-		// All songs must have ID's
-		// FIXME: version requirement
-		assert(song->id != MPD_SONG_NO_ID);
-	}
-
-	if (list != _playlist) {
-		if (list->filename.size() == 0) {
-			// FIXME: what does this check?
-			return false;
-		}
-		pos = list->locatesong(song);
-		if (pos == MATCH_FAILED) {
-			// FIXME: error message
-			return false;
-		}
-		pms->log(MSG_DEBUG, 0, "Removing song %d from list.\n", pos);
-	}
-
-	if (list == _playlist) {
-		return mpd_run_delete_id(conn->h(), song->id);
-	} else {
-		return mpd_run_playlist_delete(conn->h(), (char *)list->filename.c_str(), pos);
-	}
+	return mpd_run_playlist_delete(conn->h(), (char *)list->filename.c_str(), pos);
 
 	// FIXME: remove from list?
 	/*
@@ -1653,7 +1647,7 @@ bool		Control::activatelist(Songlist * list)
 
 /*
  * Retrieves current playlist from MPD
- * TODO: implement more entity types
+ * TODO: implement missing entity types
  */
 bool
 Control::update_queue()

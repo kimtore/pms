@@ -977,49 +977,42 @@ long		Interface::crop(int crop_mode)
 /*
  * Remove selected songs from list
  */
-long		Interface::remove(Songlist * list)
+long
+Interface::remove(Songlist * list)
 {
-	int				count = 0;
 	Song *				song;
 	vector<Song *>			songs;
 	vector<Song *>::iterator	i;
 
-	if (!list)
-	{
+	/* FIXME: this check should, perhaps, be done earlier? */
+	if (!list) {
 		pms->log(MSG_STATUS, STERR, _("This is not a playlist: you can't remove songs from here."));
 		return STERR;
 	}
 
-	if (list == pms->comm->library())
-	{
+	/* FIXME: same goes for this check */
+	if (list == pms->comm->library()) {
 		pms->log(MSG_STATUS, STERR, _("The library is read-only."));
 		return STERR;
 	}
 
-	song = list->popnextselected();
-	while (song != NULL)
-	{
+	while ((song = list->popnextselected()) != NULL) {
 		songs.push_back(song);
-		song = list->popnextselected();
 	}
 
 	i = songs.begin();
-	while (i != songs.end())
-	{
-		if (pms->comm->remove(list, *i))
-			++count;
+	while (i != songs.end()) {
+		if (!pms->comm->remove(list, *i)) {
+			return STERR;
+		}
 		++i;
 	}
 
-	if (count > 0)
-	{
-		pms->disp->actwin()->wantdraw = true;
-		pms->log(MSG_STATUS, STOK, _("Removed %d %s."), count, (count == 1 ? _("song") : _("songs")));
-		return STOK;
-	}
+	/* FIXME: should wantdraw really be set _here_? */
+	pms->disp->actwin()->wantdraw = true;
+	pms->log(MSG_STATUS, STOK, _("Removed %d %s."), songs.size(), (songs.size() == 1 ? _("song") : _("songs")));
 
-	pms->log(MSG_STATUS, STERR, _("No songs removed."));
-	return STERR;
+	return STOK;
 }
 
 /*

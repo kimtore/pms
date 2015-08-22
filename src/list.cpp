@@ -481,13 +481,17 @@ song_t		Songlist::add(Songlist * list)
 
 /*
  * Adds a song to the list, either at end or in the middle
+ *
+ * FIXME: vector::erase from the middle of an array is an inefficient operation!
+ *
+ * Returns the zero-indexed position of the added song.
  */
-song_t		Songlist::add(Song * song)
+song_t
+Songlist::add(Song * song)
 {
 	vector<Song *>::iterator	i;
 
-	if (song == NULL)
-		return MPD_SONG_NO_ID;
+        assert(song != NULL);
 	
 	if (song->pos == MPD_SONG_NO_NUM || song->pos == static_cast<song_t>(songs.size()))
 	{
@@ -498,48 +502,55 @@ song_t		Songlist::add(Song * song)
 	}
 	else
 	{
-		i = songs.begin() + song->pos;
-		if (songs[song->pos]->pos == song->pos)	/* FIXME: random crash here? */
-		{
-			if (songs[song->pos]->time != MPD_SONG_NO_TIME)
-				length -= songs[song->pos]->time;
-			i = songs.erase(songs.begin() + song->pos);
+                /* FIXME: random crash here? */
+		if (songs[song->pos]->pos == song->pos) {
+                        assert(remove(song) == true);
 		}
+
+		i = songs.begin() + song->pos;
 		songs.insert(i, song);
+
 		/* FIXME: filtersongs does not get updated because of ->pos mismatch, but do we need it anyway? */
 	}
 
-	if (song->time != MPD_SONG_NO_TIME)
-	{
+        /* FIXME: new function */
+	if (song->time != MPD_SONG_NO_TIME) {
 		length += song->time;
 	}
 
+        /* FIXME */
 	seliter = filtersongs.begin();
 	rseliter = filtersongs.rbegin();
 
-	return static_cast<song_t>(songs.size() - 1);
+	return song->pos;
 }
 
 /*
- * Removes a song from the list
+ * Remove a song from the list.
+ *
+ * Returns true on success, false on failure.
  */
-int		Songlist::remove(Song * song)
+bool
+Songlist::remove(Song * song)
 {
-	if (!song)	return false;
+        assert(song != NULL);
 
 	selectsong(song, false);
 
-	if (song->pos == MPD_SONG_NO_NUM)
-	{
+	if (song->pos == MPD_SONG_NO_NUM) {
 		return remove(match(song->file, 0, filtersongs.size() - 1, MATCH_FILE));
-	}
-	else	return remove(song->pos);
+        }
+
+        return remove(song->pos);
 }
 
 /*
- * Remove song by index
+ * Remove song in position N from the list.
+ *
+ * Returns true on success, false on failure.
  */
-int		Songlist::remove(int songpos)
+bool
+Songlist::remove(int songpos)
 {
 	vector<Song *>::iterator	it;
 	song_t				realsongpos;
@@ -549,8 +560,7 @@ int		Songlist::remove(int songpos)
 		return false;
 	}
 
-	if (songs[songpos]->time != MPD_SONG_NO_TIME)
-	{
+	if (songs[songpos]->time != MPD_SONG_NO_TIME) {
 		length -= songs[songpos]->time;
 	}
 

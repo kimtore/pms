@@ -267,7 +267,7 @@ public:
 	/* List management */
 	song_t			add(Songlist *, Song *);
 	song_t			add(Songlist * source, Songlist * dest);
-	int			remove(Songlist *, Song *);
+	bool			remove(Songlist *, Song *);
 	int			prune(Songlist *, Songlist *);
 
 	/* Play controls */

@@ -164,8 +164,8 @@ public:
 
 	song_t			add(Song *);
 	song_t			add(Songlist *);
-	int			remove(Song *);
-	int			remove(int);
+	bool			remove(Song *);
+	bool			remove(int);
 	bool			move(unsigned int, unsigned int);
 	unsigned int		realsize() { return songs.size(); };
 	unsigned int		size() { return filtersongs.size(); };
