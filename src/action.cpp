@@ -980,9 +980,9 @@ long		Interface::crop(int crop_mode)
 long
 Interface::remove(Songlist * list)
 {
-	Song *				song;
-	vector<Song *>			songs;
-	vector<Song *>::iterator	i;
+	Song *					song;
+	vector<Song *>				songs;
+	vector<Song *>::reverse_iterator	i;
 
 	/* FIXME: this check should, perhaps, be done earlier? */
 	if (!list) {
@@ -1000,8 +1000,8 @@ Interface::remove(Songlist * list)
 		songs.push_back(song);
 	}
 
-	i = songs.begin();
-	while (i != songs.end()) {
+	i = songs.rbegin();
+	while (i != songs.rend()) {
 		if (!pms->comm->remove(list, *i)) {
 			return STERR;
 		}

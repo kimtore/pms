@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
  * Copyright (C) 2006-2010  Kim Tore Jensen
@@ -373,28 +373,26 @@ void		Songlist::filter_remove(Filter * f)
 /*
  * Clear out the filter list
  */
-void		Songlist::filter_clear()
+void
+Songlist::filter_clear()
 {
 	vector<Filter *>::iterator	it;
 	unsigned int			i;
 
+	if (!filters.size() && filtersongs.size() == songs.size()) {
+		return;
+	}
+
 	pms->log(MSG_DEBUG, STOK, "Deleting all filters...\n");
 
 	it = filters.begin();
-	while (it != filters.end())
-	{
+	while (it != filters.end()) {
 		delete *it;
 		++it;
 	}
 	
 	filters.clear();
-	filtersongs.clear();
-
-	for (i = 0; i < songs.size(); i++)
-	{
-//		songs[i]->pos = i;
-		filtersongs.push_back(songs[i]);
-	}
+	filtersongs = songs;
 }
 
 /*
@@ -489,10 +487,8 @@ song_t		Songlist::add(Songlist * list)
 song_t
 Songlist::add(Song * song)
 {
-	vector<Song *>::iterator	i;
+	assert(song != NULL);
 
-        assert(song != NULL);
-	
 	if (song->pos == MPD_SONG_NO_NUM || song->pos == static_cast<song_t>(songs.size()))
 	{
 		songs.push_back(song);
@@ -502,23 +498,29 @@ Songlist::add(Song * song)
 	}
 	else
 	{
-                /* FIXME: random crash here? */
+		/* FIXME: fast way of updating filters instead of disabling
+		 * them - maybe some kind of lazy evaluation? */
+		filter_clear();
+
+		/* FIXME: random crash here? */
 		if (songs[song->pos]->pos == song->pos) {
-                        assert(remove(song) == true);
+			if(!remove(songs[song->pos])) {
+				return -1;
+			}
 		}
 
-		i = songs.begin() + song->pos;
-		songs.insert(i, song);
+		songs.insert(songs.begin() + song->pos, song);
+		filtersongs.insert(filtersongs.begin() + song->pos, song);
 
 		/* FIXME: filtersongs does not get updated because of ->pos mismatch, but do we need it anyway? */
 	}
 
-        /* FIXME: new function */
+	/* FIXME: new function */
 	if (song->time != MPD_SONG_NO_TIME) {
 		length += song->time;
 	}
 
-        /* FIXME */
+	/* FIXME */
 	seliter = filtersongs.begin();
 	rseliter = filtersongs.rbegin();
 
@@ -533,15 +535,15 @@ Songlist::add(Song * song)
 bool
 Songlist::remove(Song * song)
 {
-        assert(song != NULL);
+	assert(song != NULL);
 
 	selectsong(song, false);
 
 	if (song->pos == MPD_SONG_NO_NUM) {
 		return remove(match(song->file, 0, filtersongs.size() - 1, MATCH_FILE));
-        }
+	}
 
-        return remove(song->pos);
+	return remove(song->pos);
 }
 
 /*
@@ -569,10 +571,13 @@ Songlist::remove(int songpos)
 
 	it = songs.begin() + realsongpos;
 	it = songs.erase(it);
-	while (it != songs.end())
-	{
-		--(*it)->pos;
-		++it;
+
+	if (role != LIST_ROLE_MAIN) {
+		while (it != songs.end())
+		{
+			--(*it)->pos;
+			++it;
+		}
 	}
 
 	it = filtersongs.begin() + songpos;
