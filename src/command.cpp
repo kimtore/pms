@@ -892,6 +892,8 @@ Control::crop(Songlist * list, int mode)
 		return false;
 	}
 
+	EXIT_IDLE;
+
 	/* Crop to currently playing song */
 	if (mode == CROP_PLAYING)
 	{
@@ -1527,6 +1529,8 @@ Control::newplaylist(string fn)
 	list = new Songlist();
 	assert(list != NULL);
 
+	EXIT_IDLE;
+
 	if (mpd_run_save(conn->h(), fn.c_str())) {
 		list = new Songlist();
 		assert(list != NULL);
@@ -1546,6 +1550,8 @@ Control::deleteplaylist(string fn)
 {
 	vector<Songlist *>::iterator	i;
 	Songlist *			lst;
+
+	EXIT_IDLE;
 
 	/* FIXME: implement PlaylistList for this functionality */
 	i = playlists.begin();
