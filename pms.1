@@ -1,0 +1,715 @@
+.TH pms 1
+.SH NAME
+pms \- Practical Music Search, an ncurses-based MPD client
+.SH SYNOPSIS
+.B pms
+[\-?] [\-v] [\-d]
+.RI "[\-h " "hostname" " ]"
+.RI "[\-c " "configfile" " ]"
+.RI "[\-p " "port" " ]"
+.RI "[\-P " "password" " ]"
+.SH DESCRIPTION
+.B Practical Music Search
+aims to be a highly accessible and configurable client to the Music Player Daemon.
+It features key mapping, customized colors, a command-line mode, several modes of play, and an easy but powerful interface.
+.SH OPTIONS
+.TP
+.B -?
+Show command-line options and exit
+.TP
+.B -v
+Print version and exit
+.TP
+.B -d
+Turn on debugging to stderr
+.TP
+.BI "-h " "hostname"
+.RI "Connect to MPD server " "hostname"
+.TP
+.BI "-c " "configfile"
+.RI "Use " "configfile" " as an additional configuration file"
+.TP
+.BI "-p " "port"
+.RI "Connect to " "port" " on MPD server"
+.TP
+.BI "-P " "password"
+Specify password for the MPD server
+.SH CONFIGURATION
+Configuration is done in three parts: options, key bindings, and colors.
+.PP
+.RB "Options, bindings and colors can be set at runtime by entering command mode (default binding " ":" ") or can be preset in a configuration file."
+
+Configuration files are loaded in a specific order in line (almost) with the XDG Base Directory Specification (http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html).
+Possible directories are collected from the environment variables XDG_CONFIG_DIRS and XDG_CONFIG_HOME (the former defaults in PMS to /usr/local/etc/xdg:/etc/xdg rather than just /etc/xdg as in the spec, the latter defaults to $HOME/.config as in the spec).
+
+Each path in order from lowest priority (the last entry in XDG_CONFIG_DIRS) to highest (XDG_CONFIG_HOME) is suffixed with /pms/rc and if this file exists it is loaded.
+Finally, if a configuration file was specified on the commandline this file is loaded.
+.PP
+.B Setting options
+.RS
+String, integer and enumerated options are set with
+.RS
+.BI "set " "option" "=" "value"
+.RE
+.PP
+Boolean options are set with
+.RS
+.BI "set " "option"
+.RE
+and reset with
+.RS
+.BI "set no" "option"
+.RE
+They can be toggled with
+.RS
+.BI "set " "option" "!"
+.RE
+or
+.RS
+.BI "set inv" "option"
+.RE
+.PP
+Values can be retrieved with
+.RS
+.BI "set " "option" "?"
+.RE
+.PP
+.BR "se" " is an alias for " "set" " and " ":" " can be used in place of " "=" "."
+.RE
+.RE
+.PP
+.B Setting bindings
+.RS
+Key bindings are set with
+.RS
+.BI "bind " "key command"
+.RE
+and removed with
+.RS
+.BI "unbind " "key"
+.RE
+.PP
+.IR "key" " can be any single character, in addition to these special characters: "
+.BR "up" ", " "down" ", " "left" ", " "right" ", " "pageup" ", " "pagedown" ", " "home" ", " "end" ", " "space" ", " "delete" ", " "insert" ", " "backspace" ", " "return" ", " "kpenter" ", " "tab" " and " "F1" " through " "F63" "."
+.RB "When unbinding, you can specify " "all" " as a parameter to remove all bindings."
+.PP
+.BR "map" " is an alias for " "bind" ", while " "unmap" " and " "unm" " are aliases for " "unbind" "."
+.RE
+.RE
+.PP
+.B Setting colors
+.RS
+Colors are defined with
+.RS
+.BI "color " "item foreground [background]"
+.RE
+.PP
+.BR "colour" " is an alias for " "color" "."
+.RE
+.TP
+.B OPTIONS
+.RS
+.TP
+.BI "host=" "string"
+The hostname to connect to. Default:
+.B localhost
+.TP
+.BI "port=" "integer"
+The port on the MPD server to connect to. Default:
+.B 6600
+.TP
+.BI "password=" "string"
+The password to give to the MPD server. Default: none
+.TP
+.BI "libraryroot=" "string"
+Optional path to the library's root. See
+.BI "!" "string"
+below. If used, it should have a trailing slash. Default: empty string (nothing is prepended)
+.TP
+.BI "xtermtitle=" "string"
+If set, the XTerm window title will be set to the specified string. Default:
+.B PMS: %playstate%%ifcursong% %artist% \[en] %title%%endif%
+.TP
+.BI "reconnectdelay=" "integer"
+If a connection is lost, this is how many seconds between each connection retry. Default:
+.B 30
+.TP
+.BI "msg_buffer_size=" "integer"
+.BI "How many log lines to keep in the console. A value of " "0" " keeps all lines. Default: " "1024"
+.TP
+.BI "mpd_timeout=" "integer"
+Sets MPD connection timeout in seconds. Leave this lower than your MPD setting. Default:
+.B 30
+.TP
+.BR "debug" " (boolean)"
+Turn debugging mode on or off. Default:
+.B set
+.TP
+.BR "repeat=" "enum"
+.BI "Choose between " "single" " or a boolean value. Default: " "off"
+.TP
+.BI "stopdelay=" "integer"
+MPD does not support manual progression within the playlist. A hack is neccessary to stop when the song is done.
+If manual song progression is not working correctly, increase this value. Default:
+.B 1
+.TP
+.BI "nextinterval=" "integer"
+This setting controls how many seconds from the current song ends until PMS automatically adds the next song to MPD's playlist. Default:
+.B 5
+.TP
+.BI "crossfade=" "integer"
+.BI "Set crossfade time in seconds. " "0" " turns crossfade off completely. Default: " "MPD's settings"
+.TP
+.BI "onplaylistfinish=" "string"
+Specify a shell command to run when the playlist finishes and playback stops. Default: none
+.TP
+.BR "addtoreturns" " (boolean)"
+.RB "If set, the " "add-to" " command will return focus to the original window. Else, the destination will be focused. Default: " "unset"
+.TP
+.BR "followplayback" " (boolean)"
+If set, the cursor will go to the currently playing song and playlist when it changes. Default:
+.B unset
+.TP
+.BR "followwindow" " (boolean)"
+If set, playback will continue in the active window. Default:
+.B unset
+.TP
+.BR "followcursor" " (boolean)"
+If set, playback will follow cursor position. Default:
+.B unset
+.TP
+.BR "nextafteraction" " (boolean)"
+Move cursor to next item after the song is selected, unselected or added to a playlist. Default:
+.B set
+.TP
+.BI "startuplist=" "enum"
+The list which is activated and shown at program startup. This can be
+.BR "playlist" ", " "library" " or an arbitrary name of an existing playlist. Default: "
+.B playlist
+.TP
+.BI "regexsearch" " (boolean)"
+Use regular expressions for search terms. Default:
+.B set
+.TP
+.BI "ignorecase" " (boolean)"
+.RB "Ignore case when sorting and searching. The alias " "ic" " can also be used. Default: " "set"
+.TP
+.BI "scroll=" "enum"
+Set scroll mode
+.RS
+.PP
+The following modes are available:
+.RS
+.TP
+.B normal
+The list only scrolls when the cursor is about to go off the top or bottom of the window. See the
+.B scrolloff
+option.
+.TP
+.B centered
+The cursor is always in the middle of the window except when it is near the top or bottom of the list.
+The spelling
+.B centred
+is also accepted.
+.TP
+.B relative
+The position of the cursor in the confines of the window is proportional to the position of the visible songs relative to the whole song list. Try it out to get a better idea of how it works.
+.RE
+.PP
+Default:
+.B normal
+.RE
+.TP
+.BI "scrolloff=" "integer"
+.RB "When " "scroll" " is set to " "normal" ", try to keep this many songs above and below the cursor at all times. The alias " "so" " can also be used. Default: " "0"
+.TP
+.BI "playmode=" "enum"
+.RB "Set song progression mode to " "manual" ", " "linear" " or " "random" ". In manual progression mode playback will stop at the end of each song. Default: " "linear"
+.TP
+.BI "resetstatus=" "integer"
+Set how many seconds before resetting the statusbar text. Default:
+.B 3
+.TP
+.BI "sort=" "field [field [...]]"
+Fields by which to sort the library. You can specify multiple fields, separated by whitespace. See
+.B FIELDS
+below. Default:
+.B track disc album albumartistsort
+.TP
+.BR "columns=" "column [column [...]]"
+Columns to show in the list. See
+.B FIELDS
+below. Default:
+.B artist track title album length
+.TP
+.BI "status_unknown=" "string"
+.RS 0
+.BI "status_play=" "string"
+.RS 0
+.BI "status_pause=" "string"
+.RS 0
+.BI "status_stop=" "string"
+.RS
+Status strings. Defaults:
+.BR "??" ", " "|>" ", " "||" ", " "[]"
+or, when Unicode is available, single characters which I can't figure out how to print in this manpage.
+.RE
+.TP
+.BR "mouse" " (boolean)"
+If set, the mouse is active. Mouse support is incomplete and the slightly hacky mousewheel support available with standard versions of ncurses is less than ideal, but the actions below have been implemented.
+.RS
+.PP
+Mouse actions:
+.RS
+.TP
+.B topbar
+Click to toggle play/pause, doubleclick to stop, mousewheel down to skip to the next track, mousewheel up to skip to the previous track, control-mousewheel to turn volume up or down
+.TP
+.BR "header" " ('Playlist', 'Library' etc)"
+Click or scroll mousewheel down to switch to the next window, doubleclick or scroll mousewheel up to switch to the previous window
+.TP
+.B playlist
+Click to place the cursor, control-click or click right button to place cursor and toggle selection, doubleclick to place cursor and play, tripleclick to place cursor and add to playlist (if there is a selection, the selection will be added and the song clicked will just be selected), scroll mousewheel to scroll the list up and down
+.TP
+.B statusbar
+Click to enter command mode
+.RE
+.PP
+Default:
+.B unset
+.RE
+.TP
+.BR "topbarspace" " (boolean)"
+Whether or not to leave an extra space at the end of fixed-width columns. Default:
+.B set
+.TP
+.BR "topbarvisible" " (boolean)"
+If set, the topbar is visible. Default:
+.B set
+.TP
+.BR "topbarborders" " (boolean)"
+Whether or not to draw borders on the topbar window. Default:
+.B unset
+.TP
+.BR "columnspace" " (boolean)"
+Whether or not to leave a blank row between the topbar and the playlist windows. Default:
+.B set
+.TP
+.BR "topbarclear" " (boolean)"
+Start out with an empty topbar. Default:
+.B unset
+.TP
+.BI "topbar[1-99].(left|center|right)=" "string"
+Modify what is displayed in the topbar. The spelling
+.B centre
+is also accepted. See
+.B TOPBAR
+below for format syntax, available fields and defaults.
+.RE 0
+.TP
+.B TOPBAR
+.RS
+.TP
+Available variables to put in the topbar:
+.BR "librarysize" ", " "listsize" ", " "queuesize" ", " "livequeuesize" ", " "time_elapsed" ", " "time_remaining" ", "
+.BR "progresspercentage" ", " "progressbar" ", " "playstate" ", " "volume" ", "
+.BR "repeat" ", " "repeatshort" ", " "random" ", " "randomshort" ", " "mute" ", " "muteshort" ", "
+.BR "manual" ", " "manualshort" ", "
+.BR "bitrate" ", " "samplerate" ", " "bits" ", " "channels"
+.RS
+.PP
+.RB "All " "FIELDS" " below can also be used."
+.RE
+.TP
+Conditionals (if-else) are supported. Currently available conditionals:
+.BR "ifcursong" ", " "ifplaying" ", " "ifpaused" ", " "ifstopped"
+.PP
+See the defaults below for how conditionals are used.
+.PP
+The topbar syntax allows free customization of the top area of the display. The best way to understand the syntax is to take a look at the defaults:
+.PP
+set topbar1.left=%time_elapsed% %playstate% %time%%ifcursong% (%progresspercentage%%%)%endif%
+.RS 0
+set topbar1.center=%ifcursong%%artist%%endif%
+.RS 0
+set topbar1.right=Vol: %volume%%%  Mode: %muteshort%%repeatshort%%randomshort%%manualshort%
+.RS 0
+set topbar2.center=%ifcursong%==> %title% <==%else%No current song%endif%
+.RS 0
+set topbar3.left=%listsize%
+.RS 0
+set topbar3.center=%ifcursong%%album% (%year%)%endif%
+.RS 0
+set topbar3.right=Q: %livequeuesize%
+.RE 0
+.TP
+.B FIELDS
+.RS
+.TP
+Available fields are:
+.BR "num" ", " "file" ", " "artist" ", " "artistsort" ", " "albumartist" ", " "albumartistsort" ", " "title" ", " "album" ", " "track" ", " "trackshort" ", " "time" ", " "date" ", " "year" ", " "name" ", " "genre" ", " "composer" ", " "performer" ", " "disc" ", " "comment"
+.RE 0
+.TP
+.B COLORS
+.RS
+.TP
+Items available for coloring:
+.BR "background" ", " "foreground" ", " "statusbar" ", " "error" ", " "position" ", " "borders" ", " "headers" ", " "title" ", " "current" ", " "cursor" ", " "selection" ", " "lastlist" ", " "playinglist" ","
+.BI "fields." "*"
+.BR "topbar.foreground" ", " "topbar.time_elapsed" ", " "topbar.time_remaining" ", " "topbar.progresspercentage" ", " "topbar.progressbar" ", "
+.BR "topbar.repeat" ", " "topbar.random" ", " "topbar.mute" ", " "topbar.repeatshort" ", " "topbar.randomshort" ", " "topbar.muteshort" ", "
+.BR "topbar.librarysize" ", " "topbar.listsize" ", " "topbar.queuesize" ", " "topbar.livequeuesize" ", " "topbar.playstate" ","
+.BI "topbar.fields." "*"
+.PP
+.RI "Replace the wildcard " "*" " with any of the"
+.B FIELDS
+described above.
+.TP
+The following colors can be used only as foreground colors:
+.BR "gray" ", " "brightred" ", " "brightgreen" ", " "yellow" ", " "brightblue" ", " "brightmagenta" ", " "brightcyan"
+.TP
+The following colors can be used either for background or foreground colors:
+.BR "black" ", " "red" ", " "green" ", " "brown" ", " "blue" ", " "magenta" ", " "cyan" ", " "brightgray"
+.PP
+The special color
+.B trans
+can only be used as a background color, and provides a transparent background.
+.PP
+The alternative spelling
+.B grey
+can be used in the place of
+.BR "gray" ", and " "light" " can be used in place of " "bright" "."
+.RE
+.TP
+.B COMMANDS
+.PP
+.RS
+.B Playback
+.RS
+.TP
+.B play
+Play the song under the cursor
+.TP
+.B add
+Add the selected song(s) to the playlist
+.RS
+.PP
+If a playlist is selected in windowlist mode, that list is appended to the playlist.
+.RE
+.TP
+.B add-to
+Add the selected song(s) to a chosen playlist
+.TP
+.B next
+Play the next song from the playlist or library based on current play mode
+.TP
+.B really-next
+Play the next song from playlist or library, regardless of play mode
+.TP
+.B prev
+Play previous song
+.TP
+.B pause
+Pause playback or play if playback was paused; do nothing if playback is stopped
+.TP
+.B stop
+Stop playback
+.TP
+.B playmode
+Rotate mode of playback through linear, random from playlist and manual (stop when each track finishes)
+.TP
+.B toggle-play
+Toggle playback
+.RS
+.PP
+Play from the current song if playback was stopped or paused, otherwise pause.
+.RE
+.TP
+.BI "volume " "[string]"
+Set volume
+.RS
+.PP
+.I string
+.RB "can be delta (+/-value, for instance " "+4" ") or absolute value (" "0~100" "). If run without any parameters, return the current volume."
+.RE
+.TP
+.B mute
+Toggle mute
+.TP
+.BI "crossfade " "[integer]"
+.BI "Set crossfade time in seconds. If no " "integer" " is given, or " "integer" " is 0, toggle crossfade. If set to a negative value, turn crossfade off."
+.TP
+.BI "seek " "integer"
+.BI "Seek " "integer" " seconds (can be negative) in the playing song."
+.TP
+.B repeat
+Rotate repeat mode through none, repeat one and repeat list
+.PP
+.RE 2
+.B Adding and playing
+.RS
+.TP
+.B play-album
+Play all songs from the album of the song under the cursor
+.TP
+.B play-artist
+Play all songs from the selected artist
+.TP
+.BI "play-random " "[n]"
+.BI "Play one or " "n" " random songs from the library or visible list."
+.TP
+.B add-album
+Add all songs from the selected album to playlist
+.TP
+.B add-all
+Add all songs from the currently visible list to playlist
+.RS
+.PP
+If part of the album already is at the bottom of the playlist the remainder is added.
+.RE
+.TP
+.B add-artist
+Add all songs from the selected artist to the playlist
+.TP
+.BI "add-random " "[n]"
+.BI "Add one or " "n" " random songs from the visible list to the playlist."
+.TP
+.B remove
+Remove selected song from playlist
+.PP
+.RE 2
+.B Playlist management
+.RS
+.TP
+.BI "create " "string"
+Create a new empty playlist with given name
+.TP
+.BI "save " "string"
+Saves the current list view into a new playlist file with given filename
+.TP
+.BI "delete-list " "[string]"
+Permanently delete the named playlist if given or else the current playlist
+.TP
+.B activate-list
+Activate currently viewed list for playback
+.TP
+.B crop
+Crop the current playlist to the currently playing song
+.TP
+.B cropsel
+Crop the current playlist to the selected songs, or song under cursor
+.TP
+.B clear
+Clear the playlist
+.TP
+.B shuffle
+Shuffle the playlist
+.TP
+.BI "move " "integer"
+Move the selected songs by the given offset
+.RS
+.PP
+A positive offset moves songs down; a negative offset moves songs up.
+.RE
+.TP
+.BI "update " "[string]"
+.BI "Ask MPD to update the music library. " "string" " can be a file in the music library, or one of " "this" ", " "thisdir" ", " "current" " or " "currentdir" "."
+.TP
+.BI "select " "[string]"
+.RS 0
+.BI "unselect " "[string]"
+.RS 0
+.BI "toggle-select " "[string]"
+.RS
+Select, unselect or toggle selection of songs matching a search term
+.PP
+If no parameter is given, the song under the cursor is affected.
+.RE
+.TP
+.B clear-selection
+Unselect all songs in the playlist
+.PP
+.RE 2
+.B Application
+.RS
+.TP
+.B info
+Show info in the status bar about the current song
+.TP
+.B help
+Show current key bindings
+.TP
+.B command-mode
+Enter command mode, where you can enter configuration options or perform other commands (including those which are not mapped to any key)
+.TP
+.BI "change-window " "enum"
+.RB "Change the active window to " "playlist" ", " "library" " or " "windowlist"
+.TP
+.B next-window
+Move to the next window
+.TP
+.B prev-window
+Move to the previous window
+.TP
+.B last-window
+Switch to the previously viewed window
+.TP
+.B redraw
+Force screen redraw
+.TP
+.B rehash
+Reload the configuration file
+.TP
+.B version
+Show version information
+.TP
+.BI "clear-topbar " "[integer]"
+Clear out all contents of the topbar or, if a parameter is given, only that line
+.TP
+.BI "!" "string"
+Run a shell command
+.RS
+.PP
+Some vim-like placeholders are available:
+.RS
+.TP
+.B %
+The current song's file path, not escaped in any way
+.TP
+.B #
+The currently highlighted song's file path, not escaped in any way
+.TP
+.B ##
+The file path of each of the songs in the current selection or, if there is no selection, each song in the currently visible list. Each path is enclosed in double quotes.
+.RE
+.PP
+Examples:
+.RS
+.TP
+.B "!echo ""%"" | xclip"
+Copy the current song's file path to the X clipboard
+.TP
+.B "!rox-filer ""$(dirname ""#"")"""
+Browse the directory containing the currently highlighted song with Rox-filer
+.TP
+.B !transcribe ##
+Open the selected songs (or, with no selection, all songs on the playlist) in Transcribe
+.TP
+.B !cp ## /media/removabledrive
+Copy the selected songs (or, with no selection, all songs on the playlist) to a USB stick or portable media player
+.RE
+.PP
+.RB "All paths are prefixed with the string in the config variable " "libraryroot" "."
+.RE
+.TP
+.BR "quit" ", " "q"
+Exit PMS
+.PP
+.RE
+.B Movement and search
+.RS
+.TP
+.B move-up
+Move the cursor up
+.RS
+.PP
+In command or quick-find mode move to the previous item in command or search history.
+.RE
+.TP
+.B move-down
+Move the cursor down.
+.RS
+.PP
+In command or quick-find mode move to the next item in command or search history.
+.RE
+.TP
+.B move-halfpgup
+Move the cursor one half screen up
+.TP
+.B move-halfpgdn
+Move the cursor one half screen down
+.TP
+.B move-pgup
+Move the cursor one screen up
+.TP
+.B move-pgdn
+Move the cursor one screen down
+.TP
+.B move-home
+Move the cursor to the start of the list
+.TP
+.B move-end
+Move the cursor to the end of the list
+.TP
+.B scroll-up
+.RB "Scroll the list up one line (only acts differently from move-up if " "scroll" " is set to " "normal" ")"
+.TP
+.B scroll-down
+.RB "Scroll the list down one line (only acts differently from move-up if " "scroll" " is set to " "normal" ")"
+.TP
+.B center-cursor
+.RB "Scroll the list such that the cursor is centered (only has an effect when " "scroll" " is set to " "normal" ")"
+.TP
+.B filter
+Enter filter mode: type to filter the current view for songs. Songs that don't match are removed from the view. Use the
+.B clear-filters
+command to return to the original view.
+.TP
+.B clear-filters
+Clear all filters from the current playlist.
+.TP
+.B quick-find
+Enter quick-find mode: type to jump to next matched song
+.TP
+.B next-result
+Find the next search result from the last quick-find
+.TP
+.B prev-result
+Find the previous search result from the last quick-find
+.TP
+.BI "next-of " "string"
+.RB "Parameter should be a field name (see " "FIELDS" " above) \[en] jump to the next track in the list for which the field differs"
+.TP
+.BI "prev-of " "string"
+.RB "Parameter should be a field name (see " "FIELDS" " above) \[en] jump up the list to the first (topmost) of a set of tracks which have in common the next differing value of the given field"
+.RS
+.PP
+To put that another way, the cursor moves up until the given field changes, then keeps going until just before it would change again.
+.RE
+.TP
+.B goto-current
+Jumps to the current playing song, if any
+.TP
+.B goto-random
+Jump to a random song in the playlist
+.RE
+.RE
+.SH FILES
+.TP
+.BR "/etc/xdg/pms/rc" ", " "/usr/local/xdg/pms/rc" ", " "~/.config/pms/rc"
+Default paths to configuration files, loaded in this order (see the configuration section above)
+.SH ENVIRONMENT
+.TP
+.B HOME
+Used to generate the default path to the configuration file if XDG_CONFIG_HOME is not set or empty
+.TP
+.B XDG_CONFIG_HOME
+The prefix for the user-specific configuration file
+.TP
+.B XDG_CONFIG_DIRS
+Prefixes for system-wide configuration files
+.TP
+.B MPD_HOST
+Specifies the host which MPD runs on
+.TP
+.B MPD_PORT
+Specifies the port on which MPD listens
+.TP
+.B MPD_PASSWORD
+Specifies a password to send to MPD on connection
+.SH AUTHOR
+Written by Kim Tore Jensen <kimtjen@gmail.com> with help from Bart Nagel <bart@tremby.net>.
+.PP
+The newest version can be obtained at <http://pms.sourceforge.net>.
+.SH "SEE ALSO"
+.BR mpd (1)

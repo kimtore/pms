@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8 noet:
+/* vi:set ts=8 sts=8 sw=8:
  *
- * Practical Music Search
- * Copyright (c) 2006-2011  Kim Tore Jensen
+ * PMS  <<Practical Music Search>>
+ * Copyright (C) 2006-2010  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,189 +16,115 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * config.h
+ * 	configuration file parser
  */
 
-#ifndef _PMS_CONFIG_H_
-#define _PMS_CONFIG_H_
 
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
+
+#include <sys/types.h>
+#include <fcntl.h>
 #include <string>
-#include "color.h"
-#include "field.h"
-using namespace std;
+#include "settings.h"
+#include "input.h"
+#include "display.h"
+#include "message.h"
 
-enum
-{
-	OPT_CHANGE_NONE		= 0,
-	OPT_CHANGE_MPD		= 1 << 0,
-	OPT_CHANGE_DIMENSIONS	= 1 << 1,
-	OPT_CHANGE_COLUMNS	= 1 << 2,
-	OPT_CHANGE_DRAWLIST	= 1 << 3,
-	OPT_CHANGE_REDRAW	= 1 << 4,
-	OPT_CHANGE_TOPBAR	= 1 << 5,
-	OPT_CHANGE_PLAYMODE	= 1 << 6,
-	OPT_CHANGE_ALL		= (1 << 7) - 1
-};
-
-/* Standard option types */
-typedef enum
-{
-	OPTION_TYPE_INVALID,
-	OPTION_TYPE_BOOL,
-	OPTION_TYPE_UINT,
-	OPTION_TYPE_INT,
-	OPTION_TYPE_STRING,
-	OPTION_TYPE_COLOR,
-	OPTION_TYPE_COLORLIST,
-
-	/* More exotic stuff */
-	OPTION_TYPE_VOLUME,
-	OPTION_TYPE_COLUMNHEADERS,
-	OPTION_TYPE_TOPBAR,
-	OPTION_TYPE_SEARCHFIELDS,
-	OPTION_TYPE_SCROLLMODE
-}
-
-option_type_t;
-
-typedef struct
-{
-	string name;
-	option_type_t type;
-	void * ptr;
-	int mask;
-}
-
-option_t;
 
 typedef enum
 {
-	SCROLL_MODE_NORMAL,
-	SCROLL_MODE_CENTERED
-}
+	KW_NONE,
+	KW_ERR,
+	KW_BIND,
+	KW_UNBIND,
+	KW_SET,
+	KW_COLOR
 
-scroll_mode_t;
+} pms_config_keyword;
 
-
-
-class Config
+/*
+ * Holds a variety of information about each field type
+ */
+class Fieldtypes
 {
-	private:
-		void			setup_default_connection_info();
-		void			set_column_headers(string hdr);
-		void			set_search_fields(string fields);
-		void			set_scroll_mode(string mode);
+public:
+	vector<string>				name;
+	vector<string>				header;
+	vector<unsigned int>			minlen;
+	vector<Item>				type;
+	vector<bool (*) (Song *, Song *)>	sortfunc;
 
-		vector<option_t *>	options;
-		
-		/* Add an option to the options vector. */
-		option_t *		add_option(string name, option_type_t type, void * ptr, int mask);
-
-	public:
-
-		Config();
-
-		/* Parse a list of fields into a vector. */
-		void		get_fields(string fields, vector<Field *> & container);
-
-		/* Load internal default config. */
-		void		load_default_config();
-
-		/* Load all default config files */
-		void		source_default_config();
-
-		/* Load a config file */
-		bool		source(string filename, bool suppress_errmsg = false);
-
-		/* Parse "option=value" */
-		option_t *	readline(string line, unsigned int multiplier = 1, bool verbose = true);
-
-		/* Option string getter and setter */
-		int		add_opt_str(option_t * opt, string value, int arithmetic);
-		int		set_opt_str(option_t * opt, string value);
-		string		get_opt_str(option_t * opt);
-
-		/* Print option values to the console. */
-		void		print_option(option_t * opt);
-		int		print_all_options();
-		int		print_all_colors();
-
-		/* Return the option_t struct of the option in question. */
-		option_t *	get_opt_ptr(string opt);
-
-		/* Tab-complete search, return a list of option_t */
-		unsigned int	grep_opt(string opt, vector<option_t *> * list, string * prefix);
-
-
-		/* Connection parameters */
-		string		host;
-		string		port;
-		string		password;
-
-		/* Default songlist column headers */
-		vector<Field *>	songlist_columns;
-
-		/* Main loop variable */
-		bool		quit;
-
-		/* Autoconnect timeout */
-		bool		autoconnect;
-		unsigned int	reconnect_delay;
-
-		/* How many seconds left of song before adding next song */
-		unsigned int	add_next_interval;
-
-		/* System bell */
-		bool		use_bell;
-		bool		visual_bell;
-
-		/* Use column headers */
-		bool		show_column_headers;
-		bool		show_window_title;
-
-		/* Scroll/cursor mode */
-		scroll_mode_t	scroll_mode;
-
-		/* Topbar stuff */
-		unsigned int	topbar_height;
-
-		/* Auto-advance to next song? */
-		bool		autoadvance;
-
-		/* Playback follows window when switched. */
-		bool		playback_follows_window;
-
-		/* Default sort string */
-		string		default_sort;
-
-		/* Ignore case on searching/sorting? */
-		bool		sort_case;
-		bool		search_case;
-
-		/* We need to handle MPD's options in config, too. */
-		bool		random;
-		bool		repeat;
-		bool		consume;
-		bool		single;
-		bool		mute;
-		int		volume;
-
-		/* Redraw play string in statusbar after this long */
-		unsigned int	status_reset_interval;
-
-		/* What fields to search by default */
-		long		search_field_mask;
-
-		/* Split search terms by space automatically? */
-		bool		split_search_terms;
-
-		/* Does the ADD_SAME command do an exhaustive search through the entire library? */
-		bool		add_same_exhaustive;
-
-		/* Advance cursor on add actions */
-		bool		advance_cursor;
-
-		/* The entire color collection */
-		Colortable	colors;
+	bool			add(string, string, Item, unsigned int, bool (*) (Song *, Song *));
+	int			lookup(string);
 };
 
-#endif /* _PMS_CONFIG_H_ */
+
+/* Holds information about which command belonging to which action */
+class Commandmap
+{
+private:
+	vector<string>			command;
+	vector<string>			description;
+	vector<pms_pending_keys>	action;
+public:
+	Commandmap() {};
+	~Commandmap() {};
+
+	bool			add(string, string, pms_pending_keys);
+	pms_pending_keys	act(string);
+	string			desc(string);
+};
+
+
+class Bindings
+{
+private:
+	vector<string>			strkey;
+	vector<int>			key;
+	vector<string>			straction;
+	vector<pms_pending_keys>	action;
+	vector<string>			param;
+	Commandmap *			cmap;
+public:
+	Bindings(Commandmap * c) { cmap = c; };
+	~Bindings() {};
+
+	bool			add(string, string);
+	bool			remove(string);
+	pms_pending_keys	act(int, string *);
+	unsigned int		size() { return key.size(); };
+	unsigned int		list(vector<string> *, vector<string> *, vector<string> *);
+	void			clear();
+};
+
+
+class Configurator
+{
+private:
+	Options *			opt;
+	Bindings *			bindings;
+
+	bool				set_color(string, string);
+
+
+public:
+					Configurator(Options *, Bindings *);
+					~Configurator() {};
+
+	/* Public static functions */
+	static bool			is_whitespace(char);
+	static bool			strtobool(string);
+	static vector<string> *		splitline(string);
+	static string			getparamopt(string);
+	static bool			verify_columns(string);
+	
+	/* Public members */
+	bool				source(string);
+	bool				readline(string);
+	bool				loadconfigs();
+};
+
+#endif

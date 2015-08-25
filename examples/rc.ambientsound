@@ -1,0 +1,80 @@
+set scroll=centered
+set playmode=linear
+set startuplist=library
+set columns=artist track title album year length
+set nomouse
+set followwindow
+
+color fields.track	cyan
+color headers		brightgray
+
+set topbarclear
+set notopbarborders
+set topbar1.left=
+set topbar2.left=%volume%%% Mode: %muteshort%%repeatshort%%randomshort%%manualshort%%ifcursong% %playstate% %time_elapsed% / %time_remaining%%endif%
+set topbar2.center=%ifcursong%%artist% / %title% / %album% / %date%%else%Not playing anything%endif%
+set topbar2.right=Queue has %livequeuesize%
+
+unbind		all
+
+bind :		command-mode
+bind x		rehash
+bind ^A		select .
+bind up		move-up
+bind down	move-down
+bind k		move-up
+bind j		move-down
+bind pageup	move-pgup
+bind pagedown	move-pgdn
+bind home	move-home
+bind end	move-end
+bind ^E		scroll-down
+bind ^Y		scroll-up
+bind left	prev-window
+bind right	next-window
+bind J		move 1
+bind K		move -1
+bind insert	toggle-select
+bind return	play
+bind p		pause
+bind backspace	stop
+bind a		add
+bind A		add-to
+bind delete	remove
+bind h		next
+bind t		prev
+
+bind space	toggle-play
+bind B		play-album
+bind b		add-album
+bind R		goto-random
+bind S		add-random
+bind (		prev-of album
+bind )		next-of album
+bind [		prev-of artist
+bind ]		next-of artist
+
+bind /		quick-find
+bind ^F		filter
+bind ^G		clear-filters
+bind n		next-result
+bind u		update
+bind U		update thisdir
+bind g		goto-current
+bind i		info
+bind -		volume -5
+bind +		volume +5
+bind M		mute
+bind 8		seek -5
+bind 9		seek 5
+bind m		playmode
+bind r		repeat
+
+bind 1		change-window playlist
+bind 2		change-window library
+bind w		change-window windowlist
+bind F12	activate-list
+bind ^X		delete-list
+bind tab	last-window
+
+bind ^D		quit

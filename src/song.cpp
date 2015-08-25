@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8 noet:
+/* vi:set ts=8 sts=8 sw=8:
  *
- * Practical Music Search
- * Copyright (c) 2006-2011  Kim Tore Jensen
+ * PMS  <<Practical Music Search>>
+ * Copyright (C) 2006-2010  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,299 +16,185 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * song.cpp
+ * 	contains what info is stored about a song
  */
 
+
 #include "song.h"
+#include "list.h"
 #include <string>
 #include <vector>
-#include <stdlib.h>
-#include <sstream>
-#include <locale>
 
-using namespace std;
 
-Song::Song()
+Song::Song(mpd_Song * song)
 {
-	f[FIELD_TIME]	= "-1";
-	f[FIELD_POS]	= "-1";
-	f[FIELD_ID]	= "-1";
-	time = -1;
-	pos = -1;
-	id = -1;
+	selected	= false;
+
+	file			= (song->file ? song->file : "");
+	artist			= (song->artist ? song->artist : "");
+	albumartist		= (song->albumartist ? song->albumartist : artist);
+	artistsort		= (song->artistsort ? song->artistsort : "");
+	albumartistsort		= (song->albumartistsort ? song->albumartistsort : "");
+	title			= (song->title ? song->title : "");
+	album			= (song->album ? song->album : "");
+	track			= (song->track ? song->track : "");
+	trackshort		= "";
+	name			= (song->name ? song->name : "");
+	date			= (song->date ? song->date : "");
+	year			= (song->year ? song->year : "");
+
+	genre			= (song->genre ? song->genre : "");
+	composer		= (song->composer ? song->composer : "");
+	performer		= (song->performer ? song->performer : "");
+	disc			= (song->disc ? song->disc : "");
+	comment			= (song->comment ? song->comment : "");
+
+	time			= song->time;
+	pos			= song->pos;
+	id			= song->id;
+
+	init();
 }
 
-Song * Song::operator= (const Song & source)
+Song::Song(Song * song)
 {
-	size_t i;
+	selected		= false;
 
-	pos = source.pos;
-	id = source.id;
-	time = source.time;
-	fhash = source.fhash;
+	file			= song->file;
+	artist			= song->artist;
+	albumartist		= song->albumartist;
+	artistsort		= song->artistsort;
+	albumartistsort		= song->albumartistsort;
+	title			= song->title;
+	album			= song->album;
+	track			= song->track;
+	trackshort		= song->trackshort;
+	name			= song->name;
+	date			= song->date;
 
-	for (i = 0; i < FIELD_COLUMN_VALUES; i++)
-		f[i] = source.f[i];
-	
-	return this;
+	genre			= song->genre;
+	composer		= song->composer;
+	performer		= song->performer;
+	disc			= song->disc;
+	comment			= song->comment;
+
+	time			= song->time;
+	pos			= song->pos;
+	id			= song->id;
+
+	init();
 }
 
-void Song::init()
+Song::Song(string uri)
 {
-	size_t			s, e;
+	selected		= false;
+
+	file			= uri;
+	artist			= "";
+	albumartist		= "";
+	artistsort		= "";
+	albumartistsort		= "";
+	title			= "";
+	album			= "";
+	track			= "";
+	trackshort		= "";
+	name			= "";
+	date			= "";
+	year			= "";
+
+	genre			= "";
+	composer		= "";
+	performer		= "";
+	disc			= "";
+	comment			= "";
+
+	time			= MPD_SONG_NO_TIME;
+	pos			= MPD_SONG_NO_NUM;
+	id			= MPD_SONG_NO_ID;
+}
+
+Song::~Song()
+{
+}
+
+/*
+ * Initialize custom parameters
+ */
+void		Song::init()
+{
+	unsigned int		i;
 	string			src;
 	string			tmp;
 	vector<string *>	original;
 	vector<string *>	rewritten;
 
-	time = atoi(f[FIELD_TIME].c_str());
-	pos = atoi(f[FIELD_POS].c_str());
-	id = atoi(f[FIELD_ID].c_str());
-	f[FIELD_TIME] = time_format(time);
-
-	/* hash filename */
-	fhash = songhash(f[FIELD_FILE]);
-
-	/* replace title on no-title songs */
-	if (f[FIELD_TITLE].size() == 0)
-	{
-		if (f[FIELD_NAME].size() > 0)
-			f[FIELD_TITLE] = f[FIELD_NAME];
-		else
-			f[FIELD_TITLE] = f[FIELD_FILE];
-	}
-
-	/* show <Unknown ...> */
-	if (f[FIELD_ARTIST].size() == 0)
-		f[FIELD_ARTIST] = "<Unknown artist>";
-	if (f[FIELD_ALBUM].size() == 0)
-		f[FIELD_ALBUM] = "<Unknown album>";
-	if (f[FIELD_YEAR].size() == 0)
-		f[FIELD_YEAR] = "----";
-
 	/* year from date */
-	if (f[FIELD_DATE].size() >= 4)
-		f[FIELD_YEAR] = f[FIELD_DATE].substr(0, 4);
+	if (date.size() >= 4)
+		year = date.substr(0, 4);
 
 	/* trackshort from track */
-	if ((s = f[FIELD_TRACK].find_first_not_of('0')) != string::npos)
-	{
-		if ((e = f[FIELD_TRACK].find('/', s)) != string::npos)
-			f[FIELD_TRACKSHORT] = f[FIELD_TRACK].substr(s, e - s);
-		else
-			f[FIELD_TRACKSHORT] = f[FIELD_TRACK].substr(s);
-	}
-	else
-	{
-		f[FIELD_TRACKSHORT] = f[FIELD_TRACK];
-	}
+	trackshort = track;
+	while (trackshort[0] == '0')
+		trackshort = trackshort.substr(1);
+	if ((i = trackshort.find('/')) != string::npos)
+		trackshort = trackshort.substr(0, i);
 
-	/* fill out empty fields that might be used for sorting */
-	if (f[FIELD_ALBUMARTIST].empty())
-		f[FIELD_ALBUMARTIST] = f[FIELD_ARTIST];
-
-	/* generate sort names if there are none available */
-	if (f[FIELD_ARTISTSORT].empty())
+	/* sort names if none available */
+	if (artistsort.size() == 0)
 	{
-		original.push_back(&f[FIELD_ARTIST]);
-		rewritten.push_back(&f[FIELD_ARTISTSORT]);
+		original.push_back(&artist);
+		rewritten.push_back(&artistsort);
 	}
-	if (f[FIELD_ALBUMARTISTSORT].empty())
+	if (albumartistsort.size() == 0)
 	{
-		original.push_back(&f[FIELD_ALBUMARTIST]);
-		rewritten.push_back(&f[FIELD_ALBUMARTISTSORT]);
+		original.push_back(&albumartist);
+		rewritten.push_back(&albumartistsort);
 	}
 
 	tmp = "the ";
-	e = tmp.size();
-	for (s = 0; s < original.size(); s++)
+
+	for (i = 0; i < original.size(); i++)
 	{
 		/* Too small */
-		if (original[s]->size() <= e)
+		if (original[i]->size() > 4)
 		{
-			*(rewritten[s]) = *(original[s]);
+			src = original[i]->substr(0, 4);
+		}
+		else
+		{
+			*(rewritten[i]) = *(original[i]);
 			continue;
 		}
-
-		src = original[s]->substr(0, e);
-		/* Artist name consists of "the ...", place "The" at the end */
-		if (cistrcmp(src, tmp) == true)
-			*(rewritten[s]) = original[s]->substr(e) + ", " + original[s]->substr(0, e - 1);
+	
+		/* Artist name consists of "the ..." */
+		if (lcstrcmp(src, tmp) == true)
+		{
+			*(rewritten[i]) = original[i]->substr(4) + ", " + original[i]->substr(0, 3);
+		}
+		/* Revert to default */
 		else
-			*(rewritten[s]) = *(original[s]);
+		{
+			*(rewritten[i]) = *(original[i]);
+		}
 	}
 }
 
-string Song::dirname()
+/*
+ * Return directory name
+ */
+string		Song::dirname()
 {
 	string		ret = "";
 	size_t		p;
 
-	if (f[FIELD_FILE].size() == 0)
+	if (file.size() == 0)
 		return ret;
 
-	p = f[FIELD_FILE].find_last_of("/\\");
+	p = file.find_last_of("/\\");
 	if (p == string::npos)
 		return ret;
 
-	return f[FIELD_FILE].substr(0, p);
-}
-
-bool cistrcmp(string &a, string &b)
-{
-	string::const_iterator ai, bi;
-
-	ai = a.begin();
-	bi = b.begin();
-
-	while (ai != a.end() && bi != b.end())
-	{
-		if (::tolower(*ai) != ::tolower(*bi))
-			return false;
-		++ai;
-		++bi;
-	}
-
-	return true;
-}
-
-string time_format(int seconds)
-{
-	static const int	day	= (60 * 60 * 24);
-	static const int	hour	= (60 * 60);
-	static const int	minute	= 60;
-
-	int		i;
-	string		s = "";
-
-	/* No time */
-	if (seconds < 0)
-	{
-		s = "--:--";
-		return s;
-	}
-
-	/* days */
-	if (seconds >= day)
-	{
-		i = seconds / day;
-		s = tostring(i) + "d ";
-		seconds %= day;
-	}
-
-	/* hours */
-	if (seconds >= hour)
-	{
-		i = seconds / hour;
-		s += zeropad(i, 1) + ":";
-		seconds %= hour;
-	}
-
-	/* minutes */
-	i = seconds / minute;
-	s = s + zeropad(i, 2) + ":";
-	seconds %= minute;
-
-	/* seconds */
-	s += zeropad(seconds, 2);
-
-	return s;
-}
-
-string zeropad(int i, unsigned int target)
-{
-	string s;
-	s = tostring(i);
-	while(s.size() < target)
-		s = '0' + s;
-	return s;
-}
-
-vector<string> * str_split(string source, string delimiter)
-{
-	vector<string> * result = new vector<string>;
-	size_t start = 0, end = 0;
-
-	if (source.empty())
-		return result;
-
-	while (true)
-	{
-		if ((end = source.find(delimiter, start)) == string::npos)
-		{
-			result->push_back(source.substr(start));
-			break;
-		}
-		result->push_back(source.substr(start, end - start));
-		start = end + 1;
-
-		if (start >= source.size())
-			break;
-	}
-
-	return result;
-}
-
-string str_replace(string search, string replace, string subject)
-{
-	string buffer;
-	unsigned int i, j;
-	unsigned int seal = search.size();
-	unsigned int strl = subject.size();
-
-	if (seal == 0)
-		return subject;
-
-	for (i = 0, j = 0; i < strl; j = 0)
-	{
-		while (i + j < strl && j < seal && subject[i+j] == search[j])
-			j++;
-
-		/* match */
-		if (j == seal)
-		{
-			buffer.append(replace);
-			i += seal;
-		}
-		else
-		{
-			buffer += subject[i++];
-		}
-	}
-
-	return buffer;
-}
-
-string tostring(int number)
-{
-	ostringstream s;
-	s << number;
-	return s.str();
-}
-
-string tostring(unsigned int number)
-{
-	ostringstream s;
-	s << number;
-	return s.str();
-}
-
-string tostring(long number)
-{
-	ostringstream s;
-	s << number;
-	return s.str();
-}
-
-string tostring(unsigned long number)
-{
-	ostringstream s;
-	s << number;
-	return s.str();
-}
-
-long songhash(string const &str)
-{
-	static locale loc;
-	static const collate<char>& coll = use_facet<collate<char> >(loc);
-	return coll.hash(str.data(), str.data() + str.size());
+	return file.substr(0, p);
 }

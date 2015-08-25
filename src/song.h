@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8 noet:
+/* vi:set ts=8 sts=8 sw=8:
  *
- * Practical Music Search
- * Copyright (c) 2006-2011  Kim Tore Jensen
+ * PMS  <<Practical Music Search>>
+ * Copyright (C) 2006-2010  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,66 +16,63 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * song.h
+ * 	contains what info is stored about a song
  */
 
-#ifndef _PMS_SONG_H_
-#define _PMS_SONG_H_
+#ifndef _SONG_H_
+#define _SONG_H_
 
-#include "fields.h"
-#include <vector>
 #include <string>
-#include <locale>
+#include "libmpdclient.h"
+
 using namespace std;
 
-typedef long song_t;
-
+/*
+ * Remember to update this as libmpd changes.
+ */
 class Song
 {
-	public:
-		Song();
-		Song *		operator= (const Song & source);
+public:
+			Song(mpd_Song *);
+			Song(Song *);
+			Song(string);
+			~Song();
+	
+	/* Common function to initialize special fields that MPD don't return */
 
-		/* Song fields, see field.h */
-		string		f[FIELD_COLUMN_VALUES];
+	void		init();
+	string		dirname();
 
-		/* Fields that are not strings */
-		int		pos;
-		int		id;
-		int		time;
+	/* Custom parameters only used by PMS */
+	
+	bool		selected;
+	string		trackshort;
 
-		/* For quick lookup through filename */
-		long		fhash;
+	/* Standard parameters imported from libmpdclient.h */
 
-		/* Common function to initialize special fields that MPD don't return */
-		void		init();
-		string		dirname();
+	string		file;
+	string		artist;
+	string		albumartist;
+	string		albumartistsort;
+	string		artistsort;
+	string		title;
+	string		album;
+	string		track;
+	string		name;
+	string		date;
+	string		year;
+
+	string		genre;
+	string		composer;
+	string		performer;
+	string		disc;
+	string		comment;
+
+	int		time;
+	song_t		pos;
+	song_t		id;
 };
 
-/* Case insensitive string comparison */
-bool cistrcmp(string &a, string &b);
-
-/* Format time into "[n D ][H:]MM:SS" */
-string time_format(int seconds);
-
-/* Pad an int with zeroes */
-string zeropad(int i, unsigned int target);
-
-/* Split a string */
-vector<string> * str_split(string source, string delimiter);
-
-/* Search and replace string */
-string str_replace(string search, string replace, string subject);
-
-/* Convert number to string */
-string tostring(int number);
-string tostring(unsigned int number);
-string tostring(long number);
-string tostring(unsigned long number);
-
-/* Correctly escape a string so that it can be printed */
-void escape_printf(string &src);
-
-/* Hash a string */
-long songhash(string const &str);
-
-#endif /* _PMS_SONG_H_ */
+#endif /* _SONG_H_ */

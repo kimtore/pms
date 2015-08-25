@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8 noet:
+/* vi:set ts=8 sts=8 sw=8:
  *
- * Practical Music Search
- * Copyright (c) 2006-2011  Kim Tore Jensen
+ * PMS  <<Practical Music Search>>
+ * Copyright (C) 2006-2010  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,128 +18,79 @@
  *
  */
 
-#ifndef _PMS_INPUT_H_
-#define _PMS_INPUT_H_
 
-#include "command.h"
-#include "config.h"
-#include <string>
-using namespace std;
+#ifndef _INPUT_H_
+#define _INPUT_H_
 
-#define INPUT_RESULT_NOINPUT 0
-#define INPUT_RESULT_BUFFERED 1
-#define INPUT_RESULT_MULTIPLIER 2
-#define INPUT_RESULT_RUN 3
+#include "mycurses.h"
+#include "display.h"
+#include "types.h"
+#include "message.h"
 
-#define INPUT_MODE_COMMAND 0
-#define INPUT_MODE_INPUT 1
-#define INPUT_MODE_SEARCH 2
-#define INPUT_MODE_LIVESEARCH 3
+#if NCURSES_MOUSE_VERSION > 1
+#define MOUSEWHEEL_DOWN	BUTTON4_PRESSED | BUTTON4_CLICKED | BUTTON4_DOUBLE_CLICKED | BUTTON4_TRIPLE_CLICKED
+#define MOUSEWHEEL_UP	BUTTON5_PRESSED | BUTTON5_CLICKED | BUTTON5_DOUBLE_CLICKED | BUTTON5_TRIPLE_CLICKED
+#else
+//mousewheel isn't supposed to be supported, but this works for me (tremby). 
+//however, it does break the button 2 pressed event (pressing the wheel button)
+#define MOUSEWHEEL_DOWN	(BUTTON2_PRESSED | REPORT_MOUSE_POSITION)
+#define MOUSEWHEEL_UP	BUTTON4_PRESSED
+#endif
 
-#define KEYBIND_FIND_NOMATCH -1
-#define KEYBIND_FIND_EXACT 0
-#define KEYBIND_FIND_BUFFERED 1
-
-/* This class is returned by Input::next(), defining what to do next */
-class Inputevent
+typedef enum Input_mode
 {
-	public:
-		Inputevent();
-		void clear();
+	INPUT_NORMAL,
+	INPUT_JUMP,
+	INPUT_FILTER,
+	INPUT_COMMAND,
+	INPUT_LIST
 
-		Inputevent & operator= (const Inputevent & src);
+} Input_mode;
 
-		/* Which context are we in? */
-		int context;
-
-		/* How many? */
-		unsigned int multiplier;
-
-		/* What kind of action to run */
-		action_t action;
-
-		/* one of INPUT_RESULT_* */
-		int result;
-
-		/* Shut up about any messages */
-		bool silent;
-
-		/* The full character buffer or command/input */
-		string text;
-};
-
-class Keybinding
-{
-	public:
-		string		seqstr;
-		vector<int>	sequence;
-		action_t	action;
-		int		context;
-		string		params;
-};
-
-class Keybindings
-{
-	private:
-		vector<Keybinding *>	bindings;
-
-	public:
-		void		load_defaults();
-
-		/* Add and check for duplicate sequences */
-		Keybinding *	add(int context, action_t action, string sequence, string params = "");
-		Keybinding *	find_conflict(vector<int> * sequence);
-
-		/* Delete a mapping */
-		bool		remove(string sequence);
-
-		/* Convert a string sequence to an int sequence */
-		vector<int> *	conv_sequence(string seq);
-
-		/* Find an action based on the key sequence */
-		int		find(int context, vector<int> * sequence, action_t * action, string * params);
-
-		/* Delete all mappings */
-		void		truncate();
-};
 
 class Input
 {
-	private:
-		int			chbuf;
-		bool			is_tab_completing;
-		bool			is_option_tab_completing;
-		string			option_tab_prefix;
-		unsigned int		tab_complete_index;
-		unsigned int		option_tab_complete_index;
-		vector<Command *> *	tab_results;
-		vector<option_t *> 	option_tab_results;
-		Inputevent		ev;
+private:
+	Input_mode			_mode;
+	pms_pending_keys		pending;
+	wchar_t				ch;
+	vector<string>			cmdhistory;
+	vector<string>			searchhistory;
+	vector<string>::iterator	historypos;
 
-		void			handle_text_input();
+	pms_pending_keys		dispatch_normal();
+	pms_pending_keys		dispatch_list();
+	pms_pending_keys		dispatch_text();
 
-		/* Translate input event so that keys are handled the same on different terminals */
-		void			tr_chbuf();
+public:
+	Input();
+	~Input();
 
-		/* Check if input event is a number, and apply multiplier */
-		bool			run_multiplier(int ch);
+	string			param;
+	string			text;
+	string			searchterm;
 
-	public:
+	/* Storing values when a window parameter is needed */
+	string			winparam;
+	pms_pending_keys	winpend;
+	pms_window *		win;
 
-		unsigned int	cursorpos;
-		int		mode;
-		unsigned long	multiplier;
-		vector<int> 	buffer;
-		string		strbuf;
+	void			winstore(pms_window *);
+	void			winclear();
+	bool			winpop();
 
-		Input();
+	bool			gonext();	// Go to next history item
+	bool			goprev();	// Go to previous history item
 
-		/* Read next character from ncurses buffer */
-		Inputevent *	next();
+	void			mode(Input_mode);
+	Input_mode		mode();
+	int			get_keystroke();
+	pms_pending_keys	dispatch();
+	pms_pending_keys	getpending() { return pending; };
+	void			savehistory();
+	bool			run(string, Message &);
 
-		/* Setter and getter for mode */
-		void		setmode(int nmode);
-		int		getmode() { return mode; }
 };
 
-#endif /* _PMS_INPUT_H_ */
+
+#endif /* _INPUT_H_ */

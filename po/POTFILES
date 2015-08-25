@@ -1,0 +1,12 @@
+	../src/action.cpp \
+	../src/color.cpp \
+	../src/command.cpp \
+	../src/config.cpp \
+	../src/conn.cpp \
+	../src/display.cpp \
+	../src/field.cpp \
+	../src/input.cpp \
+	../src/list.cpp \
+	../src/options.cpp \
+	../src/pms.cpp \
+	../src/song.cpp

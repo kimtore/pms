@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8 noet:
+/* vi:set ts=8 sts=8 sw=8:
  *
- * Practical Music Search
- * Copyright (c) 2006-2011  Kim Tore Jensen
+ * PMS  <<Practical Music Search>>
+ * Copyright (C) 2006-2010  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,294 +16,274 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * color.cpp
+ * Color class, holds information about color + attribute values for one color pair
  */
 
+#include "mycurses.h"
 #include "color.h"
-#include "curses.h"
-#include "field.h"
-#include "console.h"
+#include "pms.h"
 
-short Color::color_count = 0;
+static short			totalcolors = 0;
+extern Pms *			pms;
 
-void Colortable::load_defaults()
-{
-	pair_content(-1, &dfront, &dback);
-
-	standard->set(dfront, dback, 0);
-	topbar->set(COLOR_WHITE, -1, 0);
-	statusbar->set(COLOR_WHITE, -1, 0);
-	windowtitle->set(COLOR_CYAN, -1, A_BOLD);
-	columnheader->set(COLOR_WHITE, -1, 0);
-	console->set(COLOR_WHITE, -1, 0);
-	error->set(COLOR_WHITE, COLOR_RED, A_BOLD);
-	readout->set(COLOR_WHITE, -1, 0);
-
-	cursor->set(COLOR_BLACK, COLOR_WHITE, 0);
-	playing->set(COLOR_BLACK, COLOR_YELLOW, 0);
-	selection->set(COLOR_WHITE, COLOR_BLUE, 0);
-
-	field[FIELD_DIRECTORY]->set(COLOR_WHITE, -1, 0);
-	field[FIELD_FILE]->set(COLOR_WHITE, -1, 0);
-	field[FIELD_POS]->set(COLOR_WHITE, -1, 0);
-	field[FIELD_ID]->set(COLOR_WHITE, -1, 0);
-	field[FIELD_TIME]->set(COLOR_MAGENTA, -1, 0);
-	field[FIELD_NAME]->set(COLOR_WHITE, -1, A_BOLD);
-	field[FIELD_ARTIST]->set(COLOR_YELLOW, -1, 0);
-	field[FIELD_ARTISTSORT]->set(COLOR_YELLOW, -1, 0);
-	field[FIELD_ALBUM]->set(COLOR_CYAN, -1, 0);
-	field[FIELD_TITLE]->set(COLOR_WHITE, -1, A_BOLD);
-	field[FIELD_TRACK]->set(COLOR_CYAN, -1, 0);
-	field[FIELD_DATE]->set(COLOR_YELLOW, -1, 0);
-	field[FIELD_DISC]->set(COLOR_WHITE, -1, 0);
-	field[FIELD_GENRE]->set(COLOR_WHITE, -1, 0);
-	field[FIELD_ALBUMARTIST]->set(COLOR_YELLOW, -1, 0);
-	field[FIELD_ALBUMARTISTSORT]->set(COLOR_YELLOW, -1, 0);
-
-	field[FIELD_YEAR]->set(COLOR_YELLOW, -1, 0);
-	field[FIELD_TRACKSHORT]->set(COLOR_CYAN, -1, 0);
-
-	field[FIELD_ELAPSED]->set(COLOR_GREEN, -1, 0);
-	field[FIELD_REMAINING]->set(COLOR_MAGENTA, -1, 0);
-	field[FIELD_VOLUME]->set(COLOR_YELLOW, -1, 0);
-	field[FIELD_PROGRESSBAR]->set(COLOR_BLACK, -1, A_BOLD);
-	field[FIELD_MODES]->set(COLOR_CYAN, -1, 0);
-	field[FIELD_STATE]->set(COLOR_CYAN, -1, 0);
-	field[FIELD_QUEUESIZE]->set(COLOR_YELLOW, -1, 0);
-	field[FIELD_QUEUELENGTH]->set(COLOR_WHITE, -1, 0);
-	field[FIELD_LISTSIZE]->set(COLOR_YELLOW, -1, 0);
-	field[FIELD_LISTLENGTH]->set(COLOR_WHITE, -1, 0);
-}
 
 Colortable::Colortable()
 {
-	size_t i;
-
-	standard = new Color();
-	topbar = new Color();
-	statusbar = new Color();
-	windowtitle = new Color();
-	columnheader = new Color();
-	console = new Color();
-	error = new Color();
-	readout = new Color();
-
-	cursor = new Color();
-	playing = new Color();
-	selection = new Color();
-
-	for (i = 0; i < FIELD_TOTAL_VALUES; ++i)
-		field[i] = new Color();
+	isset = false;
+	defaults();
 }
 
 Colortable::~Colortable()
 {
+	clear();
 }
 
-Color::Color()
+void			Colortable::clear()
 {
-	id = Color::color_count;
-	set(-1, -1, 0);
-	Color::color_count++;
+	if (!isset) return;
+
+	totalcolors = 0;
+
+	/* standard colors */
+	delete back;
+	delete standard;
+	delete status;
+	delete status_error;
+	delete position;
+	delete border;
+	delete headers;
+	delete title;
+
+	/* topbar colors */
+	delete topbar.standard;
+	delete topbar.time_elapsed;
+	delete topbar.time_remaining;
+	delete topbar.progressbar;
+	delete topbar.progresspercentage;
+	delete topbar.librarysize;
+	delete topbar.listsize;
+	delete topbar.queuesize;
+	delete topbar.livequeuesize;
+	delete topbar.playstate;
+	delete topbar.volume;
+	delete topbar.bitrate;
+	delete topbar.samplerate;
+	delete topbar.bits;
+	delete topbar.channels;
+
+	delete topbar.repeat;
+	delete topbar.random;
+	delete topbar.manualprogression;
+	delete topbar.mute;
+	delete topbar.repeatshort;
+	delete topbar.randomshort;
+	delete topbar.manualprogressionshort;
+	delete topbar.muteshort;
+
+	/* field types */
+	delete fields.num;
+	delete fields.file;
+	delete fields.artist;
+	delete fields.albumartist;
+	delete fields.artistsort;
+	delete fields.albumartistsort;
+	delete fields.title;
+	delete fields.album;
+	delete fields.track;
+	delete fields.trackshort;
+	delete fields.time;
+	delete fields.date;
+	delete fields.year;
+	delete fields.name;
+	delete fields.genre;
+	delete fields.composer;
+	delete fields.performer;
+	delete fields.disc;
+	delete fields.comment;
+
+	/* field types for the topbar */
+	delete topbar.fields.num;
+	delete topbar.fields.file;
+	delete topbar.fields.artist;
+	delete topbar.fields.albumartist;
+	delete topbar.fields.artistsort;
+	delete topbar.fields.albumartistsort;
+	delete topbar.fields.title;
+	delete topbar.fields.album;
+	delete topbar.fields.track;
+	delete topbar.fields.trackshort;
+	delete topbar.fields.time;
+	delete topbar.fields.date;
+	delete topbar.fields.year;
+	delete topbar.fields.name;
+	delete topbar.fields.genre;
+	delete topbar.fields.composer;
+	delete topbar.fields.performer;
+	delete topbar.fields.disc;
+	delete topbar.fields.comment;
+
+	/* list colors */
+	delete current;
+	delete cursor;
+	delete selection;
+	delete lastlist;
+	delete playinglist;
+
+	isset = false;
 }
 
-void Color::set(short nfront, short nback, int nattr)
+void			Colortable::defaults()
 {
-	front = nfront;
-	back = nback;
-	attr = nattr;
-	init_pair(id, front, back);
-	pair = COLOR_PAIR(id) | attr;
+	if (isset) clear();
+
+	/* standard colors */
+	back					= new color(COLOR_BLACK, -1, 0);
+	standard				= new color(COLOR_WHITE, -1, 0);
+	status					= new color(COLOR_WHITE, -1, 0);
+	status_error				= new color(COLOR_WHITE, COLOR_RED, 0);
+	position				= new color(COLOR_WHITE, -1, 0);
+	border					= new color(COLOR_BLACK, -1, 0);
+	headers					= new color(COLOR_BLACK, -1, A_BOLD);
+	title					= new color(COLOR_CYAN, -1, A_BOLD);
+
+	/* topbar colors */
+	topbar.standard				= new color(COLOR_WHITE, -1, 0);
+	topbar.time_elapsed			= new color(COLOR_GREEN, -1, 0);
+	topbar.time_remaining			= new color(COLOR_WHITE, -1, 0);
+	topbar.progressbar			= new color(COLOR_WHITE, -1, 0);
+	topbar.progresspercentage		= new color(COLOR_WHITE, -1, 0);
+	topbar.librarysize			= new color(COLOR_WHITE, -1, 0);
+	topbar.listsize				= new color(COLOR_WHITE, -1, 0);
+	topbar.queuesize			= new color(COLOR_WHITE, -1, 0);
+	topbar.livequeuesize			= new color(COLOR_WHITE, -1, 0);
+	topbar.playstate			= new color(COLOR_WHITE, -1, 0);
+	topbar.volume				= new color(COLOR_YELLOW, -1, 0);
+	topbar.bitrate				= new color(COLOR_WHITE, -1, 0);
+	topbar.samplerate			= new color(COLOR_WHITE, -1, 0);
+	topbar.bits				= new color(COLOR_WHITE, -1, 0);
+	topbar.channels				= new color(COLOR_WHITE, -1, 0);
+
+	topbar.repeat				= new color(COLOR_BLACK, -1, A_BOLD);
+	topbar.random				= new color(COLOR_BLACK, -1, A_BOLD);
+	topbar.manualprogression		= new color(COLOR_BLACK, -1, A_BOLD);
+	topbar.mute				= new color(COLOR_BLACK, -1, A_BOLD);
+	topbar.repeatshort			= new color(COLOR_CYAN, -1, 0);
+	topbar.randomshort			= new color(COLOR_CYAN, -1, 0);
+	topbar.manualprogressionshort		= new color(COLOR_CYAN, -1, 0);
+	topbar.muteshort			= new color(COLOR_CYAN, -1, 0);
+
+	/* field types */
+	fields.num				= new color(COLOR_BLACK, -1, A_BOLD);
+	fields.file				= new color(COLOR_WHITE, -1, 0);
+	fields.artist				= new color(COLOR_YELLOW, -1, 0);
+	fields.albumartist			= new color(COLOR_YELLOW, -1, 0);
+	fields.artistsort			= new color(COLOR_YELLOW, -1, 0);
+	fields.albumartistsort			= new color(COLOR_YELLOW, -1, 0);
+	fields.title				= new color(COLOR_WHITE, -1, A_BOLD);
+	fields.album				= new color(COLOR_CYAN, -1, 0);
+	fields.track				= new color(COLOR_BLACK, -1, A_BOLD);
+	fields.trackshort			= new color(COLOR_BLACK, -1, A_BOLD);
+	fields.time				= new color(COLOR_MAGENTA, -1, 0);
+	fields.date				= new color(COLOR_YELLOW, -1, 0);
+	fields.year				= new color(COLOR_YELLOW, -1, 0);
+	fields.name				= new color(COLOR_WHITE, -1, 0);
+	fields.genre				= new color(COLOR_WHITE, -1, 0);
+	fields.composer				= new color(COLOR_WHITE, -1, 0);
+	fields.performer			= new color(COLOR_WHITE, -1, 0);
+	fields.disc				= new color(COLOR_BLACK, -1, 0);
+	fields.comment				= new color(COLOR_WHITE, -1, 0);
+
+	/* field types for the topbar */
+	topbar.fields.num			= new color(COLOR_BLACK, -1, A_BOLD);
+	topbar.fields.file			= new color(COLOR_WHITE, -1, 0);
+	topbar.fields.artist			= new color(COLOR_YELLOW, -1, A_BOLD);
+	topbar.fields.albumartist		= new color(COLOR_YELLOW, -1, A_BOLD);
+	topbar.fields.artistsort		= new color(COLOR_YELLOW, -1, A_BOLD);
+	topbar.fields.albumartistsort		= new color(COLOR_YELLOW, -1, A_BOLD);
+	topbar.fields.title			= new color(COLOR_WHITE, -1, A_BOLD);
+	topbar.fields.album			= new color(COLOR_CYAN, -1, 0);
+	topbar.fields.track			= new color(COLOR_BLACK, -1, A_BOLD);
+	topbar.fields.trackshort		= new color(COLOR_BLACK, -1, A_BOLD);
+	topbar.fields.time			= new color(COLOR_MAGENTA, -1, 0);
+	topbar.fields.date			= new color(COLOR_YELLOW, -1, 0);
+	topbar.fields.year			= new color(COLOR_YELLOW, -1, 0);
+	topbar.fields.name			= new color(COLOR_WHITE, -1, 0);
+	topbar.fields.genre			= new color(COLOR_WHITE, -1, 0);
+	topbar.fields.composer			= new color(COLOR_WHITE, -1, 0);
+	topbar.fields.performer			= new color(COLOR_WHITE, -1, 0);
+	topbar.fields.disc			= new color(COLOR_BLACK, -1, 0);
+	topbar.fields.comment			= new color(COLOR_WHITE, -1, 0);
+
+	/* list colors */
+	current					= new color(COLOR_BLACK, COLOR_YELLOW, 0);
+	cursor					= new color(COLOR_BLACK, COLOR_WHITE, 0);
+	selection				= new color(COLOR_BLACK, COLOR_GREEN, 0);
+	lastlist				= new color(COLOR_WHITE, COLOR_BLUE, A_BOLD);
+	playinglist				= new color(COLOR_BLACK, COLOR_YELLOW, 0);
+
+	isset = true;
 }
 
-bool Color::set(string strcolor)
+
+
+
+
+
+color::color()
 {
-	vector<string>::iterator it;
-	vector<string> cols;
-	string t;
-	size_t start = 0, end = 0;
-	short nfront = -1;
-	short nback = -1;
-	int nattr = 0;
-	short * cur = &nfront;
+	clean();
+}
 
-	while (start + 1 < strcolor.size())
-	{
-		if ((end = strcolor.find(' ', start)) != string::npos)
-			t = strcolor.substr(start, end - start);
-		else
-			t = strcolor.substr(start);
+color::color(int fg, int bg, int at)
+{
+	clean();
+	set(fg, bg, at);
+}
 
-		cols.push_back(t);
+color::~color()
+{
+}
 
-		if (end == string::npos)
-			break;
+void		color::clean()
+{
+	front = -1;
+	back = -1;
+	id = -1;
+	attr = 0;
+	initialized = false;
+	isset = false;
+}
 
-		start = end + 1;
-	}
+bool		color::set(int fg, int bg, int at)
+{
+	if (fg < COLOR_BLACK || fg > COLOR_WHITE)
+		return false;
 
-	for (it = cols.begin(); it != cols.end(); ++it)
-	{
-		/* Attributes */
-		if (*it == "bold")
-			nattr |= A_BOLD;
-		else if (*it == "reverse")
-			nattr |= A_REVERSE;
-		else if (cur == NULL)
-		{
-			sterr("Trailing characters near `%s'", it->c_str());
-			return false;
-		}
-		else
-		{
-			/* Front colors only */
-			if (cur == &nfront && (*it == "gray" || *it == "grey"))
-			{
-				*cur = COLOR_BLACK;
-				nattr |= A_BOLD;
-			}
-			else if (cur == &nfront && (*it == "brightred" || *it == "lightred"))
-			{
-				*cur = COLOR_RED;
-				nattr |= A_BOLD;
-			}
-			else if (cur == &nfront && (*it == "brightgreen" || *it == "lightgreen"))
-			{
-				*cur = COLOR_GREEN;
-				nattr |= A_BOLD;
-			}
-			else if (cur == &nfront && *it == "yellow")
-			{
-				*cur = COLOR_YELLOW;
-				nattr |= A_BOLD;
-			}
-			else if (cur == &nfront && (*it == "brightblue" || *it == "lightblue"))
-			{
-				*cur = COLOR_BLUE;
-				nattr |= A_BOLD;
-			}
-			else if (cur == &nfront && (*it == "brightmagenta" || *it == "lightmagenta"))
-			{
-				*cur = COLOR_MAGENTA;
-				nattr |= A_BOLD;
-			}
-			else if (cur == &nfront && (*it == "brightcyan" || *it == "lightcyan"))
-			{
-				*cur = COLOR_CYAN;
-				nattr |= A_BOLD;
-			}
-			else if (cur == &nfront && *it == "white")
-			{
-				*cur = COLOR_WHITE;
-				nattr |= A_BOLD;
-			}
-
-			/* Applies everywhere */
-			else if (*it == "black")
-				*cur = COLOR_BLACK;
-			else if (*it == "red")
-				*cur = COLOR_RED;
-			else if (*it == "green")
-				*cur = COLOR_GREEN;
-			else if (*it == "brown")
-				*cur = COLOR_YELLOW;
-			else if (*it == "blue")
-				*cur = COLOR_BLUE;
-			else if (*it == "magenta")
-				*cur = COLOR_MAGENTA;
-			else if (*it == "cyan")
-				*cur = COLOR_CYAN;
-			else if (*it == "gray" || *it == "brightgray" || *it == "lightgray" || *it == "white")
-				*cur = COLOR_WHITE;
-			else
-			{
-				sterr("Invalid color `%s' for use in %s, ignoring.", it->c_str(), cur == &nfront ? "foreground" : "background");
-				return false;
-			}
-
-			if (cur == &nfront)
-				cur = &nback;
-			else
-				cur = NULL;
-		}
-	}
-
-	set(nfront, nback, nattr);
+	front = fg;
+	back = bg;
+	attr = at;
+	isset = true;
+	initialized = false;
 
 	return true;
 }
 
-string Color::getstrname()
+int		color::pair()
 {
-	string f;
-	string b;
-	string a;
-
-	/*
-	 * Foreground colors
-	 */
-	if (attr & A_BOLD)
+	if (!isset)
+		return 0;
+	if (!initialized)
 	{
-		if (front == COLOR_BLACK)
-			f = "gray";
-		else if (front == COLOR_YELLOW)
-			f = "yellow";
-		else if (front == COLOR_WHITE)
-			f = "white";
-	}
-	if (f.empty())
-	{
-		if (front == COLOR_BLACK)
-			f = "black";
-		else if (front == COLOR_RED)
-			f = "red";
-		else if (front == COLOR_GREEN)
-			f = "green";
-		else if (front == COLOR_YELLOW)
-			f = "brown";
-		else if (front == COLOR_BLUE)
-			f = "blue";
-		else if (front == COLOR_MAGENTA)
-			f = "magenta";
-		else if (front == COLOR_CYAN)
-			f = "cyan";
-		else if (front == COLOR_WHITE)
-			f = "brightgray";
-
-		if (attr & A_BOLD)
-			f = "bright" + f;
+		if (back == -1)
+			back = pms->options->colors->back->back;
+		if (id == -1)
+			id = ++totalcolors;
+		init_pair(id, front, back);
 	}
 
-	/*
-	 * Background colors
-	 */
-	if (back == -1);
-	else if (back == COLOR_BLACK)
-		b = "black";
-	else if (back == COLOR_RED)
-		b = "red";
-	else if (back == COLOR_GREEN)
-		b = "green";
-	else if (back == COLOR_YELLOW)
-		b = "brown";
-	else if (back == COLOR_BLUE)
-		b = "blue";
-	else if (back == COLOR_MAGENTA)
-		b = "magenta";
-	else if (back == COLOR_CYAN)
-		b = "cyan";
-	else if (back == COLOR_WHITE)
-		b = "gray";
+	initialized = true;
 
-	/*
-	 * Attributes
-	 */
-	if (attr & A_REVERSE)
-		a = "reverse";
-
-	if (b.size())
-		f += " " + b;
-	if (a.size())
-		f += " " + a;
-
-	return f;
+	return (COLOR_PAIR(id) | attr);
 }

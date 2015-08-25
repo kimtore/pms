@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8 noet:
+/* vi:set ts=8 sts=8 sw=8:
  *
- * Practical Music Search
- * Copyright (c) 2006-2011  Kim Tore Jensen
+ * PMS  <<Practical Music Search>>
+ * Copyright (C) 2006-2010  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,770 +16,1007 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * config.cpp - configuration parser
+ *
  */
 
-#include "config.h"
-#include "field.h"
-#include "console.h"
-#include "song.h"
-#include "window.h"
-#include "topbar.h"
-#include "pms.h"
-#include <cstring>
-#include <stdlib.h>
-#include <algorithm>
+
 #include <string>
-#include <iostream>
-#include <fstream>
+#include "mycurses.h"
+#include "config.h"
+#include "pms.h"
 
 using namespace std;
 
-extern Fieldtypes * fieldtypes;
-extern Windowmanager * wm;
-extern PMS * pms;
-extern Keybindings * keybindings;
-Topbar * topbar;
+extern Pms *		pms;
 
-void Config::load_default_config()
+bool			Fieldtypes::add(string nname, string nheader, Item ntype, unsigned int nminlen, bool (*nsortfunc) (Song *, Song *))
 {
-	setup_default_connection_info();
+	if (nname.size() == 0)
+		return false;
 
-	quit = false;
-	reconnect_delay = 5;
-	use_bell = true;
-	visual_bell = false;
-	show_column_headers = true;
-	show_window_title = true;
-	topbar_height = 2;
-	add_next_interval = 5;
-	autoadvance = true;
-	status_reset_interval = 2;
-	playback_follows_window = true;
-	advance_cursor = true;
-	split_search_terms = true;
-	add_same_exhaustive = false;
-	sort_case = false;
-	search_case = false;
-	autoconnect = true;
-	default_sort = "track disc album date albumartistsort";
-	set_column_headers("artist track title album year length");
-	set_search_fields("artist title album");
-	set_scroll_mode("normal");
-	topbar->set("{PMS $if(connected){$if(song){$volume $state [$modes] $elapsed / $remaining}}$else{disconnected}}"
-			"{$if(song){$artist / $title / $album / $year}}"
-			"{$if(connected){Q:$queuesize/$queuelength S:$listsize/$listlength}}"
-			"{$progressbar}{}{}");
+	name.push_back(nname);
+	header.push_back(nheader);
+	type.push_back(ntype);
+	minlen.push_back(nminlen);
+	sortfunc.push_back(nsortfunc);
 
-	colors.load_defaults();
-	keybindings->load_defaults();
+	return true;
 }
 
-Config::Config()
+int			Fieldtypes::lookup(string s)
 {
-	/* Load internal defaults */
-	topbar = new Topbar();
-	load_default_config();
+	unsigned int	i;
 
-	/* These are part of the default config, but should not be loaded when rehashing */
-	random = false;
-	repeat = false;
-	consume = false;
-	single = false;
-	mute = false;
-	volume = 100;
-
-	/* Set up options array */
-	add_option("host", OPTION_TYPE_STRING, (void *)&host, OPT_CHANGE_NONE);
-	add_option("port", OPTION_TYPE_STRING, (void *)&port, OPT_CHANGE_NONE);
-	add_option("password", OPTION_TYPE_STRING, (void *)&password, OPT_CHANGE_NONE);
-	add_option("autoconnect", OPTION_TYPE_BOOL, (void *)&autoconnect, OPT_CHANGE_NONE);
-
-	add_option("reconnectdelay", OPTION_TYPE_UINT, (void *)&reconnect_delay, OPT_CHANGE_NONE);
-	add_option("addnextinterval", OPTION_TYPE_UINT, (void *)&add_next_interval, OPT_CHANGE_NONE);
-
-	add_option("advancecursor", OPTION_TYPE_BOOL, (void *)&advance_cursor, OPT_CHANGE_NONE);
-	add_option("bell", OPTION_TYPE_BOOL, (void *)&use_bell, OPT_CHANGE_NONE);
-	add_option("visualbell", OPTION_TYPE_BOOL, (void *)&visual_bell, OPT_CHANGE_NONE);
-	add_option("columnheaders", OPTION_TYPE_BOOL, (void *)&show_column_headers, OPT_CHANGE_DRAWLIST);
-	add_option("windowtitle", OPTION_TYPE_BOOL, (void *)&show_window_title, OPT_CHANGE_DRAWLIST);
-	add_option("autoadvance", OPTION_TYPE_BOOL, (void *)&autoadvance, OPT_CHANGE_NONE);
-	add_option("followwindow", OPTION_TYPE_BOOL, (void *)&playback_follows_window, OPT_CHANGE_NONE);
-	add_option("addallsame", OPTION_TYPE_BOOL, (void *)&add_same_exhaustive, OPT_CHANGE_NONE);
-	add_option("resetstatus", OPTION_TYPE_UINT, (void *)&status_reset_interval, OPT_CHANGE_NONE);
-
-	add_option("random", OPTION_TYPE_BOOL, (void *)&random, OPT_CHANGE_MPD | OPT_CHANGE_TOPBAR | OPT_CHANGE_PLAYMODE);
-	add_option("repeat", OPTION_TYPE_BOOL, (void *)&repeat, OPT_CHANGE_MPD);
-	add_option("consume", OPTION_TYPE_BOOL, (void *)&consume, OPT_CHANGE_MPD);
-	add_option("single", OPTION_TYPE_BOOL, (void *)&single, OPT_CHANGE_MPD);
-	add_option("mute", OPTION_TYPE_BOOL, (void *)&mute, OPT_CHANGE_MPD);
-	add_option("volume", OPTION_TYPE_VOLUME, (void *)&volume, OPT_CHANGE_MPD);
-
-	add_option("sort", OPTION_TYPE_STRING, (void *)&default_sort, OPT_CHANGE_NONE);
-	add_option("casesort", OPTION_TYPE_BOOL, (void *)&sort_case, OPT_CHANGE_NONE);
-	add_option("casesearch", OPTION_TYPE_BOOL, (void *)&search_case, OPT_CHANGE_NONE);
-	add_option("wordsearch", OPTION_TYPE_BOOL, (void *)&split_search_terms, OPT_CHANGE_NONE);
-
-	add_option("scroll", OPTION_TYPE_SCROLLMODE, (void *)&scroll_mode, OPT_CHANGE_DRAWLIST);
-	add_option("searchfields", OPTION_TYPE_SEARCHFIELDS, (void *)&search_field_mask, OPT_CHANGE_NONE);
-	add_option("columns", OPTION_TYPE_COLUMNHEADERS, (void *)&songlist_columns, OPT_CHANGE_COLUMNS | OPT_CHANGE_DRAWLIST);
-	add_option("topbar", OPTION_TYPE_TOPBAR, (void *)&topbar, OPT_CHANGE_DIMENSIONS | OPT_CHANGE_REDRAW);
-	add_option("topbarlines", OPTION_TYPE_UINT, (void *)&topbar_height, OPT_CHANGE_DIMENSIONS | OPT_CHANGE_REDRAW);
-
-	/*
-	 * Set up all colors
-	 */
-
-	add_option("color", OPTION_TYPE_COLORLIST, NULL, OPT_CHANGE_NONE);
-	add_option("color.topbar", OPTION_TYPE_COLOR, (void *)colors.topbar, OPT_CHANGE_NONE);
-	add_option("color.statusbar", OPTION_TYPE_COLOR, (void *)colors.statusbar, OPT_CHANGE_NONE);
-	add_option("color.windowtitle", OPTION_TYPE_COLOR, (void *)colors.windowtitle, OPT_CHANGE_NONE);
-	add_option("color.columnheaders", OPTION_TYPE_COLOR, (void *)colors.columnheader, OPT_CHANGE_NONE);
-	add_option("color.console", OPTION_TYPE_COLOR, (void *)colors.console, OPT_CHANGE_NONE);
-	add_option("color.error", OPTION_TYPE_COLOR, (void *)colors.error, OPT_CHANGE_NONE);
-	add_option("color.readout", OPTION_TYPE_COLOR, (void *)colors.readout, OPT_CHANGE_NONE);
-	add_option("color.cursor", OPTION_TYPE_COLOR, (void *)colors.cursor, OPT_CHANGE_NONE);
-	add_option("color.playing", OPTION_TYPE_COLOR, (void *)colors.playing, OPT_CHANGE_NONE);
-	add_option("color.directory", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_DIRECTORY], OPT_CHANGE_NONE);
-	add_option("color.file", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_FILE], OPT_CHANGE_NONE);
-	add_option("color.pos", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_POS], OPT_CHANGE_NONE);
-	add_option("color.id", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ID], OPT_CHANGE_NONE);
-	add_option("color.time", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_TIME], OPT_CHANGE_NONE);
-	add_option("color.name", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_NAME], OPT_CHANGE_NONE);
-	add_option("color.artist", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ARTIST], OPT_CHANGE_NONE);
-	add_option("color.artistsort", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ARTISTSORT], OPT_CHANGE_NONE);
-	add_option("color.album", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ALBUM], OPT_CHANGE_NONE);
-	add_option("color.title", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_TITLE], OPT_CHANGE_NONE);
-	add_option("color.track", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_TRACK], OPT_CHANGE_NONE);
-	add_option("color.disc", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_DISC], OPT_CHANGE_NONE);
-	add_option("color.date", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_DATE], OPT_CHANGE_NONE);
-	add_option("color.genre", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_GENRE], OPT_CHANGE_NONE);
-	add_option("color.albumartist", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ALBUMARTIST], OPT_CHANGE_NONE);
-	add_option("color.albumartistsort", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ALBUMARTISTSORT], OPT_CHANGE_NONE);
-	add_option("color.year", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_YEAR], OPT_CHANGE_NONE);
-	add_option("color.trackshort", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_TRACKSHORT], OPT_CHANGE_NONE);
-	add_option("color.elapsed", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_ELAPSED], OPT_CHANGE_NONE);
-	add_option("color.remaining", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_REMAINING], OPT_CHANGE_NONE);
-	add_option("color.volume", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_VOLUME], OPT_CHANGE_NONE);
-	add_option("color.progressbar", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_PROGRESSBAR], OPT_CHANGE_NONE);
-	add_option("color.modes", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_MODES], OPT_CHANGE_NONE);
-	add_option("color.state", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_STATE], OPT_CHANGE_NONE);
-	add_option("color.queuesize", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_QUEUESIZE], OPT_CHANGE_NONE);
-	add_option("color.queuelength", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_QUEUELENGTH], OPT_CHANGE_NONE);
-	add_option("color.listsize", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_LISTSIZE], OPT_CHANGE_NONE);
-	add_option("color.listlength", OPTION_TYPE_COLOR, (void *)colors.field[FIELD_LISTLENGTH], OPT_CHANGE_NONE);
-}
-
-void Config::source_default_config()
-{
-	string home;
-	string s;
-	char * env;
-	const string suffix = "/pms/pms.conf";
-	size_t start = 0, end = 0;
-
-	debug("Reading configuration files...", NULL);
-
-	if ((env = getenv("HOME")) != NULL)
-		home = env;
-	else
-		home.clear();
-
-	// XDG config dirs (colon-separated priority list, defaults to just /etc/xdg)
-	if ((env = getenv("XDG_CONFIG_DIRS")) == NULL)
+	for (i = 0; i < name.size(); i++)
 	{
-		source("/usr/local/etc/xdg" + suffix, true);
-		source("/etc/xdg" + suffix, true);
+		if (name[i] == s)
+			return (int)i;
 	}
+
+	return -1;
+}
+
+bool			Commandmap::add(string com, string des, pms_pending_keys act)
+{
+	if (com.size() == 0 && act != PEND_NONE)
+		return false;
+	command.push_back(com);
+	description.push_back(des);
+	action.push_back(act);
+
+	return true;
+}
+
+pms_pending_keys	Commandmap::act(string key)
+{
+	unsigned int		i;
+
+	for (i = 0; i < command.size(); i++)
+	{
+		if (command[i] == key)
+		{
+			return action[i];
+		}
+	}
+
+	return PEND_NONE;
+}
+
+string			Commandmap::desc(string com)
+{
+	unsigned int		i;
+
+	for (i = 0; i < command.size(); i++)
+	{
+		if (command[i] == com)
+		{
+			return description[i];
+		}
+	}
+
+	return "";
+}
+
+/*
+ * Deletes all key bindings
+ */
+void			Bindings::clear()
+{
+	key.clear();
+	action.clear();
+	param.clear();
+	straction.clear();
+	strkey.clear();
+}
+
+/*
+ * Remove a key binding
+ */
+bool			Bindings::remove(string b)
+{
+	unsigned int		i;
+	bool			m = false;
+
+	if (b == "all")
+	{
+		clear();
+		return true;
+	}
+
+	for (i = 0; i < strkey.size(); ++i)
+	{
+		if (i >= strkey.size()) break;
+		if (b == strkey[i])
+		{
+			strkey.erase(strkey.begin() + i);
+			key.erase(key.begin() + i);
+			straction.erase(straction.begin() + i);
+			action.erase(action.begin() + i);
+			param.erase(param.begin() + i);
+			--i;
+			m = true;
+		}
+	}
+
+	return m;
+}
+
+/*
+ * Associate a key with a binding
+ */
+bool			Bindings::add(string b, string command)
+{
+	string			par = "";
+	pms_pending_keys	k;
+	size_t			l;
+	int			i = 0;
+
+	/* Find parameter */
+	l = command.find(" ");
+	if (l != string::npos && l > 0)
+	{
+		par = command.substr(l + 1);
+		command = command.substr(0, l);
+	}
+
+	k = cmap->act(command);
+	if (k == PEND_NONE)
+	{
+		if (command[0] == '!' && command.size() > 1)
+		{
+			par = command.substr(1) + " " + par;
+			command = "!";
+			k = cmap->act(command);
+		}
+		else
+		{
+			pms->msg->clear();
+			pms->msg->code = CERR_INVALID_COMMAND;
+			pms->msg->str = _("invalid command");
+			pms->msg->str += " '" + command + "'";
+			return false;
+		}
+	}
+
+	/* Simple character */
+	if (b.size() == 1)
+	{
+		i = b[0];
+	}
+	/* String -> character */
 	else
 	{
-		s = env;
-		while ((end = s.find(':', start)) != string::npos)
+		/* Control + character. This is always lowercase. */
+		if (b[0] == '^' && (b[1] >= 'A' && b[1] <= 'Z'))
 		{
-			source(s.substr(start, end - start) + suffix, true);
-			start = end + 1;
+			i = b[1] - 64;
+		}
+		else
+		{
+			if (b == "up")
+				i = KEY_UP;
+			else if (b == "down")
+				i = KEY_DOWN;
+			else if (b == "left")
+				i = KEY_LEFT;
+			else if (b == "right")
+				i = KEY_RIGHT;
+			else if (b == "pageup")
+				i = KEY_PPAGE;
+			else if (b == "pagedown")
+				i = KEY_NPAGE;
+			else if (b == "home")
+				i = KEY_HOME;
+			else if (b == "end")
+				i = KEY_END;
+			else if (b == "backspace")
+				i = KEY_BACKSPACE;
+			else if (b == "delete")
+				i = KEY_DC;
+			else if (b == "insert")
+				i = KEY_IC;
+			else if (b == "return")
+				i = 10;
+			else if (b == "kpenter")
+				i = 343;
+			else if (b == "space")
+				i = ' ';
+			else if (b == "tab")
+				i = '\t';
+			else if (b == "mouse1")
+				i = BUTTON1_CLICKED;
+			else if (b == "mouse2")
+				i = BUTTON2_CLICKED;
+			else if (b == "mouse3")
+				i = BUTTON3_CLICKED;
+			else if (b == "mouse4")
+				i = BUTTON4_CLICKED;
+#if NCURSES_MOUSE_VERSION > 1
+			else if (b == "mouse5")
+				i = BUTTON5_CLICKED;
+#endif
+			else if ((b[0] == 'F' || b[0] == 'f') && b.size() > 1)
+			{
+				i = atoi(string(b.substr(1)).c_str());
+				if (i > 0 && i < 64)
+					i = KEY_F(i);
+				else
+				{
+					pms->msg->clear();
+					pms->msg->code = CERR_INVALID_KEY;
+					pms->msg->str = _("function key out of range");
+					pms->msg->str += ": " + b;
+					return false;
+				}
+			}
+			else
+			{
+				pms->msg->clear();
+				pms->msg->code = CERR_INVALID_KEY;
+				pms->msg->str = _("invalid key");
+				pms->msg->str += " '" + b + "'";
+				return false;
+			}
+		}
+	}
+
+	/* Remove any old bind for this key */
+	remove(b);
+
+	strkey.push_back(b);
+	key.push_back(i);
+	action.push_back(k);
+	straction.push_back(command);
+	param.push_back(par);
+	/*
+	if (pms->options)
+	{
+		pms->log(MSG_DEBUG, 0, "Mapping key %3d to action %d '%s' with parameter '%s'\n", i, k, command.c_str(), par.c_str());
+	}
+	*/
+
+	return true;
+}
+
+pms_pending_keys	Bindings::act(int k, string * parm)
+{
+	unsigned int		i;
+
+	/* Standardize ambiguous keys */
+	if (k == 8 || k == 127)
+		k = KEY_BACKSPACE;
+
+	for (i = 0; i < key.size(); i++)
+	{
+		if (key[i] == k)
+		{
+			*parm = param[i];
+			return action[i];
+		}
+	}
+
+	return PEND_NONE;
+}
+
+/*
+ * Creates a list of all key mappings
+ */
+unsigned int		Bindings::list(vector<string> * k, vector<string> * com, vector<string> * desc)
+{
+	unsigned int		i;
+
+	if (!k || !com || !desc)
+		return 0;
+
+	k->clear();
+	com->clear();
+	desc->clear();
+
+	for (i = 0; i < key.size(); i++)
+	{
+		k->push_back(strkey[i]);
+		com->push_back(straction[i] + " " + param[i]);
+		desc->push_back(cmap->desc(straction[i]));
+	}
+
+	return i;
+}
+
+
+
+
+
+
+/*
+ * Tells whether a character is whitespace or not
+ */
+bool			Configurator::is_whitespace(char n)
+{
+	return (n == ' ' || n == '\t' || n == '\0' || n == '\n' ? true : false);
+}
+
+/*
+ * Converts a string into a boolean value
+ */
+bool			Configurator::strtobool(string s)
+{
+	//convert to lowercase
+	transform(s.begin(), s.end(), s.begin(), ::tolower);
+
+	return s == "yes" || s == "true" || s == "on" || s == "1";
+}
+
+/*
+ * Verify that a columns string is OK
+ */
+bool			Configurator::verify_columns(string s)
+{
+	unsigned int		i;
+	vector<string> *	v;
+
+	if (s.size() == 0)
+		return false;
+
+	v = Pms::splitstr(s, " ");
+
+	for (i = 0; i < v->size(); i++)
+	{
+		if (pms->fieldtypes->lookup((*v)[i]) == -1)
+		{
+			pms->msg->clear();
+			pms->msg->code = CERR_INVALID_COLUMN;
+			pms->msg->str = _("invalid column type");
+			pms->msg->str += " '" + (*v)[i] + "'";
+			delete v;
+			return false;
+		}
+	}
+
+	delete v;
+
+	return true;
+}
+
+
+
+
+
+/*
+ * Constructor
+ */
+Configurator::Configurator(Options * o, Bindings * b)
+{
+	opt = o;
+	bindings = b;
+}
+
+/*
+ * Loads a configuration file
+ */
+bool			Configurator::source(string fn)
+{
+	FILE *		fd;
+	char		buffer[1024];
+	int		line = 0;
+
+	pms->msg->clear();
+	pms->msg->code = CERR_NONE;
+	fd = fopen(fn.c_str(), "r");
+
+	if (fd == NULL)
+	{
+		pms->msg->code = CERR_NO_FILE;
+		pms->msg->str = fn + _(": could not open file.\n");
+		return false;
+	}
+
+	pms->log(MSG_CONSOLE, 0, _("Reading configuration file %s\n"), fn.c_str());
+
+	while (fgets(buffer, 1024, fd) != NULL)
+	{
+		++line;
+		if (!readline(buffer))
+		{
+			pms->log(MSG_CONSOLE, STERR, _("Encountered an error on line %d.\n"), line);
+			break;
+		}
+	}
+
+	if (pms->msg->code != 0)
+	{
+		pms->msg->str = "line " + Pms::tostring(line) + ": " + pms->msg->str;
+	}
+
+	pms->log(MSG_CONSOLE, 0, _("Finished reading configuration file.\n"));
+
+	fclose(fd);
+
+	return (pms->msg->code == 0);
+}
+
+/*
+ * Splits a line into segments
+ */
+vector<string> *	Configurator::splitline(string line)
+{
+	string::iterator	i;
+	vector<string> *	v;
+	string			buf = "";
+
+	v = new vector<string>;
+
+	i = line.begin();
+	while (i != line.end())
+	{
+		if (Configurator::is_whitespace(*i) || *i == '=' || *i == ':')
+		{
+			if (buf.size() > 0)
+			{
+				v->push_back(buf);
+				buf.clear();
+			}
+			if (*i == '=')
+				v->push_back("=");
+			else if (*i == ':')
+				v->push_back(":");
+		}
+		else
+		{
+			buf += *i;
+		}
+		++i;
+	}
+
+	if (buf.size() > 0)
+		v->push_back(buf);
+
+	return v;
+}
+
+/*
+ * Gets parameter from a command line string
+ */
+string			Configurator::getparamopt(string buffer)
+{
+	size_t				n;
+	size_t				epos;
+	size_t				cpos;
+
+	//set n to the first position of = or :, return empty string if neither 
+	//is found
+	epos = buffer.find_first_of("=");
+	cpos = buffer.find_first_of(":");
+	if (epos == string::npos && cpos == string::npos)
+		return "";
+	else if (cpos == string::npos || epos < cpos)
+		n = epos;
+	else
+		n = cpos;
+	if (n == string::npos || n == buffer.size() - 1)
+		return "";
+
+	buffer = buffer.substr(n + 1);
+	while (buffer.size() > 0 && Configurator::is_whitespace(buffer[buffer.size()-1]))
+		buffer = buffer.substr(0, buffer.size() - 1);
+
+	return buffer;
+}
+
+/*
+ * Interprets a command line
+ */
+bool			Configurator::readline(string buffer)
+{
+	vector<string> *		tok;
+	vector<string>::iterator	it;
+	bool				state = false;
+	string				proc;
+	string				val;
+
+	/* No errors by default */
+	pms->msg->clear();
+
+	/* Empty lines pass through */
+	if (buffer.size() == 0)
+		return true;
+
+	/* Split into tokens delimited by whitespace */
+	tok = Configurator::splitline(buffer);
+	if (tok->size() == 0)
+	{
+		delete tok;
+		return true;
+	}
+	
+	/* Comments start with '#' */
+	if ((*tok)[0][0] == '#')
+		return true;
+
+	proc = (*tok)[0];
+
+	/* Process first keyword */
+	if (proc == "set" || proc == "se")
+	{
+		proc.clear();
+		val.clear();
+
+		if (tok->size() < 2)
+			pms->msg->code = CERR_MISSING_IDENTIFIER;
+		else
+		{
+			proc = (*tok)[1];
+			if (tok->size() == 2)
+			{
+				//check for various prefixes/suffixes
+				if (pms->options->get_type(proc) == SETTING_TYPE_BOOLEAN)
+					return pms->options->set(proc, "true");
+				else if (proc.substr(proc.length() - 1, 1) == "?" && pms->options->get_type(proc.substr(0, proc.length() - 1)) != SETTING_TYPE_EINVAL)
+				{
+					pms->options->dump(proc.substr(0, proc.length() - 1));
+					return false;
+				}
+				else if (proc.substr(0, 2) == "no" && pms->options->get_type(proc.substr(2)) == SETTING_TYPE_BOOLEAN)
+					return pms->options->set(proc.substr(2), "false");
+				else if (proc.substr(0, 3) == "inv" && pms->options->get_type(proc.substr(3)) == SETTING_TYPE_BOOLEAN)
+					return pms->options->toggle(proc.substr(3));
+				else if (proc.substr(proc.length() - 1, 1) == "!" && pms->options->get_type(proc.substr(0, proc.length() - 1)) == SETTING_TYPE_BOOLEAN)
+					return pms->options->toggle(proc.substr(0, proc.length() - 1));
+				else if (pms->options->get_type(proc) == SETTING_TYPE_EINVAL)
+					pms->msg->code = CERR_INVALID_IDENTIFIER;
+				else
+				{
+					pms->options->dump(proc);
+					return false;
+				}
+			}
+			else if (pms->options->get_type(proc) == SETTING_TYPE_BOOLEAN || tok->at(2) != "=" && tok->at(2) != ":")
+				pms->msg->code = CERR_UNEXPECTED_TOKEN;
 		}
 
-		if (start < s.size())
-			source(s.substr(start) + suffix, true);
+		if (pms->msg->code == CERR_NONE)
+			val = Configurator::getparamopt(buffer);
+
+		delete tok;
+
+		switch(pms->msg->code)
+		{
+			case CERR_NONE:
+				return pms->options->set(proc, val);
+			case CERR_INVALID_IDENTIFIER:
+				pms->msg->str = _("invalid identifier");
+				pms->msg->str += " '" + proc + "'";
+				return false;
+			case CERR_MISSING_IDENTIFIER:
+				pms->msg->str = _("missing name identifier after 'set'");
+				return false;
+			case CERR_MISSING_VALUE:
+				pms->msg->str = _("missing value for configuration option");
+				pms->msg->str += " '" + proc + "'";
+				return false;
+			case CERR_UNEXPECTED_TOKEN:
+				pms->msg->str = _("unexpected token after identifier");
+				return false;
+			default:
+				return false;
+		}
 	}
+	else if (proc == "bind" || proc == "map")
+	{
+		proc.clear();
+		val.clear();
+
+		if (tok->size() == 1)
+		{
+			pms->msg->code = CERR_MISSING_IDENTIFIER;
+			pms->msg->str = _("missing key after 'bind'");
+			return false;
+		}
+
+		if (tok->size() == 2)
+		{
+			pms->msg->code = CERR_MISSING_VALUE;
+			pms->msg->str = _("missing command to bind to key");
+			pms->msg->str += " '" + tok->at(1) + "'";
+			return false;
+		}
+
+		proc = tok->at(1);
+		val = Pms::joinstr(tok, tok->begin() + 2, tok->end());
+		delete tok;
+
+		return bindings->add(proc, val);
+	}
+	else if (proc == "unbind" || proc == "unmap" || proc == "unm")
+	{
+		it = tok->begin() + 1;
+		while (it != tok->end())
+		{
+			if (!bindings->remove(*it))
+			{
+				pms->msg->code = CERR_INVALID_KEY;
+				pms->msg->str = _("Can't remove binding for key");
+				pms->msg->str += " '" + *it + "'";
+				delete tok;
+				return false;
+			}
+			++it;
+		}
+		delete tok;
+	}
+	else if (proc == "color" || proc == "colour")
+	{
+		proc.clear();
+		val.clear();
+
+		if (tok->size() == 1)
+		{
+			pms->msg->code = CERR_MISSING_IDENTIFIER;
+			pms->msg->str = _("missing names after 'color'");
+			return false;
+		}
+
+		if (tok->size() == 2)
+		{
+			pms->msg->code = CERR_MISSING_VALUE;
+			pms->msg->str = _("missing colors to add to ");
+			pms->msg->str += tok->at(1);
+			return false;
+		}
+
+		proc = tok->at(1);
+		val = Pms::joinstr(tok, tok->begin() + 2, tok->end());
+		delete tok;
+
+		return set_color(proc, val);
+	}
+	else
+	{
+		pms->msg->code = CERR_SYNTAX;
+		pms->msg->str = _("syntax error: unexpected");
+		pms->msg->str += " '" + proc + "'";
+		return false;
+	}
+
+	return true;
+}
+
+/*
+ * Load all configuration files
+ */
+bool			Configurator::loadconfigs()
+{
+	string			str;
+
+	char *			homedir;
+	char *			xdgconfighome;
+	char *			xdgconfigdirs;
+	string			next;
+	vector<string>		configfiles;
+
+	homedir = getenv("HOME");
+	xdgconfighome = getenv("XDG_CONFIG_HOME");
+	xdgconfigdirs = getenv("XDG_CONFIG_DIRS");
+
+	/* Make a list of possible configuration files */
+	// commandline argument
+	if (pms->options->get_string("configfile").length() > 0)
+		configfiles.push_back(pms->options->get_string("configfile"));
 
 	// XDG config home (usually $HOME/.config)
-	if ((env = getenv("XDG_CONFIG_HOME")) == NULL)
+	if (xdgconfighome == NULL || strlen(xdgconfighome) == 0)
 	{
-		if (home.size() > 0)
-			source(home + "/.config" + suffix);
+		if (homedir != NULL && strlen(homedir) > 0)
+		{
+			str = homedir;
+			configfiles.push_back(str + "/.config/pms/rc");
+		}
 	}
 	else
 	{
-		source(env + suffix);
+		str = xdgconfighome;
+		configfiles.push_back(str + "/pms/rc");
 	}
-}
-
-bool Config::source(string filename, bool suppress_errmsg)
-{
-	ifstream fd;
-	char line[1024];
-
-	fd.open(filename.c_str(), ifstream::in);
-	if (!fd.good())
+	// XDG config dirs (colon-separated priority list, defaults to just /etc/xdg)
+	if (xdgconfigdirs == NULL || strlen(xdgconfigdirs) == 0)
 	{
-		if (!suppress_errmsg)
-			sterr("Cannot open file `%s'", filename.c_str());
-		return false;
-	}
-
-	while (fd.good())
-	{
-		fd.getline(line, sizeof line);
-		pms->run_cmd(line, 1, true);
-	}
-
-	fd.close();
-
-	return true;
-}
-
-option_t * Config::readline(string line, unsigned int multiplier, bool verbose)
-{
-	string optstr;
-	string optval = "";
-	option_t * opt;
-	size_t pos;
-	bool invert = false;
-	bool show = false;
-	bool negative = false;
-	bool * bopt;
-	int arithmetic = 0;
-
-	/* Locate the identifier */
-	if (line.size() == 0)
-	{
-		print_all_options();
-		return NULL;
-	}
-	else if ((pos = line.find_first_of("=:")) != string::npos)
-	{
-		optstr = line.substr(0, pos);
-		if (line.size() > pos + 1)
-			optval = line.substr(pos + 1);
+		configfiles.push_back("/usr/local/etc/xdg/pms/rc");
+		configfiles.push_back("/etc/xdg/pms/rc");
 	}
 	else
 	{
-		optstr = line;
-	}
-
-	/* Invert or return value? */
-	switch(optstr[optstr.size()-1] )
-	{
-		case '?':
-			show = true;
-			break;
-		case '!':
-			invert = true;
-			break;
-		default:;
-	}
-
-	/* Detect += or -= values */
-	if (pos != string::npos && line[pos] == '=')
-	{
-		switch(optstr[optstr.size()-1])
+		next = "";
+		str = xdgconfigdirs;
+		for (string::const_iterator it = str.begin(); it != str.end(); it++)
 		{
-			case '+':
-				arithmetic = multiplier;
-				break;
-			case '-':
-				arithmetic = -multiplier;
-				break;
-			default:;
-		}
-	}
-
-	/* Cut away operators */
-	if (show || invert || arithmetic != 0)
-		optstr = optstr.substr(0, optstr.size() - 1);
-
-	/* Return the option struct if this is a valid option */
-	if ((opt = get_opt_ptr(optstr)) == NULL)
-	{
-		/* Check if this is a negative boolean (no<option>) */
-		if (optstr.size() > 2 && optstr.substr(0, 2) == "no" && ((opt = get_opt_ptr(optstr.substr(2))) != NULL) && opt->type == OPTION_TYPE_BOOL)
-		{
-			negative = !invert;
-			optstr = optstr.substr(2);
-		}
-		/* Check if this is an invertion (inv<option>) */
-		else if (optstr.size() > 3 && optstr.substr(0, 3) == "inv" && ((opt = get_opt_ptr(optstr.substr(3))) != NULL) && opt->type == OPTION_TYPE_BOOL)
-		{
-			invert = true;
-			optstr = optstr.substr(3);
-		}
-		else
-		{
-			sterr("Unknown option: %s", line.c_str());
-			return NULL;
-		}
-	}
-
-	/* Print the option to statusbar */
-	if (show)
-	{
-		print_option(opt);
-		return NULL;
-	}
-
-	if (arithmetic != 0)
-	{
-		/* Add the new string value to the previous values */
-		if (add_opt_str(opt, optval, arithmetic))
-		{
-			if (verbose)
-				print_option(opt);
-			return opt;
-		}
-		return NULL;
-	}
-
-	/* Invert an option if boolean */
-	if (invert)
-	{
-		if (opt->type != OPTION_TYPE_BOOL)
-		{
-			debug("%s=%s", optstr.c_str(), get_opt_str(opt).c_str());
-			sterr("Trailing characters: %s", line.c_str());
-			return NULL;
-		}
-		bopt = (bool *)opt->ptr;
-		*bopt = !(*bopt);
-		if (verbose)
-			print_option(opt);
-		return opt;
-	}
-
-	/* Check for (negative) boolean options */
-	if (optval.size() == 0 && pos == string::npos)
-	{
-		/* Show option instead */
-		if (opt->type != OPTION_TYPE_BOOL)
-		{
-			if (verbose)
-				print_option(opt);
-			return NULL;
-		}
-		bopt = (bool *)opt->ptr;
-		*bopt = !negative;
-		if (verbose)
-			print_option(opt);
-		return opt;
-	}
-
-	/* Set the new string value */
-	if (set_opt_str(opt, optval))
-	{
-		if (verbose)
-			print_option(opt);
-		return opt;
-	}
-
-	return NULL;
-}
-
-option_t * Config::add_option(string name, option_type_t type, void * ptr, int mask)
-{
-	option_t * o = new option_t;
-	o->name = name;
-	o->type = type;
-	o->ptr = ptr;
-	o->mask = mask;
-	options.push_back(o);
-	return o;
-}
-
-string Config::get_opt_str(option_t * opt)
-{
-	vector<Field *>::const_iterator field_it;
-
-	Color * c;
-	string str = "";
-	unsigned int * ui;
-	int * i;
-	bool * b;
-
-	if (opt == NULL)
-		return str;
-
-	switch(opt->type)
-	{
-		case OPTION_TYPE_STRING:
-			str = (*(string *)opt->ptr);
-			break;
-
-		case OPTION_TYPE_BOOL:
-			b = (bool *)opt->ptr;
-			str = !(*b) ? "no" : "";
-			str += opt->name;
-			break;
-
-		case OPTION_TYPE_UINT:
-			ui = (unsigned int *)opt->ptr;
-			str = tostring(*ui);
-			break;
-
-		case OPTION_TYPE_INT:
-		case OPTION_TYPE_VOLUME:
-			i = (int *)opt->ptr;
-			str = tostring(*i);
-			break;
-
-		case OPTION_TYPE_COLOR:
-			c = (Color *)opt->ptr;
-			str = c->getstrname();
-			break;
-
-		/* Exotic data types */
-
-		case OPTION_TYPE_SCROLLMODE:
-			if (scroll_mode == SCROLL_MODE_NORMAL)
-				str = "normal";
-			else if (scroll_mode == SCROLL_MODE_CENTERED)
-				str = "centered";
-			break;
-
-		case OPTION_TYPE_COLUMNHEADERS:
-			for (field_it = songlist_columns.begin(); field_it != songlist_columns.end(); ++field_it)
-				str = str + (*field_it)->str + " ";
-			str = str.substr(0, str.size() - 1);
-			break;
-
-		case OPTION_TYPE_SEARCHFIELDS:
-			for (field_it = fieldtypes->fields.begin(); field_it != fieldtypes->fields.end(); ++field_it)
-				if (search_field_mask & (1 << (*field_it)->type))
-					str = str + (*field_it)->str + " ";
-			str = str.substr(0, str.size() - 1);
-			break;
-
-		case OPTION_TYPE_TOPBAR:
-			str = topbar->cached_format;
-			break;
-
-		default:
-			str = "<unknown>";
-			break;
-	}
-
-	return str;
-}
-
-int Config::add_opt_str(option_t * opt, string value, int arithmetic)
-{
-	string s;
-	int * i;
-	unsigned int * ui;
-
-	if (opt == NULL)
-		return false;
-
-	if (arithmetic == 0)
-		return set_opt_str(opt, value);
-
-	switch(opt->type)
-	{
-		case OPTION_TYPE_COLOR:
-		case OPTION_TYPE_COLORLIST:
-			/* Easter egg for those who like to play with their apps */
-			sterr("If you want to play with colors, please buy a palette.", NULL);
-			return false;
-
-		case OPTION_TYPE_COLUMNHEADERS:
-		case OPTION_TYPE_SEARCHFIELDS:
-			if (arithmetic >= 1)
-				value = " " + value;
-			/* break intentionally omitted */
-
-		case OPTION_TYPE_STRING:
-		case OPTION_TYPE_TOPBAR:
-			s = get_opt_str(opt);
-			if (arithmetic >= 1)
-				s = s + value;
-			else if (arithmetic <= -1)
-				s = str_replace(value, "", s);
-			set_opt_str(opt, s);
-			return true;
-
-		case OPTION_TYPE_INT:
-			i = (int *)opt->ptr;
-			*i = *i + (arithmetic * atoi(value.c_str()));
-			return true;
-
-		case OPTION_TYPE_UINT:
-			ui = (unsigned int *)opt->ptr;
-			*ui = *ui + (arithmetic * atoi(value.c_str()));
-			return true;
-
-		case OPTION_TYPE_VOLUME:
-			i = (int *)opt->ptr;
-			*i = *i + (arithmetic * atoi(value.c_str()));
-			if (*i > 100)
-				*i = 100;
-			if (*i < 0)
-				*i = 0;
-			return true;
-
-		default:
-			return false;
-	}
-}
-
-int Config::set_opt_str(option_t * opt, string value)
-{
-	Color * c;
-	string * s;
-	int * i;
-	unsigned int * ui;
-
-	if (opt == NULL)
-		return false;
-
-	switch(opt->type)
-	{
-		case OPTION_TYPE_STRING:
-			s = (string *)opt->ptr;
-			*s = value;
-			return true;
-
-		case OPTION_TYPE_INT:
-			i = (int *)opt->ptr;
-			*i = atoi(value.c_str());
-			return true;
-
-		case OPTION_TYPE_UINT:
-			ui = (unsigned int *)opt->ptr;
-			*ui = atoi(value.c_str());
-			return true;
-
-		case OPTION_TYPE_VOLUME:
-			ui = (unsigned int *)opt->ptr;
-			*ui = atoi(value.c_str());
-			if (*ui > 100)
-				*ui = 100;
-			if (*ui < 0)
-				*ui = 0;
-			return true;
-
-		case OPTION_TYPE_COLUMNHEADERS:
-			set_column_headers(value);
-			wm->update_column_length();
-			return true;
-
-		case OPTION_TYPE_SEARCHFIELDS:
-			set_search_fields(value);
-			return true;
-
-		case OPTION_TYPE_SCROLLMODE:
-			set_scroll_mode(value);
-			return true;
-
-		case OPTION_TYPE_COLOR:
-			c = (Color *)opt->ptr;
-			c->set(value);
-			return true;
-
-		case OPTION_TYPE_TOPBAR:
-			topbar->set(value);
-			if (topbar->lines[0].size() > topbar_height)
+			if (*it == ':')
 			{
-				topbar_height = topbar->lines[0].size();
-				print_option(get_opt_ptr("topbarlines"));
+				if (next.length() > 0)
+				{
+					configfiles.push_back(next + "/pms/rc");
+					next = "";
+				}
 			}
-			return true;
+			else
+				next += *it;
+		}
+		if (next.length() > 0)
+			configfiles.push_back(next + "/pms/rc");
+	}
 
-		default:
+	/* Load configuration files in reverse order */
+	for (int i = configfiles.size() - 1; i >= 0; i--)
+	{
+		if (!source(configfiles[i]))
+		{
+			if (pms->msg->code != CERR_NO_FILE)
+			{
+				pms->log(MSG_CONSOLE, 0, _("\nConfiguration error in file %s:\n%s\n"), configfiles[i].c_str(), pms->msg->str.c_str());
+				return false;
+			}
+			pms->log(MSG_CONSOLE, 0, _("Didn't find configuration file %s\n"), configfiles[i].c_str());
+		}
+	}
+
+	return true;
+}
+
+/*
+ * Set a color pair for a field
+ */
+bool			Configurator::set_color(string name, string pairs)
+{
+	vector<string> *	pair;
+	string 			str;
+	color *			dest;
+	colortable_fields *	field;
+	Colortable *		c;
+	int			colors[2];
+	int			attr = 0;
+	unsigned int		cur = 0;
+	size_t			found;
+
+	if (pairs.size() == 0) return false;
+	c = opt->colors;
+
+	pms->msg->clear();
+
+	/* Standard colors */
+	if (name == "background")
+		dest = (c->back);
+	else if (name == "foreground")
+		dest = (c->standard);
+	else if (name == "statusbar")
+		dest = (c->status);
+	else if (name == "error")
+		dest = (c->status_error);
+	else if (name == "borders")
+		dest = (c->border);
+	else if (name == "headers")
+		dest = (c->headers);
+	else if (name == "title")
+		dest = (c->title);
+
+	/* Topbar statuses */
+	else if (name == "topbar.time_elapsed")
+		dest = (c->topbar.time_elapsed);
+	else if (name == "topbar.time_remaining")
+		dest = (c->topbar.time_remaining);
+	else if (name == "topbar.playstate")
+		dest = (c->topbar.playstate);
+	else if (name == "topbar.progressbar")
+		dest = (c->topbar.progressbar);
+	else if (name == "topbar.progresspercentage")
+		dest = (c->topbar.progresspercentage);
+	else if (name == "topbar.librarysize")
+		dest = (c->topbar.librarysize);
+	else if (name == "topbar.listsize")
+		dest = (c->topbar.listsize);
+	else if (name == "topbar.queuesize")
+		dest = (c->topbar.queuesize);
+	else if (name == "topbar.livequeuesize")
+		dest = (c->topbar.livequeuesize);
+	else if (name == "topbar.foreground")
+		dest = (c->topbar.standard);
+
+	else if (name == "topbar.repeat")
+		dest = (c->topbar.repeat);
+	else if (name == "topbar.random")
+		dest = (c->topbar.random);
+	else if (name == "topbar.mute")
+		dest = (c->topbar.mute);
+	else if (name == "topbar.randomshort")
+		dest = (c->topbar.randomshort);
+	else if (name == "topbar.repeatshort")
+		dest = (c->topbar.repeatshort);
+	else if (name == "topbar.muteshort")
+		dest = (c->topbar.randomshort);
+
+	/* List colors */
+	else if (name == "current")
+		dest = (c->current);
+	else if (name == "cursor")
+		dest = (c->cursor);
+	else if (name == "selection")
+		dest = (c->selection);
+	else if (name == "lastlist")
+		dest = (c->lastlist);
+	else if (name == "playinglist")
+		dest = (c->playinglist);
+
+	/* Fields for topbar and others */
+	else if (name.size() > 7)
+	{
+		found = name.find("fields.");
+		if (found != string::npos)
+		{
+			if (found == 0)
+				field = &c->fields;
+			else if (name.find("topbar.fields.") == 0)
+				field = &c->topbar.fields;
+			else
+				field = NULL;
+
+			if (field)
+			{
+				name = name.substr(found + 7);
+				if (name == "file")
+					dest = field->file;
+				else if (name == "artist")
+					dest = field->artist;
+				else if (name == "artistsort")
+					dest = field->artistsort;
+				else if (name == "albumartist")
+					dest = field->albumartist;
+				else if (name == "albumartistsort")
+					dest = field->albumartistsort;
+				else if (name == "title")
+					dest = field->title;
+				else if (name == "album")
+					dest = field->album;
+				else if (name == "genre")
+					dest = field->genre;
+				else if (name == "track")
+					dest = field->track;
+				else if (name == "trackshort")
+					dest = field->trackshort;
+				else if (name == "time")
+					dest = field->time;
+				else if (name == "date")
+					dest = field->date;
+				else if (name == "year")
+					dest = field->year;
+				else if (name == "name")
+					dest = field->name;
+				else if (name == "composer")
+					dest = field->composer;
+				else if (name == "performer")
+					dest = field->performer;
+				else if (name == "disc")
+					dest = field->disc;
+				else if (name == "comment")
+					dest = field->comment;
+				else
+					pms->msg->code = CERR_INVALID_IDENTIFIER;
+			}
+		}
+		else
+		{
+			pms->msg->code = CERR_INVALID_IDENTIFIER;
+		}
+	}
+
+	/* No valid color field */
+	else
+	{
+		pms->msg->code = CERR_INVALID_IDENTIFIER;
+	}
+
+	if (pms->msg->code == CERR_INVALID_IDENTIFIER)
+	{
+		pms->msg->str = _("invalid identifier");
+		pms->msg->str += " '" + name + "'";
+		return false;
+	}
+
+	pair = Pms::splitstr(pairs);
+	if (pair->size() > 2)
+	{
+		delete pair;
+		pms->msg->code = CERR_EXCESS_ARGUMENTS;
+		pms->msg->str = _("excess arguments: expected 1 or 2, got ");
+		pms->msg->str += Pms::tostring(pair->size());
+		return false;
+	}
+
+	for (cur = 0; cur < pair->size(); cur++)
+	{
+		str = (*pair)[cur];
+		if (str == "black")
+			colors[cur] = COLOR_BLACK;
+		else if (str == "red")
+			colors[cur] = COLOR_RED;
+		else if (str == "green")
+			colors[cur] = COLOR_GREEN;
+		else if (str == "brown")
+			colors[cur] = COLOR_YELLOW;
+		else if (str == "blue")
+			colors[cur] = COLOR_BLUE;
+		else if (str == "magenta")
+			colors[cur] = COLOR_MAGENTA;
+		else if (str == "cyan")
+			colors[cur] = COLOR_CYAN;
+		else if (str == "brightgray" || str == "brightgrey" ||
+				str == "lightgray" || str == "lightgrey" ||
+				(str == "gray" || str == "grey") && cur == 1)
+			colors[cur] = COLOR_WHITE;
+
+		/* Back color only */
+		else if (cur == 1)
+		{
+			if (str == "trans")
+				colors[cur] = -1;
+		}
+
+		/* Front color only */
+		else if (cur == 0)
+		{
+			if (str == "white")
+			{
+				colors[cur] = COLOR_WHITE;
+				attr = A_BOLD;
+			}
+			else if (str == "gray" || str == "grey")
+			{
+				colors[cur] = COLOR_BLACK;
+				attr = A_BOLD;
+			}
+			else if (str == "brightred" || str == "lightred")
+			{
+				colors[cur] = COLOR_RED;
+				attr = A_BOLD;
+			}
+			else if (str == "brightgreen" || str == "lightgreen")
+			{
+				colors[cur] = COLOR_GREEN;
+				attr = A_BOLD;
+			}
+			else if (str == "yellow")
+			{
+				colors[cur] = COLOR_YELLOW;
+				attr = A_BOLD;
+			}
+			else if (str == "brightblue" || str == "lightblue")
+			{
+				colors[cur] = COLOR_BLUE;
+				attr = A_BOLD;
+			}
+			else if (str == "brightmagenta" || str == "lightmagenta")
+			{
+				colors[cur] = COLOR_MAGENTA;
+				attr = A_BOLD;
+			}
+			else if (str == "brightcyan" || str == "lightcyan")
+			{
+				colors[cur] = COLOR_CYAN;
+				attr = A_BOLD;
+			}
+		}
+		else
+		{
+			delete pair;
+			pms->msg->clear();
+			pms->msg->code = CERR_INVALID_COLOR;
+			pms->msg->str = _("invalid color name");
+			pms->msg->str += " '" + str + "'";
 			return false;
-	}
-
-	return false;
-}
-
-option_t * Config::get_opt_ptr(string opt)
-{
-	vector<option_t *>::const_iterator i;
-
-	for (i = options.begin(); i != options.end(); ++i)
-		if ((*i)->name == opt)
-			return *i;
-	
-	return NULL;
-}
-
-unsigned int Config::grep_opt(string opt, vector<option_t *> * list, string * prefix)
-{
-	vector<option_t *>::const_iterator i;
-
-	if (!list) return 0;
-	list->clear();
-
-	/* Check for "no..." and "inv..." options, which also needs to be tab-completed. */
-	if (opt.size() >= 2 && opt.substr(0, 2) == "no")
-		*prefix = "no";
-	else if (opt.size() >= 3 && opt.substr(0, 3) == "inv")
-		*prefix = "inv";
-	else
-		prefix->clear();
-
-	if (prefix->size() > 0)
-	{
-		if (opt.size() == prefix->size())
-			opt.clear();
-		else
-			opt = opt.substr(prefix->size());
-	}
-
-	for (i = options.begin(); i != options.end(); i++)
-	{
-		if (opt.size() > (*i)->name.size())
-			continue;
-
-		if (opt == (*i)->name.substr(0, opt.size()))
-		{
-			if (prefix->size() == 0 || (*i)->type == OPTION_TYPE_BOOL
-				|| ((*i)->name.size() > prefix->size() && (*i)->name.substr(0, prefix->size()) == *prefix))
-				list->push_back(*i);
 		}
 	}
 
-	return list->size();
-}
+	dest->set(colors[0], (pair->size() == 2 ? colors[1] : -1), attr);
 
-void Config::print_option(option_t * opt)
-{
-	if (opt == NULL)
-		return;
-	else if (opt->type == OPTION_TYPE_BOOL)
-		debug("  %s", get_opt_str(opt).c_str());
-	else if (opt->type == OPTION_TYPE_COLORLIST)
-		print_all_colors();
-	else
-		debug("  %s=%s", opt->name.c_str(), get_opt_str(opt).c_str());
-}
-
-int Config::print_all_options()
-{
-	vector<option_t *>::const_iterator i;
-
-	debug("--- Options ---", NULL);
-
-	for (i = options.begin(); i != options.end(); ++i)
-		if ((*i)->type != OPTION_TYPE_COLOR && (*i)->type != OPTION_TYPE_COLORLIST)
-			print_option(*i);
+	delete pair;
 
 	return true;
-}
-
-int Config::print_all_colors()
-{
-	vector<option_t *>::const_iterator i;
-
-	debug("--- Colors ---", NULL);
-
-	for (i = options.begin(); i != options.end(); ++i)
-		if ((*i)->type == OPTION_TYPE_COLOR)
-			print_option(*i);
-
-	return true;
-}
-
-void Config::get_fields(string fields, vector<Field *> & container)
-{
-	size_t start = 0;
-	size_t pos = 0;
-	string f;
-	Field * field;
-
-	while (start + 1 < fields.size())
-	{
-		if (pos == string::npos)
-			return;
-
-		if ((pos = fields.find(' ', start)) != string::npos)
-			f = fields.substr(start, pos - start);
-		else
-			f = fields.substr(start);
-
-		if ((field = fieldtypes->find(f)) != NULL && field->type < FIELD_COLUMN_VALUES)
-			container.push_back(field);
-		else
-			sterr("Ignoring invalid song field '%s'.", f.c_str());
-
-		start = pos + 1;
-	}
-}
-
-void Config::set_column_headers(string hdr)
-{
-	string f;
-
-	songlist_columns.clear();
-	get_fields(hdr, songlist_columns);
-
-	if (songlist_columns.size() == 0)
-	{
-		f = "title";
-		sterr("Warning: at least one column type needs to be specified, falling back to `%s'.", f.c_str());
-		songlist_columns.push_back(fieldtypes->find(f));
-	}
-}
-
-void Config::set_search_fields(string fields)
-{
-	vector<Field *> f;
-	vector<Field *>::iterator it;
-
-	search_field_mask = 0;
-	get_fields(fields, f);
-
-	for (it = f.begin(); it != f.end(); ++it)
-		search_field_mask |= (1 << (*it)->type);
-
-	if (search_field_mask == 0)
-	{
-		search_field_mask = FIELD_FILE;
-		sterr("Warning: at least one field needs to be specified, falling back to `file'.", NULL);
-	}
-}
-
-void Config::set_scroll_mode(string mode)
-{
-	if (mode == "normal")
-		scroll_mode = SCROLL_MODE_NORMAL;
-	else if (mode == "centered")
-		scroll_mode = SCROLL_MODE_CENTERED;
-	else
-		sterr("Invalid scroll mode `%s', expected one of `normal', `centered'", mode.c_str());
-}
-
-void Config::setup_default_connection_info()
-{
-	char *	env;
-	size_t	i;
-
-	password = "";
-
-	if ((env = getenv("MPD_HOST")) == NULL)
-	{
-		host = "localhost";
-	}
-	else
-	{
-		host = env;
-		if ((i = host.rfind('@')) != string::npos)
-		{
-			password = host.substr(0, i);
-			host = host.substr(i + 1);
-		}
-	}
-
-	if ((env = getenv("MPD_PORT")) == NULL)
-		port = "6600";
-	else
-		port = env;
 }

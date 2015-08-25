@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8 noet:
+/* vi:set ts=8 sts=8 sw=8:
  *
- * Practical Music Search
- * Copyright (c) 2006-2011  Kim Tore Jensen
+ * PMS  <<Practical Music Search>>
+ * Copyright (C) 2006-2010  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,72 +16,132 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * color.h
+ * Color class, holds information about color + attribute values for one color pair
  */
 
-#ifndef _PMS_COLOR_H_
-#define _PMS_COLOR_H_
+#ifndef _COLOR_H_
+#define _COLOR_H_
 
-#include "field.h"
-#include <string>
-#include <vector>
-using namespace std;
-
-class Color
+class color
 {
-	private:
+private:
+	short			id;
+	int			attr;
+	bool			initialized;
+	bool			isset;
+public:
+	static short		numpairs;
 
-		short			id;
-
-	public:
-
-					Color();
-
-		void			set(short nfront, short nback, int nattr);
-		bool			set(string strcolor);
-		string			getstrname();
-
-		static short		color_count;
-
-		int			pair;
-		int			attr;
-		short			front;
-		short			back;
+				color();
+				color(int, int, int);
+				~color();
+	void			clean();
+	int			pair();
+	int			front;
+	int			back;
+	bool			set(int, int, int);
 };
+
+/*
+ * All possible tag fields
+ */
+typedef struct
+{
+	color *			num;
+	color *			file;
+	color *			artist;
+	color *			artistsort;
+	color *			albumartist;
+	color *			albumartistsort;
+	color *			title;
+	color *			album;
+	color *			genre;
+	color *			track;
+	color *			trackshort;
+	color *			time;
+	color *			date;
+	color *			year;
+	color *			name;
+	color *			composer;
+	color *			performer;
+	color *			disc;
+	color *			comment;
+
+} colortable_fields;
+
+/*
+ * All colored items in the topbar
+ */
+typedef struct
+{
+	colortable_fields	fields;
+
+	color *			standard;
+	color *			time_elapsed;
+	color *			time_remaining;
+	color *			progressbar;
+	color *			progresspercentage;
+	color *			librarysize; //songstotal
+	color *			listsize;
+	color *			queuesize;
+	color *			livequeuesize; // songstotalinccurrent
+	color *			playstate;
+	color *			volume;
+
+	color *			bitrate;
+	color *			samplerate;
+	color *			bits;
+	color *			channels;
+
+	color *			repeat;
+	color *			random;
+	color *			manualprogression;
+	color *			mute;
+	color *			repeatshort;
+	color *			randomshort;
+	color *			manualprogressionshort;
+	color *			muteshort;
+
+
+} colortable_topbar;
+
 
 class Colortable
 {
-	private:
-		
-		short		dback;
-		short		dfront;
+private:
+	bool			isset;
+	void			clear();
 
-	public:
+public:
 				Colortable();
 				~Colortable();
 
-		void		load_defaults();
+	void			defaults();
 
-		vector<Color *>	table;
+	/* other tables */
+	colortable_fields	fields;
+	colortable_topbar	topbar;
 
-		/* Main colors */
-		Color *		standard;
-		Color *		topbar;
-		Color *		statusbar;
-		Color *		windowtitle;
-		Color *		columnheader;
-		Color *		console;
-		Color *		error;
-		Color *		readout;
+	/* main colors */
+	color *			back;
+	color *			standard;
+	color *			border;
+	color *			headers;
+	color *			title;
+	color *			status;
+	color *			status_error;
+	color *			position;
 
-		/* List colors */
-		Color *		cursor;
-		Color *		playing;
-		Color *		selection;
-
-		/* Field colors */
-		Color *		field[FIELD_TOTAL_VALUES];
+	/* list colors */
+	color *			current;
+	color *			cursor;
+	color *			selection;
+	color *			lastlist;
+	color *			playinglist;
 
 };
 
 
-#endif /* _PMS_COLOR_H_ */
+#endif /* _COLOR_H_ */

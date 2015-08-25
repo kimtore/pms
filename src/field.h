@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8 noet:
+/* vi:set ts=8 sts=8 sw=8:
  *
- * Practical Music Search
- * Copyright (c) 2006-2011  Kim Tore Jensen
+ * PMS  <<Practical Music Search>>
+ * Copyright (C) 2006-2010  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,59 +16,112 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * field.h - format a song using field variables
+ *
  */
 
 #ifndef _PMS_FIELD_H_
 #define _PMS_FIELD_H_
 
-#include <vector>
 #include <string>
-#include "fields.h"
+#include <vector>
 #include "song.h"
-using namespace std;
+#include "color.h"
 
 /*
- * Song metadata field
+ * Insertable items and items in playlist
  */
-class Field
+typedef enum
 {
-	public:
-		Field(field_t nfield, string name, string mpd_name, string tit, unsigned int minl, unsigned int maxl);
+	EINVALID = -1,
 
-		/* Format a field to a specific song */
-		string		format(Song * song);
+	/* Field types are present both in library view and topbar view */
+	FIELD_NUM,
+	FIELD_FILE,
+	FIELD_ARTIST,
+	FIELD_ARTISTSORT,
+	FIELD_ALBUMARTIST,
+	FIELD_ALBUMARTISTSORT,
+	FIELD_TITLE,
+	FIELD_ALBUM,
+	FIELD_TRACK,
+	FIELD_TRACKSHORT,
+	FIELD_TIME,
+	FIELD_DATE,
+	FIELD_YEAR,
+	FIELD_NAME,
+	FIELD_GENRE,
+	FIELD_COMPOSER,
+	FIELD_PERFORMER,
+	FIELD_DISC,
+	FIELD_COMMENT,
 
-		/* Which kind of field is this? */
-		field_t		type;
+	/* Conditionals */
+	COND_IFCURSONG,
+	COND_IFPLAYING,
+	COND_IFPAUSED,
+	COND_IFSTOPPED,
+	COND_ELSE,
+	COND_ENDIF,
 
-		/* MPD case string representation, e.g. «artist», «album» */
-		string		cstr;
+	/* These types are only available to the topbar */
+	REPEAT,
+	RANDOM,
+	MANUALPROGRESSION,
+	MUTE,
+	REPEATSHORT,
+	RANDOMSHORT,
+	MANUALPROGRESSIONSHORT,
+	MUTESHORT,
+	TIME_ELAPSED,
+	TIME_REMAINING,
+	PLAYSTATE,
+	PROGRESSBAR,
+	PROGRESSPERCENTAGE,
+	VOLUME,
+	LIBRARYSIZE,
+	LISTSIZE,
+	QUEUESIZE,
+	LIVEQUEUESIZE,
 
-		/* Lowercase string representation */
-		string		str;
+	/* Audio properties */
+	BITRATE,
+	SAMPLERATE,
+	BITS,
+	CHANNELS,
 
-		/* Title for column headers */
-		string		title;
+	/* Misc */
+	LITERALPERCENT
 
-		/* Minimum and maximum length in column view */
-		unsigned int	minlen;
-		unsigned int	maxlen;
-};
+}
+Item;
 
-class Fieldtypes
+
+/*
+ * Formatter class formats a song into names, i.e:
+ *
+ * format(song, "%artist% - %album%");
+ * 	returns
+ * "U2 - Beautiful Day"
+ *
+ */
+class Formatter
 {
-	public:
-		Fieldtypes();
-		~Fieldtypes();
+private:
+	string			fm;
 
-		/* All supported field types */
-		vector<Field *>	fields;
+	Item			nextitem(string, int *, int *);
+	string			evalconditionals(string);
 
-		/* Locate a field type by MPD string */
-		Field *		find_mpd(string &value);
-
-		/* Locate a field type by name */
-		Field *		find(string &value);
+public:
+	string			format(Song *, string, unsigned int &, colortable_fields *, bool = false);
+	string			format(Song *, Item, unsigned int &, colortable_fields *, bool = false);
+	string			format(Song *, Item, bool = false);
+	color *			getcolor(Item, colortable_fields *);
+	vector<Item> *		multiformat_item(string);
+	Item			field_to_item(string);
+	long			item_to_match(Item);
 };
 
 

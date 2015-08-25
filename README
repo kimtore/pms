@@ -1,67 +1,68 @@
-# PMS
-## Practical Music Search
-Practical Music Search is an ncurses-based client for
-[MPD](http://mpd.wikia.com/wiki/Music_Player_Daemon_Wiki). It has a command line
-interface much like [Vim](http://www.vim.org), and supports custom colors,
-layouts, and key bindings. [PMS](https://github.com/ambientsound/pms) aims to
-be accessible and highly configurable.
+#####################################
+README - Practical Music Search v0.42
+#####################################
 
-### Compiling
-    $ cmake . && make
+Copyright (C) 2006-2010 Kim Tore Jensen <kimtjen@gmail.com>.
 
-### Dependencies
-You need to have [MPD](http://mpd.wikia.com/wiki/Music_Player_Daemon_Wiki)
-installed and working before using [PMS](https://github.com/ambientsound/pms),
-but not neccessarily on the same machine.
+The program homepage is <http://pms.sourceforge.net>.
 
-This client requires 
-[MPD](http://mpd.wikia.com/wiki/Music_Player_Daemon_Wiki) >= 0.15.0.
+Practical Music Search is a ncurses-based client for MPD. It has a command line
+interface much like Vim, and supports custom colors, layouts, and key bindings.
+PMS aims to be accessible and highly configurable.
 
-[PMS](https://github.com/ambientsound/pms) depends on ncurses >= 5.0 to build.
 
-### Configuration
-Your configuration file is ~/.config/pms/pms.conf. A system-wide config
-file can be put in /etc/xdg/pms/pms.conf.
+	Table of Contents
+*************************
 
-Start PMS and type
-    :set
-for a list of options available, or type
-    :set color
-for a list of color options.
+1. Compiling
+2. Requirements
+3. Configuration
+4. Reporting bugs
+	
 
-#### Setting options
-Options can be set with
-    set option=value
-    set option+=value
-    set option-=value
-Boolean options can be set, inverted or unset with
-    set option
-    set nooption
-    set invoption
-    set option!
-Option values can be queried with
-    set option?
 
-#### Changing colors
-Background colors are black, red, green, brown, blue, magenta, cyan and gray.
-Foreground colors are as background colors, in addition to 
-brightred, brightgreen, yellow, brightblue, brightmagenta, brightcyan, white.
+	1. Compiling
+********************
 
-Set colors with
-    set color.name=foreground [background]
+$ ./configure && make && sudo make install
 
-### Copying
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+See INSTALL file for detailed instructions.
 
-See the COPYING file for more information.
 
-### Authors
-Written by [Kim Tore Jensen](http://www.incendio.no). Copyright (c) 2006-2011.
+	2. Requirements
+***********************
 
-A big thanks to contributors [Bart Nagel](https://github.com/tremby)
-and [Murilo Pereira](https://github.com/mpereira).
+PMS is a client for the Music Player Daemon (http://musicpd.org). You need to 
+have MPD installed and working before using PMS, but not neccessarily on the
+same machine.
 
-<!--- vi: se ft=markdown et ts=4 sts=4 sw=4: -->
+This client works best with recent MPD versions (>= 0.15.0).
+
+PMS depends on the following libraries:
+
+ncurses (>= 5.0)
+glib2 (>= 2.0)
+boost_regex (>= 1.36.0) to enable regular expression searches
+
+
+	3. Configuration
+************************
+
+Consult the man page for configuration options.
+
+There are example configuration files in the "examples" directory.
+
+If there is no man page available on your system, you can read the manual page 
+online at <http://pms.sourceforge.net/pms.1.html>.
+
+Hint: type ':help' from within PMS to show a list of all current keyboard
+bindings.
+
+
+	4. Reporting bugs
+*************************
+
+Please use the bug tracker at this URL:
+
+http://sourceforge.net/apps/trac/pms
+
