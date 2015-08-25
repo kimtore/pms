@@ -68,7 +68,9 @@ ZeroMQ::get_idle_events()
 void
 ZeroMQ::continue_idle()
 {
-	assert(zmq_send(socket_idle, NULL, 0, 0) == 0);
+	int rc;
+	rc = zmq_send(socket_idle, NULL, 0, 0);
+	assert(rc == 0);
 }
 
 /* Check for events on the input socket. */
@@ -97,7 +99,9 @@ ZeroMQ::get_input_events()
 void
 ZeroMQ::start_thread_idle(void *(*func) (void *))
 {
-	assert(pthread_create(&idle_thread, NULL, func, context) == 0);
+	int rc;
+	rc = pthread_create(&idle_thread, NULL, func, context);
+	assert(rc == 0);
 }
 
 /**
@@ -106,7 +110,9 @@ ZeroMQ::start_thread_idle(void *(*func) (void *))
 void
 ZeroMQ::start_thread_input(void *(*func) (void *))
 {
-	assert(pthread_create(&input_thread, NULL, func, context) == 0);
+	int rc;
+	rc = pthread_create(&input_thread, NULL, func, context);
+	assert(rc == 0);
 }
 
 /**
@@ -114,6 +120,8 @@ ZeroMQ::start_thread_input(void *(*func) (void *))
  */
 ZeroMQ::ZeroMQ()
 {
+	int rc;
+
 	/* Initialize ZeroMQ context and sockets */
 	context = zmq_ctx_new();
 	assert(context != NULL);
@@ -121,9 +129,12 @@ ZeroMQ::ZeroMQ()
 	assert(socket_idle != NULL);
 	socket_input = zmq_socket(context, ZMQ_SUB);
 	assert(socket_input != NULL);
-	assert(zmq_setsockopt(socket_input, ZMQ_SUBSCRIBE, "", 0) == 0);
-	assert(zmq_connect(socket_idle, ZEROMQ_SOCKET_IDLE) == 0);
-	assert(zmq_bind(socket_input, ZEROMQ_SOCKET_INPUT) == 0);
+	rc = zmq_setsockopt(socket_input, ZMQ_SUBSCRIBE, "", 0);
+	assert(rc == 0);
+	rc = zmq_connect(socket_idle, ZEROMQ_SOCKET_IDLE);
+	assert(rc == 0);
+	rc = zmq_bind(socket_input, ZEROMQ_SOCKET_INPUT);
+	assert(rc == 0);
 
 	/* Set up ZeroMQ poller */
 	poll_items[0].socket = socket_idle;

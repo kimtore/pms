@@ -92,7 +92,8 @@ idle_thread_main(void * zeromq_context)
 	socket = zmq_socket(zeromq_context, ZMQ_REP);
 	assert(socket != NULL);
 
-	assert(zmq_bind(socket, ZEROMQ_SOCKET_IDLE) == 0);
+	rc = zmq_bind(socket, ZEROMQ_SOCKET_IDLE);
+	assert(rc == 0);
 
 	do {
 		/* Receive from main thread */
@@ -140,7 +141,8 @@ input_thread_main(void * zeromq_context)
 	socket = zmq_socket(zeromq_context, ZMQ_PUB);
 	assert(socket != NULL);
 
-	assert(zmq_connect(socket, ZEROMQ_SOCKET_INPUT) == 0);
+	rc = zmq_connect(socket, ZEROMQ_SOCKET_INPUT);
+	assert(rc == 0);
 
 	do {
 		/* Poll for user input */
