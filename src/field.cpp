@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -177,16 +177,20 @@ Item			Formatter::field_to_item(string f)
 		return REPEAT;
 	else if (f == "random")
 		return RANDOM;
-	else if (f == "manual")
-		return MANUALPROGRESSION;
+	else if (f == "single")
+		return SINGLE;
+	else if (f == "consume")
+		return CONSUME;
 	else if (f == "mute")
 		return MUTE;
 	else if (f == "repeatshort")
 		return REPEATSHORT;
 	else if (f == "randomshort")
 		return RANDOMSHORT;
-	else if (f == "manualshort")
-		return MANUALPROGRESSIONSHORT;
+	else if (f == "singleshort")
+		return SINGLESHORT;
+	else if (f == "consumeshort")
+		return CONSUMESHORT;
 	else if (f == "muteshort")
 		return MUTESHORT;
 
@@ -316,15 +320,15 @@ string			Formatter::evalconditionals(string fmt)
 									break;
 
 								case COND_IFPLAYING:
-									satisfied = pms->comm->status()->state == MPD_STATUS_STATE_PLAY;
+									satisfied = pms->comm->status()->state == MPD_STATE_PLAY;
 									break;
 
 								case COND_IFPAUSED:
-									satisfied = pms->comm->status()->state == MPD_STATUS_STATE_PAUSE;
+									satisfied = pms->comm->status()->state == MPD_STATE_PAUSE;
 									break;
 
 								case COND_IFSTOPPED:
-									satisfied = pms->comm->status()->state == MPD_STATUS_STATE_STOP;
+									satisfied = pms->comm->status()->state == MPD_STATE_STOP;
 									break;
 
 								default:
@@ -569,47 +573,29 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 		/* Status items */
 
 		case REPEAT:
-			switch(repeatmode)
-			{
-				case REPEAT_NONE:
-					retstr = "no";
-					break;
-				case REPEAT_ONE:
-					retstr = "one";
-					break;
-				case REPEAT_LIST:
-					retstr = "yes";
-					break;
-				default:
-					retstr = "unknown";
-					break;
+			if (!pms->comm->status()->repeat) {
+				retstr = "no";
+			} else if (pms->comm->status()->single) {
+				retstr = "one";
+			} else {
+				retstr = "yes";
 			}
 			break;
 
 		case RANDOM:
-			switch(playmode)
-			{
-				case PLAYMODE_LINEAR:
-					retstr = "no";
-					break;
-				case PLAYMODE_RANDOM:
-					retstr = "yes";
-					break;
-				default:
-					retstr = "unknown";
-					break;
-			}
+			retstr = pms->comm->status()->random ? "yes" : "no";
 			break;
 
-		case MANUALPROGRESSION:
-			if (playmode == PLAYMODE_MANUAL)
-				retstr = "yes";
-			else
-				retstr = "no";
+		case SINGLE:
+			retstr = pms->comm->status()->single ? "yes" : "no";
+			break;
+
+		case CONSUME:
+			retstr = pms->comm->status()->consume ? "yes" : "no";
 			break;
 
 		case MUTE:
-			if (!pms->comm) return "";
+			assert(pms->comm != NULL);
 			if (pms->comm->muted())
 				retstr = "yes";
 			else
@@ -617,39 +603,19 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case REPEATSHORT:
-			switch(repeatmode)
-			{
-				default:
-				case REPEAT_NONE:
-					retstr = "-";
-					break;
-				case REPEAT_ONE:
-					retstr = "r";
-					break;
-				case REPEAT_LIST:
-					retstr = "R";
-					break;
-			}
+			retstr = pms->comm->status()->repeat ? "r" : "-";
 			break;
 
 		case RANDOMSHORT:
-			switch(playmode)
-			{
-				default:
-				case PLAYMODE_LINEAR:
-					retstr = "-";
-					break;
-				case PLAYMODE_RANDOM:
-					retstr = "S";
-					break;
-			}
+			retstr = pms->comm->status()->random ? "z" : "-";
 			break;
 
-		case MANUALPROGRESSIONSHORT:
-			if (playmode == PLAYMODE_MANUAL)
-				retstr = "1";
-			else
-				retstr = "-";
+		case SINGLESHORT:
+			retstr = pms->comm->status()->single ? "s" : "-";
+			break;
+
+		case CONSUMESHORT:
+			retstr = pms->comm->status()->consume ? "c" : "-";
 			break;
 
 		case MUTESHORT:
@@ -741,8 +707,8 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 
 			switch (pms->comm->status()->state)
 			{
-				case MPD_STATUS_STATE_PLAY:
-				case MPD_STATUS_STATE_PAUSE:
+				case MPD_STATE_PLAY:
+				case MPD_STATE_PAUSE:
 					tmp = Pms::timeformat(pms->comm->playlist()->qlength() + pms->comm->status()->time_total - pms->comm->status()->time_elapsed);
 					tmpint = pms->comm->playlist()->qnumber() + 1;
 					break;
@@ -767,16 +733,16 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			switch (pms->comm->status()->state)
 			{
 				default:
-				case MPD_STATUS_STATE_UNKNOWN:
+				case MPD_STATE_UNKNOWN:
 					retstr = pms->options->get_string("status_unknown");
 					break;
-				case MPD_STATUS_STATE_STOP:
+				case MPD_STATE_STOP:
 					retstr = pms->options->get_string("status_stop");
 					break;
-				case MPD_STATUS_STATE_PLAY:
+				case MPD_STATE_PLAY:
 					retstr = pms->options->get_string("status_play");
 					break;
-				case MPD_STATUS_STATE_PAUSE:
+				case MPD_STATE_PAUSE:
 					retstr = pms->options->get_string("status_pause");
 					break;
 			}
@@ -941,8 +907,12 @@ color *			Formatter::getcolor(Item i, colortable_fields * f)
 			c = pms->options->colors->topbar.random;
 			break;
 
-		case MANUALPROGRESSION:
-			c = pms->options->colors->topbar.manualprogression;
+		case SINGLE:
+			c = pms->options->colors->topbar.single;
+			break;
+
+		case CONSUME:
+			c = pms->options->colors->topbar.consume;
 			break;
 
 		case MUTE:
@@ -957,8 +927,12 @@ color *			Formatter::getcolor(Item i, colortable_fields * f)
 			c = pms->options->colors->topbar.randomshort;
 			break;
 
-		case MANUALPROGRESSIONSHORT:
-			c = pms->options->colors->topbar.manualprogressionshort;
+		case SINGLESHORT:
+			c = pms->options->colors->topbar.singleshort;
+			break;
+
+		case CONSUMESHORT:
+			c = pms->options->colors->topbar.consumeshort;
 			break;
 
 		case MUTESHORT:

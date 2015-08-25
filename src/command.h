@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@
 
 #include <string>
 #include <time.h>
-#include "libmpdclient.h"
+#include <mpd/client.h>
+
 #include "conn.h"
 #include "list.h"
 
@@ -55,6 +56,7 @@ typedef struct
 	bool		clearerror;
 	bool		close;
 	bool		commands;
+	bool		consume;
 	bool		count;
 	bool		crossfade;
 	bool		currentsong;
@@ -125,29 +127,29 @@ Mpd_allowed_commands;
 class Mpd_status
 {
 private:
-	mpd_Stats *	stats;
-	mpd_Status *	status;
 public:
 			Mpd_status();
-			~Mpd_status();
 
 	bool		alive() const;
-	void		assign_status(mpd_Status *);
-	void		assign_stats(mpd_Stats *);
+	void		assign_status(mpd_status *);
+	void		assign_stats(mpd_stats *);
+	void		set_time_elapsed_ms(uint32_t ms);
+	void		increase_time_elapsed(struct timespec ts);
 
 	bool		muted;
 	int		volume;
 	bool		repeat;
 	bool		single;
 	bool		random;
+	bool		consume;
 	int		playlist_length;
 	long long	playlist;
-	long long	storedplaylist;
 	int		state;
 	int		crossfade;
 	song_t		song;
 	song_t		songid;
 	int		time_elapsed;
+	struct timespec	time_elapsed_hires;
 	int		time_total;
 	bool		db_updating;
 	int		error;
@@ -169,7 +171,6 @@ public:
 	unsigned long	db_playtime;
 
 	/* Cache to detect changes */
-	int		last_state;
 	long long	last_playlist;
 	unsigned long	last_db_update_time;
 	bool		last_db_updating;
@@ -210,32 +211,28 @@ private:
 	Connection *		conn;
 	Mpd_status *		st;
 	Mpd_allowed_commands	commands;
+	bool			_is_idle;
 
-	mpd_Stats		*_stats;
 	Song			*_song;
 	Songlist		*_playlist;
 	Songlist		*_library;
 	Songlist		*_active;
 
 	long long		last_playlist_version;
-	int			last_song;
-	int			oldsong;
-	bool			_has_new_playlist;
-	bool			_has_new_library;
 	int			command_mode;
 	int			mutevolume;
 	int			crossfadetime;
 
-	/* Update interval timer */
-	time_t			mytime[2];
-	int			usetime;
+	/* Flags denoting outdated information, for use in IDLE */
+	uint32_t		idle_events;
+	uint32_t		finished_idle_events;
 
-	int			get_current_playing();
+	bool			get_current_song();
 	int			get_stats();
-	void			retrieve_lists(vector<Songlist *> &);
+	bool			retrieve_lists(vector<Songlist *> &);
 	unsigned int		update_playlists();
-	void			update_playlist();
-	void			update_library();
+	bool			update_queue();
+	bool			update_library();
 	bool			finish();
 
 public:
@@ -248,9 +245,20 @@ public:
 	bool			alive();
 	const char *		err();		// Reports errors from mpd server
 
+	/* IDLE dispatcher */
+	void			set_mpd_idle_events(enum mpd_idle);
+	bool			has_pending_updates();
+	bool			run_pending_updates();
+	void			set_update_done(enum mpd_idle);
+	bool			has_finished_update(enum mpd_idle);
+	void			clear_finished_update(enum mpd_idle);
+
+	/* True if mpd connection object has errors */
+	bool			get_error_bool();
+
 	/* Server management */
 	int			authlevel();
-	void			get_available_commands();
+	bool			get_available_commands();
 	bool			rescandb(string = "/");
 	bool			sendpassword(string);
 	void			clearerror();
@@ -262,7 +270,7 @@ public:
 	/* List management */
 	song_t			add(Songlist *, Song *);
 	song_t			add(Songlist * source, Songlist * dest);
-	int			remove(Songlist *, Song *);
+	bool			remove(Songlist *, Song *);
 	int			prune(Songlist *, Songlist *);
 
 	/* Play controls */
@@ -278,11 +286,19 @@ public:
 	bool			random(int);
 	bool			repeat(bool);
 	bool			single(bool);
+	bool			consume(bool);
 	bool			setvolume(int);
 	bool			volume(int);
 	bool			mute();
 	bool			muted();
 	int			mvolume() { return mutevolume; };
+
+	/* IDLE management */
+	bool			idle();
+	bool			noidle();
+	bool			wait_until_noidle();
+	bool			is_idle();
+	bool			set_is_idle(bool);
 
 	/* List management */
 	Songlist *	findplaylist(string filename);
@@ -300,18 +316,13 @@ public:
 
 
 	Mpd_status	*status() { return st; };
-	mpd_Stats	*stats() { return _stats; };
 	Song		*song() { return _song; };
 	Songlist	*playlist() { return _playlist; };
 	Songlist	*library() { return _library; };
 
 	bool		increment();
-	int		update(bool);
 	bool		get_status();
-	bool		has_new_playlist();
-	bool		has_new_library();
 	bool		song_changed();
-	bool		state_changed();
 	Songlist *	plist(int);
 };
  

@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
- * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * PMS	<<Practical Music Search>>
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,15 @@
  */
 
 #include "pms.h"
+#include "zeromq.h"
+
+#include <mpd/client.h>
+#include <unistd.h>
+#include <zmq.h>
+#include <time.h>
+
+/* Maximum time to spend waiting for events in main loop */
+#define MAIN_LOOP_INTERVAL 1000
 
 using namespace std;
 
@@ -51,6 +60,110 @@ int main(int argc, char *argv[])
 	return exitcode;	
 }
 
+/**
+ * Return the time difference between two timespec structs.
+ */
+struct timespec difftime(struct timespec start, struct timespec end)
+{
+	struct timespec temp;
+
+	if ((end.tv_nsec - start.tv_nsec) < 0) {
+		temp.tv_sec = end.tv_sec - start.tv_sec - 1;
+		temp.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
+	} else {
+		temp.tv_sec = end.tv_sec - start.tv_sec;
+		temp.tv_nsec = end.tv_nsec - start.tv_nsec;
+	}
+
+	return temp;
+}
+
+/**
+ * MPD IDLE thread. Reads the reply from MPD's IDLE command, and makes sure the
+ * main thread gets to know about it.
+ */
+void *
+idle_thread_main(void * zeromq_context)
+{
+	enum mpd_idle idle_reply;
+	void * socket;
+	int rc;
+
+	socket = zmq_socket(zeromq_context, ZMQ_REP);
+	assert(socket != NULL);
+
+	rc = zmq_bind(socket, ZEROMQ_SOCKET_IDLE);
+	assert(rc == 0);
+
+	do {
+		/* Receive from main thread */
+		rc = zmq_recv(socket, NULL, 0, 0);
+		if (rc == -1) {
+			if (errno == EINTR) {
+				continue;
+			}
+			abort();
+		}
+
+		/* Receive IDLE reply */
+		pms->log(MSG_DEBUG, 0, "Waiting for IDLE reply from server...\n");
+		idle_reply = mpd_recv_idle(pms->conn->h(), true);
+		pms->log(MSG_DEBUG, 0, "IDLE reply received from server, code = %d\n", idle_reply);
+
+		/* Send reply to main thread */
+		while(true) {
+			rc = zmq_send(socket, (void *)&idle_reply, sizeof(enum mpd_idle *), 0);
+			if (rc == -1) {
+				if (errno == EINTR) {
+					continue;
+				}
+				abort();
+			}
+			break;
+		}
+
+	} while(1);
+
+	return NULL;
+}
+
+/**
+ * Input thread. Handles all user input and makes sure the
+ * main thread gets to know about it.
+ */
+void *
+input_thread_main(void * zeromq_context)
+{
+	wchar_t ch;
+	void * socket;
+	int rc;
+
+	socket = zmq_socket(zeromq_context, ZMQ_PUB);
+	assert(socket != NULL);
+
+	rc = zmq_connect(socket, ZEROMQ_SOCKET_INPUT);
+	assert(rc == 0);
+
+	do {
+		/* Poll for user input */
+		pms->log(MSG_DEBUG, 0, "Waiting for input keystroke from ncurses...\n");
+		ch = pms->input->get_keystroke();
+		pms->log(MSG_DEBUG, 0, "Keystroke registered: chr(%d) = '%c'\n", ch, ch);
+
+		/* Send keystroke to main thread */
+		rc = zmq_send(socket, (void *)&ch, sizeof(wchar_t *), 0);
+		if (rc == -1) {
+			if (errno == EINTR) {
+				continue;
+			}
+			abort();
+		}
+
+	} while(1);
+
+	return NULL;
+}
+
 /*
  * Init
  */
@@ -68,26 +181,111 @@ Pms::~Pms()
 {
 }
 
+struct timespec
+Pms::get_clock()
+{
+	struct timespec now;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) {
+		perror("Failed to increase internal timer");
+		abort();
+	}
+
+	return now;
+}
+
+/**
+ * Check if there is an MPD IDLE event on the ZeroMQ socket.
+ * Set pending flags on the Control class, and sets real idle status.
+ *
+ * Returns true if there was an IDLE event, false if none.
+ */
+bool
+Pms::run_has_idle_events()
+{
+	enum mpd_idle idle_reply;
+
+	if (!zeromq->has_idle_events()) {
+		return false;
+	}
+
+	idle_reply = zeromq->get_idle_events();
+	comm->set_mpd_idle_events(idle_reply);
+	comm->set_is_idle(false);
+	timer_elapsed = get_clock();
+
+	return true;
+}
+
+/**
+ * Check if currently playing song has changed since last call.
+ *
+ * Returns true if song has changed, false if not.
+ */
+bool
+Pms::song_changed()
+{
+	Song * song;
+	static song_t last_song_id = MPD_SONG_NO_ID;
+	song_t current_song_id;
+	bool rc;
+
+	song = cursong();
+	if (song) {
+		current_song_id = song->id;
+	} else {
+		current_song_id = MPD_SONG_NO_ID;
+	}
+
+	rc = (current_song_id != last_song_id);
+
+	last_song_id = current_song_id;
+
+	return rc;
+}
+
+/**
+ * Center the cursor on the currently playing song.
+ */
+void
+Pms::run_cursor_follow_playback()
+{
+	pms_window * win;
+
+	win = disp->findwlist(comm->activelist());
+	if (!win) {
+		return;
+	}
+
+	setwin(win);
+	win->gotocurrent();
+}
+
 /*
  * Connection and main loop
  */
-int			Pms::main()
+int
+Pms::main()
 {
 	string			t_str;
 	pms_pending_keys	pending = PEND_NONE;
 	char			pass[512] = "";
-	bool			statechanged = false;
 	bool			songchanged = false;
-	pms_window *		win = NULL;
 	time_t			timer = 0;
+	int			rc;
+	bool need_init_follow_playback = true;
+
+	/* Error codes returned from MPD */
+	enum mpd_error		error;
+	enum mpd_server_error	server_error;
 
 	/* Connection */
 	printf(_("Connecting to host %s, port %ld..."), options->get_string("host").c_str(), options->get_long("port"));
 
-	if (conn->connect() != 0)
+	if (conn->connect() != MPD_ERROR_SUCCESS)
 	{
 		printf(_("failed.\n"));
-		printf("%s\n", conn->errorstr().c_str());
+		printf("%s\n", mpd_connection_get_error_message(conn->h()));
 
 		return PMS_EXIT_CANTCONNECT;
 	}
@@ -98,51 +296,42 @@ int			Pms::main()
 	if (options->get_string("password").size() > 0)
 	{
 		printf(_("Sending password..."));
-		if (comm->sendpassword(options->get_string("password")))
+		if (comm->sendpassword(options->get_string("password"))) {
 			printf(_("password accepted.\n"));
-		else
+		} else {
 			printf(_("wrong password.\n"));
-	}
-
-	comm->get_available_commands();
-	if (!(comm->authlevel() & AUTH_READ))
-	{
-		printf(_("This mpd server requires a password.\n"));
-		while(true)
-		{
-			printf(_("Password: "));
-
-			fgets(pass, 512, stdin) ? 1 : 0; //ternary here is a hack to get rid of a warn_unused_result warning
-			if (pass[strlen(pass)-1] == '\n')
-				pass[strlen(pass)-1] = '\0';
-
-			options->set_string("password", pass);
-
-			comm->sendpassword(pass);
-			comm->get_available_commands();
-			if (!(comm->authlevel() & AUTH_READ))
-				printf(_("Wrong password, try again.\n"));
-			else
-				break;
+			conn->clear_error();
 		}
 	}
 
+	do {
+		if (!comm->get_available_commands()) {
+			printf(_("Failed to get a list of available commands, retrying...\n"));
+			conn->clear_error();
+			sleep(1);
+			continue;
+		}
+
+		if (comm->authlevel() & AUTH_READ) {
+			break;
+		}
+
+		printf(_("This mpd server requires a password.\n"));
+		printf(_("Password: "));
+
+		fgets(pass, 512, stdin) ? 1 : 0; //ternary here is a hack to get rid of a warn_unused_result warning
+		if (pass[strlen(pass)-1] == '\n') {
+			pass[strlen(pass)-1] = '\0';
+		}
+
+		options->set_string("password", pass);
+		if (!comm->sendpassword(pass)) {
+			printf(_("Wrong password, try again.\n"));
+			conn->clear_error();
+		}
+	} while(true);
+
 	printf(_("Successfully logged in.\n"));
-
-	/* Update lists */
-	printf(_("Retrieving library and all playlists..."));
-	comm->update(true);
-	printf(_("done.\n"));
-
-	comm->has_new_library();
-	comm->has_new_playlist();
-	printf(_("Sorting library..."));
-	comm->library()->sort(options->get_string("sort"));
-	printf(_("done.\n"));
-
-	/* Center attention to current song */
-	comm->library()->gotocurrent();
-	comm->playlist()->gotocurrent();
 
 	_shutdown = false;
 	if (!disp->init())
@@ -152,25 +341,19 @@ int			Pms::main()
 	}
 
 	/* Workaround for buggy ncurses clearing the screen on first getch() */
-	getch();
+	//getch();
 
 	/* Set up library and playlist windows */
 	playlist = disp->create_playlist();
 	library = disp->create_playlist();
-//	dirlist = disp->create_directorylist();
-	if (!playlist || !library)
-	{
-		delete disp;
-		printf(_("Can't initialize windows!\n"));
-		return PMS_EXIT_NOWINDOWS;
-	}
+
+	assert(playlist != NULL);
+	assert(library != NULL);
+
 	playlist->settitle(_("Playlist"));
 	library->settitle(_("Library"));
 	playlist->list = comm->playlist();
 	library->list = comm->library();
-
-	resetstatus(-1);
-	drawstatus();
 
 	playlist->set_column_size();
 	library->set_column_size();
@@ -193,112 +376,172 @@ int			Pms::main()
 	disp->forcedraw();
 	disp->refresh();
 
+	/* Set up inter-thread communication */
+	zeromq = new ZeroMQ();
+	zeromq->start_thread_idle(idle_thread_main);
+	zeromq->start_thread_input(input_thread_main);
+
+	/* Reset all clocks */
+	timer_now = get_clock();
+	timer_elapsed = get_clock();
+
 	/*
 	 * Main loop
+	 * FIXME: reduce the size of this behemoth
 	 */
 	do
 	{
-		/* Has to have valid connection. */
-		if (!conn->connected() || !comm->update(false) == -1)
-		{
-			if (timer == 0)
-			{
-				log(MSG_STATUS, STERR, "Disconnected from mpd: %s", comm->err());
-			}
-			if (difftime(time(NULL), timer) >= options->get_long("reconnectdelay"))
-			{
-				if (timer != 0)
-					log(MSG_STATUS, STOK, _("Attempting reconnect..."));
+		/* Set timer */
+		timer_now = get_clock();
 
-				if (conn->connect() != 0)
-				{
-					if (timer != 0)
-						log(MSG_STATUS, STERR, conn->errorstr().c_str());
+		/* For debugging the main loop */
+		log(MSG_DEBUG, 0, "--> Main loop iteration, clock = %ld.%ld\n", timer_now.tv_sec, timer_now.tv_nsec);
 
-					time(&timer);
-					continue;
-				}
-				else
-				{
-					log(MSG_STATUS, STOK, _("Reconnected successfully."));
-					comm->clearerror();
-					timer = 0;
-				}
+		/* Test if some error has occurred */
+		if ((error = mpd_connection_get_error(conn->h())) != MPD_ERROR_SUCCESS) {
+
+			log(MSG_STATUS, STERR, "MPD error: %s", mpd_connection_get_error_message(conn->h()));
+
+			/* Try to recover from error. If the error is
+			 * non-recoverable, reconnect to the MPD server.
+			 */
+			if (!mpd_connection_clear_error(conn->h())) {
+
+				/* FIXME: gradually increase connection attempts? */
+				/* FIXME: use reconnectdelay setting */
+				/* FIXME: separate thread */
+				sleep(1);
+				conn->connect();
+				continue;
 			}
 		}
 
-		/* Get updated info about state and playlists */
-		if (comm->has_new_library())
-		{
-			log(MSG_STATUS, STOK, _("Library updated."));
-			if (disp->actwin())
-				disp->actwin()->wantdraw = true;
+		/* Increase time elapsed. */
+		if (comm->status()->state == MPD_STATE_PLAY) {
+			timer_tmp = difftime(timer_elapsed, timer_now);
+			comm->status()->increase_time_elapsed(timer_tmp);
+			disp->topbar->wantdraw = true;
+		}
+		timer_elapsed = get_clock();
+
+		/* Run any pending updates */
+		if (!comm->run_pending_updates()) {
+			log(MSG_DEBUG, 0, "Failed running pending updates, MPD error follows in next main loop iteration\n");
+			continue;
+		}
+
+		/* Library updates triggers re-calculation of column sizes,
+		 * triggers draw, etc. */
+		/* FIXME: move responsibilities? */
+		if (comm->has_finished_update(MPD_IDLE_DATABASE)) {
+			log(MSG_STATUS, STOK, _("Library has been updated."));
+			disp->actwin()->wantdraw = true;
 			library->list->sort(options->get_string("sort"));
 			library->set_column_size();
 			connect_window_list();
+			comm->clear_finished_update(MPD_IDLE_DATABASE);
 		}
-		if (comm->has_new_playlist())
-		{
-			if (disp->actwin())
-				disp->actwin()->wantdraw = true;
+
+		/* Playlist updates triggers re-calculation of column sizes,
+		 * triggers draw, etc. */
+		/* FIXME: move responsibilities? */
+		if (comm->has_finished_update(MPD_IDLE_PLAYLIST)) {
+			disp->actwin()->wantdraw = true;
 			playlist->set_column_size();
+			comm->clear_finished_update(MPD_IDLE_PLAYLIST);
 		}
 
-		/* Progress to next song? */
-		progress_nextsong();
-
-		/* Any pending keystrokes? */
-		if (input->get_keystroke())
-		{
-			pending = input->dispatch();
-			if (pending != PEND_NONE)
-			{
-				handle_command(pending);
-				comm->update(true);
-			}
+		/* Draw topbar on mixer update. */
+		if (comm->has_finished_update(MPD_IDLE_MIXER)) {
+			disp->topbar->wantdraw = true;
+			comm->clear_finished_update(MPD_IDLE_MIXER);
 		}
 
-		songchanged = comm->song_changed();
-		statechanged = comm->state_changed();
-		if (songchanged)
-		{
-			/* Cursor follows playback if song changed */
-			if (options->get_bool("followplayback"))
-			{
-				win = disp->findwlist(comm->activelist());
-				if (win)
-				{
-					setwin(win);
-					win->gotocurrent();
-				}
-			}
-		}
+		/* Draw statusbar and topbar on player update. */
+		if (comm->has_finished_update(MPD_IDLE_PLAYER)) {
 
-		if (statechanged)
-		{
 			/* Shell command when song finishes */
-			if (options->get_string("onplaylistfinish").size() > 0 && cursong() && cursong()->pos == comm->playlist()->end())
-			{
-				/* If a manual stop was issued, don't do anything */
-				if (comm->status()->state == MPD_STATUS_STATE_STOP && pending != PEND_STOP)
-				{
-					/* soak up return value to suppress 
-					 * warning */
+			/* FIXME: move into separate function */
+			if (comm->status()->state == MPD_STATE_STOP && pending != PEND_STOP) {
+				if (options->get_string("onplaylistfinish").size() > 0 && cursong() && cursong()->pos == comm->playlist()->end()) {
+					log(MSG_CONSOLE, STOK, _("Reached end of playlist, running automation command: %s"), options->get_string("onplaylistfinish").c_str());
 					int code = system(options->get_string("onplaylistfinish").c_str());
 				}
 			}
+
+			/* Execute 'cursor follows playback'. */
+			if (song_changed() && (need_init_follow_playback || options->get_bool("followplayback"))) {
+				run_cursor_follow_playback();
+				need_init_follow_playback = false;
+			}
+
+			disp->topbar->wantdraw = true;
+			disp->actwin()->wantdraw = true;
+			drawstatus();
+			comm->clear_finished_update(MPD_IDLE_PLAYER);
 		}
 
+		/* Draw topbar on options update. */
+		if (comm->has_finished_update(MPD_IDLE_OPTIONS)) {
+			disp->topbar->wantdraw = true;
+			comm->clear_finished_update(MPD_IDLE_OPTIONS);
+		}
 
 		/* Reset status */
-		if (resetstatus(0) >= options->get_long("resetstatus") || songchanged || statechanged)
+		if (needs_statusbar_reset()) {
 			drawstatus();
+		}
+
+		/* Redraw the screen. */
+		/* FIXME: where to put this? */
+		if (mediator->changed("redraw")) {
+			disp->forcedraw();
+		} else {
+			disp->draw();
+		}
+		disp->refresh();
+
+
+		/**
+		 * Start IDLE mode and polling. Keep this code at the end of
+		 * the main loop.
+		 */
+
+		/* Ensure that we are in IDLE mode. */
+		if (!comm->is_idle()) {
+			if (!comm->idle()) {
+				continue;
+			}
+			zeromq->continue_idle();
+		}
+
+		/* Block until events received or timeout reached. */
+		zeromq->poll_events(MAIN_LOOP_INTERVAL);
+
+		/* Process events from the IDLE socket. */
+		run_has_idle_events();
+
+		/* Process events from the input socket. */
+		if (zeromq->has_input_events()) {
+			zeromq->get_input_events();
+			pending = input->dispatch();
+			if (pending != PEND_NONE) {
+				handle_command(pending);
+			}
+		}
 
 		/* Draw XTerm window title */
+		/* FIXME: only draw when needed */
 		disp->set_xterm_title();
 
+		/* Progress to next song if applicable, and make sure we are
+		 * synched with IDLE events before doing it. */
+		if (!comm->has_pending_updates()) {
+			progress_nextsong();
+		}
+
 		/* Check out mediator events */
-		/* FIXME: add these into their appropriate places */
+		/* FIXME: implement this functionality with ZeroMQ */
 		if (mediator->changed("setting.sort"))
 			comm->library()->sort(options->get_string("sort"));
 		else if (mediator->changed("setting.ignorecase"))
@@ -322,15 +565,6 @@ int			Pms::main()
 			if (options->get_bool("topbarclear"))
 				options->topbar.clear();
 		}
-
-		/* Draw */
-		disp->topbar->wantdraw = true;
-		if (mediator->changed("redraw"))
-			disp->forcedraw();
-		else
-			disp->draw();
-		disp->refresh();
-
 	}
 	while (!_shutdown);
 
@@ -452,7 +686,7 @@ int			Pms::init()
 	srand(time(NULL));
 
 	/* Setup some important stuff */
-	conn	= new Connection(options->get_string("host"), options->get_long("port"), options->get_long("mpd_timeout"));
+	conn	= new Connection(options->get_string("host"), options->get_long("port"), options->get_long("mpd_timeout") * 1000);
 	comm	= new Control(conn);
 	disp	= new Display(comm);
 	input	= new Input();
@@ -496,6 +730,15 @@ string			Pms::tostring(int number)
 	ostringstream s;
 	s << number;
 	return s.str();
+}
+
+/**
+ * Convert a const char * to string
+ */
+string
+Pms::tostring(const char *src)
+{
+	return src ? src : "";
 }
 
 /*
@@ -763,148 +1006,157 @@ bool			Pms::run_shell(string cmd)
  */
 Song *			Pms::cursong()
 {
-	if (!comm) return NULL;
+	assert(comm != NULL);
 	return comm->song();
 }
 
 /* 
- * Reset status to its original state
+ * Reset status to its natural state.
  */
-void			Pms::drawstatus()
+void
+Pms::drawstatus()
 {
-	if (input->mode() == INPUT_JUMP)
+	if (input->mode() == INPUT_JUMP) {
 		log(MSG_STATUS, STOK, "/%s", formtext(input->text).c_str());
-	else if (input->mode() == INPUT_FILTER)
+	} else if (input->mode() == INPUT_FILTER) {
 		log(MSG_STATUS, STOK, ":g/%s", formtext(input->text).c_str());
-	else if (input->mode() == INPUT_COMMAND)
+	} else if (input->mode() == INPUT_COMMAND) {
 		log(MSG_STATUS, STOK, ":%s", formtext(input->text).c_str());
-	else
+	} else {
 		log(MSG_STATUS, STOK, "%s", playstring().c_str());
+	}
 
-	resetstatus(-1);
+	/* Do not redraw statusbar anymore */
+	timer_statusbar.tv_sec = 0;
+	timer_statusbar.tv_nsec = 0;
 }
 
-/*
- * Measures time from last statusbar text
+/**
+ * Determine whether the statusbar text should be reset to its natural state.
+ *
+ * Returns true if the statusbar is due for an update, false if not.
  */
-int			Pms::resetstatus(int set)
+bool
+Pms::needs_statusbar_reset()
 {
-	static time_t 		stored = time(NULL);
-	static time_t 		now = time(NULL);
+	/* Check if redraw is disabled */
+	if (timer_statusbar.tv_sec == 0 && timer_statusbar.tv_nsec == 0) {
+		return false;
+	}
 
-	if (set == 1)
-		time(&stored);
-	else if (set == -1)
-		stored = 0;
-
-	if (stored == 0)
-		return 0;
-
-	if (time(&now) == -1)
-		return -1;
-
-	return (static_cast<int>(difftime(now, stored)));
+	timer_tmp = difftime(timer_statusbar, timer_now);
+	return (timer_tmp.tv_sec >= options->get_long("resetstatus"));
 }
 
 /*
- * Return a textual description on how song progression works
+ * Return a textual description on how song progression works.
+ *
+ * FIXME: this function is a mess. De-duplicate and use common code for this
+ * function and progress_nextsong().
  */
-string			Pms::playstring()
+string
+Pms::playstring()
 {
 	string		s;
-	string		list = "<unknown>";
-	bool		is_last;
+	string		list_name = "<unknown>";
+	bool		is_last_in_playlist;
+	bool		playlist_is_active;
+	bool		library_is_active;
+	Mpd_status *	status;
 
-	long		playmode = options->get_long("playmode");
-	long		repeatmode = options->get_long("repeat");
+	status = comm->status();
 
-	if (!comm->status() || !conn->connected())
-	{
+	assert(status != NULL);
+
+	if (!conn->connected()) {
 		s = "Not connected.";
 		return s;
 	}
 
-	if (comm->status()->state == MPD_STATUS_STATE_STOP || !cursong())
-	{
+	if (status->state == MPD_STATE_STOP || !cursong()) {
 		s = "Stopped.";
 		return s;
 	}
-	else if (comm->status()->state == MPD_STATUS_STATE_PAUSE)
-	{
+
+	if (status->state == MPD_STATE_PAUSE) {
 		s = "Paused...";
 		return s;
 	}
 
-	if (comm->activelist())
-		list = comm->activelist()->filename;
+	if (comm->activelist()) {
+		list_name = comm->activelist()->filename;
+	}
 
-	if (list.size() == 0)
-	{
-		if (comm->activelist() == comm->library())
-			list = "library";
-		else if (comm->activelist() == comm->playlist())
-			list = "playlist";
+	playlist_is_active = (comm->activelist() == comm->playlist());
+	library_is_active = (comm->activelist() == comm->library());
+
+	/* FIXME: playlist should give the correct name in a name() function */
+	if (list_name.size() == 0) {
+		if (playlist_is_active) {
+			list_name = "playlist";
+		} else if (library_is_active) {
+			list_name = "library";
+		}
 	}
 
 	s = "Playing ";
 
-	if (playmode == PLAYMODE_MANUAL)
-	{
-		s += "this song, then stopping.";
+	if (status->consume) {
+		s += "and consuming ";
+	}
+
+	if (status->random) {
+		s += "random songs from playlist.";
 		return s;
 	}
 
-	if (repeatmode == REPEAT_ONE)
-	{
-		s += "the same song indefinitely.";
-		return s;
-	}
-
-	is_last = (cursong()->pos == static_cast<int>(comm->playlist()->end()));
-
-	if (!is_last && !(comm->activelist() == comm->playlist() && repeatmode == REPEAT_LIST))
-	{
-		s += "through playlist, then ";
-	}
-
-	if (playmode == PLAYMODE_RANDOM)
-	{
-		s += "random songs from " + list + ".";
-		return s;
-	}
-
-	if (repeatmode == REPEAT_LIST)
-	{
-		s += "songs from " + list + " repeatedly.";
-		return s;
-	}
-
-	if (repeatmode == REPEAT_NONE)
-	{
-		if (comm->activelist() == comm->playlist())
-		{
-			if (options->get_bool("followcursor"))
-			{
-				if (is_last)
-					s += "this song, then ";
-
-				s += "following cursor.";
-				return s;
-			}
-
-			if (is_last)
-				s += "this song, then stopping.";
-			else
-				s += "stopping.";
-
-			return s;
+	if (status->single) {
+		if (status->repeat && !status->consume) {
+			s += "the current song repeatedly.";
+		} else {
+			s += "this song, then stopping.";
 		}
-		else
-		{
-			s += "songs from " + list + ".";
+		return s;
+	}
+
+	/* FIXME: separate function? */
+	is_last_in_playlist = (cursong()->pos == static_cast<song_t>(comm->playlist()->end()));
+
+	if (status->repeat) {
+		s += "songs from playlist repeatedly.";
+		return s;
+	}
+
+	if (playlist_is_active) {
+		if (is_last_in_playlist) {
+			s += "this song, then stopping.";
+		} else {
+			s += "songs from playlist.";
+		}
+		return s;
+	}
+
+	if (is_last_in_playlist) {
+		s += "this song, then ";
+		if (!status->repeat && playlist_is_active) {
+			s += "stopping.";
 			return s;
 		}
 	}
+
+	if (!is_last_in_playlist) {
+		if (!status->consume) {
+			s += "through ";
+		}
+		s += "playlist, then ";
+	}
+
+	if (!playlist_is_active && options->get_bool("followcursor")) {
+		s += "following cursor.";
+		return s;
+	}
+
+	s += "songs from " + list_name + ".";
 
 	return s;
 }
@@ -927,7 +1179,8 @@ void			Pms::putlog(Message * m)
  *  1 = console
  *  2 = debug
  */
-void			Pms::log(int verbosity, long code, const char * format, ...)
+void
+Pms::log(int verbosity, long code, const char * format, ...)
 {
 	long		loglines;
 	va_list		ap;
@@ -963,7 +1216,8 @@ void			Pms::log(int verbosity, long code, const char * format, ...)
 
 		disp->statusbar->clear(false, pair);
 		colprint(disp->statusbar, 0, 0, pair, "%s", buffer);
-		resetstatus(1);
+		timer_statusbar = get_clock();
+		disp->refresh();
 	}
 
 	if (verbosity <= MSG_DEBUG && pms->options->get_bool("debug"))
@@ -991,67 +1245,54 @@ void			Pms::log(int verbosity, long code, const char * format, ...)
 }
 
 /*
- * Checks if time is right for song progression, and takes necessary action
+ * Checks if time is right for song progression, and takes necessary action.
+ *
+ * FIXME: split into two functions
+ * FIXME: dubious return value
  */
 bool			Pms::progress_nextsong()
 {
-	static song_t		lastid = MPD_SONG_NO_ID;
+	static song_t		last_song_id = MPD_SONG_NO_ID;
 	static Song *		lastcursor = NULL;
 	Songlist *		list = NULL;
-	unsigned int		remaining;
+	unsigned int		song_time_remaining;
+	Mpd_status *		status = comm->status();
 
-	long			repeatmode;
-	long			playmode;
-
-	if (!cursong())		return false;
-
-	if (comm->status()->state != MPD_STATUS_STATE_PLAY)
+	/* No song progression without an active song, probably meaning that
+	 * the player is stopped or something is wrong. */
+	if (!cursong()) {
 		return false;
-
-	remaining = (comm->status()->time_total - comm->status()->time_elapsed - comm->status()->crossfade);
-
-	repeatmode = options->get_long("repeat");
-	playmode = options->get_long("playmode");
-
-	/* Too early */
-	if (remaining > options->get_long("nextinterval") || lastid == cursong()->id)
-		return false;
-
-	/* No auto-progression, even when in the middle of playlist */
-	if (playmode == PLAYMODE_MANUAL)
-	{
-		if (remaining <= options->get_long("stopdelay"))
-		{
-			pms->log(MSG_DEBUG, 0, "Manual playmode, stopping playback.\n");
-			comm->stop();
-			lastid = cursong()->id;
-			return true;
-		}
-		else
-		{
-			return false;
-		}
 	}
+
+	/* No song progression if not playing. */
+	if (status->state != MPD_STATE_PLAY) {
+		return false;
+	}
+
+	/* If the active list is the playlist, PMS doesn't need to do anything,
+	 * because MPD handles the rest. */
+	list = comm->activelist();
+	assert(list != NULL);
+	if (list == comm->playlist()) {
+		return false;
+	}
+
+	/* Only add songs when there the currently playing song is near the end. */
+	song_time_remaining = status->time_total - status->time_elapsed - status->crossfade;
+	if (song_time_remaining > options->get_long("nextinterval")) {
+		return false;
+	}
+
+	/* No auto-progression in single mode */
+	if (status->single) {
+		return false;
+	}
+
 	/* Defeat desync with server */
-	lastid = cursong()->id;
+	last_song_id = cursong()->id;
 
 	/* Normal progression: reached end of playlist */
-	if (comm->status()->song == static_cast<int>(playlist->list->end()))
-	{
-		/* List to play from */
-		list = comm->activelist();
-		if (!list) return false;
-
-		if (list == comm->playlist())
-		{
-			/* Let MPD handle repeating of the playlist itself */
-			if (repeatmode == REPEAT_LIST)
-				return false;
-
-			/* Let MPD handle random songs from playlist */
-			if (playmode == PLAYMODE_RANDOM)
-				return false;
-		}
+	if (cursong()->pos == static_cast<int>(playlist->list->end())) { 
 
 		pms->log(MSG_DEBUG, 0, "Auto-progressing to next song.\n");
 
@@ -1060,19 +1301,18 @@ bool			Pms::progress_nextsong()
 		{
 			pms->log(MSG_DEBUG, 0, "Playback follows cursor: last cursor=%p, now cursor=%p.\n", lastcursor, disp->cursorsong());
 			lastcursor = disp->cursorsong();
-			lastid = comm->add(comm->playlist(), lastcursor);
+			last_song_id = comm->add(comm->playlist(), lastcursor);
 		}
 
 		/* Normal song progression */
-		lastid = playnext(playmode, false);
+		last_song_id = playnext(false);
 	}
 
-	if (lastcursor == NULL)
-	{
+	if (lastcursor == NULL) {
 		lastcursor = disp->cursorsong();
 	}
 
-	return (lastid != MPD_SONG_NO_ID);
+	return (last_song_id != MPD_SONG_NO_ID);
 }
 
 /*
@@ -1150,7 +1390,6 @@ void			Pms::init_default_keymap()
 	bindings->add("b", "add-album");
 	bindings->add("B", "play-album");
 	bindings->add("delete", "remove");
-	bindings->add("c", "cropsel");
 	bindings->add("C", "crop");
 	bindings->add("insert", "toggle-select");
 	bindings->add("F12", "activate-list");
@@ -1167,8 +1406,10 @@ void			Pms::init_default_keymap()
 	bindings->add("l", "next");
 	bindings->add("h", "prev");
 	bindings->add("M", "mute");
-	bindings->add("m", "playmode");
 	bindings->add("r", "repeat");
+	bindings->add("z", "random");
+	bindings->add("c", "consume");
+	bindings->add("s", "single");
 	bindings->add("+", "volume +5");
 	bindings->add("-", "volume -5");
 	bindings->add("left", "seek -5");
@@ -1198,10 +1439,11 @@ void			Pms::init_default_keymap()
 /*
  * Print the version string
  */
-void			Pms::print_version()
+void
+Pms::print_version()
 {
-   	printf("Uses libmpdclient (c) 2003-2007 by Warren Dukes (warren.dukes@gmail.com)\n");
-	printf("This program is licensed under the GNU General Public License 3.\n");
+	printf("Uses libmpdclient (c) 2003-2015 The Music Player Daemon Project.\n");
+	printf("This program is licensed under the GNU General Public License version 3.\n");
 }
 
 /*

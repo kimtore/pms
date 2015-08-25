@@ -90,7 +90,7 @@ public:
 	long			add(string); // play + add to, add all
 	long			next(bool);
 	long			prev();
-	long			pause(bool);
+	bool			pause(bool);
 	long			stop();
 	long			setvolume(string);
 	long			mute();
@@ -128,7 +128,7 @@ bool		handle_command(pms_pending_keys);
 bool		init_commandmap();
 
 void		generr();
-int		playnext(long, int);
+int		playnext(int);
 song_t		gotonextentry(string, bool);
 int		multiplay(long, int);
 bool		setwin(pms_window *);

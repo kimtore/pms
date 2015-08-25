@@ -724,10 +724,8 @@ void		pms_win_playlist::draw()
 		{
 			hilight = pms->options->colors->selection;
 		}
-		else if (pms->cursong() && song->file == pms->cursong()->file)
-		{
-			if (list->role != LIST_ROLE_MAIN || (list->role == LIST_ROLE_MAIN && pms->cursong()->pos == song->pos))
-			{
+		else if (pms->cursong()) {
+                        if ((list->role == LIST_ROLE_MAIN && pms->cursong()->id == song->id) || (list->role != LIST_ROLE_MAIN && song->file == pms->cursong()->file)) {
 				hilight = pms->options->colors->current;
 			}
 		}
@@ -1156,7 +1154,6 @@ bool		Display::init()
 	initscr();
 	raw();
 	noecho();
-	halfdelay(5);
 	keypad(stdscr, true);
 	setmousemask();
 

@@ -97,11 +97,13 @@ typedef struct
 
 	color *			repeat;
 	color *			random;
-	color *			manualprogression;
+	color *			single;
+	color *			consume;
 	color *			mute;
 	color *			repeatshort;
 	color *			randomshort;
-	color *			manualprogressionshort;
+	color *			singleshort;
+	color *			consumeshort;
 	color *			muteshort;
 
 

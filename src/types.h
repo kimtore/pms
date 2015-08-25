@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,8 +54,10 @@ typedef enum
 	PEND_VOLUME,
 	PEND_MUTE,
 	PEND_CROSSFADE,
-	PEND_CYCLE_PLAYMODE,
 	PEND_REPEAT,
+	PEND_RANDOM,
+	PEND_SINGLE,
+	PEND_CONSUME,
 
 	PEND_DELETE,
 	PEND_SEEK,
@@ -127,27 +129,6 @@ typedef enum
 
 }
 pms_pending_keys;
-
-/*
- * Player state/mode
- */
-enum
-{
-	PLAYMODE_MANUAL = 0,
-	PLAYMODE_LINEAR,
-	PLAYMODE_RANDOM
-};
-
-
-/* 
- * Repeat state
- */
-enum
-{
-	REPEAT_NONE = 0,
-	REPEAT_ONE,
-	REPEAT_LIST
-};
 
 
 /*

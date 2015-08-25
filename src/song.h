@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,13 @@
 #define _SONG_H_
 
 #include <string>
-#include "libmpdclient.h"
+#include <mpd/client.h>
+
+typedef signed long song_t;
+
+#define MPD_SONG_NO_TIME -1
+#define MPD_SONG_NO_ID -1
+#define MPD_SONG_NO_NUM -1
 
 using namespace std;
 
@@ -35,9 +41,9 @@ using namespace std;
 class Song
 {
 public:
-			Song(mpd_Song *);
-			Song(Song *);
-			Song(string);
+			Song(const mpd_song *);
+			Song(const Song *);
+			Song(const string);
 			~Song();
 	
 	/* Common function to initialize special fields that MPD don't return */

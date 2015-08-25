@@ -87,8 +87,6 @@ void		Options::reset()
 	set_string("password", "");
 
 	set("scroll", SETTING_TYPE_SCROLL, "normal");
-	set("playmode", SETTING_TYPE_PLAYMODE, "linear");
-	set("repeat", SETTING_TYPE_REPEATMODE, "none");
 	set("columns", SETTING_TYPE_FIELDLIST, "artist track title album length");
 	set("sort", SETTING_TYPE_FIELDLIST, "track disc album date albumartistsort");
 
@@ -143,7 +141,7 @@ void		Options::reset()
 
 	topbar[0]->strings[0] = _("%time_elapsed% %playstate% %time%%ifcursong% (%progresspercentage%%%)%endif%");
 	topbar[0]->strings[1] = _("%ifcursong%%artist%%endif%");
-	topbar[0]->strings[2] = _("Vol: %volume%%%  Mode: %muteshort%%repeatshort%%randomshort%%manualshort%");
+	topbar[0]->strings[2] = _("Vol: %volume%%%  Mode: %muteshort%%consumeshort%%repeatshort%%randomshort%%singleshort%");
 	topbar[1]->strings[1] = _("%ifcursong%==> %title% <==%else%No current song%endif%");
 	topbar[2]->strings[0] = _("%listsize%");
 	topbar[2]->strings[1] = _("%ifcursong%%album% (%year%)%endif%");
@@ -305,38 +303,6 @@ Setting *	Options::set(string key, SettingType t, string val)
 				s->v_string = val;
 			else
 				return NULL;
-			break;
-
-		case SETTING_TYPE_REPEATMODE:
-			if (val == "single")
-			{
-				s->v_long = REPEAT_ONE;
-			}
-			else
-			{
-				if (Configurator::strtobool(val))
-					s->v_long = REPEAT_LIST;
-				else
-					s->v_long = REPEAT_NONE;
-			}
-			s->v_string = val;
-			break;
-
-		case SETTING_TYPE_PLAYMODE:
-			if (val == "manual")
-				set_long(key, PLAYMODE_MANUAL);
-			else if (val == "linear")
-				set_long(key, PLAYMODE_LINEAR);
-			else if (val == "random")
-				set_long(key, PLAYMODE_RANDOM);
-			else
-			{
-				pms->msg->clear();
-				pms->msg->code = CERR_INVALID_VALUE;
-				pms->msg->str = _("invalid play mode, expected 'manual', 'linear' or 'random'");
-				return NULL;
-			}
-			s->v_string = val;
 			break;
 
 		case SETTING_TYPE_SCROLL:
