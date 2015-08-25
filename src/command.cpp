@@ -309,7 +309,20 @@ Control::set_mpd_idle_events(enum mpd_idle idle_reply)
 }
 
 /**
+ * Check if there are pending updates.
+ *
+ * Returns true if there are pending updates, false if not.
+ */
+bool
+Control::has_pending_updates()
+{
+	return (idle_events != 0);
+}
+
+/**
  * Run all pending updates.
+ *
+ * Returns true on success, false on failure.
  */
 bool
 Control::run_pending_updates()
@@ -348,6 +361,11 @@ Control::run_pending_updates()
 		}
 		set_update_done(MPD_IDLE_DATABASE);
 	}
+
+	/* Hack to make has_pending_updates() work smoothly without too much
+	 * effort. We don't care about the rest of the events, so we just
+	 * pretend they never happened. */
+	idle_events = 0;
 
 	return true;
 }
@@ -786,6 +804,8 @@ Control::add(Songlist * list, Song * song)
 	assert(song != NULL);
 
 	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Adding song %s to list %s\n", song->file.c_str(), list->filename.c_str());
 
 	if (list == _playlist) {
 		return mpd_run_add_id(conn->h(), song->file.c_str());

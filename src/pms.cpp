@@ -426,7 +426,7 @@ Pms::main()
 
 		/* Run any pending updates */
 		if (!comm->run_pending_updates()) {
-			log(MSG_DEBUG, 0, "Failed running pending updates, MPD error follows:\n");
+			log(MSG_DEBUG, 0, "Failed running pending updates, MPD error follows in next main loop iteration\n");
 			continue;
 		}
 
@@ -502,8 +502,6 @@ Pms::main()
 		disp->refresh();
 
 
-
-
 		/**
 		 * Start IDLE mode and polling. Keep this code at the end of
 		 * the main loop.
@@ -532,17 +530,18 @@ Pms::main()
 			}
 		}
 
-		continue;
-
-
-		/* Progress to next song? */
-		progress_nextsong();
-
 		/* Draw XTerm window title */
+		/* FIXME: only draw when needed */
 		disp->set_xterm_title();
 
+		/* Progress to next song if applicable, and make sure we are
+		 * synched with IDLE events before doing it. */
+		if (!comm->has_pending_updates()) {
+			progress_nextsong();
+		}
+
 		/* Check out mediator events */
-		/* FIXME: add these into their appropriate places */
+		/* FIXME: implement this functionality with ZeroMQ */
 		if (mediator->changed("setting.sort"))
 			comm->library()->sort(options->get_string("sort"));
 		else if (mediator->changed("setting.ignorecase"))
@@ -566,7 +565,6 @@ Pms::main()
 			if (options->get_bool("topbarclear"))
 				options->topbar.clear();
 		}
-
 	}
 	while (!_shutdown);
 
