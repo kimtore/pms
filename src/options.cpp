@@ -51,7 +51,6 @@ void			Options::reset()
 	directoryminlen		= 30;
 	directoryformat		= "%artist% – %title%";
 	xtermtitle		= "PMS: %playstate%%ifcursong% %artist% – %title%%endif%";
-	playmode		= PLAYMODE_LINEAR;
 	repeatmode		= REPEAT_NONE;
 	ignorecase		= true;
 	regexsearch		= false;
@@ -90,7 +89,7 @@ void			Options::reset()
 
 	topbar[0]->strings[0] = _("%time_elapsed% %playstate% %time%%ifcursong% (%progresspercentage%%%)%endif%");
 	topbar[0]->strings[1] = _("%ifcursong%%artist%%endif%");
-	topbar[0]->strings[2] = _("Vol: %volume%%%  Mode: %muteshort%%repeatshort%%randomshort%%manualshort%");
+	topbar[0]->strings[2] = _("Vol: %volume%%%  Mode: %muteshort%%consumeshort%%repeatshort%%randomshort%%singleshort%");
 	topbar[1]->strings[1] = _("%ifcursong%==> %title% <==%else%No current song%endif%");
 	topbar[2]->strings[0] = _("%listsize%");
 	topbar[2]->strings[1] = _("%ifcursong%%album% (%year%)%endif%");

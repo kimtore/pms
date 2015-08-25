@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
- * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * PMS	<<Practical Music Search>>
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  *
  *
  * action.cpp
- * 	Executes key-bound actions
+ *	Executes key-bound actions
  */
 
 #include "action.h"
@@ -260,7 +260,7 @@ long		Interface::exec(string s)
 	{
 		if (pms->config->readline(s))
 		{
-			pms->resetstatus(-1);
+			//pms->resetstatus(-1);
 		}
 		else
 		{
@@ -565,10 +565,10 @@ long		Interface::play()
 	song_t		s;
 
 	list = pms->disp->actwin()->plist();
-	if (!list) return STERR;
+	assert(list != NULL);
 
 	song = list->cursorsong();
-	if (song == NULL) return STERR;
+	assert(song != NULL);
 
 	pms->log(MSG_CONSOLE, STOK, "Playing %s\n", song->file.c_str());
 
@@ -585,7 +585,7 @@ long		Interface::play()
 	}
 	if (pms->comm->playid(s))
 	{
-		pms->drawstatus();
+		//pms->drawstatus();
 		return STOK;
 	}
 	generr();
@@ -712,22 +712,23 @@ long		Interface::add(string param)
 /*
  * Skip to the next song in line.
  */
-long		Interface::next(bool ignore_playmode = false)
+long
+Interface::next(bool ignore_playmode = false)
 {
-	if (playnext(ignore_playmode ? PLAYMODE_LINEAR : pms->options->get_long("playmode"), true) == MPD_SONG_NO_ID)
-	{
+	if (playnext(true) == MPD_SONG_NO_ID) {
 		pms->log(MSG_STATUS, STERR, _("You have reached the end of the list."));
 		return STERR;
 	}
-	pms->drawstatus();
+	//pms->drawstatus();
 	return STOK;
 }
 
 /*
  * Skip to the previous song in playlist.
- * If repeat is set to REPEAT_LIST, wrap around.
+ * If repeat mode is set, wrap around to the last song.
  */
-long		Interface::prev()
+long
+Interface::prev()
 {
 	Song *		cs;
 	song_t		i;
@@ -735,9 +736,8 @@ long		Interface::prev()
 	cs = pms->cursong();
 	if (cs == NULL)
 	{
-		if (pms->comm->playlist()->size() == 0)
-		{
-			pms->log(MSG_STATUS, STERR, _("Can't skip backwards - there are no songs in the playlist."));
+		if (pms->comm->playlist()->size() == 0) {
+			pms->log(MSG_STATUS, STERR, _("Can't skip backwards because the playlist is empty."));
 			return STERR;
 		}
 		i = pms->comm->activelist()->size();
@@ -746,8 +746,7 @@ long		Interface::prev()
 	{
 		if (cs->pos <= 0)
 		{
-			if (pms->options->get_long("repeat") == REPEAT_LIST)
-			{
+			if (pms->comm->status()->repeat) {
 				i = pms->comm->playlist()->size();
 			}
 			else
@@ -771,7 +770,7 @@ long		Interface::prev()
 
 	cs = pms->comm->playlist()->song(i);
 	pms->comm->playid(cs->id);
-	pms->drawstatus();
+	//pms->drawstatus();
 
 	return STOK;
 }
@@ -780,15 +779,10 @@ long		Interface::prev()
  * Pause playback.
  * If tryplay is true, toggle playback instead.
  */
-long		Interface::pause(bool tryplay = false)
+bool
+Interface::pause(bool tryplay = false)
 {
-	if (pms->comm->pause(tryplay))
-	{
-		pms->drawstatus();
-		return STOK;
-	}
-	pms->log(MSG_DEBUG, STERR, _("Unable to control play/pause state."));
-	return STERR;
+	return pms->comm->pause(tryplay);
 }
 
 /*
@@ -798,7 +792,7 @@ long		Interface::stop()
 {
 	if (pms->comm->stop())
 	{
-		pms->drawstatus();
+		//pms->drawstatus();
 		return STOK;
 	}
 	generr();
@@ -895,7 +889,7 @@ long		Interface::crossfade(int seconds)
  */
 long		Interface::seek(int seconds)
 {
-	if (!pms->cursong() || pms->comm->status()->state < MPD_STATUS_STATE_PLAY)
+	if (!pms->cursong() || pms->comm->status()->state < MPD_STATE_PLAY)
 	{
 		pms->log(MSG_STATUS, STERR, _("Can't seek when player is stopped."));
 		return STERR;
@@ -907,15 +901,18 @@ long		Interface::seek(int seconds)
 	/* Overflow handling */
 	if (pms->comm->status()->time_elapsed + seconds >= pms->comm->status()->time_total)
 		/* Skip forwards */
-		playnext(pms->options->get_long("playmode"), true);
+		playnext(true);
 	else if (pms->comm->status()->time_elapsed + seconds < 0)
 	{
 		/* Skip backwards */
 		if (prev() == STOK)
 		{
-			pms->comm->update(true);
-			if (pms->comm->seek(pms->cursong()->time + seconds))
+			if (!pms->comm->get_status()) {
+				return STERR;
+			}
+			if (pms->comm->seek(pms->cursong()->time + seconds)) {
 				return STOK;
+			}
 		}
 		else
 		{
@@ -968,7 +965,7 @@ long		Interface::crop(int crop_mode)
 	if (pms->comm->crop(pms->disp->actwin()->plist(), crop_mode))
 	{
 		pms->log(MSG_CONSOLE, STOK, _("Playlist cropped.\n"));
-		pms->drawstatus();
+		//pms->drawstatus();
 		pms->disp->actwin()->wantdraw = true;
 		return STOK;
 	}
@@ -979,49 +976,42 @@ long		Interface::crop(int crop_mode)
 /*
  * Remove selected songs from list
  */
-long		Interface::remove(Songlist * list)
+long
+Interface::remove(Songlist * list)
 {
-	int				count = 0;
-	Song *				song;
-	vector<Song *>			songs;
-	vector<Song *>::iterator	i;
+	Song *					song;
+	vector<Song *>				songs;
+	vector<Song *>::reverse_iterator	i;
 
-	if (!list)
-	{
+	/* FIXME: this check should, perhaps, be done earlier? */
+	if (!list) {
 		pms->log(MSG_STATUS, STERR, _("This is not a playlist: you can't remove songs from here."));
 		return STERR;
 	}
 
-	if (list == pms->comm->library())
-	{
+	/* FIXME: same goes for this check */
+	if (list == pms->comm->library()) {
 		pms->log(MSG_STATUS, STERR, _("The library is read-only."));
 		return STERR;
 	}
 
-	song = list->popnextselected();
-	while (song != NULL)
-	{
+	while ((song = list->popnextselected()) != NULL) {
 		songs.push_back(song);
-		song = list->popnextselected();
 	}
 
-	i = songs.begin();
-	while (i != songs.end())
-	{
-		if (pms->comm->remove(list, *i))
-			++count;
+	i = songs.rbegin();
+	while (i != songs.rend()) {
+		if (!pms->comm->remove(list, *i)) {
+			return STERR;
+		}
 		++i;
 	}
 
-	if (count > 0)
-	{
-		pms->disp->actwin()->wantdraw = true;
-		pms->log(MSG_STATUS, STOK, _("Removed %d %s."), count, (count == 1 ? _("song") : _("songs")));
-		return STOK;
-	}
+	/* FIXME: should wantdraw really be set _here_? */
+	pms->disp->actwin()->wantdraw = true;
+	pms->log(MSG_STATUS, STOK, _("Removed %d %s."), songs.size(), (songs.size() == 1 ? _("song") : _("songs")));
 
-	pms->log(MSG_STATUS, STERR, _("No songs removed."));
-	return STERR;
+	return STOK;
 }
 
 /*
@@ -1124,7 +1114,8 @@ long		Interface::select(pms_window * win, int mode, string param)
 /*
  * Executes actions. This is the last bit of the user interface.
  */
-bool		handle_command(pms_pending_keys action)
+bool
+handle_command(pms_pending_keys action)
 {
 	Message		err;
 	Song *		song = NULL;
@@ -1160,7 +1151,7 @@ bool		handle_command(pms_pending_keys action)
 			if (pms->input->mode() == INPUT_COMMAND || pms->input->mode() == INPUT_JUMP)
 			{
 				pms->input->goprev();
-				pms->drawstatus();
+				//pms->drawstatus();
 				break;
 			}
 			pms->disp->movecursor(action == PEND_MOVE_DOWN ? 1 : -1);
@@ -1310,7 +1301,7 @@ bool		handle_command(pms_pending_keys action)
 				pms->comm->playid(sn);
 			if (win)
 				win->wantdraw = true;
-			pms->drawstatus();
+			//pms->drawstatus();
 			break;
 
 		case PEND_GOTORANDOM:
@@ -1344,57 +1335,24 @@ bool		handle_command(pms_pending_keys action)
 			{
 				win->wantdraw = true;
 			}
-			pms->drawstatus();
+			//pms->drawstatus();
 			break;
 
 		case PEND_REPEAT:
-			switch(pms->options->get_long("repeat"))
-			{
-				case REPEAT_NONE:
-					pms->options->set("repeat", "single");
-					break;
-				case REPEAT_ONE:
-					pms->options->set("repeat", "yes");
-					break;
-				case REPEAT_LIST:
-				default:
-					pms->options->set("repeat", "no");
-					break;
-			}
-
-			pms->log(MSG_DEBUG, 0, "Repeatmode set to %d\n", pms->options->get_long("repeat"));
-
-			/* Have MPD manage repeat inside playlist and repeat 
-			 * single song
-			 * Beware: value of the repeat option may change after 
-			 * either of these commands runs, hence not a single 
-			 * line each for repeat and single with checks for 
-			 * repeat mode within each */
-			if (pms->comm->activelist() == pms->comm->playlist())
-			{
-				switch (pms->options->get_long("repeat"))
-				{
-					case REPEAT_NONE:
-						pms->comm->repeat(false);
-						pms->comm->single(false);
-						break;
-					case REPEAT_ONE:
-						pms->comm->repeat(true);
-						pms->comm->single(true);
-						break;
-					case REPEAT_LIST:
-					default:
-						pms->comm->repeat(true);
-						pms->comm->single(false);
-						break;
-				}
-			}
-
-			pms->drawstatus();
+			pms->comm->repeat(!pms->comm->status()->repeat);
 			break;
 
+		case PEND_RANDOM:
+			pms->comm->random(!pms->comm->status()->random);
+			break;
 
+		case PEND_SINGLE:
+			pms->comm->single(!pms->comm->status()->single);
+			break;
 
+		case PEND_CONSUME:
+			pms->comm->consume(!pms->comm->status()->consume);
+			break;
 
 		case PEND_TEXT_UPDATED:
 			pms->drawstatus();
@@ -1793,28 +1751,6 @@ bool		handle_command(pms_pending_keys action)
 
 			break;
 
-		/* Cycle through between linear play, random and play single song */
-		case PEND_CYCLE_PLAYMODE:
-			switch(pms->options->get_long("playmode"))
-			{
-				default:
-				case PLAYMODE_MANUAL:
-					pms->options->set_long("playmode", PLAYMODE_LINEAR);
-					break;
-				case PLAYMODE_LINEAR:
-					pms->options->set_long("playmode", PLAYMODE_RANDOM);
-					break;
-				case PLAYMODE_RANDOM:
-					pms->options->set_long("playmode", PLAYMODE_MANUAL);
-					break;
-			}
-
-			/* Have MPD manage random inside playlist */
-			pms->comm->random(pms->options->get_long("playmode") == PLAYMODE_RANDOM && pms->comm->activelist() == pms->comm->playlist());
-
-			pms->drawstatus();
-			break;
-
 		case PEND_RESIZE:
 			pms->disp->resized();
 			pms->disp->forcedraw();
@@ -1838,14 +1774,17 @@ void		generr()
 
 /*
  * Adds or enqueues the next song based on play mode
+ *
+ * FIXME: misleading function name, too many responsibilities
+ *
+ * Returns the id of the song that was added.
  */
-int		playnext(long mode, int playnow)
+int		playnext(int playnow)
 {
 	Song *		song;
 	int		i;
 
-	if (mode == PLAYMODE_LINEAR)
-	{
+	if (!pms->comm->status()->random) {
 		if (!pms->cursong() || (int)pms->comm->playlist()->end() != pms->cursong()->pos)
 			song = pms->comm->playlist()->nextsong();
 		else
@@ -1857,9 +1796,7 @@ int		playnext(long mode, int playnow)
 			i = pms->comm->add(pms->comm->playlist(), song);
 		else
 			i = song->id;
-	}
-	else if (mode == PLAYMODE_RANDOM)
-	{
+	} else {
 		if (pms->cursong() && static_cast<int>(pms->comm->playlist()->end()) != pms->cursong()->pos)
 		{
 			song = pms->comm->playlist()->nextsong();
@@ -1873,11 +1810,11 @@ int		playnext(long mode, int playnow)
 			i = pms->comm->add(pms->comm->playlist(), song);
 		}
 	}
-	else	return MPD_SONG_NO_ID;
 
 	if (i == MPD_SONG_NO_NUM)
 		return MPD_SONG_NO_ID;
 
+	/* FIXME: error handling */
 	if (playnow == true)
 		pms->comm->playid(i);
 
@@ -1959,21 +1896,31 @@ int		multiplay(long mode, int playmode)
 
 	listend = static_cast<int>(list->end());
 
-	pms->comm->list_start();
+	/* FIXME */
+	//if (!pms->comm->list_start()) {
+		//return false;
+	//}
+
 	while (true)
 	{
 		i = list->match(pattern, i, list->end(), mode | MATCH_EXACT);
 		if (i == MATCH_FAILED) break;
-		if (first == -1)
+		if (first == -1) {
 			first = pms->comm->playlist()->size();
-		pms->comm->add(pms->comm->playlist(), list->song(i));
+		}
+		if (pms->comm->add(pms->comm->playlist(), list->song(i)) == MPD_SONG_NO_ID) {
+			return false;
+		}
 		if (++i > listend) break;
 	}
-	if (!pms->comm->list_end())
-		return false;
 
-	if (first != -1 && playmode == 0)
+	//if (!pms->comm->list_end()) {
+		//return false;
+	//}
+
+	if (first != -1 && playmode == 0) {
 		pms->comm->playpos(first);
+	}
 
 	return true;
 }
@@ -2110,12 +2057,14 @@ bool init_commandmap()
 	pms->commands->add("clear", "Clear the list", PEND_CLEAR);
 	pms->commands->add("crop", "Crops list to currently playing song", PEND_CROP);
 	pms->commands->add("cropsel", "Crops list to selected songs", PEND_CROPSELECTION);
-	pms->commands->add("repeat", "Toggle repeat mode", PEND_REPEAT);
+	pms->commands->add("repeat", "Toggle repeat on/off", PEND_REPEAT);
+	pms->commands->add("random", "Toggle random on/off", PEND_RANDOM);
+	pms->commands->add("single", "Toggle single on/off", PEND_SINGLE);
+	pms->commands->add("consume", "Toggle consume on/off", PEND_CONSUME);
 	pms->commands->add("volume", "Increase or decrease volume", PEND_VOLUME);
 	pms->commands->add("mute", "Toggle mute", PEND_MUTE);
 	pms->commands->add("crossfade", "Set crossfade time", PEND_CROSSFADE);
 	pms->commands->add("seek", "Seek in stream", PEND_SEEK);
-	pms->commands->add("playmode", "Cycle play mode", PEND_CYCLE_PLAYMODE);
 
 	/* Movement */
 	pms->commands->add("next-window", "Go to next playlist", PEND_NEXTWIN);

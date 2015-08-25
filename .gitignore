@@ -7,7 +7,6 @@ pms
 releases/*
 configure
 Makefile.in
-config.rpath
 errlog
 doc
 web
@@ -15,9 +14,11 @@ valgrind.log
 config.h.in
 autom4te.cache
 aclocal.m4
+m4/intltool.m4
 src/.deps
 src/stamp-h1
 stamp*
+compile
 .deps
 Makefile
 *.o
@@ -25,5 +26,8 @@ config.h
 config.*
 depcomp
 missing
-po/Makefile
+po/Makefile*
+po/POTFILES
 install-sh
+/build/
+tags

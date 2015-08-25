@@ -1,6 +1,6 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
- * PMS  <<Practical Music Search>>
+ * PMS	<<Practical Music Search>>
  * Copyright (C) 2006-2010  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
@@ -43,21 +43,24 @@
 #include <string>
 #include <sstream>
 #include <stdio.h>
-#include "i18n.h"
-#include "libmpdclient.h"
+#include <mpd/client.h>
+#include <zmq.h>
+#include <time.h>
+#include <pthread.h>
 
+#include "i18n.h"
 #include "types.h"
 #include "settings.h"
 #include "song.h"
 #include "message.h"
 #include "topbar.h"
-
 #include "config.h"
 #include "color.h"
 #include "list.h"
 #include "action.h"
 #include "input.h"
 #include "mediator.h"
+#include "zeromq.h"
 
 #ifdef __FreeBSD__
 	#include <sys/wait.h>
@@ -69,6 +72,10 @@ using namespace std;
  * Global functions
  */
 void					debug(const char *, ...);
+void *					idle_thread_main(void *);
+void *					input_thread_main(void *);
+struct timespec				difftime(struct timespec, struct timespec);
+
 
 /*
  * This is the program itself, everything is run within here.
@@ -82,10 +89,18 @@ private:
 	char **				argv;
 
 	bool				_shutdown;
-	Connection *			conn;
 	pms_win_playlist *		playlist;
 	pms_win_playlist *		library;
 	vector<Message *>		msglog;
+
+	/* Timers */
+	struct timespec			timer_now;
+	struct timespec			timer_elapsed;
+	struct timespec			timer_statusbar;
+	struct timespec			timer_tmp;
+
+	/* Internal timer */
+	struct timespec			get_clock();
 
 	/* Private functions */
 	void				init_default_keymap();
@@ -105,7 +120,8 @@ public:
 
 	/* Public variables */
 	//FIXME: program should be rewritten so that none of these should have to be public
-	Options	*			options;
+	Connection *			conn;
+	Options *			options;
 	Control *			comm;
 	Display *			disp;
 	Input *				input;
@@ -114,6 +130,7 @@ public:
 	Fieldtypes *			fieldtypes;
 	Formatter *			formatter;
 	Configurator *			config;
+	ZeroMQ *			zeromq;
 
 	/* FIXME: this is an attempt on the above */
 	Mediator *			mediator;
@@ -124,6 +141,7 @@ public:
 	static string			tostring(long);
 	static string			tostring(int);
 	static string			tostring(size_t);
+	static string			tostring(const char *);
 	static vector<string> *		splitstr(string, string = " ");
 	static string			joinstr(vector<string> *, vector<string>::iterator, vector<string>::iterator, string = " ");
 	static string			timeformat(int);
@@ -133,9 +151,12 @@ public:
 	static bool			unicode();
 
 	/* Public member functions */
+	bool				run_has_idle_events();
 	void				setstatus(statusbar_mode, const char *, ...);
 	void				drawstatus();
-	int				resetstatus(int);
+	bool				needs_statusbar_reset();
+	bool				song_changed();
+	void				run_cursor_follow_playback();
 	void				shutdown() { _shutdown = true; };
 	bool				run_shell(string);
 	Song *				cursong();

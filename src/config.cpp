@@ -824,12 +824,20 @@ bool			Configurator::set_color(string name, string pairs)
 		dest = (c->topbar.repeat);
 	else if (name == "topbar.random")
 		dest = (c->topbar.random);
+	else if (name == "topbar.single")
+		dest = (c->topbar.single);
+	else if (name == "topbar.consume")
+		dest = (c->topbar.consume);
 	else if (name == "topbar.mute")
 		dest = (c->topbar.mute);
 	else if (name == "topbar.randomshort")
 		dest = (c->topbar.randomshort);
 	else if (name == "topbar.repeatshort")
 		dest = (c->topbar.repeatshort);
+	else if (name == "topbar.singleshort")
+		dest = (c->topbar.singleshort);
+	else if (name == "topbar.consumeshort")
+		dest = (c->topbar.consumeshort);
 	else if (name == "topbar.muteshort")
 		dest = (c->topbar.randomshort);
 

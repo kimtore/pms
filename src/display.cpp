@@ -292,7 +292,7 @@ void			pms_win_windowlist::draw()
 		colprint(this, 0, (i == 0 ? j : j + 1),
 			pms->options->colors->headers,
 			"%s", column[i]->title.c_str());
-		if (i > 0)
+		if (i > 0 && pms->options->get_bool("columnborders"))
 		{
 			wattron(handle, pms->options->colors->border->pair());
 			mvwvline(handle, border[0], j, ACS_VLINE, bheight());
@@ -416,12 +416,10 @@ void		pms_window::setcursor(int absolute)
 	cursor = absolute;
 	if (cursor < 0)
 	{
-		beep();
 		cursor = 0;
 	}
 	else if (cursor >= (int)size())
 	{
-		beep();
 		cursor = (int)(size() - 1);
 	}
 
@@ -444,7 +442,6 @@ void		pms_window::scrollwin(int offset)
 
 	if (size() <= bheight() - 1)
 	{
-		beep();
 		return;
 	}
 
@@ -460,9 +457,7 @@ void		pms_window::scrollwin(int offset)
 		i = -cursordrawstart();
 		if (offset < i)
 			offset = i;
-		if (offset == 0)
-		{
-			beep();
+		if (offset == 0) {
 			return;
 		}
 
@@ -476,9 +471,7 @@ void		pms_window::scrollwin(int offset)
 		i = size() - (bheight() - 1) - cursordrawstart();
 		if (offset > i)
 			offset = i;
-		if (offset == 0)
-		{
-			beep();
+		if (offset == 0) {
 			return;
 		}
 
@@ -555,14 +548,13 @@ void		pms_win_bindings::draw()
 	}
 
 	/* Draw captions and column borders */
-	//TODO: make into an option
 	j = 0;
 	for (i = 0; i < column.size(); i++)
 	{
 		colprint(this, 0, (i == 0 ? j : j + 1),
 			pms->options->colors->headers,
 			"%s", column[i]->title.c_str());
-		if (i > 0)
+		if (i > 0 && pms->options->get_bool("columnborders"))
 		{
 			wattron(handle, pms->options->colors->border->pair());
 			mvwvline(handle, border[0], j, ACS_VLINE, bheight());
@@ -732,10 +724,8 @@ void		pms_win_playlist::draw()
 		{
 			hilight = pms->options->colors->selection;
 		}
-		else if (pms->cursong() && song->file == pms->cursong()->file)
-		{
-			if (list->role != LIST_ROLE_MAIN || (list->role == LIST_ROLE_MAIN && pms->cursong()->pos == song->pos))
-			{
+		else if (pms->cursong()) {
+                        if ((list->role == LIST_ROLE_MAIN && pms->cursong()->id == song->id) || (list->role != LIST_ROLE_MAIN && song->file == pms->cursong()->file)) {
 				hilight = pms->options->colors->current;
 			}
 		}
@@ -745,6 +735,7 @@ void		pms_win_playlist::draw()
 		{
 			pair = 0;
 
+                        /* Draw highlight line */
 			if (hilight) wattron(handle, hilight->pair());
 			mvwhline(handle, counter + border[0], winlen, ' ', column[j]->len() + 1);
 			if (hilight) wattroff(handle, hilight->pair());
@@ -766,14 +757,13 @@ void		pms_win_playlist::draw()
 	}
 
 	/* Draw captions and column borders */
-	//TODO: make into an option
 	j = 0;
 	for (i = 0; i < column.size(); i++)
 	{
 		colprint(this, 0, (i == 0 ? j : j + 1),
 			pms->options->colors->headers,
 			"%s", column[i]->title.c_str());
-		if (i > 0)
+		if (i > 0 && pms->options->get_bool("columnborders"))
 		{
 			wattron(handle, pms->options->colors->border->pair());
 			mvwvline(handle, border[0], j, ACS_VLINE, bheight());
@@ -1164,7 +1154,6 @@ bool		Display::init()
 	initscr();
 	raw();
 	noecho();
-	halfdelay(5);
 	keypad(stdscr, true);
 	setmousemask();
 

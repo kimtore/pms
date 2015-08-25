@@ -1,10 +1,11 @@
-#####################################
-README - Practical Music Search v0.42
-#####################################
+###############################
+README - Practical Music Search
+###############################
 
-Copyright (C) 2006-2010 Kim Tore Jensen <kimtjen@gmail.com>.
+Copyright (C) 2006-2015 Kim Tore Jensen <kimtjen@gmail.com>.
 
-The program homepage is <http://pms.sourceforge.net>.
+The source code and latest version can be found at Github:
+<https://github.com/ambientsound/pms>.
 
 Practical Music Search is a ncurses-based client for MPD. It has a command line
 interface much like Vim, and supports custom colors, layouts, and key bindings.
@@ -24,7 +25,13 @@ PMS aims to be accessible and highly configurable.
 	1. Compiling
 ********************
 
+From a release tarball, run:
+
 $ ./configure && make && sudo make install
+
+From the Git tree, run:
+
+$ ./rebuild.sh
 
 See INSTALL file for detailed instructions.
 
@@ -43,6 +50,10 @@ PMS depends on the following libraries:
 ncurses (>= 5.0)
 glib2 (>= 2.0)
 boost_regex (>= 1.36.0) to enable regular expression searches
+
+On a Debian-based system, you can run:
+
+$ sudo apt-get install build-essential intltool libncursesw5-dev libglib2.0-dev
 
 
 	3. Configuration

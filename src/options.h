@@ -54,7 +54,7 @@ public:
 
 	/* These are all the options */
 
-	string			hostname;
+	string			host;
 	unsigned int		port;
 	string			password;
 	string			configfile;		// Custom config file
@@ -90,8 +90,6 @@ public:
 	string			librarysort;		// How to sort the library
 	string			columns;		// Which columns to show in main view
 	string			xtermtitle;		// Title to set in graphical terminals
-	pms_play_mode		playmode;
-	pms_repeat_mode		repeatmode;
 	pms_scroll_mode		scroll_mode;
 	string			libraryroot;		// Path to the library root, for prepending to filenames when they are being used in shell commands
 	int			scrolloff;		// Number of items to keep in view above and below cursor in normal scroll mode

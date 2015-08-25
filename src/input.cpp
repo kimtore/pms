@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -160,15 +160,16 @@ Input_mode		Input::mode()
 	return this->_mode;
 }
 
-int			Input::get_keystroke()
+/**
+ * Read a single keystroke from ncurses. Will block until a keystroke has been registered.
+ *
+ * Returns the key pressed.
+ */
+wchar_t
+Input::get_keystroke()
 {
 	ch = getch();
-	if (ch != -1)
-	{
-		return true;
-	}
-
-	return false;
+	return ch;
 }
 
 pms_pending_keys	Input::dispatch()

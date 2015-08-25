@@ -275,7 +275,7 @@ public:
 					Display(Control *);
 					~Display();
 
-	pms_window *			actwin() { return curwin; };
+	pms_window *			actwin() { assert(curwin != NULL); return curwin; };
 	pms_window *			playingwin();
 	
 	mmask_t				setmousemask();

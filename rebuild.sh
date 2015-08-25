@@ -1,28 +1,15 @@
 #!/bin/bash
 # Re-build PMS
 
-./autogen.sh && ./configure && make
+set -e
 
-if [ $? -ne 0 ]; then
-	echo
-	echo "Build failed. Bug reports to <kimtjen@gmail.com>"
-	echo
-	exit 1
-fi
+intltoolize --force
+aclocal -I m4
+autoreconf --force --install --verbose
+./configure
+make clean
+make
 
 echo
 echo "Build finished."
 echo
-
-echo -en "Perform \`sudo make install'? [y/N] "
-read answer
-
-if [ "$answer" == "y" ] || [ "$answer" == "Y" ]; then
-	sudo make install
-else
-	echo
-	echo "Not installing for all users."
-	echo
-fi
-
-./pms -v

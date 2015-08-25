@@ -16,23 +16,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *
- * mycurses.h - includes the right ncurses lib
- *
  */
 
-#include "../config.h"
 
-#if defined HAVE_NCURSESW_CURSES_H
-	#include <ncursesw/ncurses.h>
-#elif defined HAVE_NCURSESW_H
-	#include <ncursesw.h>
-#elif defined HAVE_NCURSES_CURSES_H
-	#include <ncurses.h>
-#elif defined HAVE_NCURSES_H
-	#include <ncurses.h>
-#elif defined HAVE_CURSES_H
-	#include <curses.h>
-#else
-	#include <ncurses.h>
-#endif
+#ifndef _ZEROMQ_H_
+#define _ZEROMQ_H_
+
+#include <zmq.h>
+#include <pthread.h>
+#include <mpd/client.h>
+
+#define ZEROMQ_SOCKET_IDLE "inproc://idle"
+#define ZEROMQ_SOCKET_INPUT "inproc://input"
+
+/**
+ * ZeroMQ inter-thread communication
+ */
+class ZeroMQ
+{
+private:
+	void *				context;
+	void *				socket_idle;
+	void *				socket_input;
+	zmq_pollitem_t			poll_items[2];
+
+	pthread_t			idle_thread;
+	pthread_t			input_thread;
+
+public:
+					ZeroMQ();
+
+	bool				has_idle_events();
+	enum mpd_idle			get_idle_events();
+	void				continue_idle();
+	bool				has_input_events();
+	wchar_t				get_input_events();
+	void				start_thread_idle(void *(*func) (void *));
+	void				start_thread_input(void *(*func) (void *));
+	void				poll_events(int timeout);
+};
+
+#endif /* _ZEROMQ_H_ */

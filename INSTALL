@@ -1,25 +1,26 @@
-To set up the build environment for PMS, type:
-$ ./autogen.sh
+Building and installing PMS
+===========================
 
-If all went well, configure the build with:
-$ ./configure
+Build requirements:
 
-If there were error messages address them -- you may have missing libraries. 
-Then run the configure script again.
-Otherwise, build PMS with:
-$ make
+* ncurses
+* gettext
+* intltoolize
+* autotools
 
-You now have a PMS binary in the current directory -- you can run it with
-$ ./pms
+The following commands will set up the build environment:
 
-If you want to install system-wide:
-$ su -
-Password:
-# make install
+```
+intltoolize --force
+aclocal -I m4
+autoreconf --force --install --verbose
+```
 
-Or, on systems which use sudo:
+Then, you can do the usual:
 
-$ sudo make install
-
-You should then be able to run PMS by typing
-$ pms
+```
+./configure
+make clean
+make
+sudo make install
+```

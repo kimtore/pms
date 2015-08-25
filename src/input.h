@@ -84,7 +84,7 @@ public:
 
 	void			mode(Input_mode);
 	Input_mode		mode();
-	int			get_keystroke();
+	wchar_t			get_keystroke();
 	pms_pending_keys	dispatch();
 	pms_pending_keys	getpending() { return pending; };
 	void			savehistory();
