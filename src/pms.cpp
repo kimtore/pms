@@ -442,6 +442,11 @@ Pms::main()
 			comm->clear_finished_update(MPD_IDLE_DATABASE);
 		}
 
+		/* Draw XTerm window title when state is updated */
+		if (comm->has_any_finished_updates()) {
+			disp->set_xterm_title();
+		}
+
 		/* Playlist updates triggers re-calculation of column sizes,
 		 * triggers draw, etc. */
 		/* FIXME: move responsibilities? */
@@ -529,10 +534,6 @@ Pms::main()
 				handle_command(pending);
 			}
 		}
-
-		/* Draw XTerm window title */
-		/* FIXME: only draw when needed */
-		disp->set_xterm_title();
 
 		/* Progress to next song if applicable, and make sure we are
 		 * synched with IDLE events before doing it. */

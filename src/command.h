@@ -250,6 +250,7 @@ public:
 	bool			has_pending_updates();
 	bool			run_pending_updates();
 	void			set_update_done(enum mpd_idle);
+	bool			has_any_finished_updates();
 	bool			has_finished_update(enum mpd_idle);
 	void			clear_finished_update(enum mpd_idle);
 

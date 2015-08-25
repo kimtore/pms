@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1329,28 +1329,31 @@ void		Display::forcedraw()
 }
 
 /*
- * Set XTerm window title
+ * Set XTerm window title.
+ *
+ * The current xterm title exists under the WM_NAME property,
+ * and can be retrieved with `xprop -notype -id $WINDOWID WM_NAME`.
  */
-void		Display::set_xterm_title()
+void
+Display::set_xterm_title()
 {
+	char		buffer[4096];
 	unsigned int	reallen;
-	string		t;
+	string		title;
 
-	/* the current xterm title exists under the WM_NAME property */
-	/* and can be retrieved with xprop -notype -id $WINDOWID WM_NAME */
+	if (!pms->options->get_string("xtermtitle").size()) {
+		return;
+	}
 
-	if (pms->options->get_string("xtermtitle").size())
-	{
-		if (getenv("WINDOWID"))
-		{
-			t = pms->formatter->format(pms->cursong(), pms->options->get_string("xtermtitle"), reallen, NULL, true);
-			printf("%c]0;%s%c", '\033', t.c_str(), '\007');
-		}
-		else
-		{
-			pms->log(MSG_DEBUG, 0, _("Disabling XTerm window title: WINDOWID not found.\n"));
-			pms->options->set_string("xtermtitle", "");
-		}
+	if (getenv("WINDOWID")) {
+		title = pms->formatter->format(pms->cursong(), pms->options->get_string("xtermtitle"), reallen, NULL, true);
+		pms->log(MSG_DEBUG, 0, _("Set XTerm window title: '%s'\n"), title.c_str());
+		snprintf(buffer, 4096, "%c]0;%s%c", '\033', title.c_str(), '\007');
+		buffer[4096] = '\0';
+		putp(buffer);
+	} else {
+		pms->log(MSG_DEBUG, 0, _("Disabling XTerm window title: WINDOWID not found.\n"));
+		pms->options->set_string("xtermtitle", "");
 	}
 }
 

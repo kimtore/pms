@@ -381,6 +381,15 @@ Control::set_update_done(enum mpd_idle flags)
 }
 
 /**
+ * Check whether _any_ MPD IDLE updates are retrieved.
+ */
+bool
+Control::has_any_finished_updates()
+{
+	return (finished_idle_events != 0);
+}
+
+/**
  * Check whether an MPD IDLE update is retrieved.
  */
 bool
