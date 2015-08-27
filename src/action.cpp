@@ -1527,7 +1527,14 @@ handle_command(pms_pending_keys action)
 
 		/* Window control */
 		case PEND_CREATEPLAYLIST:
+			pms->comm->create_playlist(pms->input->param);
+			break;
+
 		case PEND_SAVEPLAYLIST:
+
+			/* FIXME: clean up the mess below */
+			assert(false);
+
 			tmpwin = win;
 			i = createwindow(pms->input->param, win, list);
 
@@ -1607,40 +1614,32 @@ handle_command(pms_pending_keys action)
 		/* Delete a playlist */
 		case PEND_DELETEPLAYLIST:
 
-			if (pms->input->param.size() > 0)
-			{
+			if (pms->input->param.size() > 0) {
 				s = pms->input->param;
-				list = pms->comm->findplaylist(s);
-			}
-			else
-			{
-				/* In case of windowlist */
-				if (!list)
-				{
+				list = pms->comm->find_playlist(s);
+			} else {
+
+				/* In case of windowlist, get the selected window and list */
+				/* FIXME: not a good way to do it */
+				if (!list) {
 					win = win->current();
 					if (!win) break;
 					list = win->plist();
 					if (!list) break;
 				}
 
-				if (list->filename.size() == 0)
-				{
+				if (list->filename.size() == 0) {
 					pms->log(MSG_STATUS, STERR, "You can't remove a pre-defined playlist.");
 					break;
 				}
-
-				s = list->filename;
 			}
 
 			win = pms->disp->findwlist(list);
-			if (pms->comm->deleteplaylist(s))
-			{
+			if (pms->comm->delete_playlist(list->filename)) {
+				/* FIXME: removing this is _not_ our responsibility! */
 				pms->disp->delete_window(win);
-				pms->log(MSG_STATUS, STOK, "Deleted playlist '%s'.", s.c_str());
-			}
-			else
-			{
-				generr();
+				pms->log(MSG_STATUS, STOK, "Deleted playlist '%s'.", list->filename.c_str());
+				break;
 			}
 
 			win = pms->disp->actwin();
@@ -1673,7 +1672,7 @@ handle_command(pms_pending_keys action)
 				win = pms->disp->create_windowlist();
 			else
 			{
-				win = pms->disp->findwlist(pms->comm->findplaylist(pms->input->param));
+				win = pms->disp->findwlist(pms->comm->find_playlist(pms->input->param));
 				if (!win)
 				{
 					pms->log(MSG_STATUS, STERR, "Change window: invalid parameter '%s'", pms->input->param.c_str());
@@ -1730,7 +1729,7 @@ handle_command(pms_pending_keys action)
 			else
 			{
 				/* Use parameter as list */
-				list = pms->comm->findplaylist(pms->input->param);
+				list = pms->comm->find_playlist(pms->input->param);
 			}
 
 			if (list == NULL)
@@ -1950,16 +1949,21 @@ bool		setwin(pms_window * win)
 
 /*
  * Create a playlist and connect a window to it, returns the window if successful
+ *
+ * FIXME: arbitrary numbered return values
+ * FIXME: this function is only used from one place, which is also a real mess
+ * FIXME: remove this altogether
  */
 int		createwindow(string param, pms_window *& win, Songlist *& list)
 {
+	/*
 	win = NULL;
 	list = NULL;
 
 	if (param.size() == 0)
 		return -1;
 
-	list = pms->comm->findplaylist(param);
+	list = pms->comm->find_playlist(param);
 
 	if (list)
 	{
@@ -1982,6 +1986,7 @@ int		createwindow(string param, pms_window *& win, Songlist *& list)
 		return -3;
 
 	return 0;
+	*/
 }
 
 

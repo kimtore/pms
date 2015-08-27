@@ -369,7 +369,7 @@ Pms::main()
 	}
 	else if (t_str.size() > 0 && t_str != "playlist")
 	{
-		comm->activatelist(comm->findplaylist(t_str));
+		comm->activatelist(comm->find_playlist(t_str));
 	}
 	disp->activate(disp->findwlist(comm->activelist()));
 
@@ -444,6 +444,8 @@ Pms::main()
 
 		/* Draw XTerm window title when state is updated */
 		if (comm->has_any_finished_updates()) {
+			disp->topbar->wantdraw = true;
+			disp->actwin()->wantdraw = true;
 			disp->set_xterm_title();
 		}
 
@@ -451,15 +453,8 @@ Pms::main()
 		 * triggers draw, etc. */
 		/* FIXME: move responsibilities? */
 		if (comm->has_finished_update(MPD_IDLE_PLAYLIST)) {
-			disp->actwin()->wantdraw = true;
 			playlist->set_column_size();
 			comm->clear_finished_update(MPD_IDLE_PLAYLIST);
-		}
-
-		/* Draw topbar on mixer update. */
-		if (comm->has_finished_update(MPD_IDLE_MIXER)) {
-			disp->topbar->wantdraw = true;
-			comm->clear_finished_update(MPD_IDLE_MIXER);
 		}
 
 		/* Draw statusbar and topbar on player update. */
@@ -480,16 +475,14 @@ Pms::main()
 				need_init_follow_playback = false;
 			}
 
-			disp->topbar->wantdraw = true;
-			disp->actwin()->wantdraw = true;
 			drawstatus();
 			comm->clear_finished_update(MPD_IDLE_PLAYER);
 		}
 
-		/* Draw topbar on options update. */
-		if (comm->has_finished_update(MPD_IDLE_OPTIONS)) {
-			disp->topbar->wantdraw = true;
-			comm->clear_finished_update(MPD_IDLE_OPTIONS);
+		/* Create windows containing MPD playlists. */
+		if (comm->has_finished_update(MPD_IDLE_STORED_PLAYLIST)) {
+			connect_window_list();
+			comm->clear_finished_update(MPD_IDLE_STORED_PLAYLIST);
 		}
 
 		/* Reset status */
@@ -1318,28 +1311,26 @@ bool			Pms::progress_nextsong()
 
 /*
  * Create new windows for each custom playlist
+ *
+ * FIXME: wtf, why?
  */
-bool			Pms::connect_window_list()
+bool
+Pms::connect_window_list()
 {
-	bool				ok = true;
 	pms_window *			win;
-	vector<Songlist *>::iterator	i;
+	vector<Playlist *>::iterator	i;
 
 	i = comm->playlists.begin();
-	while (i != comm->playlists.end())
-	{
-		if (disp->findwlist(*i) == NULL)
-		{
+	while (i != comm->playlists.end()) {
+		if (disp->findwlist(*i) == NULL) {
 			win = disp->create_playlist();
-			if (win)
-				win->setplist(*i);
-			else
-				ok = false;
+			assert(win != NULL);
+			win->setplist(*i);
 		}
 		++i;
 	}
 
-	return ok;
+	return true;
 }
 
 /*

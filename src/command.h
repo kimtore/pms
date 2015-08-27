@@ -27,6 +27,7 @@
 
 #include "conn.h"
 #include "list.h"
+#include "playlist.h"
 
 using namespace std;
 
@@ -229,8 +230,9 @@ private:
 
 	bool			get_current_song();
 	int			get_stats();
-	bool			retrieve_lists(vector<Songlist *> &);
-	unsigned int		update_playlists();
+	bool			update_playlist_index();
+	bool			update_playlists();
+	bool			update_playlist(Playlist *);
 	bool			update_queue();
 	bool			update_library();
 	bool			finish();
@@ -239,7 +241,7 @@ public:
 				Control(Connection *);
 				~Control();
 
-	vector<Songlist *>	playlists;
+	vector<Playlist *>	playlists;
 	Directory *		rootdir;
 
 	bool			alive();
@@ -302,9 +304,9 @@ public:
 	bool			set_is_idle(bool);
 
 	/* List management */
-	Songlist *	findplaylist(string filename);
-	Songlist *	newplaylist(string filename);
-	bool		deleteplaylist(string filename);
+	Playlist *		find_playlist(string filename);
+	bool			create_playlist(string name);
+	bool			delete_playlist(string name);
 	Songlist *	activelist();
 	bool		activatelist(Songlist *);
 	int		clear(Songlist *);

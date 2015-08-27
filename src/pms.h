@@ -57,6 +57,7 @@
 #include "config.h"
 #include "color.h"
 #include "list.h"
+#include "playlist.h"
 #include "action.h"
 #include "input.h"
 #include "mediator.h"

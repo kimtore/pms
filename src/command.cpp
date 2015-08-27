@@ -346,12 +346,23 @@ Control::run_pending_updates()
 		/* MPD_IDLE_QUEUE will be subtracted below */
 	}
 
-	/* MPD has new playlist */
+	/* MPD has updates to queue */
 	if (idle_events & MPD_IDLE_QUEUE) {
 		if (!update_queue()) {
 			return false;
 		}
 		set_update_done(MPD_IDLE_QUEUE);
+	}
+
+	/* MPD has updates to a stored playlist */
+	if (idle_events & MPD_IDLE_STORED_PLAYLIST) {
+		if (!update_playlist_index()) {
+			return false;
+		}
+		if (!update_playlists()) {
+			return false;
+		}
+		set_update_done(MPD_IDLE_STORED_PLAYLIST);
 	}
 
 	/* MPD has new song database */
@@ -852,12 +863,14 @@ Control::add(Songlist * list, Song * song)
 }
 
 /*
- * Remove a song from the playlist
+ * Remove a song from the queue.
+ *
+ * Returns true on success, false on failure.
  */
 bool
 Control::remove(Songlist * list, Song * song)
 {
-	int		pos = MATCH_FAILED;
+	Playlist * playlist;
 
 	assert(song != NULL);
 	assert(list != NULL);
@@ -876,29 +889,14 @@ Control::remove(Songlist * list, Song * song)
 	}
 
 	/* Remove song from stored playlist */
-	assert(list->filename.size() == 0);
+	assert(list->filename.size() > 0);
 
-	pos = list->locatesong(song);
-	if (pos == MATCH_FAILED) {
-		// FIXME: error message
-		return false;
+	if (mpd_run_playlist_delete(conn->h(), (char *)list->filename.c_str(), song->pos)) {
+		playlist = static_cast<Playlist *>(list);
+		playlist->set_synchronized(false);
 	}
 
-	return mpd_run_playlist_delete(conn->h(), (char *)list->filename.c_str(), pos);
-
-	// FIXME: remove from list?
-	/*
-	if (command_mode != 0) return true;
-	if (finish())
-	{
-		list->remove(pos == MATCH_FAILED ? song->pos : pos);
-		if (list == _playlist)
-			increment();
-		return true;
-	}
-
-	return false;
-	*/
+	return get_error_bool();
 }
 
 /*
@@ -1388,7 +1386,7 @@ Control::update_library()
 			case MPD_ENTITY_TYPE_PLAYLIST:
 				/* Issue #8: https://github.com/ambientsound/pms/issues/8 */
 				ent_playlist = mpd_entity_get_playlist(ent);
-				pms->log(MSG_DEBUG, 0, "NOT IMPLEMENTED in update_library(): got playlist entity in update_library(): %s\n", mpd_playlist_get_path(ent_playlist));
+				//pms->log(MSG_DEBUG, 0, "NOT IMPLEMENTED in update_library(): got playlist entity in update_library(): %s\n", mpd_playlist_get_path(ent_playlist));
 				break;
 			case MPD_ENTITY_TYPE_DIRECTORY:
 				ent_directory = mpd_entity_get_directory(ent);
@@ -1420,119 +1418,165 @@ Control::update_library()
 }
 
 /*
- * Synchronizes playlists with MPD server, overwriting local versions
+ * Retrieves the list of stored playlists.
+ *
+ * Returns true on success, false on failure.
  */
-unsigned int
-Control::update_playlists()
+bool
+Control::update_playlist_index()
 {
+	string				name;
 	struct mpd_playlist *		playlist;
-	Songlist *			list;
-	vector<Songlist *>		newlist;
-	vector<Songlist *>::iterator	i;
+	Playlist *			local_playlist;
+	vector<Playlist *>::iterator	local_playlist_iterator;
 
 	EXIT_IDLE;
 
-	pms->log(MSG_DEBUG, 0, "Refreshing playlists.\n");
+	pms->log(MSG_DEBUG, 0, "Updating the list of stored playlists.\n");
 
 	if (!mpd_send_list_playlists(conn->h())) {
-		/* FIXME */
-		return -1;
+		return false;
 	}
 
-	/* FIXME: store in a temporary list instead */
-	while ((playlist = mpd_recv_playlist(conn->h())) != NULL)
-	{
-		pms->log(MSG_DEBUG, 0, "Got playlist entity: %s\n", mpd_playlist_get_path(playlist));
-		list = findplaylist(mpd_playlist_get_path(playlist));
-		if (!list) {
-			list = new Songlist();
-			list->filename = mpd_playlist_get_path(playlist);
-			newlist.push_back(list);
+	/* Mark all playlists as not belonging to MPD, in order to be able to
+	 * detect a deleted playlist. */
+	local_playlist_iterator = playlists.begin();
+	while (local_playlist_iterator != playlists.end()) {
+		(*local_playlist_iterator)->set_exists_in_mpd(false);
+		++local_playlist_iterator;
+	}
+
+	while ((playlist = mpd_recv_playlist(conn->h())) != NULL) {
+
+		name = mpd_playlist_get_path(playlist);
+
+		local_playlist_iterator = playlists.begin();
+		while (local_playlist_iterator != playlists.end()) {
+			if ((*local_playlist_iterator)->filename == name) {
+				local_playlist = *local_playlist_iterator;
+				break;
+			}
+			++local_playlist_iterator;
 		}
+
+		if (local_playlist_iterator == playlists.end()) {
+			local_playlist = new Playlist();
+			local_playlist->filename = name;
+			playlists.push_back(local_playlist);
+		}
+
+		local_playlist->assign_metadata_from_mpd(playlist);
+
+		pms->log(MSG_DEBUG, 0, "Playlist '%s' was last modified on %u\n", local_playlist->filename.c_str(), local_playlist->get_last_modified());
+
 		mpd_playlist_free(playlist);
 	}
 
-	/* FIXME: check for errors */
-
-	retrieve_lists(newlist);
-	{
-		i = newlist.begin();
-		while (i != newlist.end())
-		{
-			playlists.push_back(*i);
-			++i;
-		}
-
-		pms->log(MSG_DEBUG, 0, "Server returned %d new playlists, sums to total of of %d custom playlists.\n", newlist.size(), playlists.size());
-	}
-
-	return playlists.size();
+	return get_error_bool();
 }
 
-/*
- * Get all contents from server playlists playlists
+/**
+ * Retrieves all playlist contents from MPD. Requires that the local playlist
+ * index is updated using `update_playlist_index()`.
+ *
+ * Returns true on success, false on failure.
  */
 bool
-Control::retrieve_lists(vector<Songlist *> &lists)
+Control::update_playlists()
 {
-	vector<Songlist *>::iterator	i;
-	Song *				song;
-	mpd_entity *			ent;
-	const mpd_song *		ent_song;
+	vector<Playlist *>::iterator	playlist_iterator;
+	Playlist *			playlist;
 
 	EXIT_IDLE;
 
-	i = lists.begin();
+	pms->log(MSG_DEBUG, 0, "Synchronizing all playlists with MPD\n");
 
-	while (i != lists.end())
-	{
-		if (!mpd_send_list_playlist_meta(conn->h(), (*i)->filename.c_str())) {
-			return false;
-		}
+	playlist_iterator = playlists.begin();
 
-		(*i)->clear();
+	while (playlist_iterator != playlists.end()) {
 
-		while ((ent = mpd_recv_entity(conn->h())) != NULL)
-		{
-			switch(mpd_entity_get_type(ent))
-			{
-				case MPD_ENTITY_TYPE_SONG:
-					ent_song = mpd_entity_get_song(ent);
-					song = new Song(ent_song);
-					(*i)->add(song);
-					break;
-				case MPD_ENTITY_TYPE_UNKNOWN:
-					pms->log(MSG_DEBUG, 0, "BUG in retrieve_lists(): entity type not implemented by libmpdclient\n");
-					break;
-				default:
-					pms->log(MSG_DEBUG, 0, "BUG in retrieve_lists(): entity type not implemented by PMS\n");
-					break;
+		playlist = *playlist_iterator;
+
+		if (!playlist->exists_in_mpd()) {
+			delete playlist;
+			playlist_iterator = playlists.erase(playlist_iterator);
+			continue;
+		} else if (!playlist->is_synchronized()) {
+			if (!update_playlist(playlist)) {
+				return false;
 			}
-			mpd_entity_free(ent);
+			playlist->set_synchronized(true);
+		} else {
+			pms->log(MSG_DEBUG, 0, "Playlist %s is already synchronized.\n", playlist->filename.c_str());
 		}
+		++playlist_iterator;
+	}
 
-		if (!get_error_bool()) {
-			return false;
+	pms->log(MSG_DEBUG, 0, "Playlist synchronization is finished.\n");
+
+	return get_error_bool();
+}
+
+/*
+ * Retrieve the contents of a stored playlist. Will synchronize local playlists
+ * with the MPD server, overwriting the local versions.
+ *
+ * Returns true on success, false on failure.
+ */
+bool
+Control::update_playlist(Playlist * playlist)
+{
+	Song *			song;
+	mpd_entity *		ent;
+	const mpd_song *	ent_song;
+
+	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Retrieving playlist %s from MPD server.\n", playlist->filename.c_str());
+
+	if (!mpd_send_list_playlist_meta(conn->h(), playlist->filename.c_str())) {
+		return false;
+	}
+
+	playlist->clear();
+
+	while ((ent = mpd_recv_entity(conn->h())) != NULL)
+	{
+		switch(mpd_entity_get_type(ent))
+		{
+			case MPD_ENTITY_TYPE_SONG:
+				ent_song = mpd_entity_get_song(ent);
+				song = new Song(ent_song);
+				song->id = MPD_SONG_NO_ID;
+				song->pos = MPD_SONG_NO_NUM;
+				playlist->add(song);
+				break;
+			case MPD_ENTITY_TYPE_UNKNOWN:
+				pms->log(MSG_DEBUG, 0, "BUG in retrieve_lists(): entity type not implemented by libmpdclient\n");
+				break;
+			default:
+				pms->log(MSG_DEBUG, 0, "BUG in retrieve_lists(): entity type not implemented by PMS\n");
+				break;
 		}
-
-		++i;
+		mpd_entity_free(ent);
 	}
 
 	return get_error_bool();
 }
 
 /*
- * Returns a playlist with the specified filename
+ * Find a playlist with the specified filename.
+ *
+ * Returns a pointer to the Playlist object, or NULL if not found.
  */
-Songlist *	Control::findplaylist(string fn)
+Playlist *
+Control::find_playlist(string fn)
 {
-	vector<Songlist *>::iterator	i;
+	vector<Playlist *>::iterator	i;
 
 	i = playlists.begin();
-	while (i != playlists.end())
-	{
-		if ((*i)->filename == fn)
-		{
+	while (i != playlists.end()) {
+		if ((*i)->filename == fn) {
 			return *i;
 		}
 		++i;
@@ -1542,80 +1586,33 @@ Songlist *	Control::findplaylist(string fn)
 }
 
 /*
- * Creates or locates a new playlist
- * FIXME: dubious return value
+ * Create a new stored playlist.
+ *
+ * Returns true on success, false on failure.
  */
-Songlist *
-Control::newplaylist(string fn)
+bool
+Control::create_playlist(string name)
 {
-	Songlist * list;
-
-	list = findplaylist(fn);
-	if (list != NULL) {
-		return list;
-	}
-
-	list = new Songlist();
-	assert(list != NULL);
-
 	EXIT_IDLE;
 
-	if (mpd_run_save(conn->h(), fn.c_str())) {
-		list = new Songlist();
-		assert(list != NULL);
-		pms->log(MSG_DEBUG, 0, "newplaylist(): created playlist '%s'\n", fn.c_str());
-		list->filename = fn;
-		playlists.push_back(list);
-	}
+	pms->log(MSG_DEBUG, 0, "Creating a new playlist '%s'\n", name.c_str());
 
-	return list;
+	return mpd_run_save(conn->h(), name.c_str());
 }
 
 /*
- * Deletes a playlist
+ * Permanently removes a stored playlist.
+ *
+ * Returns true on success, false on failure.
  */
 bool
-Control::deleteplaylist(string fn)
+Control::delete_playlist(string name)
 {
-	vector<Songlist *>::iterator	i;
-	Songlist *			lst;
-
 	EXIT_IDLE;
 
-	/* FIXME: implement PlaylistList for this functionality */
-	i = playlists.begin();
-	do {
-		if ((*i)->filename != fn) {
-			continue;
-		}
+	pms->log(MSG_DEBUG, 0, "Deleting the playlist '%s'\n", name.c_str());
 
-		if (mpd_run_rm(conn->h(), (*i)->filename.c_str())) {
-			lst = *i;
-			delete *i;
-			i = playlists.erase(i);
-
-			if (lst != _active) {
-				return true;
-			}
-
-			/* Change active list */
-			if (i == playlists.end())
-			{
-				if (playlists.size() == 0)
-					_active = *i;
-				else
-					--i;
-			}
-
-			_active = *i;
-			return true;
-		}
-
-		break;
-
-	} while (++i != playlists.end());
-
-	return false;
+	return mpd_run_rm(conn->h(), name.c_str());
 }
 
 /*
@@ -1631,11 +1628,12 @@ Control::activelist()
  * Sets the active playlist
  *
  * FIXME: why all the logic below?
+ * FIXME: logic needed due to setwin() calling us with some arbitrary list
  */
 bool
 Control::activatelist(Songlist * list)
 {
-	vector<Songlist *>::iterator	i;
+	vector<Playlist *>::iterator	i;
 
 	if (list == _playlist || list == _library) {
 		_active = list;
@@ -1652,7 +1650,7 @@ Control::activatelist(Songlist * list)
 		++i;
 	}
 
-	assert(false);
+	return false;
 }
 
 /*
