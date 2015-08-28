@@ -4,10 +4,9 @@ pms_SOURCES = action.cpp color.cpp command.cpp config.cpp conn.cpp display.cpp i
 
 AM_CXXFLAGS = \
 	@glib_CFLAGS@ \
-	@libzmq_CFLAGS@ \
 	@libmpdclient_CFLAGS@ \
 	-DLOCALE_DIR=\""$(datadir)/locale"\"
 
-pms_LDADD = @CURSES_LIB@ $(glib_LIBS) $(libzmq_LIBS) $(libmpdclient_LIBS) -lpthread
+pms_LDADD = @CURSES_LIB@ $(glib_LIBS) $(libmpdclient_LIBS) -lpthread
 
 ACLOCAL_AMFLAGS = -I m4

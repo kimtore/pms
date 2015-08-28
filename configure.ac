@@ -22,7 +22,6 @@ AC_PROG_MAKE_SET
 # Checks for libraries.
 AX_WITH_CURSES
 PKG_CHECK_MODULES([glib], [glib-2.0 >= 2.0],, [AC_MSG_ERROR([glib 2.0 or newer is required])])
-PKG_CHECK_MODULES([libzmq], [libzmq >= 3.0],, [AC_MSG_ERROR([ZeroMQ 3.x or newer is required])])
 PKG_CHECK_MODULES([libmpdclient], [libmpdclient >= 2.5],, [AC_MSG_ERROR([libmpdclient 2.5 or newer is required])])
 
 # Checks for header files.
