@@ -50,11 +50,8 @@ Song::Song(const mpd_song * song)
 	title			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_TITLE, 0));
 	album			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ALBUM, 0));
 	track			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_TRACK, 0));
-	trackshort		= "";
 	name			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_NAME, 0));
 	date			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_DATE, 0));
-	//year			= Pms::tostring(mpd_song_get_tag(YEAR));
-        year = date;
 
 	genre			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_GENRE, 0));
 	composer		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_COMPOSER, 0));
@@ -142,8 +139,11 @@ void		Song::init()
 	vector<string *>	rewritten;
 
 	/* year from date */
-	if (date.size() >= 4)
+	if (date.size() >= 4) {
 		year = date.substr(0, 4);
+	} else {
+		year = "";
+	}
 
 	/* trackshort from track */
 	trackshort = track;
