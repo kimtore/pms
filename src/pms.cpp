@@ -22,11 +22,11 @@
  */
 
 #include "pms.h"
-#include "zeromq.h"
 
 #include <mpd/client.h>
+#include <sys/select.h>
+#include <errno.h>
 #include <unistd.h>
-#include <zmq.h>
 #include <time.h>
 
 /* Maximum time to spend waiting for events in main loop */
@@ -78,92 +78,6 @@ struct timespec difftime(struct timespec start, struct timespec end)
 	return temp;
 }
 
-/**
- * MPD IDLE thread. Reads the reply from MPD's IDLE command, and makes sure the
- * main thread gets to know about it.
- */
-void *
-idle_thread_main(void * zeromq_context)
-{
-	enum mpd_idle idle_reply;
-	void * socket;
-	int rc;
-
-	socket = zmq_socket(zeromq_context, ZMQ_REP);
-	assert(socket != NULL);
-
-	rc = zmq_bind(socket, ZEROMQ_SOCKET_IDLE);
-	assert(rc == 0);
-
-	do {
-		/* Receive from main thread */
-		rc = zmq_recv(socket, NULL, 0, 0);
-		if (rc == -1) {
-			if (errno == EINTR) {
-				continue;
-			}
-			abort();
-		}
-
-		/* Receive IDLE reply */
-		pms->log(MSG_DEBUG, 0, "Waiting for IDLE reply from server...\n");
-		idle_reply = mpd_recv_idle(pms->conn->h(), true);
-		pms->log(MSG_DEBUG, 0, "IDLE reply received from server, code = %d\n", idle_reply);
-
-		/* Send reply to main thread */
-		while(true) {
-			rc = zmq_send(socket, (void *)&idle_reply, sizeof(enum mpd_idle *), 0);
-			if (rc == -1) {
-				if (errno == EINTR) {
-					continue;
-				}
-				abort();
-			}
-			break;
-		}
-
-	} while(1);
-
-	return NULL;
-}
-
-/**
- * Input thread. Handles all user input and makes sure the
- * main thread gets to know about it.
- */
-void *
-input_thread_main(void * zeromq_context)
-{
-	wchar_t ch;
-	void * socket;
-	int rc;
-
-	socket = zmq_socket(zeromq_context, ZMQ_PUB);
-	assert(socket != NULL);
-
-	rc = zmq_connect(socket, ZEROMQ_SOCKET_INPUT);
-	assert(rc == 0);
-
-	do {
-		/* Poll for user input */
-		pms->log(MSG_DEBUG, 0, "Waiting for input keystroke from ncurses...\n");
-		ch = pms->input->get_keystroke();
-		pms->log(MSG_DEBUG, 0, "Keystroke registered: chr(%d) = '%c'\n", ch, ch);
-
-		/* Send keystroke to main thread */
-		rc = zmq_send(socket, (void *)&ch, sizeof(wchar_t *), 0);
-		if (rc == -1) {
-			if (errno == EINTR) {
-				continue;
-			}
-			abort();
-		}
-
-	} while(1);
-
-	return NULL;
-}
-
 /*
  * Init
  */
@@ -195,7 +109,62 @@ Pms::get_clock()
 }
 
 /**
- * Check if there is an MPD IDLE event on the ZeroMQ socket.
+ * Poll stdin and the MPD socket for events.
+ *
+ * Returns true if any events occurred, false if not.
+ */
+bool
+Pms::poll_events(long timeout_ms)
+{
+	struct timeval timeout;
+	int mpd_fd;
+	int nfds;
+	int rc;
+
+	if ((mpd_fd = conn->get_mpd_file_descriptor()) != -1) {
+		FD_SET(mpd_fd, &poll_file_descriptors);
+	}
+
+	FD_SET(STDIN_FILENO, &poll_file_descriptors);
+
+	nfds = STDIN_FILENO > mpd_fd ? STDIN_FILENO : mpd_fd;
+
+	timeout.tv_sec = timeout_ms / 1000;
+	timeout.tv_usec = (timeout_ms * 1000) - (timeout.tv_sec * 1000000);
+
+	rc = select(++nfds, &poll_file_descriptors, NULL, NULL, &timeout);
+
+	assert(rc != EINVAL);
+
+	if (rc == -1) {
+		FD_ZERO(&poll_file_descriptors);
+	}
+
+	return (rc > 0);
+}
+
+/**
+ * Return true if there is data on the MPD socket. Remember to call
+ * poll_events() beforehand.
+ */
+bool
+Pms::has_mpd_events()
+{
+	return FD_ISSET(conn->get_mpd_file_descriptor(), &poll_file_descriptors);
+}
+
+/**
+ * Return true if there is data on stdin. Remember to call poll_events()
+ * beforehand.
+ */
+bool
+Pms::has_stdin_events()
+{
+	return FD_ISSET(STDIN_FILENO, &poll_file_descriptors);
+}
+
+/**
+ * Check if there is an MPD IDLE event on the MPD socket.
  * Set pending flags on the Control class, and sets real idle status.
  *
  * Returns true if there was an IDLE event, false if none.
@@ -205,11 +174,13 @@ Pms::run_has_idle_events()
 {
 	enum mpd_idle idle_reply;
 
-	if (!zeromq->has_idle_events()) {
+	if (!has_mpd_events()) {
 		return false;
 	}
 
-	idle_reply = zeromq->get_idle_events();
+	pms->log(MSG_DEBUG, 0, "Received IDLE reply from server.\n");
+	idle_reply = mpd_recv_idle(conn->h(), true);
+
 	comm->set_mpd_idle_events(idle_reply);
 	comm->set_is_idle(false);
 	timer_elapsed = get_clock();
@@ -376,11 +347,6 @@ Pms::main()
 	disp->forcedraw();
 	disp->refresh();
 
-	/* Set up inter-thread communication */
-	zeromq = new ZeroMQ();
-	zeromq->start_thread_idle(idle_thread_main);
-	zeromq->start_thread_input(input_thread_main);
-
 	/* Reset all clocks */
 	timer_now = get_clock();
 	timer_elapsed = get_clock();
@@ -510,18 +476,19 @@ Pms::main()
 			if (!comm->idle()) {
 				continue;
 			}
-			zeromq->continue_idle();
 		}
 
 		/* Block until events received or timeout reached. */
-		zeromq->poll_events(MAIN_LOOP_INTERVAL);
+		poll_events(MAIN_LOOP_INTERVAL);
 
 		/* Process events from the IDLE socket. */
-		run_has_idle_events();
+		if (run_has_idle_events()) {
+			continue;
+		}
 
 		/* Process events from the input socket. */
-		if (zeromq->has_input_events()) {
-			zeromq->get_input_events();
+		if (has_stdin_events()) {
+			input->get_keystroke();
 			pending = input->dispatch();
 			if (pending != PEND_NONE) {
 				handle_command(pending);

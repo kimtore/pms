@@ -36,6 +36,9 @@ private:
 	int		timeout;
 	int		error;
 
+	/* File descriptor to the MPD server connection. Must only be used for polling! */
+	int		fd;
+
 public:
 			Connection(string, long, long);
 			~Connection();
@@ -46,6 +49,7 @@ public:
 	int		connect();
 	int		disconnect();
 	bool		clear_error();
+	int		get_mpd_file_descriptor();
 };
  
 #endif /* _PMS_CONN_H_ */

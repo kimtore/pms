@@ -35,6 +35,7 @@ Connection::Connection(string n_hostname, long n_port, long n_timeout)
 	this->port = static_cast<unsigned int>(n_port);
 	this->timeout = static_cast<int>(n_timeout);
 	this->handle = NULL;
+	this->fd = -1;
 }
 
 Connection::~Connection()
@@ -78,6 +79,7 @@ int Connection::connect()
 	}
 
 	err = mpd_connection_get_error(handle);
+	fd = mpd_connection_get_fd(handle);
 
 	pms->log(MSG_DEBUG, 0, "New connection handle is %p, error %d\n", handle, err);
 
@@ -93,8 +95,18 @@ int Connection::disconnect()
 		pms->log(MSG_DEBUG, 0, "Closing connection to MPD server.\n");
 		mpd_connection_free(handle);
 		handle = NULL;
+		fd = -1;
 		pms->comm->set_is_idle(false);
 	}
 
 	return 0;
+}
+
+/**
+ * Return the file descriptor to the MPD socket.
+ */
+int
+Connection::get_mpd_file_descriptor()
+{
+	return fd;
 }

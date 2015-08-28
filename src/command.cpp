@@ -1837,7 +1837,7 @@ Control::noidle()
 bool
 Control::wait_until_noidle()
 {
-	pms->zeromq->poll_events(NOIDLE_POLL_TIMEOUT);
+	pms->poll_events(NOIDLE_POLL_TIMEOUT);
 	return pms->run_has_idle_events();
 }
 

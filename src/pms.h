@@ -44,7 +44,6 @@
 #include <sstream>
 #include <stdio.h>
 #include <mpd/client.h>
-#include <zmq.h>
 #include <time.h>
 #include <pthread.h>
 
@@ -61,7 +60,6 @@
 #include "action.h"
 #include "input.h"
 #include "mediator.h"
-#include "zeromq.h"
 
 #ifdef __FreeBSD__
 	#include <sys/wait.h>
@@ -73,8 +71,6 @@ using namespace std;
  * Global functions
  */
 void					debug(const char *, ...);
-void *					idle_thread_main(void *);
-void *					input_thread_main(void *);
 struct timespec				difftime(struct timespec, struct timespec);
 
 
@@ -93,6 +89,9 @@ private:
 	pms_win_playlist *		playlist;
 	pms_win_playlist *		library;
 	vector<Message *>		msglog;
+
+	/* Polling */
+	fd_set				poll_file_descriptors;
 
 	/* Timers */
 	struct timespec			timer_now;
@@ -131,7 +130,6 @@ public:
 	Fieldtypes *			fieldtypes;
 	Formatter *			formatter;
 	Configurator *			config;
-	ZeroMQ *			zeromq;
 
 	/* FIXME: this is an attempt on the above */
 	Mediator *			mediator;
@@ -150,6 +148,11 @@ public:
 	static string			zeropad(int, unsigned int);
 	static string			formtext(string);
 	static bool			unicode();
+
+	/* Poll for input events */
+	bool				poll_events(long timeout_ms);
+	bool				has_mpd_events();
+	bool				has_stdin_events();
 
 	/* Public member functions */
 	bool				run_has_idle_events();
