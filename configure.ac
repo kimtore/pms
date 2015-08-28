@@ -23,7 +23,7 @@ AC_PROG_MAKE_SET
 AX_WITH_CURSES
 PKG_CHECK_MODULES([glib], [glib-2.0 >= 2.0],, [AC_MSG_ERROR([glib 2.0 or newer is required])])
 PKG_CHECK_MODULES([libzmq], [libzmq >= 3.0],, [AC_MSG_ERROR([ZeroMQ 3.x or newer is required])])
-PKG_CHECK_MODULES([libmpdclient], [libmpdclient >= 2.11],, [AC_MSG_ERROR([libmpdclient 2.11 or newer is required])])
+PKG_CHECK_MODULES([libmpdclient], [libmpdclient >= 2.5],, [AC_MSG_ERROR([libmpdclient 2.5 or newer is required])])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h libintl.h limits.h locale.h netdb.h netinet/in.h stdlib.h string.h sys/param.h sys/socket.h sys/time.h unistd.h])

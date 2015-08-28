@@ -101,7 +101,7 @@ Mpd_status::assign_status(struct mpd_status * status)
 	db_updating		= mpd_status_get_update_id(status);
 
 	/* Time elapsed */
-#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
+#if LIBMPDCLIENT_CHECK_VERSION(2, 1, 0)
 	ms = mpd_status_get_elapsed_ms(status);
 #else
 	ms = mpd_status_get_elapsed(status) * 1000;
