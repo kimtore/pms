@@ -268,63 +268,60 @@ The topbar syntax allows free customization of the top area of the display. A go
 ## Playback
 
 play
-:   Play the song under the cursor
+:   Play the song under the cursor.
 
 add
-:   Add the selected song(s) to the playlist. If a playlist is selected in windowlist mode, that list is appended to the playlist.
+:   Add the selected song(s), or the selected playlist if in windowlist mode, to the queue.
 
 add-to
-:   Add the selected song(s) to a chosen playlist
+:   Add the selected song(s) to a chosen playlist.
 
 next
-:   Play the next song from the playlist or library based on current play mode
+:   Play the next song from the playlist or library.
 
 really-next
-:   Play the next song from playlist or library, regardless of play mode.
+:   DEPRECATED. Play the next song from the playlist or library.
 
 prev
-:   Play previous song
+:   Play the previous song.
 
 pause
-:   Pause playback or play if playback was paused; do nothing if playback is stopped
+:   Pause playback, or play if playback was paused. Does nothing if playback is stopped.
 
 stop
-:   Stop playback
+:   Stop playback.
 
 toggle-play
-:   Toggle playback. Play from the current song if playback was stopped or paused, otherwise pause.
+:   Acts like the *pause* command, but will start playing the current song if playback is stopped.
 
-volume [string]
-:   Set volume. *string* can be delta (+/-value, for instance +4) or absolute value (0~100). If run without any parameters, return the current volume.
+volume *string*
+:   Set volume. *string* can be delta (+/-value, for instance +4) or absolute value (0~100).
 
 mute
 :   Toggle mute
 
-crossfade [integer]
+crossfade [*integer*]
 :   Set crossfade time in seconds. If no integer is given, or integer is 0, toggle crossfade. If set to a negative value, turn crossfade off.
 
-seek integer
+seek *integer*
 :   Seek integer seconds (can be negative) in the playing song.
-
-repeat
-:   Rotate repeat mode through none, repeat one and repeat list
 
 ## Adding and playing
 
 play-album
-:   Play all songs from the album of the song under the cursor
+:   Add and play all songs in the same album as the song under the cursor.
 
 play-artist
-:   Play all songs from the selected artist
+:   Add and play all songs from the same artist as the song under the cursor.
 
-play-random [n]
-:   Play one or n random songs from the library or visible list.
+play-random [*NUMBER*]
+:   Add and play one or *NUMBER* random songs from the visible list.
 
 add-album
-:   Add all songs from the selected album to playlist
+:   Add all songs from the selected album to playlist. If part of the album already is at the end of the playlist, the remainder is added.
 
 add-all
-:   Add all songs from the currently visible list to playlist. If part of the album already is at the end of the playlist, the remainder is added.
+:   Add all songs from the currently visible list to playlist.
 
 add-artist
 :   Add all songs from the selected artist to the playlist
