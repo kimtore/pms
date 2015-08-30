@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([pms], [0.42], [kimtjen@gmail.com])
+AC_INIT([pms], [0.99.0~git], [kimtjen@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_SRCDIR([src/pms.cpp])
 AC_CONFIG_HEADERS([config.h])

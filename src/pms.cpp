@@ -45,17 +45,20 @@ int main(int argc, char *argv[])
 	int		exitcode;
 
 	pms = new Pms(argc, argv);
-	if (!pms)
-	{
+
+	if (!pms) {
 		printf("Not enough memory, aborting.\n");
 		return PMS_EXIT_LOMEM;
 	}
 
 	exitcode = pms->init();
-	if (exitcode == 0)
-	{
+
+	if (exitcode == -1) {
+		return PMS_EXIT_SUCCESS;
+	} else if (exitcode == 0) {
 		exitcode = pms->main();
 	}
+
 	delete pms;
 	return exitcode;	
 }
@@ -549,7 +552,7 @@ int			Pms::init()
 	string			str;
 	vector<string> *	tok;
 
-	int			exitcode = PMS_EXIT_SUCCESS;
+	int			exitcode;
 	char *			host;
 	char *			port;
 	char *			password;
@@ -635,13 +638,13 @@ int			Pms::init()
 	}
 
 	/* Parse command-line */
-	if (parse_args(argc, argv) == false)
-	{
-		return PMS_EXIT_BADARGS;
+	if ((exitcode = parse_args(argc, argv)) != PMS_EXIT_SUCCESS) {
+		return exitcode;
 	}
 
-	if (!config->loadconfigs())
+	if (!config->loadconfigs()) {
 		return PMS_EXIT_CONFIGERR;
+	}
 
 	/* Seed random number generator */
 	srand(time(NULL));
@@ -1408,116 +1411,66 @@ Pms::print_version()
 /*
  * Print switch usage
  */
-void			Pms::print_usage()
+void
+Pms::print_usage()
 {
 	printf("Usage:\n");
 	printf("  -%s\t\t\t%s\n", "v", "print version and exit");
-	printf("  -%s\t\t%s\n", "? --help", "display command-line options");
-	printf("  -%s\t\t\t%s\n", "d", "turn on debugging to stderr");
+	printf("  -%s\t\t\t%s\n", "h", "display this help screen and exit");
+	printf("  -%s\t\t\t%s\n", "d", "turn on debugging to standard error");
 	printf("  -%s\t\t%s\n", "c <filename>", "use an alternative config file");
-	printf("  -%s\t\t%s\n", "h <host>", "connect to this MPD server");
+	printf("  -%s\t\t%s\n", "H <host>", "connect to this MPD server");
 	printf("  -%s\t\t%s\n", "p <port>", "connect to this port");
 	printf("  -%s\t\t%s\n", "P <password>", "give this password to MPD server");
 }
 
 /*
- * Helper function, prints an error
- */
-bool			Pms::require_arg(char c)
-{
-	printf("Error: option '%c' requires an argument.\n", c);
-	print_usage();
-	return false;
-}
-
-/*
  * Parse command-line arguments
  */
-bool			Pms::parse_args(int argc, char * argv[])
+int
+Pms::parse_args(int argc, char ** argv)
 {
-	int			argn;
-	string			value = "";
-	string			arg = "";
-	bool			switched = false;
-	string			s;
-	string::iterator	i;
+	int c;
 
-	if (argc <= 1)
-		return true;
-
-	for (argn = 1; argn < argc; argn++)
-	{
-		s = argv[argn];
-
-		if (s == "--help")
-		{
-			print_usage();
-			return false;
+	while ((c = getopt(argc, argv, "hdvc:H:p:P:")) != -1) {
+		switch(c) {
+			case 'd':
+				options->set_bool("debug", true);
+				break;
+			case 'v':
+				print_version();
+				return -1;
+			case 'h':
+				print_usage();
+				return -1;
+			case 'c':
+				options->set_string("configfile", optarg);
+				break;
+			case 'H':
+				options->set_string("host", optarg);
+				break;
+			case 'p':
+				options->set_long("port", atoi(optarg));
+				if (options->get_long("port") <= 0 || options->get_long("port") > 65535) {
+					printf(_("Error: port number must be from 1-65535\n"));
+					return PMS_EXIT_BADARGS;
+				}
+				break;
+			case 'P':
+				options->set_string("password", optarg);
+				break;
+			case '?':
+				if (optopt == 'c' || optopt == 'H' || optopt == 'p' || optopt == 'P') {
+					printf(_("Error: option -%c requires an argument.\n"), optopt);
+				} else {
+					printf(_("Error: unknown option -%c.\n"), c);
+				}
+				print_usage();
+				return PMS_EXIT_BADARGS;
+			default:
+				abort();
 		}
-
-		i = s.begin();
-
-		while (i != s.end())
-		{
-			if (!switched)
-				if (*i != '-')
-					return false;
-
-			switch (*i)
-			{
-				case 'd':
-					options->set_bool("debug", true);
-					break;
-				case 'v':
-					print_version();
-					return false;
-				case '?':
-					print_usage();
-					return false;
-				case 'c':
-					if (++argn >= argc)
-						return require_arg(*i);
-					options->set_string("configfile", argv[argn]);
-					break;
-				case 'h':
-					if (++argn >= argc)
-						return require_arg(*i);
-					options->set_string("host", argv[argn]);
-					break;
-				case 'p':
-					if (++argn >= argc)
-						return require_arg(*i);
-					options->set_long("port", atoi(argv[argn]));
-					if (options->get_long("port") <= 0 || options->get_long("port") > 65535)
-					{
-						printf(_("Error: port number must be from 1-65535\n"));
-						return false;
-					}
-					break;
-				case 'P':
-					if (++argn >= argc)
-						return require_arg(*i);
-					options->set_string("password", argv[argn]);
-					break;
-				case '-':
-					if (switched)
-					{
-						print_usage();
-						return false;
-					}
-					switched = true;
-					break;
-				default:
-					printf(_("Error: unknown option '%c'\n"), *i);
-					print_usage();
-					return false;
-			}
-			++i;
-		}
-	
-		switched = false;
 	}
 
-	return true;
+	return PMS_EXIT_SUCCESS;
 }
-

@@ -1,7 +1,7 @@
 /* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS	<<Practical Music Search>>
- * Copyright (C) 2006-2010  Kim Tore Jensen
+ * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #define _PMS_H_
 
 #define PMS_NAME "Practical Music Search"
-#define PMS_COPYRIGHT "(c) 2006-2010 by Kim Tore Jensen <kimtjen@gmail.com>"
+#define PMS_COPYRIGHT "(c) 2006-2015 Kim Tore Jensen <kimtjen@gmail.com>"
 
 #define PMS_EXIT_SUCCESS 0
 #define PMS_EXIT_NODISPLAY 1
@@ -110,8 +110,7 @@ private:
 	/* Options/arguments */
 	void				print_version();
 	void				print_usage();
-	bool				require_arg(char);
-	bool				parse_args(int, char **);
+	int				parse_args(int, char **);
 
 public:
 

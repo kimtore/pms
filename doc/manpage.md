@@ -8,7 +8,9 @@ pms − Practical Music Search, a Vim-like MPD client based on ncurses
 
 # SYNOPSIS
 
-pms [*−?*] [*−v*] [*−d*] [*−h hostname*] [*−c configfile*] [*−p port*] [*−P password*]
+pms [*−d*] [*−H hostname*] [*−c configfile*] [*−p port*] [*−P password*]
+
+pms [*−h*|*-v*]
 
 # DESCRIPTION
 
@@ -18,7 +20,7 @@ command-line mode, several modes of play, and an easy but powerful interface.
 
 # OPTIONS
 
--?, \--help
+-h
 :   Show command-line options and exit
 
 -v
@@ -29,7 +31,7 @@ command-line mode, several modes of play, and an easy but powerful interface.
     option, you should redirect output to a log file lest you clutter up the
     screen.
 
--h *hostname*
+-H *hostname*
 :   Connect to MPD server hostname
 
 -c *configfile*
