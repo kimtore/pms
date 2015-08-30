@@ -306,6 +306,7 @@ public:
 	/* List management */
 	Playlist *		find_playlist(string filename);
 	bool			create_playlist(string name);
+	bool			save_playlist(string name);
 	bool			delete_playlist(string name);
 	Songlist *	activelist();
 	bool		activatelist(Songlist *);

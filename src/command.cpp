@@ -1599,7 +1599,30 @@ Control::create_playlist(string name)
 {
 	EXIT_IDLE;
 
-	pms->log(MSG_DEBUG, 0, "Creating a new playlist '%s'\n", name.c_str());
+	pms->log(MSG_DEBUG, 0, "Creating playlist '%s'\n", name.c_str());
+
+	/* Apparently, it is enough to run "playlistclear" in order to create a
+	 * new playlist. However, we do not get protection against clearing an
+	 * existing playlist. This is worked around by calling mpd_run_save()
+	 * first, which will complain with a suitable error message. */
+	if (mpd_run_save(conn->h(), name.c_str())) {
+		mpd_run_playlist_clear(conn->h(), name.c_str());
+	}
+
+	return get_error_bool();
+}
+
+/*
+ * Save the queue contents into a stored playlist.
+ *
+ * Returns true on success, false on failure.
+ */
+bool
+Control::save_playlist(string name)
+{
+	EXIT_IDLE;
+
+	pms->log(MSG_DEBUG, 0, "Saving the queue into playlist '%s'\n", name.c_str());
 
 	return mpd_run_save(conn->h(), name.c_str());
 }
