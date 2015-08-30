@@ -59,7 +59,6 @@ Songlist::Songlist()
 Songlist::~Songlist()
 {
 	this->clear();
-	position = 0;
 }
 
 /*
@@ -699,6 +698,7 @@ void Songlist::clear()
 	songs.clear();
 	filtersongs.clear();
 
+	position = 0;
 	length = 0;
 	qlen = 0;
 	qpos = 0;
