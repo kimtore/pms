@@ -24,6 +24,7 @@
 #include "display.h"
 #include "config.h"
 #include "pms.h"
+#include <cstdio>
 #include <sstream>
 
 extern Pms *			pms;
@@ -1352,6 +1353,9 @@ Display::set_xterm_title()
 
 		oss << "\033]0;" << title << '\007';
 		putp(oss.str().c_str());
+
+		//stdout is in line buffered mode be default and thus needs explicit flush to communicate with terminal successfully.
+		fflush(stdout);
 	} else {
 		pms->log(MSG_DEBUG, 0, _("Disabling XTerm window title: WINDOWID not found.\n"));
 		pms->options->set_string("xtermtitle", "");
