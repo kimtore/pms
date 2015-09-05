@@ -24,6 +24,8 @@
 #include "display.h"
 #include "config.h"
 #include "pms.h"
+#include <cstdio>
+#include <sstream>
 
 extern Pms *			pms;
 
@@ -1337,9 +1339,9 @@ void		Display::forcedraw()
 void
 Display::set_xterm_title()
 {
-	char		buffer[4096];
 	unsigned int	reallen;
 	string		title;
+	ostringstream	oss;
 
 	if (!pms->options->get_string("xtermtitle").size()) {
 		return;
@@ -1348,9 +1350,12 @@ Display::set_xterm_title()
 	if (getenv("WINDOWID")) {
 		title = pms->formatter->format(pms->cursong(), pms->options->get_string("xtermtitle"), reallen, NULL, true);
 		pms->log(MSG_DEBUG, 0, _("Set XTerm window title: '%s'\n"), title.c_str());
-		snprintf(buffer, 4096, "%c]0;%s%c", '\033', title.c_str(), '\007');
-		buffer[4096] = '\0';
-		putp(buffer);
+
+		oss << "\033]0;" << title << '\007';
+		putp(oss.str().c_str());
+
+		//stdout is in line buffered mode be default and thus needs explicit flush to communicate with terminal successfully.
+		fflush(stdout);
 	} else {
 		pms->log(MSG_DEBUG, 0, _("Disabling XTerm window title: WINDOWID not found.\n"));
 		pms->options->set_string("xtermtitle", "");
