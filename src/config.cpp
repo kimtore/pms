@@ -1,6 +1,6 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
- * PMS  <<Practical Music Search>>
+ * PMS	<<Practical Music Search>>
  * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,10 @@
 
 
 #include <string>
+#include <stdlib.h>
+#include <errno.h>
+
+#include "set_parameters.h"
 #include "mycurses.h"
 #include "config.h"
 #include "pms.h"
@@ -30,6 +34,26 @@
 using namespace std;
 
 extern Pms *		pms;
+
+static inline string &
+ltrim(string &s)
+{
+	s.erase(s.begin(), find_if(s.begin(), s.end(), not1(ptr_fun<int, int>(isspace))));
+	return s;
+}
+
+static inline string &
+rtrim(string &s)
+{
+	s.erase(find_if(s.rbegin(), s.rend(), not1(ptr_fun<int, int>(isspace))).base(), s.end());
+	return s;
+}
+
+static inline string &
+trim(string &s)
+{
+	return ltrim(rtrim(s));
+}
 
 bool			Fieldtypes::add(string nname, string nheader, Item ntype, unsigned int nminlen, bool (*nsortfunc) (Song *, Song *))
 {
@@ -349,41 +373,6 @@ bool			Configurator::strtobool(string s)
 }
 
 /*
- * Verify that a columns string is OK
- */
-bool			Configurator::verify_columns(string s)
-{
-	unsigned int		i;
-	vector<string> *	v;
-
-	if (s.size() == 0)
-		return false;
-
-	v = Pms::splitstr(s, " ");
-
-	for (i = 0; i < v->size(); i++)
-	{
-		if (pms->fieldtypes->lookup((*v)[i]) == -1)
-		{
-			pms->msg->clear();
-			pms->msg->code = CERR_INVALID_COLUMN;
-			pms->msg->str = _("invalid column type");
-			pms->msg->str += " '" + (*v)[i] + "'";
-			delete v;
-			return false;
-		}
-	}
-
-	delete v;
-
-	return true;
-}
-
-
-
-
-
-/*
  * Constructor
  */
 Configurator::Configurator(Options * o, Bindings * b)
@@ -450,73 +439,42 @@ vector<string> *	Configurator::splitline(string line)
 	i = line.begin();
 	while (i != line.end())
 	{
-		if (Configurator::is_whitespace(*i) || *i == '=' || *i == ':')
-		{
-			if (buf.size() > 0)
-			{
+		if (Configurator::is_whitespace(*i)) {
+			if (buf.size() > 0) {
 				v->push_back(buf);
 				buf.clear();
 			}
-			if (*i == '=')
-				v->push_back("=");
-			else if (*i == ':')
-				v->push_back(":");
-		}
-		else
-		{
+		} else {
 			buf += *i;
 		}
 		++i;
 	}
 
-	if (buf.size() > 0)
+	if (buf.size() > 0) {
 		v->push_back(buf);
+	}
 
 	return v;
 }
 
 /*
- * Gets parameter from a command line string
- */
-string			Configurator::getparamopt(string buffer)
-{
-	size_t				n;
-	size_t				epos;
-	size_t				cpos;
-
-	//set n to the first position of = or :, return empty string if neither 
-	//is found
-	epos = buffer.find_first_of("=");
-	cpos = buffer.find_first_of(":");
-	if (epos == string::npos && cpos == string::npos)
-		return "";
-	else if (cpos == string::npos || epos < cpos)
-		n = epos;
-	else
-		n = cpos;
-	if (n == string::npos || n == buffer.size() - 1)
-		return "";
-
-	buffer = buffer.substr(n + 1);
-	while (buffer.size() > 0 && Configurator::is_whitespace(buffer[buffer.size()-1]))
-		buffer = buffer.substr(0, buffer.size() - 1);
-
-	return buffer;
-}
-
-/*
  * Interprets a command line
  */
-bool			Configurator::readline(string buffer)
+bool
+Configurator::readline(string buffer)
 {
 	vector<string> *		tok;
 	vector<string>::iterator	it;
 	bool				state = false;
 	string				proc;
 	string				val;
+	SetParameters *			set_parameters;
 
 	/* No errors by default */
 	pms->msg->clear();
+
+	/* Trim the string */
+	trim(buffer);
 
 	/* Empty lines pass through */
 	if (buffer.size() == 0)
@@ -537,53 +495,34 @@ bool			Configurator::readline(string buffer)
 	proc = (*tok)[0];
 
 	/* Process first keyword */
-	if (proc == "set" || proc == "se")
-	{
-		proc.clear();
-		val.clear();
+	if (proc == "set" || proc == "se") {
 
-		if (tok->size() < 2)
+		if (tok->size() < 2) {
 			pms->msg->code = CERR_MISSING_IDENTIFIER;
-		else
-		{
-			proc = (*tok)[1];
-			if (tok->size() == 2)
-			{
-				//check for various prefixes/suffixes
-				if (pms->options->get_type(proc) == SETTING_TYPE_BOOLEAN)
-					return pms->options->set(proc, "true");
-				else if (proc.substr(proc.length() - 1, 1) == "?" && pms->options->get_type(proc.substr(0, proc.length() - 1)) != SETTING_TYPE_EINVAL)
-				{
-					pms->options->dump(proc.substr(0, proc.length() - 1));
-					return false;
-				}
-				else if (proc.substr(0, 2) == "no" && pms->options->get_type(proc.substr(2)) == SETTING_TYPE_BOOLEAN)
-					return pms->options->set(proc.substr(2), "false");
-				else if (proc.substr(0, 3) == "inv" && pms->options->get_type(proc.substr(3)) == SETTING_TYPE_BOOLEAN)
-					return pms->options->toggle(proc.substr(3));
-				else if (proc.substr(proc.length() - 1, 1) == "!" && pms->options->get_type(proc.substr(0, proc.length() - 1)) == SETTING_TYPE_BOOLEAN)
-					return pms->options->toggle(proc.substr(0, proc.length() - 1));
-				else if (pms->options->get_type(proc) == SETTING_TYPE_EINVAL)
-					pms->msg->code = CERR_INVALID_IDENTIFIER;
-				else
-				{
-					pms->options->dump(proc);
-					return false;
-				}
-			}
-			else if (pms->options->get_type(proc) == SETTING_TYPE_BOOLEAN || tok->at(2) != "=" && tok->at(2) != ":")
+		} else {
+			proc = buffer.substr(proc.size() + 1);
+			set_parameters = new SetParameters(proc);
+			if (!set_parameters->exists()) {
+				pms->msg->code = CERR_INVALID_OPTION;
+			} else if (set_parameters->is_valid_query()) {
+				proc = "  " + set_parameters->repr();
+				pms->log(MSG_STATUS, STOK, proc.c_str());
+			} else if (!set_parameters->has_valid_operator()) {
 				pms->msg->code = CERR_UNEXPECTED_TOKEN;
+			} else if (!set_parameters->commit()) {
+				pms->msg->code = CERR_INVALID_VALUE;
+			}
 		}
-
-		if (pms->msg->code == CERR_NONE)
-			val = Configurator::getparamopt(buffer);
 
 		delete tok;
 
 		switch(pms->msg->code)
 		{
 			case CERR_NONE:
-				return pms->options->set(proc, val);
+				return true;
+			case CERR_INVALID_VALUE:
+				pms->msg->str = _("invalid value");
+				return false;
 			case CERR_INVALID_IDENTIFIER:
 				pms->msg->str = _("invalid identifier");
 				pms->msg->str += " '" + proc + "'";
@@ -701,8 +640,9 @@ bool			Configurator::loadconfigs()
 
 	/* Make a list of possible configuration files */
 	// commandline argument
-	if (pms->options->get_string("configfile").length() > 0)
-		configfiles.push_back(pms->options->get_string("configfile"));
+	if (pms->options->configfile.length() > 0) {
+		configfiles.push_back(pms->options->configfile);
+	}
 
 	// XDG config home (usually $HOME/.config)
 	if (xdgconfighome == NULL || strlen(xdgconfighome) == 0)
@@ -768,7 +708,7 @@ bool			Configurator::loadconfigs()
 bool			Configurator::set_color(string name, string pairs)
 {
 	vector<string> *	pair;
-	string 			str;
+	string			str;
 	color *			dest;
 	colortable_fields *	field;
 	Colortable *		c;

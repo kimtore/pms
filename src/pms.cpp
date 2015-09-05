@@ -235,6 +235,55 @@ Pms::run_cursor_follow_playback()
 	win->gotocurrent();
 }
 
+/**
+ * Check if any option values have changed in some way that requires
+ * re-initialisation, sorting, parsing, etc.
+ *
+ * Returns true if there was any changed options, false if not.
+ */
+bool
+Pms::run_options_changed()
+{
+	uint32_t flags;
+
+	flags = options->get_changed_flags();
+
+	if (flags & OPT_GROUP_CONNECTION) {
+		log(MSG_DEBUG, 0, "Connection settings have been changed; disconnecting from MPD server.\n");
+		conn->disconnect();
+	}
+
+	if (flags & OPT_GROUP_DISPLAY) {
+		log(MSG_DEBUG, 0, "Some options requiring redraw has been changed; drawing entire screen.\n");
+		disp->resized();
+		disp->forcedraw();
+	}
+
+	if (flags & OPT_GROUP_CROSSFADE) {
+		comm->crossfade(options->crossfade);
+	}
+
+	if (flags & OPT_GROUP_COLUMNS) {
+		log(MSG_DEBUG, 0, "Some options requiring change of column width has been changed.\n");
+		disp->actwin()->set_column_size();
+	}
+
+	if (flags & OPT_GROUP_SORT) {
+		log(MSG_DEBUG, 0, "Some options requiring re-sorting of the library has been changed.\n");
+		library->list->sort(options->sort);
+		library->set_column_size();
+	}
+
+	if (flags & OPT_GROUP_MOUSE) {
+		log(MSG_DEBUG, 0, "Re-setting mouse mask due to changed options.\n");
+		disp->setmousemask();
+	}
+
+	options->set_changed_flags(0);
+
+	return (flags != 0);
+}
+
 /*
  * Connection and main loop
  */
@@ -254,7 +303,7 @@ Pms::main()
 	enum mpd_server_error	server_error;
 
 	/* Connection */
-	printf(_("Connecting to host %s, port %ld..."), options->get_string("host").c_str(), options->get_long("port"));
+	printf(_("Connecting to host %s, port %ld..."), options->host.c_str(), options->port);
 
 	if (conn->connect() != MPD_ERROR_SUCCESS)
 	{
@@ -267,10 +316,10 @@ Pms::main()
 	printf(_("connected.\n"));
 
 	/* Password? */
-	if (options->get_string("password").size() > 0)
+	if (options->password.size() > 0)
 	{
 		printf(_("Sending password..."));
-		if (comm->sendpassword(options->get_string("password"))) {
+		if (comm->sendpassword(options->password)) {
 			printf(_("password accepted.\n"));
 		} else {
 			printf(_("wrong password.\n"));
@@ -298,7 +347,7 @@ Pms::main()
 			pass[strlen(pass)-1] = '\0';
 		}
 
-		options->set_string("password", pass);
+		options->password = pass;
 		if (!comm->sendpassword(pass)) {
 			printf(_("Wrong password, try again.\n"));
 			conn->clear_error();
@@ -336,7 +385,7 @@ Pms::main()
 
 	/* Focus startup list */
 	comm->activatelist(comm->playlist());
-	t_str = options->get_string("startuplist");
+	t_str = options->startuplist;
 	if (t_str == "library")
 	{
 		comm->activatelist(comm->library());
@@ -405,7 +454,7 @@ Pms::main()
 		if (comm->has_finished_update(MPD_IDLE_DATABASE)) {
 			log(MSG_STATUS, STOK, _("Library has been updated."));
 			disp->actwin()->wantdraw = true;
-			library->list->sort(options->get_string("sort"));
+			library->list->sort(options->sort);
 			library->set_column_size();
 			connect_window_list();
 			comm->clear_finished_update(MPD_IDLE_DATABASE);
@@ -432,14 +481,14 @@ Pms::main()
 			/* Shell command when song finishes */
 			/* FIXME: move into separate function */
 			if (comm->status()->state == MPD_STATE_STOP && pending != PEND_STOP) {
-				if (options->get_string("onplaylistfinish").size() > 0 && cursong() && cursong()->pos == comm->playlist()->end()) {
-					log(MSG_CONSOLE, STOK, _("Reached end of playlist, running automation command: %s"), options->get_string("onplaylistfinish").c_str());
-					int code = system(options->get_string("onplaylistfinish").c_str());
+				if (options->onplaylistfinish.size() > 0 && cursong() && cursong()->pos == comm->playlist()->end()) {
+					log(MSG_CONSOLE, STOK, _("Reached end of playlist, running automation command: %s"), options->onplaylistfinish.c_str());
+					int code = system(options->onplaylistfinish.c_str());
 				}
 			}
 
 			/* Execute 'cursor follows playback'. */
-			if (song_changed() && (need_init_follow_playback || options->get_bool("followplayback"))) {
+			if (song_changed() && (need_init_follow_playback || options->followplayback)) {
 				run_cursor_follow_playback();
 				need_init_follow_playback = false;
 			}
@@ -459,15 +508,13 @@ Pms::main()
 			drawstatus();
 		}
 
-		/* Redraw the screen. */
-		/* FIXME: where to put this? */
-		if (mediator->changed("redraw")) {
-			disp->forcedraw();
-		} else {
-			disp->draw();
+		/* Update user interface based on changed options. */
+		if (run_options_changed()) {
+			continue;
 		}
-		disp->refresh();
 
+		disp->draw();
+		disp->refresh();
 
 		/**
 		 * Start IDLE mode and polling. Keep this code at the end of
@@ -503,32 +550,6 @@ Pms::main()
 		if (!comm->has_pending_updates()) {
 			progress_nextsong();
 		}
-
-		/* Check out mediator events */
-		/* FIXME: implement this functionality with ZeroMQ */
-		if (mediator->changed("setting.sort"))
-			comm->library()->sort(options->get_string("sort"));
-		else if (mediator->changed("setting.ignorecase"))
-			comm->library()->sort(options->get_string("sort"));
-		else if (mediator->changed("setting.columns"))
-			disp->actwin()->set_column_size();
-		else if (mediator->changed("setting.mouse"))
-			disp->setmousemask();
-		else if (mediator->changed("redraw.topbar"))
-			disp->resized();
-		else if (mediator->changed("topbarvisible"))
-			disp->resized();
-		else if (mediator->changed("topbarborders"))
-			disp->resized();
-		else if (mediator->changed("topbarspace"))
-			disp->resized();
-		else if (mediator->changed("columnspace"))
-			disp->resized();
-		else if (mediator->changed("setting.topbarclear"))
-		{
-			if (options->get_bool("topbarclear"))
-				options->topbar.clear();
-		}
 	}
 	while (!_shutdown);
 
@@ -560,7 +581,6 @@ int			Pms::init()
 	
 	/* Internal pointers */
 	msg = new Message();
-	mediator = new Mediator();
 	interface = new Interface();
 	formatter = new Formatter();
 
@@ -614,24 +634,24 @@ int			Pms::init()
 	config = new Configurator(options, bindings);
 
 	/* Some default options */
-	options->set_string("host", (host ? host : "127.0.0.1"));
+	options->host = (host ? host : "127.0.0.1");
 	if (!password && host)
 	{
 		tok = splitstr(host, "@");
 		if (tok->size() == 2)
 		{
-			options->set_string("host", (*tok)[0]);
-			options->set_string("password", (*tok)[1]);
+			options->host = (*tok)[0];
+			options->password = (*tok)[1];
 		}
 		delete tok;
 	}
-	if (options->get_string("password").size() == 0)
+	if (options->password.size() == 0)
 	{
-		options->set_string("password", (password ? password : ""));
+		options->password = (password ? password : "");
 	}
-	options->set_long("port", (port ? atoi(port) : 6600));
+	options->port = (port ? atoi(port) : 6600);
 
-	if (options->get_long("port") <= 0 || options->get_long("port") > 65535)
+	if (options->port <= 0 || options->port > 65535)
 	{
 		printf(_("Error: port number in environment variable MPD_PORT must be from 1-65535\n"));
 		return PMS_EXIT_BADARGS;
@@ -646,11 +666,13 @@ int			Pms::init()
 		return PMS_EXIT_CONFIGERR;
 	}
 
+	options->set_changed_flags(0);
+
 	/* Seed random number generator */
 	srand(time(NULL));
 
 	/* Setup some important stuff */
-	conn	= new Connection(options->get_string("host"), options->get_long("port"), options->get_long("mpd_timeout") * 1000);
+	conn	= new Connection(options->host, options->port, options->mpd_timeout * 1000);
 	comm	= new Control(conn);
 	disp	= new Display(comm);
 	input	= new Input();
@@ -882,7 +904,7 @@ bool			Pms::run_shell(string cmd)
 	if (cursong())
 	{
 		search = "%";
-		replace = options->get_string("libraryroot");
+		replace = options->libraryroot;
 		replace += cursong()->file;
 		pos = 0;
 		while ((pos = cmd.find(search, pos)) != string::npos)
@@ -907,7 +929,7 @@ bool			Pms::run_shell(string cmd)
 		{
 			if (!list->selection.size || list->song(i)->selected)
 			{
-				replace += options->get_string("libraryroot");
+				replace += options->libraryroot;
 				replace += list->song(i)->file;
 				replace += "\" \"";
 			}
@@ -931,7 +953,7 @@ bool			Pms::run_shell(string cmd)
 	if (disp->cursorsong())
 	{
 		search = "#";
-		replace = options->get_string("libraryroot");
+		replace = options->libraryroot;
 		replace += disp->cursorsong()->file;
 		pos = 0;
 		while ((pos = cmd.find(search, pos)) != string::npos)
@@ -1009,7 +1031,7 @@ Pms::needs_statusbar_reset()
 	}
 
 	timer_tmp = difftime(timer_statusbar, timer_now);
-	return (timer_tmp.tv_sec >= options->get_long("resetstatus"));
+	return (timer_tmp.tv_sec >= options->resetstatus);
 }
 
 /*
@@ -1115,7 +1137,7 @@ Pms::playstring()
 		s += "playlist, then ";
 	}
 
-	if (!playlist_is_active && options->get_bool("followcursor")) {
+	if (!playlist_is_active && options->followcursor) {
 		s += "following cursor.";
 		return s;
 	}
@@ -1155,7 +1177,7 @@ Pms::log(int verbosity, long code, const char * format, ...)
 	tm *		timeinfo;
 	color *		pair;
 
-	if (verbosity >= MSG_DEBUG && !pms->options->get_bool("debug"))
+	if (verbosity >= MSG_DEBUG && !pms->options->debug)
 		return;
 
 	m = new Message();
@@ -1184,7 +1206,7 @@ Pms::log(int verbosity, long code, const char * format, ...)
 		disp->refresh();
 	}
 
-	if (verbosity <= MSG_DEBUG && pms->options->get_bool("debug"))
+	if (verbosity <= MSG_DEBUG && pms->options->debug)
 	{
 		timeinfo = localtime(&(m->timestamp));
 		strftime(tbuffer, 20, "%Y-%m-%d %H:%M:%S", timeinfo);
@@ -1203,7 +1225,7 @@ Pms::log(int verbosity, long code, const char * format, ...)
 	}
 
 	msglog.push_back(m);
-	loglines = options->get_long("msg_buffer_size");
+	loglines = options->msg_buffer_size;
 	if (loglines > 0 && msglog.size() > loglines)
 		msglog.erase(msglog.begin());
 }
@@ -1243,7 +1265,7 @@ bool			Pms::progress_nextsong()
 
 	/* Only add songs when there the currently playing song is near the end. */
 	song_time_remaining = status->time_total - status->time_elapsed - status->crossfade;
-	if (song_time_remaining > options->get_long("nextinterval")) {
+	if (song_time_remaining > options->nextinterval) {
 		return false;
 	}
 
@@ -1261,7 +1283,7 @@ bool			Pms::progress_nextsong()
 		pms->log(MSG_DEBUG, 0, "Auto-progressing to next song.\n");
 
 		/* Playback follows cursor */
-		if (options->get_bool("followcursor") && lastcursor != disp->cursorsong() && disp->cursorsong()->file != cursong()->file)
+		if (options->followcursor && lastcursor != disp->cursorsong() && disp->cursorsong()->file != cursong()->file)
 		{
 			pms->log(MSG_DEBUG, 0, "Playback follows cursor: last cursor=%p, now cursor=%p.\n", lastcursor, disp->cursorsong());
 			lastcursor = disp->cursorsong();
@@ -1435,7 +1457,7 @@ Pms::parse_args(int argc, char ** argv)
 	while ((c = getopt(argc, argv, "hdvc:H:p:P:")) != -1) {
 		switch(c) {
 			case 'd':
-				options->set_bool("debug", true);
+				options->debug = true;
 				break;
 			case 'v':
 				print_version();
@@ -1444,20 +1466,20 @@ Pms::parse_args(int argc, char ** argv)
 				print_usage();
 				return -1;
 			case 'c':
-				options->set_string("configfile", optarg);
+				options->configfile = optarg;
 				break;
 			case 'H':
-				options->set_string("host", optarg);
+				options->host = optarg;
 				break;
 			case 'p':
-				options->set_long("port", atoi(optarg));
-				if (options->get_long("port") <= 0 || options->get_long("port") > 65535) {
+				options->port = atoi(optarg);
+				if (options->port <= 0 || options->port > 65535) {
 					printf(_("Error: port number must be from 1-65535\n"));
 					return PMS_EXIT_BADARGS;
 				}
 				break;
 			case 'P':
-				options->set_string("password", optarg);
+				options->password = optarg;
 				break;
 			case '?':
 				if (optopt == 'c' || optopt == 'H' || optopt == 'p' || optopt == 'P') {

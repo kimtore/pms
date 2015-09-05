@@ -84,7 +84,7 @@ void			pms_win_topbar::draw()
 	Song *		song;
 
 	/* No-go */
-	if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
+	if (pms->options->topbar_lines.size() == 0 || !pms->options->topbarvisible)
 		return;
 
 	/* Clear window */
@@ -93,12 +93,12 @@ void			pms_win_topbar::draw()
 
 	/* Draw info from topbar class */
 	song = pms->cursong();
-	for (y = 0; y < pms->options->topbar.size(); y++)
+	for (y = 0; y < pms->options->topbar_lines.size(); y++)
 	{
 		x = 0;
 		while (true)
 		{
-			t = pms->formatter->format(song, pms->options->topbar[y]->strings[x], reallen, &(pms->options->colors->topbar.fields));
+			t = pms->formatter->format(song, pms->options->topbar_lines[y]->strings[x], reallen, &(pms->options->colors->topbar.fields));
 			if (reallen != 0 && t.size() != 0)
 			{
 				drawlen = static_cast<int>(reallen);
@@ -134,7 +134,7 @@ void			pms_win_topbar::draw()
  */
 int			pms_win_topbar::height()
 {
-	return pms->options->topbar.size() + (pms->options->get_bool("topbarborders") ? 2 : 0) + (pms->options->get_bool("topbarspace") ? 1 : 0);
+	return pms->options->topbar_lines.size() + (pms->options->topbarborders ? 2 : 0);
 }
 
 
@@ -294,7 +294,7 @@ void			pms_win_windowlist::draw()
 		colprint(this, 0, (i == 0 ? j : j + 1),
 			pms->options->colors->headers,
 			"%s", column[i]->title.c_str());
-		if (i > 0 && pms->options->get_bool("columnborders"))
+		if (i > 0 && pms->options->columnborders)
 		{
 			wattron(handle, pms->options->colors->border->pair());
 			mvwvline(handle, border[0], j, ACS_VLINE, bheight());
@@ -326,7 +326,7 @@ unsigned int		pms_window::cursordrawstart()
 	{}
 
 	/* Cursors position on screen changes relative to cursor position in list */
-	else if (pms->options->get_long("scroll") == SCROLL_RELATIVE)
+	else if (pms->options->scroll_mode == SCROLL_RELATIVE)
 	{
 		ht	= bheight() - 2;
 
@@ -340,7 +340,7 @@ unsigned int		pms_window::cursordrawstart()
 	}
 
 	/* Cursor is always centered, except when nearing top or bottom of the list */
-	else if (pms->options->get_long("scroll") == SCROLL_CENTERED)
+	else if (pms->options->scroll_mode == SCROLL_CENTERED)
 	{
 		if (size() > static_cast<unsigned int>(bheight() - 1))
 		{
@@ -356,13 +356,13 @@ unsigned int		pms_window::cursordrawstart()
 	}
 
 	/* Window is scrolled when the cursor is about to go off the edge */
-	else if (pms->options->get_long("scroll") == SCROLL_NORMAL)
+	else if (pms->options->scroll_mode == SCROLL_NORMAL)
 	{
 		//note bheight() includes the column headings!
 
 		//if scrolloff is set to half the height or more drop it 
 		//temporarily
-		sotemp = pms->options->get_long("scrolloff");
+		sotemp = pms->options->scrolloff;
 		if (sotemp * 2 >= bheight() - 1)
 			sotemp = (bheight() - 1 - 1) / 2;
 
@@ -436,7 +436,7 @@ void		pms_window::scrollwin(int offset)
 	int	i;
 	int	sotemp;
 
-	if (pms->options->get_long("scroll") != SCROLL_NORMAL)
+	if (pms->options->scroll_mode != SCROLL_NORMAL)
 	{
 		movecursor(offset);
 		return;
@@ -448,7 +448,7 @@ void		pms_window::scrollwin(int offset)
 	}
 
 	//if scrolloff is set to half the height or more drop it temporarily
-	sotemp = pms->options->get_long("scrolloff");
+	sotemp = pms->options->scrolloff;
 	if (sotemp * 2 >= bheight() - 1)
 		sotemp = (bheight() - 1 - 1) / 2;
 
@@ -556,7 +556,7 @@ void		pms_win_bindings::draw()
 		colprint(this, 0, (i == 0 ? j : j + 1),
 			pms->options->colors->headers,
 			"%s", column[i]->title.c_str());
-		if (i > 0 && pms->options->get_bool("columnborders"))
+		if (i > 0 && pms->options->columnborders)
 		{
 			wattron(handle, pms->options->colors->border->pair());
 			mvwvline(handle, border[0], j, ACS_VLINE, bheight());
@@ -765,7 +765,7 @@ void		pms_win_playlist::draw()
 		colprint(this, 0, (i == 0 ? j : j + 1),
 			pms->options->colors->headers,
 			"%s", column[i]->title.c_str());
-		if (i > 0 && pms->options->get_bool("columnborders"))
+		if (i > 0 && pms->options->columnborders)
 		{
 			wattron(handle, pms->options->colors->border->pair());
 			mvwvline(handle, border[0], j, ACS_VLINE, bheight());
@@ -801,7 +801,7 @@ void pms_win_playlist::set_column_size()
 	}
 	column.clear();
 
-	v = Pms::splitstr(pms->options->get_string("columns"), " ");
+	v = Pms::splitstr(pms->options->columns, " ");
 
 	for (i = 0; i < v->size(); i++)
 	{
@@ -1139,7 +1139,7 @@ pms_window *		Display::playingwin()
  */
 mmask_t		Display::setmousemask()
 {
-	if (pms->options->get_bool("mouse"))
+	if (pms->options->mouse)
 		mmask = mousemask(ALL_MOUSE_EVENTS, &oldmmask);
 	else
 		mmask = mousemask(0, &oldmmask);
@@ -1177,7 +1177,7 @@ bool		Display::init()
 
 	resized();
 
-	if (pms->options->get_bool("topbarborders"))
+	if (pms->options->topbarborders)
 		topbar->setborders(true, true, true, true);
 	else
 		topbar->setborders(false, false, false, false);
@@ -1212,11 +1212,11 @@ void		Display::resized()
 	pms_window *		w;
 	unsigned int		i;
 
-	if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
-		topbar->resize(0, 0, 0, pms->options->get_bool("topbarspace") ? 1 : 0);
+	if (pms->options->topbar_lines.size() == 0 || !pms->options->topbarvisible)
+		topbar->resize(0, 0, 0, 0);
 	else
 	{
-		if (pms->options->get_bool("topbarborders"))
+		if (pms->options->topbarborders)
 			topbar->setborders(true, true, true, true);
 		else
 			topbar->setborders(false, false, false, false);
@@ -1232,7 +1232,7 @@ void		Display::resized()
 		w = windows[i];
 		if (!w) continue;
 
-		if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
+		if (pms->options->topbar_lines.size() == 0 || !pms->options->topbarvisible)
 			w->resize(0, 0, COLS, LINES - 1);
 		else
 			w->resize(0, pms->disp->topbar->height(), COLS, LINES - pms->disp->topbar->height() - 1);
@@ -1343,12 +1343,12 @@ Display::set_xterm_title()
 	string		title;
 	ostringstream	oss;
 
-	if (!pms->options->get_string("xtermtitle").size()) {
+	if (!pms->options->xtermtitle.size()) {
 		return;
 	}
 
 	if (getenv("WINDOWID")) {
-		title = pms->formatter->format(pms->cursong(), pms->options->get_string("xtermtitle"), reallen, NULL, true);
+		title = pms->formatter->format(pms->cursong(), pms->options->xtermtitle, reallen, NULL, true);
 		pms->log(MSG_DEBUG, 0, _("Set XTerm window title: '%s'\n"), title.c_str());
 
 		oss << "\033]0;" << title << '\007';
@@ -1358,7 +1358,7 @@ Display::set_xterm_title()
 		fflush(stdout);
 	} else {
 		pms->log(MSG_DEBUG, 0, _("Disabling XTerm window title: WINDOWID not found.\n"));
-		pms->options->set_string("xtermtitle", "");
+		pms->options->xtermtitle = "";
 	}
 }
 
@@ -1485,7 +1485,7 @@ pms_win_bindings *	Display::create_bindlist()
 	w = new pms_win_bindings();
 	if (w)
 	{
-		if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
+		if (pms->options->topbar_lines.size() == 0 || !pms->options->topbarvisible)
 			w->resize(0, 0, COLS, LINES - 1);
 		else
 			w->resize(0, pms->disp->topbar->height(), COLS, LINES - pms->disp->topbar->height() - 1);
@@ -1509,7 +1509,7 @@ pms_win_windowlist *	Display::create_windowlist()
 	w = new pms_win_windowlist(this, &playlists);
 	if (w)
 	{
-		if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
+		if (pms->options->topbar_lines.size() == 0 || !pms->options->topbarvisible)
 			w->resize(0, 0, COLS, LINES - 1);
 		else
 			w->resize(0, pms->disp->topbar->height(), COLS, LINES - pms->disp->topbar->height() - 1);
@@ -1533,7 +1533,7 @@ pms_win_playlist *	Display::create_playlist()
 	w = new pms_win_playlist();
 	if (w)
 	{
-		if (pms->options->topbar.size() == 0 || !pms->options->get_bool("showtopbar"))
+		if (pms->options->topbar_lines.size() == 0 || !pms->options->topbarvisible)
 			w->resize(0, 0, COLS, LINES - 1);
 		else
 			w->resize(0, pms->disp->topbar->height(), COLS, LINES - pms->disp->topbar->height() - 1);
@@ -1627,8 +1627,9 @@ unsigned int	pms_column::len()
 		else
 			abslen = (median / items);
 	}
-	if ((unsigned int)abslen < minlen + (pms->options->get_bool("columnspace") ? 1 : 0))
-		return minlen + (pms->options->get_bool("columnspace") ? 1 : 0);
+	if ((unsigned int)abslen < minlen) {
+		return minlen;
+	}
 
 	return (unsigned int)abslen;
 }

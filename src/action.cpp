@@ -80,20 +80,12 @@ bool		Interface::check_events()
 			version();
 			break;
 
-		case PEND_CLEAR_TOPBAR:
-			clear_topbar(atoi(param.c_str()));
-			break;
-
 		case PEND_REDRAW:
 			redraw();
 			break;
 
 		case PEND_REHASH:
 			rehash();
-			break;
-
-		case PEND_WRITE_CONFIG:
-			write_config(param);
 			break;
 
 		case PEND_SOURCE:
@@ -284,40 +276,11 @@ long		Interface::version()
 }
 
 /*
- * Clear out a line from the topbar.
- * If line is 0, clear everything.
- */
-long		Interface::clear_topbar(int line = 0)
-{
-	if (pms->options->topbar.size() == 0)
-		return STOK;
-
-	if (line == 0)
-	{
-		pms->options->topbar.clear();
-		pms->log(MSG_STATUS, STOK, _("Cleared out the entire topbar."));
-		return STOK;
-	}
-
-	if (line < 1 || line > pms->options->topbar.size())
-	{
-		pms->log(MSG_STATUS, STERR, _("Out of range, acceptable range is 1-%d."), pms->options->topbar.size());
-		return STERR;
-	}
-	pms->options->topbar.erase(pms->options->topbar.begin() + line - 1);
-	pms->log(MSG_STATUS, STOK, _("Removed line %d from topbar."), line);
-
-	pms->mediator->add("redraw.topbar");
-
-	return STOK;
-}
-
-/*
  * Redraw everything
  */
 long		Interface::redraw()
 {
-	pms->mediator->add("redraw");
+	pms->disp->forcedraw();
 	return STOK;
 }
 
@@ -333,18 +296,6 @@ long		Interface::rehash()
 		pms->log(MSG_STATUS, STOK, _("Reloaded configuration files."));
 
 	return msg->code;
-}
-
-/*
- * Save the current configuration to a file
- */
-long		Interface::write_config(string file)
-{
-	if (file.size() == 0)
-		file = pms->options->get_string("configfile");
-
-	return STERR;
-	//FIXME: implement this
 }
 
 /*
@@ -397,11 +348,11 @@ long		Interface::show_info()
 		return STERR;
 	}
 
-	pms->log(MSG_STATUS, STOK, "%s%s", pms->options->get_string("libraryroot").c_str(), song->file.c_str());
+	pms->log(MSG_STATUS, STOK, "%s%s", pms->options->libraryroot.c_str(), song->file.c_str());
 	pms->log(MSG_CONSOLE, STOK, _("--- song info ---\n"));
 	pms->log(MSG_CONSOLE, STOK, "id\t\t = %d\n", song->id);
 	pms->log(MSG_CONSOLE, STOK, "pos\t\t = %d\n", song->pos);
-	pms->log(MSG_CONSOLE, STOK, "file\t\t = %s%s\n", pms->options->get_string("libraryroot").c_str(), song->file.c_str());
+	pms->log(MSG_CONSOLE, STOK, "file\t\t = %s%s\n", pms->options->libraryroot.c_str(), song->file.c_str());
 	pms->log(MSG_CONSOLE, STOK, "artist\t\t = %s\n", song->artist.c_str());
 	pms->log(MSG_CONSOLE, STOK, "albumartist\t = %s\n", song->albumartist.c_str());
 	pms->log(MSG_CONSOLE, STOK, "albumartistsort\t = %s\n", song->albumartistsort.c_str());
@@ -430,7 +381,7 @@ void		Interface::clear_filters()
 
 	set_input_mode(INPUT_NORMAL);
 	list->filter_clear();
-	pms->mediator->add("redraw");
+	pms->disp->draw();
 }
 
 
@@ -468,7 +419,7 @@ long		Interface::password(string pass)
 	if (pms->comm->sendpassword(pass))
 	{
 		pms->log(MSG_STATUS, STOK, _("Password accepted by mpd."));
-		pms->options->set_string("password", pms->input->param);
+		pms->options->password = pms->input->param;
 		return STOK;
 	}
 	else
@@ -490,7 +441,7 @@ long		Interface::update_db(string location)
 {
 	string		libroot;
 
-	libroot = pms->options->get_string("libraryroot");
+	libroot = pms->options->libraryroot;
 
 	if (location.size() > 0)
 	{
@@ -700,7 +651,7 @@ long		Interface::add(string param)
 	}
 	else
 	{
-		if (i == 1 && pms->options->get_bool("nextafteraction"))
+		if (i == 1 && pms->options->nextafteraction)
 			pms->disp->movecursor(1);
 		pms->log(MSG_STATUS, STOK, _("Added %d %s to %s."), i, (i == 1 ? "song" : "songs"), s.c_str());
 	}
@@ -1067,7 +1018,7 @@ long		Interface::select(pms_window * win, int mode, string param)
 		else if (mode == SELECT_ON)
 			list->selectsong(song, true);
 
-		if (pms->options->get_bool("nextafteraction"))
+		if (pms->options->nextafteraction)
 			win->movecursor(1);
 
 		win->wantdraw = true;
@@ -1204,7 +1155,7 @@ handle_command(pms_pending_keys action)
 
 		case PEND_CENTER_CURSOR:
 			if (!win) break;
-			if (pms->options->get_long("scroll_mode") != SCROLL_NORMAL) break;
+			if (pms->options->scroll_mode != SCROLL_NORMAL) break;
 			pms->disp->scrollwin(win->scursor() - win->cursordrawstart() - (win->bheight() - 1) / 2);
 			break;
 
@@ -1392,7 +1343,7 @@ handle_command(pms_pending_keys action)
 			{
 				if (!list) break;
 				list->filter_add(pms->input->text, MATCH_ALL);
-				pms->mediator->add("redraw");
+				pms->disp->draw();
 			}
 			else
 			{
@@ -1411,7 +1362,7 @@ handle_command(pms_pending_keys action)
 				if (pms->input->winpop())
 				{
 					handle_command(pms->input->getpending());
-					if (pms->options->get_bool("addtoreturns"))
+					if (pms->options->addtoreturns)
 					{
 						setwin(pms->input->win);
 						pms->disp->lastwin = win;
@@ -1569,7 +1520,7 @@ handle_command(pms_pending_keys action)
 					{
 						tmpwin->setcursor(tmpwin->size());
 						handle_command(pms->input->getpending());
-						if (pms->options->get_bool("addtoreturns"))
+						if (pms->options->addtoreturns)
 						{
 							setwin(pms->input->win);
 							pms->disp->lastwin = win;
@@ -1937,7 +1888,7 @@ bool		setwin(pms_window * win)
 	else
 		pms->input->mode(INPUT_NORMAL);
 
-	if (pms->options->get_bool("followwindow"))
+	if (pms->options->followwindow)
 	{
 		pms->comm->activatelist(win->plist());
 		pms->drawstatus();
@@ -2011,12 +1962,10 @@ bool init_commandmap()
 	pms->commands->add("info", "Show file information in console", PEND_SHOW_INFO);
 	pms->commands->add("password", "Send a password to the server", PEND_PASSWORD);
 	pms->commands->add("source", "Read a script or configuration file", PEND_SOURCE);
-	pms->commands->add("write-config", "Save configuration file", PEND_WRITE_CONFIG);
 	pms->commands->add("rehash", "Read configuration file", PEND_REHASH);
 	pms->commands->add("redraw", "Force screen redraw", PEND_REDRAW);
 	pms->commands->add("version", "Show program version", PEND_VERSION);
 	pms->commands->add("v", "Show program version", PEND_VERSION);
-	pms->commands->add("clear-topbar", "Remove all contents in topbar", PEND_CLEAR_TOPBAR);
 	pms->commands->add("quit", "Quit program", PEND_QUIT);
 	pms->commands->add("q", "Quit program", PEND_QUIT);
 

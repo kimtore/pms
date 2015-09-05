@@ -189,7 +189,7 @@ Control::Control(Connection * n_conn)
 	_is_idle = false;
 	command_mode = 0;
 	mutevolume = 0;
-	crossfadetime = pms->options->get_long("crossfade");
+	crossfadetime = pms->options->crossfade;
 
 	/* Set all bits in mpd_idle event */
 	set_mpd_idle_events((enum mpd_idle) 0xffffffff);

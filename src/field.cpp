@@ -382,12 +382,8 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 	unsigned int		pint, progress;
 	Songlist *		list;
 	color *			c;
-	long			playmode;
-	long			repeatmode;
 
 	c = getcolor(keyword, f);
-	playmode = pms->options->get_long("playmode");
-	repeatmode = pms->options->get_long("repeat");
 
 	retstr = "";
 	switch(keyword)
@@ -734,16 +730,16 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			{
 				default:
 				case MPD_STATE_UNKNOWN:
-					retstr = pms->options->get_string("status_unknown");
+					retstr = pms->options->status_unknown;
 					break;
 				case MPD_STATE_STOP:
-					retstr = pms->options->get_string("status_stop");
+					retstr = pms->options->status_stop;
 					break;
 				case MPD_STATE_PLAY:
-					retstr = pms->options->get_string("status_play");
+					retstr = pms->options->status_play;
 					break;
 				case MPD_STATE_PAUSE:
-					retstr = pms->options->get_string("status_pause");
+					retstr = pms->options->status_pause;
 					break;
 			}
 			break;

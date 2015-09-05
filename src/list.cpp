@@ -53,7 +53,7 @@ Songlist::Songlist()
 	selection.size = 0;
 	selection.length = 0;
 	role = LIST_ROLE_PLAYLIST;
-	ignorecase = pms->options->get_bool("ignorecase");
+	ignorecase = pms->options->ignorecase;
 }
 
 Songlist::~Songlist()
@@ -1008,7 +1008,7 @@ bool			Songlist::match(Song * song, string src, long mode)
 		if (mode & MATCH_EXACT)
 			matched = exactmatch(&(sources[j]), &src);
 #ifdef HAVE_LIBBOOST_REGEX
-		else if (pms->options->get_bool("regexsearch"))
+		else if (pms->options->regexsearch)
 			matched = regexmatch(&(sources[j]), &src);
 #endif
 		else
@@ -1189,8 +1189,7 @@ bool		Songlist::sort(string sorts)
 	if (sorts.size() == 0)
 		return false;
 
-	if (pms->mediator->changed("setting.ignorecase"))
-		ignorecase = pms->options->get_bool("ignorecase");
+	ignorecase = pms->options->ignorecase;
 
 	v = Pms::splitstr(sorts, " ");
 
@@ -1273,8 +1272,9 @@ bool	icstrsort(string & a, string & b)
 	string		ai;
 	string		bi;
 
-	if (!pms->options->get_bool("ignorecase"))
+	if (!pms->options->ignorecase) {
 		return a < b;
+	}
 
 	ai = a;
 	bi = b;

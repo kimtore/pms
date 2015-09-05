@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
  * Copyright (C) 2006-2015  Kim Tore Jensen
@@ -28,10 +28,10 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <string>
-#include "settings.h"
 #include "input.h"
 #include "display.h"
 #include "message.h"
+#include "options.h"
 
 
 typedef enum
@@ -44,6 +44,9 @@ typedef enum
 	KW_COLOR
 
 } pms_config_keyword;
+
+
+
 
 /*
  * Holds a variety of information about each field type

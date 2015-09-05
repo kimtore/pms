@@ -122,121 +122,146 @@ Colors are defined with
 
 ## Configuration options
 
-host=*string*
-:   The hostname to connect to. Default: localhost
-
-port=*integer*
-:   The port on the MPD server to connect to. Default: 6600
-
-password=*string*
-:   The password to give to the MPD server. Default: none
-
-libraryroot=*string*
-:   Optional path to the library’s root. See !string below. If used, it should have a trailing slash. Default: empty string (nothing is prepended)
-
-xtermtitle=*string*
-:   If set, the XTerm window title will be set to the specified string. Default: PMS: %playstate%%ifcursong% %artist% – %title%%endif%
-
-reconnectdelay=*integer*
-:   If a connection is lost, this is how many seconds between each connection retry. Default: 30
-
-mouse (*boolean*)
-:   If set, the mouse is active. Mouse support is incomplete and the slightly hacky mousewheel support available with standard versions of ncurses is less than ideal, but the actions below have been implemented.  Default: unset
-
-msg_buffer_size=*integer*
-:   How many log lines to keep in the console. A value of 0 keeps all lines.  Default: 1024
-
-mpd_timeout=*integer*
-:   Sets MPD connection timeout in seconds. Leave this lower than your MPD setting.  Default: 30
-
-debug (*boolean*)
-:   Turn debugging mode on or off. Default: set
-
-stopdelay=*integer*
-:   MPD does not support manual progression within the playlist. A hack is neccessary to stop when the song is done. If manual song progression is not working correctly, increase this value. Default: 1
-
-nextinterval=*integer*
-:   This setting controls how many seconds from the current song ends until PMS automatically adds the next song to MPD’s playlist. Default: 5
-
-crossfade=*integer*
-:   Set crossfade time in seconds. 0 turns crossfade off completely. Default: MPD’s settings
-
-onplaylistfinish=*string*
-:   Specify a shell command to run when the playlist finishes and playback stops.  Default: none
-
 addtoreturns (*boolean*)
-:   If set, the add-to command will return focus to the original window. Else, the destination will be focused. Default: unset
-
-followplayback (*boolean*)
-:   If set, the cursor will go to the currently playing song and playlist when it changes. Default: unset
-
-followwindow (*boolean*)
-:   If set, playback will continue in the active window. Default: unset
-
-followcursor (*boolean*)
-:   If set, playback will follow cursor position. Default: unset
-
-nextafteraction (*boolean*)
-:   Move cursor to next item after the song is selected, unselected or added to a playlist. Default: set
-
-startuplist=*"playlist|library|..."*
-:   The list which is activated and shown at program startup. This can be playlist, library or an arbitrary name of an existing playlist. Default: playlist
-
-regexsearch (*boolean*)
-:   Use regular expressions for search terms. Default: set
-
-ignorecase (*boolean*)
-:   Ignore case when sorting and searching. The alias ic can also be used. Default: set
-
-scroll=*SCROLL MODE*
-:   Set scroll mode; see *SCROLL MODES* below. Default: normal
-
-scrolloff=*integer*
-:   When scroll is set to normal, try to keep this many songs above and below the cursor at all times. The alias so can also be used. Default: 0
-
-resetstatus=*integer*
-:   Set how many seconds before resetting the statusbar text. Default: 3
-
-sort=tag [tag [...]]
-:   Tags by which to sort the library. You can specify multiple tags, separated by whitespace; see *TAGS*. Default: track disc album albumartistsort
-
-columns=column [column [...]]
-:   Columns to show in the list; see *TAGS*. Default: artist track title album length
-
-status_unknown=*string*
-:   Topbar status string when status is unknown. Default: ??
-
-status_play=*string*
-:   Topbar status string when playing. Default: |>
-
-status_pause=*string*
-:   Topbar status string when paused. Default: ||
-
-status_stop=*string*
-:   Topbar status string when stopped. Default: []
-
-topbarspace (*boolean*)
-:   Whether or not to leave an extra space at the end of fixed-width columns. Default: set
-
-topbarvisible (*boolean*)
-:   If set, the topbar is visible. Default: set
-
-topbarborders (*boolean*)
-:   Whether or not to draw borders on the topbar window. Default: unset
-
-columnspace (*boolean*)
-:   Whether or not to leave a blank row between the topbar and the playlist windows. Default: set
+:   If set, the *add-to* command will return focus to the original window. Else, the destination will be focused. Default: *unset* 
 
 columnborders (*boolean*)
-:   If set, draw borders between columns. Default: unset
+:   If set, draw borders between columns. Default: *unset* 
 
-topbarclear (*boolean*)
-:   Start out with an empty topbar. Default: unset
+columns=*tag [tag [...]]*
+:   Columns to show in every song list. See *TAGS* below for possible options. Default: *artist track title album length* 
 
-topbar[1-99].(left|center|right)=*string*
-:   Modify what is displayed in the topbar. The spelling *centre* is also accepted.  See *Configuring the topbar* for format syntax, available tags and defaults.
+crossfade=*integer*
+:   *FIXME:BROKEN* Set crossfade time in seconds. 0 turns crossfade off completely. Default: *(MPD’s setting)* 
+
+debug (*boolean*)
+:   Turn debugging mode on or off. Default: *unset* 
+
+followcursor (*boolean*)
+:   If set, playback will follow cursor position. Default: *unset* 
+
+followplayback (*boolean*)
+:   If set, the cursor will go to the currently playing song and playlist when it changes. Default: *unset* 
+
+followwindow (*boolean*)
+:   If set, playback will continue in the active window. Default: *unset* 
+
+host=*string*
+:   The hostname of the MPD server. Default: *localhost* 
+
+ignorecase (*boolean*)
+:   Ignore case when sorting and searching. The alias *ic* can also be used. Default: *set* 
+
+libraryroot=*string*
+:   Optional path to the library’s root. See *!string* below. If used, it should have a trailing slash. Default: *(empty string)* 
+
+mouse (*boolean*)
+:   If set, PMS will listen for mouse input. Mouse support is incomplete, and the slightly hacky mousewheel support available with standard versions of ncurses is less than ideal, but a couple of actions have been implemented, see *MOUSE ACTIONS*.  Default: *unset* 
+
+mpd_timeout=*integer*
+:   Sets MPD connection timeout in seconds. Leave this lower than your MPD server setting. Default: *30* 
+
+msg_buffer_size=*integer*
+:   How many log lines to keep in the console. A value of 0 keeps all lines. Default: *1024* 
+
+nextafteraction (*boolean*)
+:   Move cursor to next item after the song is selected, unselected, or added to a playlist. Default: *set* 
+
+nextinterval=*integer*
+:   This setting controls how many seconds from the current song ends until PMS automatically adds the next song to MPD’s playlist. Default: *5* 
+
+onplaylistfinish=*string*
+:   Specify a shell command to run when the playlist finishes and playback stops. Default: *(empty string)* 
+
+password=*string*
+:   The password to the MPD server. Default: *(empty string)* 
+
+port=*integer*
+:   The port that the MPD server listens on. Default: *6600* 
+
+reconnectdelay=*integer*
+:   *FIXME:BROKEN* If the connection to the MPD server is lost, this option specifies how many seconds that should elapse between each connection retry. Default: *30* 
+
+regexsearch (*boolean*)
+:   Use regular expressions for search terms. Default: *unset* 
+
+resetstatus=*integer*
+:   Set how many seconds before resetting the statusbar text to the default value. Default: *3* 
+
+scroll=*string*
+:   Set scroll mode. For possible options, see *SCROLL MODES* below. Default: *normal* 
+
+scrolloff=*integer*
+:   When *scroll* is set to *normal*, try to keep this many songs above and below the cursor at all times. The alias *so* can also be used. Default: *0* 
+
+sort=*tag [tag [...]]*
+:   Tags by which to sort the library. See *TAGS* below for possible options. The sort is stable. Default: *track disc album date albumartistsort* 
+
+startuplist=*string*
+:   Specify which playlist should be activated and focused at program startup. Possible options are *playlist*, *library*, or an arbitrary name of an existing playlist. Default: *playlist* 
+
+status_pause=*string*
+:   Topbar status string when paused. Default: *‖* or *||*, depending on whether or not unicode is available.  
+
+status_play=*string*
+:   Topbar status string when playing. Default: *▶* or *|>*, depending on whether or not unicode is available.  
+
+status_stop=*string*
+:   Topbar status string when stopped. Default: *■* or *[]*, depending on whether or not unicode is available.  
+
+status_unknown=*string*
+:   Topbar status string when status is unknown. Default: *?* or *??*, depending on whether or not unicode is available.  
+
+topbar=*string*
+:   Configure what is displayed in the topbar. See *Configuring the topbar* for format syntax, available tags, and default values.  
+
+topbarborders (*boolean*)
+:   Whether or not to draw borders on the topbar window. Default: *unset* 
+
+topbarvisible (*boolean*)
+:   If set, the topbar is visible. Default: *set* 
+
+xtermtitle=*string*
+:   If set, the XTerm window title will be set to the specified string. Default: *PMS: %playstate%%ifcursong% %artist% – %title%%endif%* 
+
 
 ## Configuring the topbar
+
+The layout and contents of the topbar can be configured freely. It is possible to use every bit of information about the current song, in addition to various statistics and settings from the MPD server.
+
+The default value for the *topbar* is printed below, with line breaks for convenience.
+
+    \n
+    %volume%%% Mode: %muteshort%%consumeshort%%repeatshort%%randomshort%%singleshort%%ifcursong% %playstate% %time_elapsed% / %time_remaining%%endif%\t
+    %ifcursong%%artist% - %title% on %album% from %date%%else%Not playing anything%endif%\t
+    Queue has %livequeuesize%\n
+    \t\t%listsize%\n
+    %progressbar%
+
+Topbar syntax:
+
+\\\\n
+:   inserts a newline. An arbitrary number of lines are supported.
+
+\\\\t
+:   switches between the *left*, *center*, and *right* areas of a line.
+
+%ifcursong% ... %endif%
+:   prints and evaluates the text between the tags, but only if a song is currently loaded into MPD's player.
+
+%ifplaying% ... %endif%
+:   same as *%ifcursong%*, but will only print the text if MPD is playing.
+
+%ifpaused% ... %endif%
+:   same as *%ifplaying%*, but will only print the text if MPD is paused.
+
+%ifstopped% ... %endif%
+:   same as *%ifplaying%*, but will only print the text if MPD is stopped.
+
+%\<variable\>%
+:   expands the variable. Replace *\<variable\>* with the variable name; see below for supported variables.
+
+In addition to all *TAGS* (see below), the following variables can be expanded:
 
 Available variables to put in the topbar:
 
@@ -244,24 +269,6 @@ Available variables to put in the topbar:
     manualshort, mute, muteshort, playstate, progressbar, progresspercentage,
     queuesize, random, randomshort, repeat, repeatshort, samplerate,
     time_elapsed, time_remaining, volume
-
-All *TAGS* can also be used.
-
-Conditionals (if-else) are supported. Currently available conditionals:
-
-    ifcursong, ifplaying, ifpaused, ifstopped
-
-See the defaults below for how conditionals are used.
-
-The topbar syntax allows free customization of the top area of the display. A good way to understand the syntax is to take a look at the defaults:
-
-    set topbar1.left=%time_elapsed% %playstate% %time%%ifcursong% (%progresspercentage%%%)%endif%
-    set topbar1.center=%ifcursong%%artist%%endif%
-    set topbar1.right=Vol: %volume%%% Mode: %muteshort%%repeatshort%%randomshort%%manualshort%
-    set topbar2.center=%ifcursong%==> %title% <==%else%No current song%endif%
-    set topbar3.left=%listsize%
-    set topbar3.center=%ifcursong%%album% (%year%)%endif%
-    set topbar3.right=Q: %livequeuesize%
 
 # COMMANDS
 
@@ -560,10 +567,10 @@ statusbar
 # SCROLL MODES
 
 normal
-:   The list only scrolls when the cursor is about to go off the top or bottom of the window. See the *scrolloff* option.
+:   The list only scrolls when the cursor is about to go off the top or bottom of the window. Also see the *scrolloff* option.
 
 centered
-:   The cursor is always in the middle of the window except when it is near the top or bottom of the list. The spelling centred is also accepted.
+:   The cursor is always in the middle of the window, except when it is near the top or bottom of the list. The spellings *center*, *centre*, and *centred* are also accepted.
 
 relative
 :   The position of the cursor in the confines of the window is proportional to the position of the visible songs relative to the whole song list. Try it out to get a better idea of how it works.

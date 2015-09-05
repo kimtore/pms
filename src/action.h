@@ -51,7 +51,6 @@ public:
 	 */
 	long			exec(string);
 	long			version();
-	long			clear_topbar(int);
 	long			redraw();
 	long			rehash();
 	long			write_config(string);

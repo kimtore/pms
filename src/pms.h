@@ -49,7 +49,6 @@
 
 #include "i18n.h"
 #include "types.h"
-#include "settings.h"
 #include "song.h"
 #include "message.h"
 #include "topbar.h"
@@ -59,7 +58,7 @@
 #include "playlist.h"
 #include "action.h"
 #include "input.h"
-#include "mediator.h"
+#include "options.h"
 
 #ifdef __FreeBSD__
 	#include <sys/wait.h>
@@ -131,7 +130,6 @@ public:
 	Configurator *			config;
 
 	/* FIXME: this is an attempt on the above */
-	Mediator *			mediator;
 	Message *			msg;
 	Interface *			interface;
 
@@ -155,6 +153,7 @@ public:
 
 	/* Public member functions */
 	bool				run_has_idle_events();
+	bool				run_options_changed();
 	void				setstatus(statusbar_mode, const char *, ...);
 	void				drawstatus();
 	bool				needs_statusbar_reset();
