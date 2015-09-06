@@ -154,6 +154,8 @@ public:
 	/* Public member functions */
 	bool				run_has_idle_events();
 	bool				run_options_changed();
+	bool				run_stdin_events();
+	bool				run_all_events();
 	void				setstatus(statusbar_mode, const char *, ...);
 	void				drawstatus();
 	bool				needs_statusbar_reset();

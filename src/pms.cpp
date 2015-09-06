@@ -284,6 +284,54 @@ Pms::run_options_changed()
 	return (flags != 0);
 }
 
+/**
+ * Process events on standard input.
+ *
+ * Returns true if an event was processed, false otherwise.
+ */
+bool
+Pms::run_stdin_events()
+{
+	pms_pending_keys pending = PEND_NONE;
+
+	if (!has_stdin_events()) {
+		return false;
+	}
+
+	input->get_keystroke();
+	pending = input->dispatch();
+	if (pending == PEND_NONE) {
+		return false;
+	}
+
+	handle_command(pending);
+	return true;
+}
+
+/**
+ * Check for events on the MPD socket and standard input, and execute appropriate actions.
+ *
+ * Only one event will be processed at a time: first IDLE events, then standard input.
+ *
+ * Returns true if an event was processed, false otherwise.
+ */
+bool
+Pms::run_all_events()
+{
+	/* Block until events received or timeout reached. */
+	poll_events(MAIN_LOOP_INTERVAL);
+
+	/* Process events from the IDLE socket. */
+	if (run_has_idle_events()) {
+		return true;
+	}
+
+	/* Process events from the input socket. */
+	if (run_stdin_events()) {
+		return true;
+	}
+}
+
 /*
  * Connection and main loop
  */
@@ -291,7 +339,6 @@ int
 Pms::main()
 {
 	string			t_str;
-	pms_pending_keys	pending = PEND_NONE;
 	char			pass[512] = "";
 	bool			songchanged = false;
 	time_t			timer = 0;
@@ -480,7 +527,7 @@ Pms::main()
 
 			/* Shell command when song finishes */
 			/* FIXME: move into separate function */
-			if (comm->status()->state == MPD_STATE_STOP && pending != PEND_STOP) {
+			if (comm->status()->state == MPD_STATE_STOP && input->getpending() != PEND_STOP) {
 				if (options->onplaylistfinish.size() > 0 && cursong() && cursong()->pos == comm->playlist()->end()) {
 					log(MSG_CONSOLE, STOK, _("Reached end of playlist, running automation command: %s"), options->onplaylistfinish.c_str());
 					int code = system(options->onplaylistfinish.c_str());
@@ -528,21 +575,9 @@ Pms::main()
 			}
 		}
 
-		/* Block until events received or timeout reached. */
-		poll_events(MAIN_LOOP_INTERVAL);
-
-		/* Process events from the IDLE socket. */
-		if (run_has_idle_events()) {
+		/* Process MPD and standard input events */
+		if (run_all_events()) {
 			continue;
-		}
-
-		/* Process events from the input socket. */
-		if (has_stdin_events()) {
-			input->get_keystroke();
-			pending = input->dispatch();
-			if (pending != PEND_NONE) {
-				handle_command(pending);
-			}
 		}
 
 		/* Progress to next song if applicable, and make sure we are
