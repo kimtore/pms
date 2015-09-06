@@ -39,9 +39,24 @@ Song::Song(const mpd_song * song)
 	artist			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ARTIST, 0));
 	albumartist		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ALBUM_ARTIST, 0));
 
+        /* If the AlbumArtist tag is missing, and songs are sorted by that tag,
+         * the sort will be messed up. This is a hack which may misrepresent
+         * the songs, but at least sorting and displaying will look nice. */
+        if (!albumartist.size()) {
+                albumartist = artist;
+        }
+
 #if LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
 	artistsort		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ARTIST_SORT, 0));
 	albumartistsort		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ALBUM_ARTIST_SORT, 0));
+
+        /* Same hack as above. */
+        if (!artistsort.size()) {
+                artistsort = artist;
+        }
+        if (!albumartistsort.size()) {
+                albumartistsort = albumartist;
+        }
 #else
 	artistsort		= artist;
 	albumartistsort		= albumartist;
