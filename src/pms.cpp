@@ -449,6 +449,7 @@ Pms::main()
 	/* Reset all clocks */
 	timer_now = get_clock();
 	timer_elapsed = get_clock();
+	timer_reconnect = get_clock();
 
 	/*
 	 * Main loop
@@ -465,21 +466,41 @@ Pms::main()
 		/* Test if some error has occurred */
 		if ((error = mpd_connection_get_error(conn->h())) != MPD_ERROR_SUCCESS) {
 
+			/* FIXME: less intrusive error message
 			log(MSG_STATUS, STERR, "MPD error: %s", mpd_connection_get_error_message(conn->h()));
 
 			/* Try to recover from error. If the error is
 			 * non-recoverable, reconnect to the MPD server.
 			 */
-			if (!mpd_connection_clear_error(conn->h())) {
+			if (mpd_connection_clear_error(conn->h())) {
+				continue;
+			}
 
-				/* FIXME: gradually increase connection attempts? */
-				/* FIXME: use reconnectdelay setting */
-				/* FIXME: separate thread */
-				sleep(1);
+			/* Check if an appropriate amount of time has
+			 * elapsed since the last connection attempt,
+			 * and try to connect. */
+			timer_tmp = difftime(timer_now, timer_reconnect);
+			if (timer_tmp.tv_sec < 0) {
+				timer_reconnect = get_clock();
+				timer_reconnect.tv_sec += options->reconnectdelay;
 				conn->connect();
 				continue;
 			}
+
+			log(MSG_DEBUG, 0, "Waiting %d seconds to reconnect to MPD...\n", timer_tmp.tv_sec);
+
+			/* Process standard input events */
+			run_all_events();
+			disp->draw();
+			disp->refresh();
+
+			continue;
 		}
+
+		/* At this point, we have a working connection to MPD. Here,
+		 * the time to reconnect is temporarily set to 0 seconds.
+		 * Subsequent attempts will use the 'reconnectdelay' option. */
+		timer_reconnect = get_clock();
 
 		/* Increase time elapsed. */
 		if (comm->status()->state == MPD_STATE_PLAY) {

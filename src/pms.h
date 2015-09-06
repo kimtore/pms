@@ -94,6 +94,7 @@ private:
 
 	/* Timers */
 	struct timespec			timer_now;
+	struct timespec			timer_reconnect;
 	struct timespec			timer_elapsed;
 	struct timespec			timer_statusbar;
 	struct timespec			timer_tmp;
