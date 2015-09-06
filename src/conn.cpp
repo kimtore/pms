@@ -78,8 +78,9 @@ int Connection::connect()
 		abort();
 	}
 
-	err = mpd_connection_get_error(handle);
-	fd = mpd_connection_get_fd(handle);
+	if ((err = mpd_connection_get_error(handle)) == MPD_ERROR_SUCCESS) {
+		fd = mpd_connection_get_fd(handle);
+	}
 
 	pms->log(MSG_DEBUG, 0, "New connection handle is %p, error %d\n", handle, err);
 
