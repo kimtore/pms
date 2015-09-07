@@ -47,7 +47,7 @@ public:
 
 	bool		connected();
 	int		connect();
-	int		disconnect();
+	bool		disconnect();
 	bool		clear_error();
 	int		get_mpd_file_descriptor();
 };

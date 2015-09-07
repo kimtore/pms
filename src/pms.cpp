@@ -466,7 +466,7 @@ Pms::main()
 		/* Test if some error has occurred */
 		if ((error = mpd_connection_get_error(conn->h())) != MPD_ERROR_SUCCESS) {
 
-			/* FIXME: less intrusive error message
+			/* FIXME: less intrusive error message */
 			log(MSG_STATUS, STERR, "MPD error: %s", mpd_connection_get_error_message(conn->h()));
 
 			/* Try to recover from error. If the error is

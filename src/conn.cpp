@@ -88,19 +88,24 @@ int Connection::connect()
 }
 
 /**
- * FIXME: return value void
+ * Disconnect from the MPD server.
+ *
+ * Returns true if a connection was dropped, false otherwise.
  */
-int Connection::disconnect()
+bool
+Connection::disconnect()
 {
-	if (handle != NULL) {
-		pms->log(MSG_DEBUG, 0, "Closing connection to MPD server.\n");
-		mpd_connection_free(handle);
-		handle = NULL;
-		fd = -1;
-		pms->comm->set_is_idle(false);
+	if (handle == NULL) {
+		return false;
 	}
 
-	return 0;
+	pms->log(MSG_DEBUG, 0, "Closing connection to MPD server.\n");
+	mpd_connection_free(handle);
+	handle = NULL;
+	fd = -1;
+	pms->comm->set_is_idle(false);
+
+	return false;
 }
 
 /**
