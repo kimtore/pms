@@ -1,6 +1,6 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
- * PMS  <<Practical Music Search>>
+ * PMS	<<Practical Music Search>>
  * Copyright (C) 2006-2015  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  *
  *
  * song.cpp
- * 	contains what info is stored about a song
+ *	contains what info is stored about a song
  */
 
 
@@ -33,33 +33,28 @@ Song::Song(const mpd_song * song)
 {
 	selected	= false;
 
-        assert(mpd_song_get_uri(song) != NULL);
+	assert(mpd_song_get_uri(song) != NULL);
 
 	file			= Pms::tostring(mpd_song_get_uri(song));
 	artist			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ARTIST, 0));
 	albumartist		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ALBUM_ARTIST, 0));
 
-        /* If the AlbumArtist tag is missing, and songs are sorted by that tag,
-         * the sort will be messed up. This is a hack which may misrepresent
-         * the songs, but at least sorting and displaying will look nice. */
-        if (!albumartist.size()) {
-                albumartist = artist;
-        }
+	/* If the AlbumArtist tag is missing, and songs are sorted by that tag,
+	 * the sort will be messed up. This is a hack which may misrepresent
+	 * the songs, but at least sorting and displaying will look nice. */
+	if (!albumartist.size()) {
+		albumartist = artist;
+	}
 
+/* The ability to process the ArtistSort and AlbumArtistSort tags were added to
+ * libmpdclient in version 2.11. If these tags are not provided, a rudimentary
+ * sort rewrite will be performed in init(). */
 #if LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
 	artistsort		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ARTIST_SORT, 0));
 	albumartistsort		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ALBUM_ARTIST_SORT, 0));
-
-        /* Same hack as above. */
-        if (!artistsort.size()) {
-                artistsort = artist;
-        }
-        if (!albumartistsort.size()) {
-                albumartistsort = albumartist;
-        }
 #else
-	artistsort		= artist;
-	albumartistsort		= albumartist;
+	artistsort		= "";
+	albumartistsort		= "";
 #endif
 
 	title			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_TITLE, 0));
@@ -147,11 +142,13 @@ Song::~Song()
  */
 void		Song::init()
 {
-	unsigned int		i;
-	string			src;
-	string			tmp;
-	vector<string *>	original;
-	vector<string *>	rewritten;
+	const string			the = "the";
+	string				tmp;
+	string::const_iterator		iter;
+	vector<string *>		original;
+	vector<string *>		rewritten;
+	vector<string *>::iterator	src;
+	vector<string *>::iterator	dest;
 
 	/* year from date */
 	if (date.size() >= 4) {
@@ -160,50 +157,50 @@ void		Song::init()
 		year = "";
 	}
 
-	/* trackshort from track */
-	trackshort = track;
-	while (trackshort[0] == '0')
-		trackshort = trackshort.substr(1);
-	if ((i = trackshort.find('/')) != string::npos)
-		trackshort = trackshort.substr(0, i);
+	/* strip zeros and total tracks from the 'track' tag,
+	 * and store it in 'trackshort'. */
+	iter = track.begin();
+	while (iter != track.end() && *iter != '/') {
+		if (*iter != '0') {
+			trackshort += *iter;
+		}
+		++iter;
+	}
 
-	/* sort names if none available */
-	if (artistsort.size() == 0)
-	{
+	/* Generate rudimentary sort names if none available, by
+	 * rewriting 'The Artist' to 'Artist, The'. */
+	if (artistsort.size() == 0) {
 		original.push_back(&artist);
 		rewritten.push_back(&artistsort);
 	}
-	if (albumartistsort.size() == 0)
-	{
+	if (albumartistsort.size() == 0) {
 		original.push_back(&albumartist);
 		rewritten.push_back(&albumartistsort);
 	}
 
-	tmp = "the ";
+	src = original.begin();
+	dest = rewritten.begin();
 
-	for (i = 0; i < original.size(); i++)
-	{
-		/* Too small */
-		if (original[i]->size() > 4)
-		{
-			src = original[i]->substr(0, 4);
+	while (src != original.end()) {
+
+		/* String is too short, skip. */
+		if ((*src)->size() <= the.size()) {
+			**dest = **src;
+			goto next;
 		}
-		else
-		{
-			*(rewritten[i]) = *(original[i]);
-			continue;
+
+		tmp = (*src)->substr(0, 4);
+		if (!lcstrcmp(tmp, the)) {
+			**dest = **src;
+			goto next;
 		}
-	
-		/* Artist name consists of "the ..." */
-		if (lcstrcmp(src, tmp) == true)
-		{
-			*(rewritten[i]) = original[i]->substr(4) + ", " + original[i]->substr(0, 3);
-		}
-		/* Revert to default */
-		else
-		{
-			*(rewritten[i]) = *(original[i]);
-		}
+
+		/* If artist name consists of "the ...", place it at the end of the string. */
+		**dest = (*src)->substr(4) + ", " + (*src)->substr(0, 3);
+
+next:
+		++src;
+		++dest;
 	}
 }
 
