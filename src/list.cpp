@@ -1246,7 +1246,7 @@ bool		Songlist::sort(string sorts)
 /*
  * Performs a case insensitive string comparison.
  */
-bool	lcstrcmp(string & a, string & b)
+bool	lcstrcmp(const string & a, const string & b)
 {
 	string::const_iterator ai, bi;
 
@@ -1267,7 +1267,7 @@ bool	lcstrcmp(string & a, string & b)
 /*
  * Performs a sort comparison based on the 'ignorecase' option.
  */
-bool	icstrsort(string & a, string & b)
+bool	icstrsort(const string & a, const string & b)
 {
 	string		ai;
 	string		bi;

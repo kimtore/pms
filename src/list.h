@@ -175,8 +175,8 @@ public:
 };
 
 
-bool		lcstrcmp(string &, string &);
-bool		icstrsort(string &, string &);
+bool		lcstrcmp(const string &, const string &);
+bool		icstrsort(const string &, const string &);
 
 /* Sorts */
 bool		sort_compare_file(Song *, Song *);
