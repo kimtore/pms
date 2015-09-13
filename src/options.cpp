@@ -308,7 +308,7 @@ Options::reset()
 	ignorecase = true;
 	libraryroot = "";
 	mouse = false;
-	mpd_timeout = 30;
+	mpd_timeout = 2;
 	msg_buffer_size = 1024;
 	nextafteraction = true;
 	nextinterval = 5;

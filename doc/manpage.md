@@ -159,7 +159,7 @@ mouse (*boolean*)
 :   If set, PMS will listen for mouse input. Mouse support is incomplete, and the slightly hacky mousewheel support available with standard versions of ncurses is less than ideal, but a couple of actions have been implemented, see *MOUSE ACTIONS*.  Default: *unset* 
 
 mpd_timeout=*integer*
-:   Sets MPD connection timeout in seconds. Leave this lower than your MPD server setting. Default: *30* 
+:   Sets MPD timeout, in seconds. If the MPD server does not send a response during this time span, the operation is aborted. Increase this value for slow or unstable connections. Default: *2*.
 
 msg_buffer_size=*integer*
 :   How many log lines to keep in the console. A value of 0 keeps all lines. Default: *1024* 
