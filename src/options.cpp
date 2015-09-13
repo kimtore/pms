@@ -315,7 +315,7 @@ Options::reset()
 	onplaylistfinish = "";
 	password = "";
 	port = 6600;
-	reconnectdelay = 30;
+	reconnectdelay = 10;
 	regexsearch = false;
 	resetstatus = 3;
 	scroll = "normal";

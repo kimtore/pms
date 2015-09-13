@@ -180,7 +180,7 @@ port=*integer*
 :   The port that the MPD server listens on. Default: *6600* 
 
 reconnectdelay=*integer*
-:   *FIXME:BROKEN* If the connection to the MPD server is lost, this option specifies how many seconds that should elapse between each connection retry. Default: *30* 
+:   If the connection to the MPD server is lost, this option specifies how many seconds that should elapse between each connection retry. Note that the first connection retry will happen immediately after an error occured; this option only affects subsequent retries. Default: *10* 
 
 regexsearch (*boolean*)
 :   Use regular expressions for search terms. Default: *unset* 
