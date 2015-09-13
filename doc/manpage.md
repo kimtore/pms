@@ -261,9 +261,7 @@ Topbar syntax:
 %\<variable\>%
 :   expands the variable. Replace *\<variable\>* with the variable name; see below for supported variables.
 
-In addition to all *TAGS* (see below), the following variables can be expanded:
-
-Available variables to put in the topbar:
+In addition to all *TAGS*, described below, the following variables can be used in the topbar:
 
     bitrate, bits, channels, librarysize, listsize, livequeuesize, manual,
     manualshort, mute, muteshort, playstate, progressbar, progresspercentage,
