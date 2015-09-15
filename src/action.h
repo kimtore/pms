@@ -24,7 +24,7 @@
 #ifndef _ACTION_H_
 #define _ACTION_H_
 
-#include "list.h"
+#include "songlist.h"
 #include "display.h"
 #include "message.h"
 #include "input.h"

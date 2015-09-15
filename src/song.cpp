@@ -23,7 +23,7 @@
 
 
 #include "song.h"
-#include "list.h"
+#include "songlist.h"
 #include "pms.h"
 #include <string>
 #include <vector>

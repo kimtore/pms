@@ -26,7 +26,7 @@
 #include <mpd/client.h>
 
 #include "conn.h"
-#include "list.h"
+#include "songlist.h"
 #include "playlist.h"
 
 using namespace std;

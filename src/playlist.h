@@ -22,7 +22,7 @@
 #define _PMS_PLAYLIST_H_
 
 
-#include "list.h"
+#include "songlist.h"
 #include <mpd/client.h>
 
 using namespace std;

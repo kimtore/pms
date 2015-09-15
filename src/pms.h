@@ -54,7 +54,7 @@
 #include "topbar.h"
 #include "config.h"
 #include "color.h"
-#include "list.h"
+#include "songlist.h"
 #include "playlist.h"
 #include "action.h"
 #include "input.h"

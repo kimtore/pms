@@ -26,7 +26,7 @@
 	#include <regex>
 #endif
 #include "conn.h"
-#include "list.h"
+#include "songlist.h"
 #include "song.h"
 #include "config.h"
 #include "pms.h"
