@@ -224,18 +224,15 @@ Pms::song_changed()
 void
 Pms::run_cursor_follow_playback()
 {
-	assert(false);
-	/* FIXME
-	pms_window * win;
+	Songlist * songlist;
 
-	win = disp->findwlist(comm->activelist());
-	if (!win) {
-		return;
+	songlist = SONGLIST(disp->active_list);
+	while (!songlist && !songlist->gotocurrent()) {
+		if (songlist == comm->playlist()) {
+			return;
+		}
+		songlist = comm->playlist();
 	}
-
-	setwin(win);
-	win->gotocurrent();
-	*/
 }
 
 /**
@@ -417,22 +414,30 @@ Pms::main()
 		return PMS_EXIT_NODISPLAY;
 	}
 
-	/* Focus startup list */
-	/* FIXME
-	comm->activatelist(comm->playlist());
-	t_str = options->startuplist;
-	if (t_str == "library")
-	{
-		comm->activatelist(comm->library());
-	}
-	else if (t_str.size() > 0 && t_str != "playlist")
-	{
-		comm->activatelist(comm->find_playlist(t_str));
-	}
-	disp->activate(disp->findwlist(comm->activelist()));
-	*/
+	/* Add queue and library to display class.
+	 * FIXME: not our responsibility? */
+	disp->add_list(comm->playlist());
+	disp->add_list(comm->library());
 
-	disp->forcedraw();
+	/* Focus startup list */
+	if (options->startuplist == "playlist") {
+		disp->activate_list(comm->library());
+		disp->activate_list(comm->playlist());
+	} else if (options->startuplist == "library") {
+		disp->activate_list(comm->playlist());
+		disp->activate_list(comm->library());
+	} else {
+		assert(false);
+	}
+
+	// FIXME: will be needed several places. Refactor into separate function.
+	if (pms->options->followwindow) {
+		comm->activatelist(SONGLIST(disp->active_list));
+	} else {
+		comm->activatelist(comm->playlist());
+	}
+
+	disp->draw();
 	disp->refresh();
 
 	/* Reset all clocks */

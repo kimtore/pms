@@ -1019,13 +1019,14 @@ Songlist::set_column_size()
 	}
 
 	/* Maximum length of fields */
+	assert(bbox);
 	winlen = bbox->width();
 
 	/* Find minimum length needed to display all content */
 	for (i = 0; i < size(); i++)
 	{
 		s = song(i);
-		
+
 		for (j = 0; j < columns.size(); j++)
 		{
 			ui = 0;
@@ -1140,6 +1141,114 @@ Songlist::set_column_size()
 		}
 	}
 }
+
+bool
+Songlist::draw()
+{
+	unsigned int		pair;
+	unsigned int		counter = 0;
+	unsigned int		i, j, winlen;
+	unsigned int		min;
+	unsigned int		max;
+	int			ii;
+	Song			*s;
+	string			t;
+	color *			hilight;
+	color *			c;
+
+	/* Clear window first */
+	bbox->clear(NULL);
+
+	/* Define range of songs to draw */
+	min = top_position;
+	max = min + bbox->height() - 1;
+	if (max > size()) {
+		max = size();
+	}
+
+	/* Traverse song list and draw lines */
+	for (i = min; i < max; i++)
+	{
+		++counter;
+		hilight = NULL;
+
+		s = song(i);
+		if (i == cursor())
+		{
+			hilight = pms->options->colors->cursor;
+		}
+		else if (s->selected)
+		{
+			hilight = pms->options->colors->selection;
+		}
+		else if (pms->cursong()) {
+                        if ((role == LIST_ROLE_MAIN && pms->cursong()->id == s->id) || (role != LIST_ROLE_MAIN && s->file == pms->cursong()->file)) {
+				hilight = pms->options->colors->current;
+			}
+		}
+
+		winlen = 0;
+		for (j = 0; j < columns.size(); j++)
+		{
+			pair = 0;
+
+                        /* Draw highlight line */
+			if (hilight) wattron(bbox->window, hilight->pair());
+			mvwhline(bbox->window, counter, winlen, ' ', columns[j]->len() + 1);
+			if (hilight) wattroff(bbox->window, hilight->pair());
+
+			c = pms->formatter->getcolor(columns[j]->type, &(pms->options->colors->fields));
+			if (c)
+			{
+				t = pms->formatter->format(s, columns[j]->type);
+				colprint(bbox, counter, (j == 0 ? winlen : winlen + 1),
+					(hilight ? hilight : c),
+					"%s", t.c_str());
+
+			}
+
+			winlen += columns[j]->len();
+		}
+
+		hilight = pms->options->colors->standard;
+	}
+
+	/* Draw captions and column borders */
+	j = 0;
+	for (i = 0; i < columns.size(); i++)
+	{
+		colprint(bbox, 0, (i == 0 ? j : j + 1),
+			pms->options->colors->headers,
+			"%s", columns[i]->title.c_str());
+		if (i > 0 && pms->options->columnborders)
+		{
+			wattron(bbox->window, pms->options->colors->border->pair());
+			mvwvline(bbox->window, 0, j, ACS_VLINE, bbox->height());
+			wattroff(bbox->window, pms->options->colors->border->pair());
+		}
+		j += columns[i]->len();
+	}
+
+	return true;
+}
+
+const char *
+Songlist::title()
+{
+	/* FIXME: use subclasses */
+	switch(role) {
+		case LIST_ROLE_MAIN:
+			return "Queue";
+		case LIST_ROLE_LIBRARY:
+			return "Library";
+		case LIST_ROLE_PLAYLIST:
+			return filename.c_str();
+		default:;
+	}
+
+	assert(false);
+}
+
 /*
  * Match a single song against criteria
  */

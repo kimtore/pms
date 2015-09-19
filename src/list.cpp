@@ -22,7 +22,7 @@
 
 List::List(BBox * bbox_)
 {
-	bbox = bbox_;
+	set_bounding_box(bbox_);
 }
 
 List::List()
@@ -56,4 +56,10 @@ List::set_cursor(uint32_t position)
 	} else if (cursor_position >= size()) {
 		cursor_position = size() - 1;
 	}
+}
+
+void
+List::set_bounding_box(BBox * bbox_)
+{
+	bbox = bbox_;
 }

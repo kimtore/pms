@@ -62,8 +62,22 @@ public:
 	uint32_t		size();
 	bool			set_cursor(uint32_t position);
 	bool			move_cursor(int32_t delta);
+	virtual const char *	title() = 0;
 
-	void			set_column_size();
+	/**
+	 * Dynamically configure the width of the columns.
+	 */
+	virtual void		set_column_size() = 0;
+
+	/**
+	 * Assign a bounding box.
+	 */
+	void			set_bounding_box(BBox * bbox_);
+
+	/**
+	 * Draw the contents of the list into bounding box.
+	 */
+	virtual bool		draw() = 0;
 };
 
 

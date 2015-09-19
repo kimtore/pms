@@ -91,38 +91,34 @@ inline
 uint16_t
 BBox::width()
 {
-	return br.x - tl.x;
+	return br.x - tl.x + 1;
 }
 
 inline
 uint16_t
 BBox::height()
 {
-	return br.y - tl.y;
+	return br.y - tl.y + 1;
 }
 
 bool
 BBox::clear(color * c)
 {
-	int y;
-	int w;
+	uint16_t y = width();
+	uint16_t w = height();
 
-	if (c) {
-		w = width();
-		y = height();
-		if (wattron(window, c->pair()) == ERR) {
+	if (c && wattron(window, c->pair()) == ERR) {
+		return false;
+	}
+
+	while (y != 0) {
+		if (mvwhline(window, y--, 0, ' ', w) == ERR) {
 			return false;
 		}
-		while (y != 0) {
-			if (mvwhline(window, y--, 0, ' ', w) == ERR) {
-				return false;
-			}
-		}
-		if (wattroff(window, c->pair()) == ERR) {
-			return false;
-		}
-	} else {
-		return (wclear(window) != ERR);
+	}
+
+	if (c && wattroff(window, c->pair()) == ERR) {
+		return false;
 	}
 }
 
@@ -241,17 +237,15 @@ Display::resized()
 	vector<List *>::iterator iter;
 
 	topbar.resize(Point(0, 0), Point(COLS - 1, pms->options->topbar_lines.size() - 1));
-	title.resize(Point(0, topbar.bottom() + 1), Point(COLS - 1, topbar.bottom() + 1));
-	main_window.resize(Point(0, title.bottom() + 1), Point(COLS - 1, LINES - 2));
+	titlebar.resize(Point(0, topbar.bottom() + 1), Point(COLS - 1, topbar.bottom() + 1));
+	main_window.resize(Point(0, titlebar.bottom() + 1), Point(COLS - 1, LINES - 2));
 	statusbar.resize(Point(0, main_window.bottom() + 1), Point(COLS - 4, main_window.bottom() + 1));
-	position_readout.resize(Point(0, statusbar.bottom()), Point(statusbar.right() + 1, statusbar.bottom()));
+	position_readout.resize(Point(statusbar.right() + 1, statusbar.bottom()), Point(COLS - 1, statusbar.bottom()));
 
-	/* FIXME
 	iter = lists.begin();
 	while (iter != lists.end()) {
 		(*iter++)->set_column_size();
 	}
-	*/
 }
 
 /*
@@ -261,18 +255,160 @@ void
 Display::refresh()
 {
 	topbar.refresh();
-	title.refresh();
+	titlebar.refresh();
 	main_window.refresh();
 	statusbar.refresh();
 	position_readout.refresh();
 }
 
+bool
+Display::add_list(List * list)
+{
+	lists.push_back(list);
+	list->set_bounding_box(&main_window);
+	return true;
+}
+
+bool
+Display::activate_list(List * list)
+{
+	if (list == active_list) {
+		return false;
+	}
+
+	last_list = active_list;
+	active_list = list;
+
+	return true;
+}
+
+bool
+Display::draw_topbar()
+{
+	Point				p;
+	uint32_t			position;
+	uint32_t			formatted_length;
+	vector<Topbarline *>::iterator	iter;
+	Song *				song;
+	string				s;
+
+	assert(topbar.height() == pms->options->topbar_lines.size());
+
+	if (!topbar.height()) {
+		return false;
+	}
+
+	topbar.clear(NULL);
+
+	song = pms->cursong();
+
+	iter = pms->options->topbar_lines.begin();
+
+	while (iter != pms->options->topbar_lines.end()) {
+
+		position = TOPBAR_FIELD_RIGHT + 1;
+
+		while (position-- != TOPBAR_FIELD_LEFT) {
+
+			/* Get a formatted string that can be printed in the topbar. */
+			s = pms->formatter->format(song, (*iter)->strings[position], formatted_length, &(pms->options->colors->topbar.fields));
+
+			if (formatted_length && s.size()) {
+				if (position == TOPBAR_FIELD_LEFT) {
+					p.x = 0;
+				} else if (position == TOPBAR_FIELD_CENTER) {
+					p.x = (topbar.width() / 2) - (formatted_length / 2);
+				} else if (position == TOPBAR_FIELD_RIGHT) {
+					p.x = (topbar.width() - formatted_length);
+				}
+
+				colprint(&topbar, p.y, p.x, pms->options->colors->topbar.standard, s.c_str());
+			}
+		}
+
+		++iter;
+		++p.y;
+	}
+
+	return true;
+}
+
+bool
+Display::draw_titlebar()
+{
+	int		left, right;
+	string		t;
+
+	assert(active_list);
+
+	titlebar.clear(NULL);
+
+	t = active_list->title();
+	if (!t.size()) {
+		return false;
+	}
+
+	left = (titlebar.width() / 2) - (t.size() / 2);
+	right = left + t.size();
+
+	wattron(titlebar.window, pms->options->colors->border->pair());
+	mvwaddch(titlebar.window, 0, left - 2, ACS_RTEE);
+	mvwaddch(titlebar.window, 0, right + 1, ACS_LTEE);
+	wattroff(titlebar.window, pms->options->colors->border->pair());
+
+	wattron(titlebar.window, pms->options->colors->title->pair());
+	mvwprintw(titlebar.window, 0, left - 1, " %s ", t.c_str());
+	wattroff(titlebar.window, pms->options->colors->title->pair());
+
+	return true;
+}
+
+bool
+Display::draw_main_window()
+{
+	assert(active_list);
+	return active_list->draw();
+}
+
+bool
+Display::draw_position_readout()
+{
+	string		text;
+	char		buffer[4];
+
+	if (active_list->size() < position_readout.height()) {
+		text = "All";
+	} else if (active_list->top_position == 0) {
+		text = "Top";
+	} else if (active_list->top_position == active_list->size() - (position_readout.height() - 1)) {
+		text = "Bot";
+	} else {
+		sprintf(buffer, "%2d", 100 * active_list->top_position / (active_list->size() - (position_readout.height() - 1)));
+		text = buffer;
+		text += "%%";
+	}
+
+	/* Clear window */
+	position_readout.clear(NULL);
+
+	/* Draw string */
+	colprint(&position_readout, 0, 0, pms->options->colors->position, "%s", text.c_str());
+
+	return true;
+}
+
 /*
  * Redraws all visible windows
  */
-void		Display::draw()
+bool
+Display::draw()
 {
-	assert(false);
+	/* FIXME: check if drawing is needed */
+	draw_topbar();
+	draw_titlebar();
+	draw_main_window();
+	draw_position_readout();
+	return true;
 	/* FIXME */
 	/*
 	if (curwin && curwin->wantdraw)
@@ -335,13 +471,13 @@ Display::set_xterm_title()
 Song *
 Display::cursorsong()
 {
-	Songlist * list;
+	Songlist * songlist;
 
-	if ((list = dynamic_cast<Songlist *>(active_list)) == NULL) {
+	if ((songlist = SONGLIST(active_list)) == NULL) {
 		return NULL;
 	}
 
-	return list->cursorsong();
+	return songlist->cursorsong();
 }
 
 
@@ -416,7 +552,7 @@ void colprint(BBox * bbox, int y, int x, color * c, const char *fmt, ...)
 	unsigned int		printlen = 0;	// num characters printed on screen
 
 	assert(bbox);
-	
+
 	va_start(ap, fmt);
 
 	/* Check if string is out of range, and cuts if necessary */

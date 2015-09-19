@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=8 sw=8:
+/* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
  * Copyright (C) 2006-2015  Kim Tore Jensen
@@ -28,6 +28,9 @@
 
 using namespace std;
 
+#define TOPBAR_FIELD_LEFT 0
+#define TOPBAR_FIELD_CENTER 1
+#define TOPBAR_FIELD_RIGHT 2
 
 class Topbarline
 {

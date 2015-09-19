@@ -39,6 +39,11 @@ using namespace std;
 
 #define MATCH_FAILED -1
 
+/**
+ * Return `x` cast to a Songlist *, or NULL if the list is not a Songlist.
+ */
+#define SONGLIST(x) dynamic_cast<Songlist *>(x)
+
 enum
 {
 	MATCH_ID		= 1 << 0,
@@ -113,6 +118,9 @@ public:
 	bool			wrap;
 	List_role		role;
 	string			filename;
+
+	bool			draw();
+	const char *		title();
 
 	Song *			song(song_t);
 	unsigned int		length;

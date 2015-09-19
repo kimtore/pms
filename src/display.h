@@ -95,7 +95,7 @@ private:
 
 public:
 	BBox			topbar;
-	BBox			title;
+	BBox			titlebar;
 	BBox			main_window;
 	BBox			statusbar;
 	BBox			position_readout;
@@ -108,20 +108,27 @@ public:
 
 	mmask_t			setmousemask();
 
+	bool			add_list(List * list);
+	bool			activate_list(List * list);
+	bool			delete_list(List *);
+
+	bool			draw();
+	bool			draw_topbar();
+	bool			draw_titlebar();
+	bool			draw_main_window();
+	bool			draw_position_readout();
+
 	bool				init();
 	void				uninit();
 	void				resized();
 	void				refresh();
 	void				scrollwin(int);
 	Song *				cursorsong();
-	void				draw();
 	void				forcedraw();
 	void				set_xterm_title();
 
 	List *			next_list();
 	List *			previous_list();
-	bool			activate_list(List *);
-	bool			delete_list(List *);
 };
  
 void	colprint(BBox * bbox, int y, int x, color * c, const char *fmt, ...);

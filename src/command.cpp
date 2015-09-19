@@ -1652,31 +1652,13 @@ Control::activelist()
 
 /*
  * Sets the active playlist
- *
- * FIXME: why all the logic below?
- * FIXME: logic needed due to setwin() calling us with some arbitrary list
  */
 bool
 Control::activatelist(Songlist * list)
 {
-	vector<Playlist *>::iterator	i;
-
-	if (list == _playlist || list == _library) {
-		_active = list;
-		return true;
-	}
-
-	i = playlists.begin();
-	while (i != playlists.end())
-	{
-		if (*i == list) {
-			_active = list;
-			return true;
-		}
-		++i;
-	}
-
-	return false;
+	assert(list);
+	_active = list;
+	return true;
 }
 
 /*
