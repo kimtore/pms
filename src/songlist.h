@@ -16,22 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	list.h
+ *	songlist.h
  *		Playlist class, holds info about a lot of songs
  */
 
-#ifndef _PMS_LIST_H_
-#define _PMS_LIST_H_
-
+#ifndef _PMS_SONGLIST_H_
+#define _PMS_SONGLIST_H_
 
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <mpd/client.h>
+
+#include "list.h"
 #include "song.h"
 #include "types.h"
 #include "field.h"
 #include "filter.h"
+#include "column.h"
 
 using namespace std;
 
@@ -84,7 +86,7 @@ struct Selection
 	song_t				length;
 };
 
-class Songlist
+class Songlist : public List
 {
 private:
 	song_t					position;
@@ -100,6 +102,8 @@ private:
 	vector<Song *>				songs;
 	vector<Song *>				filtersongs;
 	vector<Filter *>			filters;
+
+	vector<pms_column *>			columns;
 
 public:
 				Songlist();
@@ -135,6 +139,7 @@ public:
 	unsigned int		cursor();
 	Song *			cursorsong();
 	int			locatesong(Song *);
+	void			set_column_size();
 
 	bool			selectsong(Song *, bool);
 	Song *			getnextselected();

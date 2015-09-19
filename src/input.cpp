@@ -34,47 +34,10 @@ Input::Input()
 	searchterm.clear();
 	cmdhistory.clear();
 	searchhistory.clear();
-
-	winclear();
 }
 
 Input::~Input()
 {
-}
-
-/*
- * Store values when an extra window parameter is needed
- */
-void			Input::winstore(pms_window * w)
-{
-	win = w;
-	winparam = param;
-	winpend = pending;
-	pms->log(MSG_DEBUG, 0, "winstore: win=%p, winparam=%s, winpend=%d\n", win, winparam.c_str(), winpend);
-}
-
-/*
- * Delete window parameters
- */
-void			Input::winclear()
-{
-	win = NULL;
-	winparam = "";
-	winpend = PEND_NONE;
-}
-
-/*
- * Restore window parameters
- */
-bool			Input::winpop()
-{
-	if (win == NULL) return false;
-	pms->log(MSG_DEBUG, 0, "winpop: setting param=%s, pending=%d\n", param.c_str(), pending);
-
-	param = winparam;
-	pending = winpend;
-
-	return true;
 }
 
 /*
@@ -286,6 +249,7 @@ pms_pending_keys	Input::dispatch_normal()
 	}
 
 	/* Mouse event */
+	/* FIXME: refactor
 	if (ch == KEY_MOUSE)
 	{
 		if (getmouse(&mouseevent) == ERR)
@@ -579,6 +543,7 @@ pms_pending_keys	Input::dispatch_normal()
 			return PEND_NONE;
 		}
 	}
+	*/
 
 	/* Key pressed */
 	pending = pms->bindings->act(ch, &param);

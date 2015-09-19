@@ -27,6 +27,8 @@
 #include "config.h"
 #include "input.h"
 #include "i18n.h"
+#include "list.h"
+#include "songlist.h"
 #include "pms.h"
 
 extern Pms *			pms;
@@ -50,17 +52,14 @@ Interface::~Interface()
  */
 bool		Interface::check_events()
 {
-	Songlist *		list;
-	pms_window *		win;
+	List * list;
+	Songlist * songlist;
 
 	msg->clear();
 	action = pms->input->getpending();
 
-	win = pms->disp->actwin();
-	if (win != NULL)
-	{
-		list = win->plist();
-	}
+	list = pms->disp->active_list;
+	songlist = dynamic_cast<Songlist *>(list);
 
 	switch(action)
 	{
@@ -184,27 +183,27 @@ bool		Interface::check_events()
 			break;
 
 		case PEND_DELETE:
-			remove(list);
+			remove(songlist);
 			break;
 
 		case PEND_TOGGLESELECT:
-			select(win, SELECT_TOGGLE, param);
+			select(list, SELECT_TOGGLE, param);
 			break;
 
 		case PEND_SELECT:
-			select(win, SELECT_ON, param);
+			select(list, SELECT_ON, param);
 			break;
 
 		case PEND_UNSELECT:
-			select(win, SELECT_OFF, param);
+			select(list, SELECT_OFF, param);
 			break;
 
 		case PEND_CLEARSELECTION:
-			select(win, SELECT_CLEAR, param);
+			select(list, SELECT_CLEAR, param);
 			break;
 
 		case PEND_SELECTALL:
-			select(win, SELECT_ALL, param);
+			select(list, SELECT_ALL, param);
 			break;
 
 
@@ -370,18 +369,13 @@ long		Interface::show_info()
 
 /*
  * Clear the filter list
+ *
+ * FIXME: remove filters, replace them with temporary lists
  */
 
 void		Interface::clear_filters()
 {
-	Songlist *	list;
-
-	list = pms->disp->actwin()->plist();
-	if (!list) return;
-
-	set_input_mode(INPUT_NORMAL);
-	list->filter_clear();
-	pms->disp->draw();
+	assert(false);
 }
 
 
@@ -392,14 +386,6 @@ int		Interface::set_input_mode(Input_mode mode)
 {
 	Songlist *	list;
 
-	if (mode == INPUT_JUMP || mode == INPUT_FILTER)
-	{
-		if (!pms->disp->actwin() || pms->disp->actwin()->type() != WIN_ROLE_PLAYLIST)
-		{
-			pms->log(MSG_STATUS, STERR, _("Can't search within this window."));
-			return pms->input->mode();
-		}
-	}
 	pms->input->mode(mode);
 	pms->drawstatus();
 	return pms->input->mode();
@@ -508,17 +494,22 @@ long		Interface::update_db(string location)
 
 /*
  * Play song under cursor
+ *
+ * FIXME: should take parameter
  */
 long		Interface::play()
 {
-	Songlist *	list;
+	Songlist *	songlist;
 	Song *		song;
 	song_t		s;
 
-	list = pms->disp->actwin()->plist();
-	assert(list != NULL);
+	songlist = dynamic_cast<Songlist *>(pms->disp->active_list);
 
-	song = list->cursorsong();
+	if (songlist == NULL) {
+		return STERR;
+	}
+
+	song = songlist->cursorsong();
 	assert(song != NULL);
 
 	pms->log(MSG_CONSOLE, STOK, "Playing %s\n", song->file.c_str());
@@ -549,24 +540,24 @@ long		Interface::play()
  */
 long		Interface::add(string param)
 {
-	pms_window *	win;
-	Songlist *	list;
+	Songlist *	songlist;
 	Songlist *	dlist;
 	Song *		song;
 	string		s;
 	size_t		i = 0;
 
-	win = pms->disp->actwin();
-	list = win->plist();
+	songlist = dynamic_cast<Songlist *>(pms->disp->active_list);
 	dlist = pms->comm->playlist();
 
-	if (!pms->disp->cursorsong() && !win->current())
-	{
+	if (!songlist) return STERR;
+
+	if (!songlist->cursorsong()) {
 		pms->log(MSG_STATUS, STERR, _("This is not a song, so you can't add it."));
 		return STERR;
 	}
 
 	/* Add list to list */
+	/*
 	if (win && win->type() == WIN_ROLE_WINDOWLIST && win->current() && pms->input->win == NULL && action == PEND_ADD)
 	{
 		pms->log(MSG_DEBUG, 0, "Adding list to list.\n");
@@ -576,42 +567,14 @@ long		Interface::add(string param)
 		setwin(pms->disp->findwlist(pms->comm->playlist()));
 		return STOK;
 	}
+	*/
 
 	/* Addto spawns windowlist */
 	if (action == PEND_ADDTO)
 	{
-		/* Need additional window param */
-		if (pms->input->win == NULL)
-		{
-			/* Add list from windowlist not supported - TODO */
-			if (win->type() == WIN_ROLE_WINDOWLIST)
-			{
-				pms->log(MSG_STATUS, STERR, _("Not supported. Please select the songs you want to add before using the add-to command."));
-				return STERR;
-			}
-			pms->log(MSG_DEBUG, 0, "Storing window parameters: win=%p\n", win);
-			pms->input->winstore(win);
-			setwin(pms->disp->create_windowlist());
-			return STOK;
-		}
-		if (win->current())
-			dlist = win->current()->plist();
-
-		pms->log(MSG_DEBUG, 0, "Returned window parameters: win=%p, destination list=%p\n", win->current(), dlist);
-
-		if (dlist == NULL)
-		{
-			pms->input->winclear();
-			return STOK;
-		}
-
-		if (pms->input->win)
-			list = pms->input->win->plist();
-		else
-			list = NULL;
+		/* FIXME: not implemented */
+		assert(false);
 	}
-
-	if (!list || !dlist) return STERR;
 
 	if (dlist == pms->comm->playlist())
 		s = _("playlist");
@@ -634,7 +597,7 @@ long		Interface::add(string param)
 	}
 
 	/* Add selected song(s) */
-	song = list->popnextselected();
+	song = songlist->popnextselected();
 	while (song != NULL)
 	{
 		pms->log(MSG_DEBUG, 0, "Adding song at %p with id=%d pos=%d filename=%s\n", song, song->id, song->pos, song->file.c_str());
@@ -643,7 +606,7 @@ long		Interface::add(string param)
 		else
 			generr();
 
-		song = list->popnextselected();
+		song = songlist->popnextselected();
 	}
 	if (i == 0)
 	{
@@ -652,11 +615,10 @@ long		Interface::add(string param)
 	else
 	{
 		if (i == 1 && pms->options->nextafteraction)
-			pms->disp->movecursor(1);
+			pms->disp->active_list->move_cursor(1);
 		pms->log(MSG_STATUS, STOK, _("Added %d %s to %s."), i, (i == 1 ? "song" : "songs"), s.c_str());
 	}
 
-	win->wantdraw = true;
 	return STOK;
 }
 
@@ -899,7 +861,7 @@ long		Interface::shuffle()
  */
 long		Interface::clear()
 {
-	if (pms->comm->clear(pms->disp->actwin()->plist()))
+	if (pms->comm->clear(dynamic_cast<Songlist *>(pms->disp->active_list)))
 	{
 		pms->log(MSG_STATUS, STOK, _("Playlist shuffled."));
 		return STOK;
@@ -913,11 +875,11 @@ long		Interface::clear()
  */
 long		Interface::crop(int crop_mode)
 {
-	if (pms->comm->crop(pms->disp->actwin()->plist(), crop_mode))
+	if (pms->comm->crop(dynamic_cast<Songlist *>(pms->disp->active_list), crop_mode))
 	{
 		pms->log(MSG_CONSOLE, STOK, _("Playlist cropped.\n"));
 		//pms->drawstatus();
-		pms->disp->actwin()->wantdraw = true;
+		//pms->disp->actwin()->wantdraw = true;
 		return STOK;
 	}
 	generr();
@@ -959,7 +921,7 @@ Interface::remove(Songlist * list)
 	}
 
 	/* FIXME: should wantdraw really be set _here_? */
-	pms->disp->actwin()->wantdraw = true;
+	//pms->disp->actwin()->wantdraw = true;
 	pms->log(MSG_STATUS, STOK, _("Removed %d %s."), songs.size(), (songs.size() == 1 ? _("song") : _("songs")));
 
 	return STOK;
@@ -968,34 +930,33 @@ Interface::remove(Songlist * list)
 /*
  * Perform select, unselect or toggle select on one or more entries
  */
-long		Interface::select(pms_window * win, int mode, string param)
+long		Interface::select(List * list, int mode, string param)
 {
-	Songlist *	list;
+	Songlist *	songlist;
 	Song *		song;
 	int		i = -1;
 
-	list = win->plist();
+	songlist = dynamic_cast<Songlist *>(list);
 
-	if (!list)
-	{
-		pms->log(MSG_STATUS, STERR, _("Can't select: this is not a playlist."));
+	if (!songlist) {
+		pms->log(MSG_STATUS, STERR, _("Can't select: this is not a song list."));
 		return STERR;
 	}
 
 	switch(mode)
 	{
 		case SELECT_CLEAR:
-			for(i = 0; i <= list->end(); i++)
-				list->selectsong(list->song(i), 0);
+			for(i = 0; i <= songlist->end(); i++)
+				songlist->selectsong(songlist->song(i), 0);
 			pms->log(MSG_DEBUG, STOK, _("Cleared selection.\n"));
-			win->wantdraw = true;
+			//win->wantdraw = true;
 			return STOK;
 
 		case SELECT_ALL:
-			for(i = 0; i <= list->end(); i++)
-				list->selectsong(list->song(i), 1);
+			for(i = 0; i <= songlist->end(); i++)
+				songlist->selectsong(songlist->song(i), 1);
 			pms->log(MSG_DEBUG, STOK, _("Selected all songs.\n"));
-			win->wantdraw = true;
+			//win->wantdraw = true;
 			return STOK;
 
 		default:
@@ -1005,28 +966,28 @@ long		Interface::select(pms_window * win, int mode, string param)
 	/* Perform only on one object */
 	if (param.size() == 0)
 	{
-		song = list->cursorsong();
+		song = songlist->cursorsong();
 		if (!song)
 		{
 			pms->log(MSG_STATUS, STERR, _("Can't select: no song under cursor."));
 			return STERR;
 		}
 		if (mode == SELECT_TOGGLE)
-			list->selectsong(song, !song->selected);
+			songlist->selectsong(song, !song->selected);
 		else if (mode == SELECT_OFF)
-			list->selectsong(song, false);
+			songlist->selectsong(song, false);
 		else if (mode == SELECT_ON)
-			list->selectsong(song, true);
+			songlist->selectsong(song, true);
 
 		if (pms->options->nextafteraction)
-			win->movecursor(1);
+			list->move_cursor(1);
 
-		win->wantdraw = true;
+		//win->wantdraw = true;
 		return STOK;
 	}
 
 	/* Perform on range of objects */
-	i = list->match(param, 0, list->end(), MATCH_ALL);
+	i = songlist->match(param, 0, songlist->end(), MATCH_ALL);
 	if (i == MATCH_FAILED)
 	{
 		pms->log(MSG_STATUS, STERR, _("No songs matching pattern %s"), param.c_str());
@@ -1034,7 +995,7 @@ long		Interface::select(pms_window * win, int mode, string param)
 	}
 	while (i != MATCH_FAILED)
 	{
-		song = list->song(i);
+		song = songlist->song(i);
 		if (!song)
 		{
 			pms->log(MSG_DEBUG, STERR, "***BUG*** in Interface::select(): Encountered NULL song!\n");
@@ -1042,19 +1003,19 @@ long		Interface::select(pms_window * win, int mode, string param)
 		}
 
 		if (mode == SELECT_TOGGLE)
-			list->selectsong(song, !song->selected);
+			songlist->selectsong(song, !song->selected);
 		else if (mode == SELECT_OFF)
-			list->selectsong(song, false);
+			songlist->selectsong(song, false);
 		else if (mode == SELECT_ON)
-			list->selectsong(song, true);
+			songlist->selectsong(song, true);
 
-		if (static_cast<unsigned int>(i) == list->end())
+		if (static_cast<unsigned int>(i) == songlist->end())
 			break;
 
-		i = list->match(param, ++i, list->end(), MATCH_ALL);
+		i = songlist->match(param, ++i, songlist->end(), MATCH_ALL);
 	}
 
-	win->wantdraw = true;
+	//win->wantdraw = true;
 	return STOK;
 }
 
@@ -1070,10 +1031,9 @@ handle_command(pms_pending_keys action)
 {
 	Message		err;
 	Song *		song = NULL;
-	Songlist *	list = NULL;
+	List *		list = pms->disp->active_list;
+	Songlist *	songlist = dynamic_cast<Songlist *>(list);
 	Songlist *	dlist = NULL;
-	pms_window *	win = pms->disp->actwin();
-	pms_window *	tmpwin;
 	Input_mode	mode;
 	int		i = 0;
 	long		l = 0;
@@ -1089,8 +1049,6 @@ handle_command(pms_pending_keys action)
 			return true;
 	}
 
-	if (win) list = win->plist();
-
 	switch(action)
 	{
 		case PEND_NONE:
@@ -1105,79 +1063,66 @@ handle_command(pms_pending_keys action)
 				//pms->drawstatus();
 				break;
 			}
-			pms->disp->movecursor(action == PEND_MOVE_DOWN ? 1 : -1);
-			if (win) win->wantdraw = true;
+			pms->disp->active_list->move_cursor(action == PEND_MOVE_DOWN ? 1 : -1);
+			//if (win) win->wantdraw = true;
 			break;
 
 		case PEND_MOVE_HALFPGDN:
 		case PEND_MOVE_HALFPGUP:
-			if (!win) break;
 			//vim seems to integer divide number of rows visible by 
 			//2 unless only one row is visible
-			i = (win->bheight() - 1) / 2;
-			if (i < 1)
+			i = (list->bbox->height() - 1) / 2;
+			if (i < 1) {
 				i = 1;
-			pms->disp->scrollwin(i * (action == PEND_MOVE_HALFPGDN ? 1 : -1));
-			if (win) win->wantdraw = true;
+			}
+			//FIXME
+			//pms->disp->scrollwin(i * (action == PEND_MOVE_HALFPGDN ? 1 : -1));
 			break;
 
 		case PEND_MOVE_PGDN:
 		case PEND_MOVE_PGUP:
-			if (!win) break;
-			if (win->bheight() - 1 > 4)
-			{
-				//more than four lines visible: vim leaves two 
-				//previously visible lines visible
-				i = win->bheight() - 1 - 2;
-			}
-			else if (win->bheight() - 1 == 4)
-			{
+			i = list->bbox->height();
+			if (i == 4) {
 				//four lines visible: vim leaves one previously 
 				//visible line visible
-				i = 3;
+				i -= 1;
+			} else if (i > 4) {
+				//more than four lines visible: vim leaves two 
+				//previously visible lines visible
+				i -= 2;
 			}
-			else
-			{
-				//three or fewer lines visible: vim moves a full 
-				//page
-				i = win->bheight() - 1;
-			}
-			pms->disp->scrollwin(i * (action == PEND_MOVE_PGDN ? 1 : -1));
-			if (win) win->wantdraw = true;
+			//FIXME
+			//pms->disp->scrollwin(i * (action == PEND_MOVE_PGDN ? 1 : -1));
 			break;
 
 		case PEND_SCROLL_DOWN:
 		case PEND_SCROLL_UP:
-			if (!win) break;
-			pms->disp->scrollwin(action == PEND_SCROLL_DOWN ? 1 : -1);
-			if (win) win->wantdraw = true;
+			//FIXME
+			//pms->disp->scrollwin(action == PEND_SCROLL_DOWN ? 1 : -1);
 			break;
 
 		case PEND_CENTER_CURSOR:
-			if (!win) break;
-			if (pms->options->scroll_mode != SCROLL_NORMAL) break;
-			pms->disp->scrollwin(win->scursor() - win->cursordrawstart() - (win->bheight() - 1) / 2);
+			// FIXME
+			assert(false);
+			//if (pms->options->scroll_mode != SCROLL_NORMAL) break;
+			//pms->disp->scrollwin(list->cursor_position - win->cursordrawstart() - (win->bheight() - 1) / 2);
 			break;
 
 		case PEND_MOVE_HOME:
-			pms->disp->setcursor(0);
-			if (win) win->wantdraw = true;
+			pms->disp->active_list->set_cursor(0);
 			break;
 
 		case PEND_MOVE_END:
-			pms->disp->setcursor(pms->disp->actwin()->size() - 1);
-			if (win) win->wantdraw = true;
+			pms->disp->active_list->set_cursor(pms->disp->active_list->size() - 1);
 			break;
 
 		case PEND_GOTO_CURRENT:
-			if (!pms->cursong() || !list) return false;
-			if (!list->gotocurrent())
-			{
+			if (!pms->cursong() || !songlist) return false;
+			if (!songlist->gotocurrent()) {
 				pms->log(MSG_STATUS, STERR, "Currently playing song is not here.");
 				return false;
 			}
 
-			win->wantdraw = true;
 			break;
 
 
@@ -1207,22 +1152,20 @@ handle_command(pms_pending_keys action)
 
 		case PEND_PLAYRANDOM:
 		case PEND_ADDRANDOM:
-			if (!list) list = pms->comm->library();
+			if (!songlist) songlist = pms->comm->library();
 
 			/* Don't re-add songs from playlist, but rather play them again. */
-			if (list->role == LIST_ROLE_MAIN)
-			{
+			if (songlist == pms->comm->playlist()) {
 				if (action == PEND_PLAYRANDOM)
 				{
-					song = list->randsong();
+					song = songlist->randsong();
 					pms->comm->playid(song->id);
-					if (win) win->wantdraw = true;
 					break;
 				}
 				/* Don't add songs from playlist, use library instead */
 				else
 				{
-					list = pms->comm->library();
+					songlist = pms->comm->library();
 				}
 			}
 
@@ -1233,7 +1176,7 @@ handle_command(pms_pending_keys action)
 				sn = MPD_SONG_NO_NUM;
 				for (l = 0; l < i; l++)
 				{
-					song = list->randsong();
+					song = songlist->randsong();
 					if (sn == MPD_SONG_NO_NUM)
 						sn = pms->comm->add(pms->comm->playlist(), song);
 					else
@@ -1242,7 +1185,7 @@ handle_command(pms_pending_keys action)
 			}
 			else
 			{
-				song = list->randsong();
+				song = songlist->randsong();
 				sn = pms->comm->add(pms->comm->playlist(), song);
 			}
 
@@ -1250,8 +1193,6 @@ handle_command(pms_pending_keys action)
 				break;
 			if (action == PEND_PLAYRANDOM)
 				pms->comm->playid(sn);
-			if (win)
-				win->wantdraw = true;
 			//pms->drawstatus();
 			break;
 
@@ -1261,18 +1202,17 @@ handle_command(pms_pending_keys action)
 				pms->log(MSG_STATUS, STERR, _("This command can only be run within a playlist."));
 				break;
 			}
-			song = list->randsong(&sn);
+			song = songlist->randsong(&sn);
 			if (song == NULL) break;
-			pms->disp->setcursor(sn);
+			pms->disp->active_list->set_cursor(sn);
 			break;
 
 		case PEND_MOVEITEMS:
-			if (!list || !win)
-			{
+			if (!songlist) {
 				pms->log(MSG_STATUS, STERR, _("You can't move anything else than songs."));
 				break;
 			}
-			i = pms->comm->move(list, atoi(pms->input->param.c_str()));
+			i = pms->comm->move(songlist, atoi(pms->input->param.c_str()));
 			if (i == 0)
 			{
 				pms->log(MSG_STATUS, STERR, _("Can't move."));
@@ -1280,11 +1220,8 @@ handle_command(pms_pending_keys action)
 			}
 			else if (i == 1)
 			{
-				pms->disp->movecursor(atoi(pms->input->param.c_str()));
-			}
-			else
-			{
-				win->wantdraw = true;
+				// FIXME
+				songlist->move_cursor(atoi(pms->input->param.c_str()));
 			}
 			//pms->drawstatus();
 			break;
@@ -1309,10 +1246,11 @@ handle_command(pms_pending_keys action)
 			pms->drawstatus();
 			if (pms->input->mode() == INPUT_JUMP)
 			{
-				if (!win) break;
-				i = win->scursor();
-				if ((unsigned int)i >= win->size()) i = 0;
-				win->jumpto(pms->input->text, i);
+				i = list->cursor_position;
+				if ((unsigned int)i >= list->size()) i = 0;
+				assert(false);
+				// FIXME
+				//songlist->jumpto(pms->input->text, i);
 			}
 			break;
 
@@ -1321,10 +1259,7 @@ handle_command(pms_pending_keys action)
 			mode = pms->input->mode();
 			pms->input->savehistory();
 
-			if (win && win->type() == WIN_ROLE_WINDOWLIST)
-				pms->input->mode(INPUT_LIST);
-			else
-				pms->input->mode(INPUT_NORMAL);
+			pms->input->mode(INPUT_NORMAL);
 
 			if (mode == INPUT_COMMAND)
 			{
@@ -1333,16 +1268,20 @@ handle_command(pms_pending_keys action)
 			else if (mode == INPUT_JUMP)
 			{
 				pms->input->searchterm = pms->input->text;
+				assert(false);
 
+				/* FIXME
 				if (win->posof_jump(pms->input->text, 0) == -1)
 					pms->log(MSG_STATUS, STERR, _("Pattern not found: %s"), pms->input->text.c_str());
+					*/
 
 				//else do nothing so the search command is left visible
 			}
 			else if (mode == INPUT_FILTER)
 			{
 				if (!list) break;
-				list->filter_add(pms->input->text, MATCH_ALL);
+				/* FIXME: save search results into a new temporary list */
+				//list->filter_add(pms->input->text, MATCH_ALL);
 				pms->disp->draw();
 			}
 			else
@@ -1354,38 +1293,23 @@ handle_command(pms_pending_keys action)
 
 		/* Special case for list */
 		case PEND_RETURN:
+			assert(false);
+			/* FIXME
 			if (win && win->type() == WIN_ROLE_WINDOWLIST)
 			{
 				win = win->current();
 
-				/* Stored mode - return to original call */
-				if (pms->input->winpop())
-				{
-					handle_command(pms->input->getpending());
-					if (pms->options->addtoreturns)
-					{
-						setwin(pms->input->win);
-						pms->disp->lastwin = win;
-					}
-					else
-					{
-						setwin(win);
-						pms->disp->lastwin = pms->input->win;
-					}
-					pms->input->winclear();
-				}
-				else
-				{
-					/* Windowlist mode, switch to new window */
-					if (!setwin(win))
-						pms->log(MSG_STATUS, STERR, _("Can't change window."));
+				if (!setwin(win)) {
+					pms->log(MSG_STATUS, STERR, _("Can't change window."));
 				}
 			}
+			*/
 			break;
 
 		case PEND_TEXT_ESCAPE:
 		case PEND_RETURN_ESCAPE:
-			if (!win) break;
+			assert(false);
+			/*
 			switch(win->type())
 			{
 				case WIN_ROLE_BINDLIST:
@@ -1401,11 +1325,14 @@ handle_command(pms_pending_keys action)
 					pms->drawstatus();
 					break;
 			}
+			*/
 			
 			break;
 
 		/* Searching */
 		case PEND_JUMPNEXT:
+			assert(false);
+			/*
 			if (!win || win->type() != WIN_ROLE_PLAYLIST)
 			{
 				pms->log(MSG_STATUS, STERR, _("Can't search within this window."));
@@ -1421,9 +1348,12 @@ handle_command(pms_pending_keys action)
 			{
 				pms->log(MSG_STATUS, STERR, "Pattern not found: %s", pms->input->searchterm.c_str());
 			}
+			*/
 			break;
 
 		case PEND_JUMPPREV:
+			assert(false);
+			/*
 			if (!win || win->type() != WIN_ROLE_PLAYLIST)
 			{
 				pms->log(MSG_STATUS, STERR, _("Can't search within this window."));
@@ -1438,14 +1368,10 @@ handle_command(pms_pending_keys action)
 			{
 				pms->log(MSG_STATUS, STERR, "Pattern not found: %s", pms->input->searchterm.c_str());
 			}
+			*/
 			break;
 
 		case PEND_JUMPMODE:
-			if (!win || win->type() != WIN_ROLE_PLAYLIST)
-			{
-				pms->log(MSG_STATUS, STERR, _("Can't search within this window."));
-				break;
-			}
 			pms->input->mode(INPUT_JUMP);
 			pms->drawstatus();
 			break;
@@ -1458,21 +1384,22 @@ handle_command(pms_pending_keys action)
 				return false;
 			}
 
-			if (list == NULL)
+			if (songlist == NULL)
 			{
 				pms->log(MSG_STATUS, STERR, _("This command has to be run within a playlist."));
 				return false;
 			}
 
 			if (action == PEND_NEXTOF)
-				sn = list->nextof(pms->input->param);
+				sn = songlist->nextof(pms->input->param);
 			else
-				sn = list->prevof(pms->input->param);
+				sn = songlist->prevof(pms->input->param);
 
-			if (sn != MATCH_FAILED && win != NULL)
-				win->setcursor(sn);
-			else
+			if (sn != MATCH_FAILED) {
+				songlist->set_cursor(sn);
+			} else {
 				pms->log(MSG_STATUS, STERR, _("Could not find another entry of type '%s'."), pms->input->param.c_str());
+			}
 
 			break;
 
@@ -1486,24 +1413,25 @@ handle_command(pms_pending_keys action)
 			/* FIXME: clean up the mess below */
 			assert(false);
 
+			/*
 			tmpwin = win;
 			i = createwindow(pms->input->param, win, list);
 
 			switch(i)
 			{
-			/* Created both playlist and window */
+			// Created both playlist and window
 			case 0:
 				win->setplist(list);
 				if (action == PEND_SAVEPLAYLIST)
 				{
-					/* if this is not the exact version of the playlist itself, remember to clear it out. */
+					// if this is not the exact version of the playlist itself, remember to clear it out.
 					if (tmpwin->plist() != pms->comm->playlist() || tmpwin->plist()->filtercount() > 0)
 					{
 						pms->comm->clear(list);
 					}
 
-					/* Save the current list with it's filters.
-					   Also clear out filters when done. */
+					// Save the current list with it's filters.
+					// Also clear out filters when done.
 					pms->comm->add(tmpwin->plist(), list);
 					list->set(tmpwin->plist());
 					if (tmpwin->plist() != NULL)
@@ -1515,7 +1443,7 @@ handle_command(pms_pending_keys action)
 				{
 					pms->comm->clear(list);
 
-					/* In case "create" was in reply to addto or something else */
+					// In case "create" was in reply to addto or something else
 					if (tmpwin && tmpwin->type() == WIN_ROLE_WINDOWLIST && pms->input->winpop())
 					{
 						tmpwin->setcursor(tmpwin->size());
@@ -1536,13 +1464,13 @@ handle_command(pms_pending_keys action)
 				}
 				setwin(win);
 				break;
-			/* Already exists */
+			// Already exists
 			case 1:
 				setwin(win);
 				s = "\"%s\" already exists.";
 				pms->log(MSG_STATUS, STERR, s.c_str(), pms->input->param.c_str());
 				break;
-			/* No parameter */
+			// No parameter
 			case -1:
 				pms->input->mode(INPUT_COMMAND);
 				pms->input->text = "create " + pms->input->param;
@@ -1560,6 +1488,7 @@ handle_command(pms_pending_keys action)
 				pms->log(MSG_STATUS, STERR, "Internal error: can't find the right window.");
 				pms->log(MSG_DEBUG, 0, "Window search failed in PEND_CREATEPLAYLIST, win=%p list=%p\n", win, list);
 			}
+			*/
 			break;
 
 		/* Delete a playlist */
@@ -1571,50 +1500,39 @@ handle_command(pms_pending_keys action)
 			} else {
 
 				/* In case of windowlist, get the selected window and list */
-				/* FIXME: not a good way to do it */
-				if (!list) {
-					win = win->current();
-					if (!win) break;
-					list = win->plist();
-					if (!list) break;
-				}
+				/* FIXME: implement */
 
-				if (list->filename.size() == 0) {
+				if (songlist->filename.size() == 0) {
 					pms->log(MSG_STATUS, STERR, "You can't remove a pre-defined playlist.");
 					break;
 				}
 			}
 
-			win = pms->disp->findwlist(list);
-			if (pms->comm->delete_playlist(list->filename)) {
-				/* FIXME: removing this is _not_ our responsibility! */
-				pms->disp->delete_window(win);
-				pms->log(MSG_STATUS, STOK, "Deleted playlist '%s'.", list->filename.c_str());
-				break;
-			}
-
-			win = pms->disp->actwin();
-			if (win)
-			{
-				/* Update cursor position if this was a windowlist */
-				win->current();
-				win->wantdraw = true;
+			if (pms->comm->delete_playlist(songlist->filename)) {
+				pms->log(MSG_STATUS, STOK, "Deleted playlist '%s'.", songlist->filename.c_str());
 			}
 
 			break;
 			
 
 		case PEND_NEXTWIN:
+			/*
 			if (!setwin(pms->disp->nextwindow()))
 				pms->log(MSG_STATUS, STERR, "There is no next window.");
+			*/
+			assert(false);
 			break;
 
 		case PEND_PREVWIN:
+			/*
 			if (!setwin(pms->disp->prevwindow()))
 				pms->log(MSG_STATUS, STERR, "There is no previous window.");
+			*/
+			assert(false);
 			break;
 
 		case PEND_CHANGEWIN:
+			/*
 			if (pms->input->param == "playlist")
 				win = pms->disp->findwlist(pms->comm->playlist());
 			else if (pms->input->param == "library")
@@ -1633,19 +1551,25 @@ handle_command(pms_pending_keys action)
 
 			if (win)
 				setwin(win);
+			*/
+			assert(false);
 
 			break;
 
 		case PEND_LASTWIN:
+			/*
 			if (win && win->type() == WIN_ROLE_WINDOWLIST)
 			{
 				win->switchlastwin();
 				break;
 			}
 			setwin(pms->disp->lastwin);
+			*/
+			assert(false);
 			break;
 
 		case PEND_SHOWBIND:
+			/*
 			if (win)
 			{
 				if (win->type() == WIN_ROLE_BINDLIST)
@@ -1656,19 +1580,20 @@ handle_command(pms_pending_keys action)
 			if (!win)
 				pms->log(MSG_STATUS, STERR, "Can not show the list of key pms->bindings.");
 			else
-				setwin(win);
+				//setwin(win);
 
+			*/
+			assert(false);
 			break;
 
 		/*
 		 * Specifies which playlist should be played through
 		 */
 		case PEND_ACTIVATELIST:
-			if (!win) break;
-
+			/*
 			if (pms->input->param.size() == 0)
 			{
-				/* Inside windowlist window, select window from cursor - else use active window */
+				// Inside windowlist window, select window from cursor - else use active window
 				if (list == NULL)
 				{
 					win = win->current();
@@ -1679,7 +1604,7 @@ handle_command(pms_pending_keys action)
 			}
 			else
 			{
-				/* Use parameter as list */
+				// Use parameter as list
 				list = pms->comm->find_playlist(pms->input->param);
 			}
 
@@ -1699,6 +1624,8 @@ handle_command(pms_pending_keys action)
 			else
 				pms->log(MSG_STATUS, STERR, "Can not activate playlist '%s'.", list->filename.c_str());
 
+			*/
+			assert(false);
 			break;
 
 		case PEND_RESIZE:
@@ -1778,18 +1705,15 @@ int		multiplay(long mode, int playmode)
 {
 	Songlist *		list;
 	Song *			song;
-	pms_window *		win;
 	int			i = MATCH_FAILED;
 	int			listend;
 	int			first = -1;
 	string			pattern;
 	string			pmode;
 
-	win = pms->disp->actwin();
-	if (!win || !win->plist()) return false;
-	list = win->plist();
+	list = dynamic_cast<Songlist *>(pms->disp->active_list);
 	if (list == pms->comm->playlist()) return false;
-	song = win->plist()->cursorsong();
+	song = list->cursorsong();
 	if (song == NULL) return false;
 
 	pmode = (playmode == 0 ? _("Playing") : _("Adding"));
@@ -1877,7 +1801,9 @@ int		multiplay(long mode, int playmode)
 
 /*
  * Changes to a window, and sets appropriate input mode
+ * FIXME
  */
+/*
 bool		setwin(pms_window * win)
 {
 	if (!win) return false;
@@ -1895,6 +1821,7 @@ bool		setwin(pms_window * win)
 	}
 	return true;
 }
+*/
 
 
 
@@ -1905,7 +1832,7 @@ bool		setwin(pms_window * win)
  * FIXME: this function is only used from one place, which is also a real mess
  * FIXME: remove this altogether
  */
-int		createwindow(string param, pms_window *& win, Songlist *& list)
+int		createwindow(string param, List *& win, Songlist *& list)
 {
 	/*
 	win = NULL;

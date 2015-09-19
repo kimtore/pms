@@ -719,8 +719,10 @@ int		Songlist::setcursor(song_t pos)
 
 	position = pos;
 
+	/* FIXME
 	if (pms->disp->actwin())
 		pms->disp->actwin()->wantdraw = true;
+	*/
 
 	return position;
 }
@@ -973,6 +975,171 @@ void		Songlist::movecursor(song_t offset)
 	}
 }
 
+/*
+ * Calculates table grid size and positions.
+ */
+void
+Songlist::set_column_size()
+{
+	int			index;
+	unsigned int		i;
+	unsigned int		ui, j;
+	unsigned int		winlen;
+	Song			*s;
+	string			tmp;
+	vector<string> *	v;
+	bool			allfixed;
+
+	/* If there are any old columns, remove them */
+	/* FIXME: why delete and re-add them? */
+	for (ui = 0; ui < columns.size(); ui++)
+	{
+		delete columns[ui];
+	}
+	columns.clear();
+
+	v = Pms::splitstr(pms->options->columns, " ");
+
+	for (i = 0; i < v->size(); i++)
+	{
+		index = pms->fieldtypes->lookup((*v)[i]);
+		if (index == -1)
+			continue;
+		j = (unsigned int)index;
+		columns.push_back(new pms_column(	pms->fieldtypes->header[j],
+							pms->fieldtypes->type[j],
+							pms->fieldtypes->minlen[j]));
+	}
+
+	delete v;
+
+	if (columns.size() == 0)
+	{
+		return;
+	}
+
+	/* Maximum length of fields */
+	winlen = bbox->width();
+
+	/* Find minimum length needed to display all content */
+	for (i = 0; i < size(); i++)
+	{
+		s = song(i);
+		
+		for (j = 0; j < columns.size(); j++)
+		{
+			ui = 0;
+
+			switch(columns[j]->type)
+			{
+			case FIELD_NUM:
+				ui = Pms::tostring(s->pos).size();
+				break;
+			case FIELD_FILE:
+				ui = s->file.size();
+				break;
+			case FIELD_ARTIST:
+				ui = s->artist.size();
+				break;
+			case FIELD_ALBUMARTIST:
+				ui = s->albumartist.size();
+				break;
+			case FIELD_ALBUMARTISTSORT:
+				ui = s->albumartistsort.size();
+				break;
+			case FIELD_ARTISTSORT:
+				ui = s->artistsort.size();
+				break;
+			case FIELD_TITLE:
+				if (s->title.size())
+					ui = s->title.size();
+				else if (s->name.size())
+					ui = s->name.size();
+				else if (s->file.size())
+					ui = s->file.size();
+				break;
+			case FIELD_ALBUM:
+				ui = s->album.size();
+				break;
+			case FIELD_TRACK:
+				ui = s->track.size();
+				break;
+			case FIELD_TRACKSHORT:
+				ui = s->trackshort.size();
+				break;
+			case FIELD_TIME:
+				ui = Pms::timeformat(s->time).size();
+				break;
+			case FIELD_DATE:
+				ui = s->date.size();
+				break;
+			case FIELD_YEAR:
+				ui = s->year.size();
+				break;
+			case FIELD_NAME:
+				ui = s->name.size();
+				break;
+			case FIELD_GENRE:
+				ui = s->genre.size();
+				break;
+			case FIELD_COMPOSER:
+				ui = s->composer.size();
+				break;
+			case FIELD_PERFORMER:
+				ui = s->performer.size();
+				break;
+			case FIELD_DISC:
+				ui = s->disc.size();
+				break;
+			case FIELD_COMMENT:
+				ui = s->comment.size();
+				break;
+			default:
+				continue;
+			}
+
+			columns[j]->addmedian(ui);
+		}
+	}
+
+	/* Calculate total length of existing fields */
+	j = 0;
+	for (ui = 0; ui < columns.size(); ui++)
+	{
+		j += columns[ui]->len();
+	}
+
+	/* Do we have only fixed width fields? */
+	allfixed = true;
+	for (ui = 0; ui < columns.size(); ui++)
+	{
+		if (columns[ui]->minlen == 0)
+		{
+			allfixed = false;
+			break;
+		}
+	}
+
+	/* Resize fields until they fit into the window */
+	while (j != winlen)
+	{
+		for (ui = 0; ui < columns.size(); ui++)
+		{
+			if (j > winlen && columns[ui]->len() > columns[ui]->minlen)
+			{
+				--columns[ui]->abslen;
+				--j;
+			}
+			else if (allfixed || j < winlen && columns[ui]->minlen == 0)
+			{
+				++columns[ui]->abslen;
+				++j;
+			}
+			if (j == winlen)
+				break;
+		}
+	}
+}
 /*
  * Match a single song against criteria
  */

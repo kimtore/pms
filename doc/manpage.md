@@ -215,9 +215,6 @@ status_unknown=*string*
 topbar=*string*
 :   Configure what is displayed in the topbar. See *Configuring the topbar* for format syntax, available tags, and default values.  
 
-topbarborders (*boolean*)
-:   Whether or not to draw borders on the topbar window. Default: *unset* 
-
 topbarvisible (*boolean*)
 :   If set, the topbar is visible. Default: *set* 
 

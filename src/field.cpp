@@ -558,7 +558,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			if (!pms->disp || !pms->comm || !pms->comm->status() || pms->comm->status()->time_total == 0) return "";
 
 			retstr.clear();
-			progress = pms->comm->status()->time_elapsed * pms->disp->topbar->bwidth() / pms->comm->status()->time_total;
+			progress = pms->comm->status()->time_elapsed * pms->disp->topbar.width() / pms->comm->status()->time_total;
 			for (pint = 0; pint < progress; pint++)
 			{
 				retstr += "=";
@@ -634,9 +634,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case LISTSIZE:
-			if (!pms->disp || !pms->disp->actwin()) return "";
-
-			list = pms->disp->actwin()->plist();
+			list = dynamic_cast<Songlist *>(pms->disp->active_list);
 			if (list)
 			{
 				if (list->selection.size > 0)
@@ -678,7 +676,7 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			}
 			else
 			{
-				sprintf(s, "Total of %d items", pms->disp->actwin()->size());
+				sprintf(s, "Total of %d items", pms->disp->active_list->size());
 			}
 
 			retstr = s;

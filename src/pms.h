@@ -85,8 +85,6 @@ private:
 	char **				argv;
 
 	bool				_shutdown;
-	pms_win_playlist *		playlist;
-	pms_win_playlist *		library;
 	vector<Message *>		msglog;
 
 	/* Polling */

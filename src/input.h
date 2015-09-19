@@ -73,9 +73,9 @@ public:
 	/* Storing values when a window parameter is needed */
 	string			winparam;
 	pms_pending_keys	winpend;
-	pms_window *		win;
+	List *	        	win;
 
-	void			winstore(pms_window *);
+	void			winstore(List *);
 	void			winclear();
 	bool			winpop();
 

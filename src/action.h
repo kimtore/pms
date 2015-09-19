@@ -101,7 +101,7 @@ public:
 	long			remove(Songlist *);
 
 	long			move();
-	long			select(pms_window * win, int mode, string param);
+	long			select(List * list, int mode, string param);
 
 	long			cycle_playmode();
 	long			cycle_repeatmode();
@@ -130,7 +130,7 @@ void		generr();
 int		playnext(int);
 song_t		gotonextentry(string, bool);
 int		multiplay(long, int);
-bool		setwin(pms_window *);
-int		createwindow(string, pms_window *&, Songlist *&);
+bool		setwin(List *);
+int		createwindow(string, List *&, Songlist *&);
 
 #endif /* _ACTION_H_ */

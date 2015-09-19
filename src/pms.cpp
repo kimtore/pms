@@ -224,6 +224,8 @@ Pms::song_changed()
 void
 Pms::run_cursor_follow_playback()
 {
+	assert(false);
+	/* FIXME
 	pms_window * win;
 
 	win = disp->findwlist(comm->activelist());
@@ -233,6 +235,7 @@ Pms::run_cursor_follow_playback()
 
 	setwin(win);
 	win->gotocurrent();
+	*/
 }
 
 /**
@@ -244,6 +247,7 @@ Pms::run_cursor_follow_playback()
 bool
 Pms::run_options_changed()
 {
+	Songlist * songlist;
 	uint32_t flags;
 
 	flags = options->get_changed_flags();
@@ -265,13 +269,14 @@ Pms::run_options_changed()
 
 	if (flags & OPT_GROUP_COLUMNS) {
 		log(MSG_DEBUG, 0, "Some options requiring change of column width has been changed.\n");
-		disp->actwin()->set_column_size();
+		// FIXME
+		//disp->active_list->set_column_size();
 	}
 
 	if (flags & OPT_GROUP_SORT) {
 		log(MSG_DEBUG, 0, "Some options requiring re-sorting of the library has been changed.\n");
-		library->list->sort(options->sort);
-		library->set_column_size();
+		comm->library()->sort(options->sort);
+		comm->library()->set_column_size();
 	}
 
 	if (flags & OPT_GROUP_MOUSE) {
@@ -412,27 +417,8 @@ Pms::main()
 		return PMS_EXIT_NODISPLAY;
 	}
 
-	/* Workaround for buggy ncurses clearing the screen on first getch() */
-	//getch();
-
-	/* Set up library and playlist windows */
-	playlist = disp->create_playlist();
-	library = disp->create_playlist();
-
-	assert(playlist != NULL);
-	assert(library != NULL);
-
-	playlist->settitle(_("Playlist"));
-	library->settitle(_("Library"));
-	playlist->list = comm->playlist();
-	library->list = comm->library();
-
-	playlist->set_column_size();
-	library->set_column_size();
-
-	connect_window_list();
-
 	/* Focus startup list */
+	/* FIXME
 	comm->activatelist(comm->playlist());
 	t_str = options->startuplist;
 	if (t_str == "library")
@@ -444,6 +430,7 @@ Pms::main()
 		comm->activatelist(comm->find_playlist(t_str));
 	}
 	disp->activate(disp->findwlist(comm->activelist()));
+	*/
 
 	disp->forcedraw();
 	disp->refresh();
@@ -508,7 +495,8 @@ Pms::main()
 		if (comm->status()->state == MPD_STATE_PLAY) {
 			timer_tmp = difftime(timer_elapsed, timer_now);
 			comm->status()->increase_time_elapsed(timer_tmp);
-			disp->topbar->wantdraw = true;
+			// FIXME
+			//disp->topbar->wantdraw = true;
 		}
 		timer_elapsed = get_clock();
 
@@ -523,17 +511,19 @@ Pms::main()
 		/* FIXME: move responsibilities? */
 		if (comm->has_finished_update(MPD_IDLE_DATABASE)) {
 			log(MSG_STATUS, STOK, _("Library has been updated."));
-			disp->actwin()->wantdraw = true;
-			library->list->sort(options->sort);
-			library->set_column_size();
-			connect_window_list();
+			// FIXME
+			//disp->actwin()->wantdraw = true;
+			comm->library()->sort(options->sort);
+			comm->library()->set_column_size();
+			//connect_window_list();
 			comm->clear_finished_update(MPD_IDLE_DATABASE);
 		}
 
 		/* Draw XTerm window title when state is updated */
 		if (comm->has_any_finished_updates()) {
-			disp->topbar->wantdraw = true;
-			disp->actwin()->wantdraw = true;
+			// FIXME
+			//disp->topbar->wantdraw = true;
+			//disp->actwin()->wantdraw = true;
 			disp->set_xterm_title();
 		}
 
@@ -541,7 +531,7 @@ Pms::main()
 		 * triggers draw, etc. */
 		/* FIXME: move responsibilities? */
 		if (comm->has_finished_update(MPD_IDLE_PLAYLIST)) {
-			playlist->set_column_size();
+			comm->playlist()->set_column_size();
 			comm->clear_finished_update(MPD_IDLE_PLAYLIST);
 		}
 
@@ -569,7 +559,7 @@ Pms::main()
 
 		/* Create windows containing MPD playlists. */
 		if (comm->has_finished_update(MPD_IDLE_STORED_PLAYLIST)) {
-			connect_window_list();
+			//connect_window_list();
 			comm->clear_finished_update(MPD_IDLE_STORED_PLAYLIST);
 		}
 
@@ -978,7 +968,8 @@ bool			Pms::run_shell(string cmd)
 	 * playlist if there is no selection), each enclosed with doublequotes
 	 * and separated by spaces
 	 */
-	list = disp->actwin()->plist();
+	list = dynamic_cast<Songlist *>(disp->active_list);
+	assert(list); // FIXME: will crash
 	search = "##";
 	if (cmd.find(search, 0) != string::npos && list && list->size())
 	{
@@ -1258,8 +1249,8 @@ Pms::log(int verbosity, long code, const char * format, ...)
 		else
 			pair = options->colors->status_error;
 
-		disp->statusbar->clear(false, pair);
-		colprint(disp->statusbar, 0, 0, pair, "%s", buffer);
+		disp->statusbar.clear(pair);
+		colprint(&(disp->statusbar), 0, 0, pair, "%s", buffer);
 		timer_statusbar = get_clock();
 		disp->refresh();
 	}
@@ -1336,7 +1327,7 @@ bool			Pms::progress_nextsong()
 	last_song_id = cursong()->id;
 
 	/* Normal progression: reached end of playlist */
-	if (cursong()->pos == static_cast<int>(playlist->list->end())) {
+	if (cursong()->pos == static_cast<int>(comm->playlist()->end())) {
 
 		pms->log(MSG_DEBUG, 0, "Auto-progressing to next song.\n");
 
@@ -1357,30 +1348,6 @@ bool			Pms::progress_nextsong()
 	}
 
 	return (last_song_id != MPD_SONG_NO_ID);
-}
-
-/*
- * Create new windows for each custom playlist
- *
- * FIXME: wtf, why?
- */
-bool
-Pms::connect_window_list()
-{
-	pms_window *			win;
-	vector<Playlist *>::iterator	i;
-
-	i = comm->playlists.begin();
-	while (i != comm->playlists.end()) {
-		if (disp->findwlist(*i) == NULL) {
-			win = disp->create_playlist();
-			assert(win != NULL);
-			win->setplist(*i);
-		}
-		++i;
-	}
-
-	return true;
 }
 
 /*
