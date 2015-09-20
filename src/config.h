@@ -58,9 +58,9 @@ public:
 	vector<string>				header;
 	vector<unsigned int>			minlen;
 	vector<Item>				type;
-	vector<bool (*) (Song *, Song *)>	sortfunc;
+	vector<bool (*) (ListItem *, ListItem *)>	sortfunc;
 
-	bool			add(string, string, Item, unsigned int, bool (*) (Song *, Song *));
+	bool			add(string, string, Item, unsigned int, bool (*) (ListItem *, ListItem *));
 	int			lookup(string);
 };
 

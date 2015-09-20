@@ -91,6 +91,15 @@ struct Selection
 	song_t				length;
 };
 
+class ListItemSong : public ListItem
+{
+public:
+	Song *		song;
+
+			ListItemSong(Song * s);
+			~ListItemSong();
+};
+
 class Songlist : public List
 {
 private:
@@ -101,12 +110,6 @@ private:
 	song_t					qsize;
 
 	Song *					lastget;
-	vector<Song *>::iterator		seliter;
-	vector<Song *>::reverse_iterator	rseliter;
-
-	vector<Song *>				songs;
-	vector<Song *>				filtersongs;
-	vector<Filter *>			filters;
 
 	vector<pms_column *>			columns;
 
@@ -115,14 +118,20 @@ public:
 				~Songlist();
 
 	bool			ignorecase;
-	bool			wrap;
 	List_role		role;
 	string			filename;
 
 	bool			draw();
 	const char *		title();
+	//bool			add(ListItem * item);
+	bool			remove(uint32_t position);
 
-	Song *			song(song_t);
+	/**
+	 * Return the song at the specified position.
+	 *
+	 * Will raise an assertion error when the position is invalid.
+	 */
+	Song *			song(uint32_t position);
 	unsigned int		length;
 	void			clear();
 	Selection		selection;
@@ -141,12 +150,8 @@ public:
 	bool			inmatch(string *, string *);
 	bool			perform_match(string *, string *, int);
 
-	void			movecursor(song_t);
-	int			setcursor(song_t);
-	bool			gotocurrent();
 	unsigned int		cursor();
 	Song *			cursorsong();
-	int			locatesong(Song *);
 	void			set_column_size();
 
 	bool			selectsong(Song *, bool);
@@ -154,9 +159,10 @@ public:
 	Song *			getprevselected();
 	Song *			popnextselected();
 	void			resetgets();
-	bool			swap(int, int);
+	bool			swap(uint32_t, uint32_t);
 
 	/* Pick songs based on playmode */
+	Song *			next_song_in_direction(Song * s, uint8_t direction, song_t * id);
 	Song *			nextsong(song_t * = NULL);
 	Song *			prevsong(song_t * = NULL);
 	Song *			randsong(song_t * = NULL);
@@ -167,6 +173,7 @@ public:
 	song_t			findentry(Item, bool);
 
 	/* Filter functions */
+	/*
 	Filter *		filter_add(string param, long fields);
 	void			filter_remove(Filter *);
 	void			filter_clear();
@@ -174,15 +181,17 @@ public:
 	bool			filter_match(Song *);
 	Filter *		lastfilter();
 	unsigned int		filtercount() { return filters.size(); };
+	*/
 
 	song_t			add(Song *);
 	song_t			add(Songlist *);
 	bool			remove(Song *);
-	bool			remove(int);
 	bool			move(unsigned int, unsigned int);
+	/*
 	unsigned int		realsize() { return songs.size(); };
 	unsigned int		size() { return filtersongs.size(); };
-	unsigned int		end() { return filtersongs.size() - 1; };
+	unsigned int		end() { return size() - 1; };
+	*/
 	unsigned int		qlength();
 	unsigned int		qnumber() { return qnum; };
 };
@@ -192,23 +201,23 @@ bool		lcstrcmp(const string &, const string &);
 bool		icstrsort(const string &, const string &);
 
 /* Sorts */
-bool		sort_compare_file(Song *, Song *);
-bool		sort_compare_artist(Song *, Song *);
-bool		sort_compare_albumartist(Song *, Song *);
-bool		sort_compare_albumartistsort(Song *, Song *);
-bool		sort_compare_artistsort(Song *, Song *);
-bool		sort_compare_title(Song *, Song *);
-bool		sort_compare_album(Song *, Song *);
-bool		sort_compare_track(Song *, Song *);
-bool		sort_compare_length(Song *, Song *);
-bool		sort_compare_name(Song *, Song *);
-bool		sort_compare_date(Song *, Song *);
-bool		sort_compare_year(Song *, Song *);
-bool		sort_compare_genre(Song *, Song *);
-bool		sort_compare_composer(Song *, Song *);
-bool		sort_compare_performer(Song *, Song *);
-bool		sort_compare_disc(Song *, Song *);
-bool		sort_compare_comment(Song *, Song *);
+bool		sort_compare_file(ListItem * a_, ListItem * b_);
+bool		sort_compare_artist(ListItem * a_, ListItem * b_);
+bool		sort_compare_albumartist(ListItem * a_, ListItem * b_);
+bool		sort_compare_albumartistsort(ListItem * a_, ListItem * b_);
+bool		sort_compare_artistsort(ListItem * a_, ListItem * b_);
+bool		sort_compare_title(ListItem * a_, ListItem * b_);
+bool		sort_compare_album(ListItem * a_, ListItem * b_);
+bool		sort_compare_track(ListItem * a_, ListItem * b_);
+bool		sort_compare_length(ListItem * a_, ListItem * b_);
+bool		sort_compare_name(ListItem * a_, ListItem * b_);
+bool		sort_compare_date(ListItem * a_, ListItem * b_);
+bool		sort_compare_year(ListItem * a_, ListItem * b_);
+bool		sort_compare_genre(ListItem * a_, ListItem * b_);
+bool		sort_compare_composer(ListItem * a_, ListItem * b_);
+bool		sort_compare_performer(ListItem * a_, ListItem * b_);
+bool		sort_compare_disc(ListItem * a_, ListItem * b_);
+bool		sort_compare_comment(ListItem * a_, ListItem * b_);
 
 
 #endif

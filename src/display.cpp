@@ -380,12 +380,12 @@ Display::draw_position_readout()
 
 	if (active_list->size() < position_readout.height()) {
 		text = "All";
-	} else if (active_list->top_position == 0) {
+	} else if (active_list->top_position() == 0) {
 		text = "Top";
-	} else if (active_list->top_position == active_list->size() - (position_readout.height() - 1)) {
+	} else if (active_list->top_position() == active_list->size() - (position_readout.height() - 1)) {
 		text = "Bot";
 	} else {
-		sprintf(buffer, "%2d", 100 * active_list->top_position / (active_list->size() - (position_readout.height() - 1)));
+		sprintf(buffer, "%2d", 100 * active_list->top_position() / (active_list->size() - (position_readout.height() - 1)));
 		text = buffer;
 		text += "%%";
 	}

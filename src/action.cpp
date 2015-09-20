@@ -1118,10 +1118,22 @@ handle_command(pms_pending_keys action)
 
 		case PEND_GOTO_CURRENT:
 			if (!pms->cursong() || !songlist) return false;
-			if (!songlist->gotocurrent()) {
+			assert(false); // GOTOCURRENT FIXME
+			/*
+			song_t		i = MATCH_FAILED;
+
+			if (!pms->cursong()) return false;
+
+			if (pms->cursong()->pos != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN)
+				i = match(Pms::tostring(pms->cursong()->pos), 0, size() - 1, MATCH_POS | MATCH_EXACT);
+			if (i == MATCH_FAILED)
+				i = match(pms->cursong()->file, 0, size() - 1, MATCH_FILE | MATCH_EXACT);
+			if (i == MATCH_FAILED) return false;
+			*/
+			//if (!songlist->gotocurrent()) {
 				pms->log(MSG_STATUS, STERR, "Currently playing song is not here.");
 				return false;
-			}
+			//}
 
 			break;
 

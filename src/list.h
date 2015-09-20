@@ -39,6 +39,8 @@ class ListItem
 {
 public:
 	bool			selected;
+
+	virtual			~ListItem();
 };
 
 
@@ -48,36 +50,50 @@ public:
 class List
 {
 private:
-	vector<ListItem *>	items;
+	void					init();
+
+protected:
+	vector<ListItem *>			items;
+	vector<ListItem *>::iterator		seliter;
+	vector<ListItem *>::reverse_iterator	rseliter;
+	uint32_t				top_position_;
 
 public:
-				List();
-				List(BBox * bbox_);
-	virtual			~List();
+					List();
+					List(BBox * bbox_);
+	virtual				~List();
 
-	BBox *			bbox;
-	uint32_t		cursor_position;
-	uint32_t		top_position;
+	BBox *				bbox;
+	uint32_t			cursor_position;
 
-	uint32_t		size();
-	bool			set_cursor(uint32_t position);
-	bool			move_cursor(int32_t delta);
-	virtual const char *	title() = 0;
+	bool				add(ListItem * item);
+	bool				remove(uint32_t position);
+	void				clear();
+
+	uint32_t			size();
+	uint32_t			top_position();
+	uint32_t			bottom_position();
+	uint32_t			min_top_position();
+	uint32_t			max_top_position();
+	bool				scroll_window(int32_t delta);
+	bool				set_cursor(uint32_t position);
+	bool				move_cursor(int32_t delta);
+	virtual const char *		title() = 0;
 
 	/**
 	 * Dynamically configure the width of the columns.
 	 */
-	virtual void		set_column_size() = 0;
+	virtual void			set_column_size() = 0;
 
 	/**
 	 * Assign a bounding box.
 	 */
-	void			set_bounding_box(BBox * bbox_);
+	void				set_bounding_box(BBox * bbox_);
 
 	/**
 	 * Draw the contents of the list into bounding box.
 	 */
-	virtual bool		draw() = 0;
+	virtual bool			draw() = 0;
 };
 
 
