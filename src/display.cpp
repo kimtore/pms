@@ -104,8 +104,8 @@ BBox::height()
 bool
 BBox::clear(color * c)
 {
-	uint16_t y = width();
-	uint16_t w = height();
+	uint16_t y = height() - 1;
+	uint16_t w = width();
 
 	if (c && wattron(window, c->pair()) == ERR) {
 		return false;
@@ -120,6 +120,8 @@ BBox::clear(color * c)
 	if (c && wattroff(window, c->pair()) == ERR) {
 		return false;
 	}
+
+	return true;
 }
 
 bool
