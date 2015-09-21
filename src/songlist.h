@@ -109,8 +109,6 @@ private:
 	song_t					qnum;
 	song_t					qsize;
 
-	Song *					lastget;
-
 	vector<pms_column *>			columns;
 
 public:
@@ -155,10 +153,6 @@ public:
 	void			set_column_size();
 
 	bool			selectsong(Song *, bool);
-	Song *			getnextselected();
-	Song *			getprevselected();
-	Song *			popnextselected();
-	void			resetgets();
 	bool			swap(uint32_t, uint32_t);
 
 	/* Pick songs based on playmode */

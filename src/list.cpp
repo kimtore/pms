@@ -69,7 +69,7 @@ List::remove(uint32_t position)
 	assert(iter != items.end());
 
 	delete *iter;
-	songs.erase(iter);
+	items.erase(iter);
 
 	// FIXME
 	seliter = items.begin();
@@ -81,6 +81,7 @@ List::remove(uint32_t position)
 /*
  * Move a list item inside the list to position dest
  */
+/*
 bool
 List::move(uint32_t from, uint32_t to)
 {
@@ -126,8 +127,8 @@ List::move(uint32_t from, uint32_t to)
 	}
 
 	return true;
-	*/
 }
+	*/
 
 inline
 uint32_t
@@ -235,6 +236,26 @@ List::clear()
 	init();
 }
 
+ListItem *
+List::first()
+{
+	if (!size()) {
+		return NULL;
+	}
+
+	return items.front();
+}
+
+ListItem *
+List::last()
+{
+	if (!size()) {
+		return NULL;
+	}
+
+	return items.back();
+}
+
 /*
  * Returs a consecutive list of selected songs each call
  */
@@ -255,6 +276,7 @@ List::get_next_selected()
 	}
 
 	/* No selection, return cursor */
+	/* FIXME: override in Songlist
 	if (lastget == NULL) {
 		if (lastget == cursorsong()) {
 			lastget = NULL;
@@ -264,6 +286,7 @@ List::get_next_selected()
 
 		return lastget;
 	}
+	*/
 
 	lastget = NULL;
 	return NULL;
@@ -276,10 +299,10 @@ ListItem *
 List::get_prev_selected()
 {
 	if (lastget == NULL) {
-		rseliter = items.begin();
+		rseliter = items.rbegin();
 	}
 
-	while (rseliter != items.end()) {
+	while (rseliter != items.rend()) {
 		if ((*rseliter)->selected) {
 			lastget = *rseliter;
 			++rseliter;
@@ -289,6 +312,7 @@ List::get_prev_selected()
 	}
 
 	/* No selection, return cursor */
+	/* FIXME: override in Songlist
 	if (lastget == NULL) {
 		if (lastget == cursorsong()) {
 			lastget = NULL;
@@ -298,6 +322,7 @@ List::get_prev_selected()
 
 		return lastget;
 	}
+	*/
 
 	lastget = NULL;
 	return NULL;

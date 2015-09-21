@@ -80,6 +80,17 @@ public:
 	bool				move_cursor(int32_t delta);
 	virtual const char *		title() = 0;
 
+	ListItem *			first();
+	ListItem *			last();
+
+	/* Selection iterator emulation */
+	/* FIXME: rewrite to std::iterator */
+	ListItem *			lastget;
+	ListItem *			get_next_selected();
+	ListItem *			get_prev_selected();
+	ListItem *			popnextselected();
+	void				resetgets();
+
 	/**
 	 * Dynamically configure the width of the columns.
 	 */

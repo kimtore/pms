@@ -946,14 +946,14 @@ long		Interface::select(List * list, int mode, string param)
 	switch(mode)
 	{
 		case SELECT_CLEAR:
-			for(i = 0; i <= songlist->end(); i++)
+			for(i = 0; i <= songlist->last(); i++)
 				songlist->selectsong(songlist->song(i), 0);
 			pms->log(MSG_DEBUG, STOK, _("Cleared selection.\n"));
 			//win->wantdraw = true;
 			return STOK;
 
 		case SELECT_ALL:
-			for(i = 0; i <= songlist->end(); i++)
+			for(i = 0; i <= songlist->last(); i++)
 				songlist->selectsong(songlist->song(i), 1);
 			pms->log(MSG_DEBUG, STOK, _("Selected all songs.\n"));
 			//win->wantdraw = true;
@@ -987,7 +987,7 @@ long		Interface::select(List * list, int mode, string param)
 	}
 
 	/* Perform on range of objects */
-	i = songlist->match(param, 0, songlist->end(), MATCH_ALL);
+	i = songlist->match(param, 0, songlist->last(), MATCH_ALL);
 	if (i == MATCH_FAILED)
 	{
 		pms->log(MSG_STATUS, STERR, _("No songs matching pattern %s"), param.c_str());
@@ -1009,10 +1009,10 @@ long		Interface::select(List * list, int mode, string param)
 		else if (mode == SELECT_ON)
 			songlist->selectsong(song, true);
 
-		if (static_cast<unsigned int>(i) == songlist->end())
+		if (static_cast<unsigned int>(i) == songlist->last())
 			break;
 
-		i = songlist->match(param, ++i, songlist->end(), MATCH_ALL);
+		i = songlist->match(param, ++i, songlist->last(), MATCH_ALL);
 	}
 
 	//win->wantdraw = true;
@@ -1674,7 +1674,7 @@ int		playnext(int playnow)
 	int		i;
 
 	if (!pms->comm->status()->random) {
-		if (!pms->cursong() || (int)pms->comm->playlist()->end() != pms->cursong()->pos)
+		if (!pms->cursong() || (int)pms->comm->playlist()->last() != pms->cursong()->pos)
 			song = pms->comm->playlist()->nextsong();
 		else
 			song = pms->comm->activelist()->nextsong();
@@ -1686,7 +1686,7 @@ int		playnext(int playnow)
 		else
 			i = song->id;
 	} else {
-		if (pms->cursong() && static_cast<int>(pms->comm->playlist()->end()) != pms->cursong()->pos)
+		if (pms->cursong() && static_cast<int>(pms->comm->playlist()->last()) != pms->cursong()->pos)
 		{
 			song = pms->comm->playlist()->nextsong();
 			if (!song) return MPD_SONG_NO_ID;
@@ -1743,7 +1743,7 @@ int		multiplay(long mode, int playmode)
 			if (!song->album.size()) return false;
 			pattern = song->album;
 
-			if (pms->comm->playlist()->match(pattern, pms->comm->playlist()->end(), pms->comm->playlist()->end(), mode | MATCH_EXACT) == MATCH_FAILED)
+			if (pms->comm->playlist()->match(pattern, pms->comm->playlist()->last(), pms->comm->playlist()->last(), mode | MATCH_EXACT) == MATCH_FAILED)
 			{
 				//last track of the current playlist is not part of this album
 				i = 0;
@@ -1753,8 +1753,8 @@ int		multiplay(long mode, int playmode)
 			{
 				//last track of the current playlist is part of this album
 				//get last track of the album
-				song = list->song(list->match(pattern, 0, list->end(), mode | MATCH_EXACT | MATCH_REVERSE));
-				if (pms->comm->playlist()->match(song->file, pms->comm->playlist()->end(), pms->comm->playlist()->end(), MATCH_FILE | MATCH_EXACT) != MATCH_FAILED)
+				song = list->song(list->match(pattern, 0, list->last(), mode | MATCH_EXACT | MATCH_REVERSE));
+				if (pms->comm->playlist()->match(song->file, pms->comm->playlist()->last(), pms->comm->playlist()->last(), MATCH_FILE | MATCH_EXACT) != MATCH_FAILED)
 				{
 					//last track of playlist matches last track of album
 					i = 0;
@@ -1764,7 +1764,7 @@ int		multiplay(long mode, int playmode)
 				{
 					//find position in the library of the playlist's last track, 
 					//start adding from the one after that
-					i = list->match(pms->comm->playlist()->song(pms->comm->playlist()->end())->file, 0, list->end(), MATCH_FILE | MATCH_EXACT) + 1;
+					i = list->match(pms->comm->playlist()->song(pms->comm->playlist()->last())->file, 0, list->last(), MATCH_FILE | MATCH_EXACT) + 1;
 					pms->log(MSG_STATUS, STOK, _("%s remainder of album '%s' by %s"), pmode.c_str(), song->album.c_str(), song->artist.c_str());
 				}
 			}
@@ -1780,7 +1780,7 @@ int		multiplay(long mode, int playmode)
 			return false;
 	}
 
-	listend = static_cast<int>(list->end());
+	listend = static_cast<int>(list->last());
 
 	/* FIXME */
 	//if (!pms->comm->list_start()) {
@@ -1789,7 +1789,7 @@ int		multiplay(long mode, int playmode)
 
 	while (true)
 	{
-		i = list->match(pattern, i, list->end(), mode | MATCH_EXACT);
+		i = list->match(pattern, i, list->last(), mode | MATCH_EXACT);
 		if (i == MATCH_FAILED) break;
 		if (first == -1) {
 			first = pms->comm->playlist()->size();
