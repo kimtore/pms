@@ -55,7 +55,8 @@ trim(string &s)
 	return ltrim(rtrim(s));
 }
 
-bool			Fieldtypes::add(string nname, string nheader, Item ntype, unsigned int nminlen, bool (*nsortfunc) (Song *, Song *))
+bool
+Fieldtypes::add(string nname, string nheader, Item ntype, unsigned int nminlen, bool (*nsortfunc) (ListItem *, ListItem *))
 {
 	if (nname.size() == 0)
 		return false;

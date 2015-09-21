@@ -293,7 +293,7 @@ List::get_next_selected()
 	}
 
 	while (seliter != items.end()) {
-		if ((*seliter)->selected) {
+		if ((*seliter)->selected()) {
 			lastget = *seliter;
 			++seliter;
 			return lastget;
@@ -329,7 +329,7 @@ List::get_prev_selected()
 	}
 
 	while (rseliter != items.rend()) {
-		if ((*rseliter)->selected) {
+		if ((*rseliter)->selected()) {
 			lastget = *rseliter;
 			++rseliter;
 			return lastget;
@@ -364,7 +364,7 @@ List::popnextselected()
 
 	item = get_next_selected();
 	if (item) {
-		item->selected = false;
+		item->set_selected(false);
 	}
 	return item;
 }

@@ -28,5 +28,5 @@ ListItem::set_selected(bool state)
 bool
 ListItem::selected()
 {
-	return selected;
+	return selected_;
 }

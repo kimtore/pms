@@ -914,6 +914,8 @@ Control::crop(Songlist * list, int mode)
 	int			pos;
 	unsigned int		upos;
 	Song *			song;
+	ListItem *		item;
+	ListItemSong *		song_item;
 
 	assert(list != NULL);
 
@@ -934,7 +936,7 @@ Control::crop(Songlist * list, int mode)
 			return false;
 		}
 
-		pos = list->match(song->file, 0, list->end(), MATCH_FILE | MATCH_EXACT);
+		pos = list->match(song->file, 0, list->size() - 1, MATCH_FILE | MATCH_EXACT);
 		if (pos == MATCH_FAILED)
 		{
 			pms->msg->assign(STOK, _("The currently playing song is not in this list."));
@@ -943,7 +945,7 @@ Control::crop(Songlist * list, int mode)
 		upos = static_cast<unsigned int>(pos);
 
 		//list_start();
-		for (i = list->end(); i < list->size(); i--)
+		for (i = list->size() - 1; i >= 0; i--)
 		{
 			if (upos != i) {
 				if (list == _playlist) {
@@ -951,43 +953,31 @@ Control::crop(Songlist * list, int mode)
 				} else {
 					mpd_run_playlist_delete(conn->h(), list->filename.c_str(), static_cast<int>(i));
 				}
-				list->remove(i);
-				increment();
 			}
 		}
-		return list_end();
+
+		return get_error_bool();
 	}
 	/* Crop to selection */
 	else if (mode == CROP_SELECTION)
 	{
 		list->resetgets();
-		if (list->getnextselected() == list->cursorsong())
-		{
-			if (list->getnextselected() == NULL)
-			{
-				list->selectsong(list->cursorsong(), true);
+
+		while ((item = list->get_prev_selected()) != NULL) {
+
+			if (!item->selected()) {
+				song_item = dynamic_cast<ListItemSong *>(item);
+				if (list == _playlist) {
+					mpd_run_delete_id(conn->h(), song_item->song->id);
+				} else {
+					mpd_run_playlist_delete(conn->h(), list->filename.c_str(), song_item->song->pos);
+				}
+			} else {
+				item->set_selected(false);
 			}
 		}
 
-		//list_start();
-		for (i = list->end(); i < list->size(); i--)
-		{
-			if (list->song(i)->selected == false)
-			{
-				if (list == _playlist) {
-					mpd_run_delete_id(conn->h(), list->song(i)->id);
-				} else {
-					mpd_run_playlist_delete(conn->h(), list->filename.c_str(), static_cast<int>(i));
-				}
-				list->remove(i);
-				increment();
-			}
-			else
-			{
-				list->selectsong(list->song(i), false);
-			}
-		}
-		return list_end();
+		return get_error_bool();
 	}
 
 	return false;
@@ -1086,6 +1076,8 @@ Control::crossfade(int interval)
 unsigned int
 Control::move(Songlist * list, int offset)
 {
+	ListItem *	item;
+	ListItemSong *	song_item;
 	Song *		song;
 	int		oldpos;
 	int		newpos;
@@ -1100,10 +1092,13 @@ Control::move(Songlist * list, int offset)
 	filename = list->filename.c_str();
 
 	if (offset < 0) {
-		song = list->getnextselected();
+		item = list->get_next_selected();
 	} else {
-		song = list->getprevselected();
+		item = list->get_prev_selected();
 	}
+
+	song_item = dynamic_cast<ListItemSong *>(item);
+	song = song_item->song;
 
 	EXIT_IDLE;
 
@@ -1113,7 +1108,7 @@ Control::move(Songlist * list, int offset)
 	{
 		if (song->pos == MPD_SONG_NO_NUM)
 		{
-			oldpos = list->match(song->file, 0, list->end(), MATCH_FILE | MATCH_EXACT);
+			oldpos = list->match(song->file, 0, list->size() - 1, MATCH_FILE | MATCH_EXACT);
 			if (oldpos == MATCH_FAILED)
 				break;
 		}
@@ -1130,33 +1125,30 @@ Control::move(Songlist * list, int offset)
 
 		++moved;
 
-		/* FIXME: return values? */
 		if (list != _playlist) {
-			mpd_send_playlist_move(conn->h(), filename, oldpos, newpos);
+			if (!mpd_send_playlist_move(conn->h(), filename, oldpos, newpos)) {
+				break;
+			}
 		} else {
-			mpd_run_move(conn->h(), song->pos, oldpos);
+			if (!mpd_run_move(conn->h(), song->pos, oldpos)) {
+				break;
+			}
 		}
 
-		if (offset < 0)
-			song = list->getnextselected();
-		else
-			song = list->getprevselected();
+		if (offset < 0) {
+			item = list->get_next_selected();
+		} else {
+			item = list->get_prev_selected();
+		}
+
+		song_item = dynamic_cast<ListItemSong *>(item);
+		song = song_item->song;
 
 	}
 
 	list->resetgets();
 
-	if (!list_end() || moved == 0)
-	{
-		return 0;
-	}
-
-	if (list == _playlist)
-	{
-		st->last_playlist += moved;
-	}
-
-	return moved;
+	return get_error_bool();
 }
 
 
@@ -1789,22 +1781,6 @@ Control::sendpassword(string pw)
 	EXIT_IDLE;
 
 	return mpd_run_password(conn->h(), pw.c_str());
-}
-
-/*
- * Notifies command system that an update from server is unneccessary as PMS already has done it.
- * FIXME: this command is probably dangerous and a cause of bugs due to PMS drifting out of synch.
- * FIXME: remove this function and all dependencies on it!
- */
-bool
-Control::increment()
-{
-	if (st->last_playlist == -1)
-	{
-		return false;
-	}
-	++(st->last_playlist);
-	return true;
 }
 
 /**

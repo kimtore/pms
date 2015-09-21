@@ -27,7 +27,7 @@ class ListItem
 public:
 	virtual			~ListItem();
 
-	bool			set_selected(bool state);
+	void			set_selected(bool state);
 	bool			selected();
 };
 
