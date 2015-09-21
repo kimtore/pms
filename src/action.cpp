@@ -540,6 +540,7 @@ long		Interface::play()
  */
 long		Interface::add(string param)
 {
+	ListItemSong *	list_item;
 	Songlist *	songlist;
 	Songlist *	dlist;
 	Song *		song;
@@ -597,23 +598,20 @@ long		Interface::add(string param)
 	}
 
 	/* Add selected song(s) */
-	song = songlist->popnextselected();
-	while (song != NULL)
+	while ((list_item = dynamic_cast<ListItemSong *>(songlist->popnextselected())) != NULL)
 	{
+		song = list_item->song;
 		pms->log(MSG_DEBUG, 0, "Adding song at %p with id=%d pos=%d filename=%s\n", song, song->id, song->pos, song->file.c_str());
-		if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID)
+		if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID) {
 			++i;
-		else
+		} else {
 			generr();
+		}
+	}
 
-		song = songlist->popnextselected();
-	}
-	if (i == 0)
-	{
+	if (i == 0) {
 		generr();
-	}
-	else
-	{
+	} else {
 		if (i == 1 && pms->options->nextafteraction)
 			pms->disp->active_list->move_cursor(1);
 		pms->log(MSG_STATUS, STOK, _("Added %d %s to %s."), i, (i == 1 ? "song" : "songs"), s.c_str());
@@ -892,6 +890,7 @@ long		Interface::crop(int crop_mode)
 long
 Interface::remove(Songlist * list)
 {
+	ListItemSong *				list_item;
 	Song *					song;
 	vector<Song *>				songs;
 	vector<Song *>::reverse_iterator	i;
@@ -908,7 +907,8 @@ Interface::remove(Songlist * list)
 		return STERR;
 	}
 
-	while ((song = list->popnextselected()) != NULL) {
+	while ((list_item = dynamic_cast<ListItemSong *>(list->popnextselected())) != NULL) {
+		song = list_item->song;
 		songs.push_back(song);
 	}
 
@@ -929,12 +929,63 @@ Interface::remove(Songlist * list)
 
 /*
  * Perform select, unselect or toggle select on one or more entries
+ *
+ * FIXME: refactor this monster
  */
 long		Interface::select(List * list, int mode, string param)
 {
-	Songlist *	songlist;
-	Song *		song;
-	int		i = -1;
+	vector<ListItem *>::iterator	iter;
+	ListItem *			item;
+	Songlist *			songlist;
+	Song *				song;
+	int				i = -1;
+
+	if (!list->size()) {
+		return i;
+	}
+
+	iter = list->begin();
+
+	switch(mode)
+	{
+		case SELECT_CLEAR:
+			while (iter != list->end()) {
+				(*iter++)->set_selected(false);
+			}
+			pms->log(MSG_DEBUG, STOK, _("Cleared selection.\n"));
+			return STOK;
+
+		case SELECT_ALL:
+			while (iter != list->end()) {
+				(*iter++)->set_selected(true);
+			}
+			pms->log(MSG_DEBUG, STOK, _("Selected all songs.\n"));
+			return STOK;
+
+		default:
+			break;
+	}
+
+	/* Perform only on one object */
+	if (param.size() == 0) {
+
+		item = list->cursor_item();
+		assert(item);
+
+		if (mode == SELECT_TOGGLE) {
+			item->set_selected(!item->selected());
+		} else if (mode == SELECT_OFF) {
+			item->set_selected(false);
+		} else if (mode == SELECT_ON) {
+			item->set_selected(true);
+		}
+
+		if (pms->options->nextafteraction) {
+			list->move_cursor(1);
+		}
+
+		return STOK;
+	}
 
 	songlist = dynamic_cast<Songlist *>(list);
 
@@ -943,51 +994,8 @@ long		Interface::select(List * list, int mode, string param)
 		return STERR;
 	}
 
-	switch(mode)
-	{
-		case SELECT_CLEAR:
-			for(i = 0; i <= songlist->last(); i++)
-				songlist->selectsong(songlist->song(i), 0);
-			pms->log(MSG_DEBUG, STOK, _("Cleared selection.\n"));
-			//win->wantdraw = true;
-			return STOK;
-
-		case SELECT_ALL:
-			for(i = 0; i <= songlist->last(); i++)
-				songlist->selectsong(songlist->song(i), 1);
-			pms->log(MSG_DEBUG, STOK, _("Selected all songs.\n"));
-			//win->wantdraw = true;
-			return STOK;
-
-		default:
-			break;
-	}
-
-	/* Perform only on one object */
-	if (param.size() == 0)
-	{
-		song = songlist->cursorsong();
-		if (!song)
-		{
-			pms->log(MSG_STATUS, STERR, _("Can't select: no song under cursor."));
-			return STERR;
-		}
-		if (mode == SELECT_TOGGLE)
-			songlist->selectsong(song, !song->selected);
-		else if (mode == SELECT_OFF)
-			songlist->selectsong(song, false);
-		else if (mode == SELECT_ON)
-			songlist->selectsong(song, true);
-
-		if (pms->options->nextafteraction)
-			list->move_cursor(1);
-
-		//win->wantdraw = true;
-		return STOK;
-	}
-
 	/* Perform on range of objects */
-	i = songlist->match(param, 0, songlist->last(), MATCH_ALL);
+	i = songlist->match(param, 0, songlist->size() - 1, MATCH_ALL);
 	if (i == MATCH_FAILED)
 	{
 		pms->log(MSG_STATUS, STERR, _("No songs matching pattern %s"), param.c_str());
@@ -1009,10 +1017,12 @@ long		Interface::select(List * list, int mode, string param)
 		else if (mode == SELECT_ON)
 			songlist->selectsong(song, true);
 
+		/* FIXME: not needed?
 		if (static_cast<unsigned int>(i) == songlist->last())
 			break;
+		*/
 
-		i = songlist->match(param, ++i, songlist->last(), MATCH_ALL);
+		i = songlist->match(param, ++i, songlist->size() - 1, MATCH_ALL);
 	}
 
 	//win->wantdraw = true;
@@ -1670,11 +1680,14 @@ void		generr()
  */
 int		playnext(int playnow)
 {
+	ListItemSong *	last_item;
 	Song *		song;
 	int		i;
 
+	last_item = dynamic_cast<ListItemSong *>(pms->comm->playlist()->last());
+
 	if (!pms->comm->status()->random) {
-		if (!pms->cursong() || (int)pms->comm->playlist()->last() != pms->cursong()->pos)
+		if (!pms->cursong() || last_item->song->pos != pms->cursong()->pos)
 			song = pms->comm->playlist()->nextsong();
 		else
 			song = pms->comm->activelist()->nextsong();
@@ -1686,7 +1699,7 @@ int		playnext(int playnow)
 		else
 			i = song->id;
 	} else {
-		if (pms->cursong() && static_cast<int>(pms->comm->playlist()->last()) != pms->cursong()->pos)
+		if (pms->cursong() && last_item->song->pos != pms->cursong()->pos)
 		{
 			song = pms->comm->playlist()->nextsong();
 			if (!song) return MPD_SONG_NO_ID;
@@ -1712,9 +1725,12 @@ int		playnext(int playnow)
 
 /*
  * Plays or adds all of one type
+ *
+ * FIXME: wtf size of this function?!
  */
 int		multiplay(long mode, int playmode)
 {
+	Songlist *		playlist;
 	Songlist *		list;
 	Song *			song;
 	int			i = MATCH_FAILED;
@@ -1724,7 +1740,8 @@ int		multiplay(long mode, int playmode)
 	string			pmode;
 
 	list = dynamic_cast<Songlist *>(pms->disp->active_list);
-	if (list == pms->comm->playlist()) return false;
+	playlist = pms->comm->playlist();
+	if (list == playlist) return false;
 	song = list->cursorsong();
 	if (song == NULL) return false;
 
@@ -1743,7 +1760,7 @@ int		multiplay(long mode, int playmode)
 			if (!song->album.size()) return false;
 			pattern = song->album;
 
-			if (pms->comm->playlist()->match(pattern, pms->comm->playlist()->last(), pms->comm->playlist()->last(), mode | MATCH_EXACT) == MATCH_FAILED)
+			if (playlist->match(pattern, playlist->size() - 1, playlist->size() - 1, mode | MATCH_EXACT) == MATCH_FAILED)
 			{
 				//last track of the current playlist is not part of this album
 				i = 0;
@@ -1753,8 +1770,8 @@ int		multiplay(long mode, int playmode)
 			{
 				//last track of the current playlist is part of this album
 				//get last track of the album
-				song = list->song(list->match(pattern, 0, list->last(), mode | MATCH_EXACT | MATCH_REVERSE));
-				if (pms->comm->playlist()->match(song->file, pms->comm->playlist()->last(), pms->comm->playlist()->last(), MATCH_FILE | MATCH_EXACT) != MATCH_FAILED)
+				song = list->song(list->match(pattern, 0, list->size() - 1, mode | MATCH_EXACT | MATCH_REVERSE));
+				if (playlist->match(song->file, playlist->size() - 1, playlist->size() - 1, MATCH_FILE | MATCH_EXACT) != MATCH_FAILED)
 				{
 					//last track of playlist matches last track of album
 					i = 0;
@@ -1764,7 +1781,7 @@ int		multiplay(long mode, int playmode)
 				{
 					//find position in the library of the playlist's last track, 
 					//start adding from the one after that
-					i = list->match(pms->comm->playlist()->song(pms->comm->playlist()->last())->file, 0, list->last(), MATCH_FILE | MATCH_EXACT) + 1;
+					i = list->match(static_cast<ListItemSong *>(playlist->last())->song->file, 0, list->size() - 1, MATCH_FILE | MATCH_EXACT) + 1;
 					pms->log(MSG_STATUS, STOK, _("%s remainder of album '%s' by %s"), pmode.c_str(), song->album.c_str(), song->artist.c_str());
 				}
 			}
@@ -1780,24 +1797,22 @@ int		multiplay(long mode, int playmode)
 			return false;
 	}
 
-	listend = static_cast<int>(list->last());
-
 	/* FIXME */
 	//if (!pms->comm->list_start()) {
 		//return false;
 	//}
 
-	while (true)
+	while (i < list->size())
 	{
-		i = list->match(pattern, i, list->last(), mode | MATCH_EXACT);
+		i = list->match(pattern, i, list->size() - 1, mode | MATCH_EXACT);
 		if (i == MATCH_FAILED) break;
 		if (first == -1) {
-			first = pms->comm->playlist()->size();
+			first = playlist->size();
 		}
-		if (pms->comm->add(pms->comm->playlist(), list->song(i)) == MPD_SONG_NO_ID) {
+		if (pms->comm->add(playlist, list->song(i)) == MPD_SONG_NO_ID) {
 			return false;
 		}
-		if (++i > listend) break;
+		++i;
 	}
 
 	//if (!pms->comm->list_end()) {

@@ -237,6 +237,32 @@ List::clear()
 }
 
 ListItem *
+List::cursor_item()
+{
+	if (!size()) {
+		return NULL;
+	}
+
+	assert(cursor_position < size());
+
+	return items[cursor_position];
+}
+
+inline
+vector<ListItem *>::iterator
+List::begin()
+{
+	return items.begin();
+}
+
+inline
+vector<ListItem *>::iterator
+List::end()
+{
+	return items.end();
+}
+
+ListItem *
 List::first()
 {
 	if (!size()) {

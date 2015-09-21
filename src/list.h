@@ -25,23 +25,13 @@
 #include <vector>
 #include <stdint.h>
 
+#include "listitem.h"
+
 using namespace std;
 
 
 /* Forward declaration of bounding box */
 class BBox;
-
-
-/**
- * FIXME
- */
-class ListItem
-{
-public:
-	bool			selected;
-
-	virtual			~ListItem();
-};
 
 
 /**
@@ -78,8 +68,11 @@ public:
 	bool				scroll_window(int32_t delta);
 	bool				set_cursor(uint32_t position);
 	bool				move_cursor(int32_t delta);
+	ListItem *			cursor_item();
 	virtual const char *		title() = 0;
 
+	vector<ListItem *>::iterator	begin();
+	vector<ListItem *>::iterator	end();
 	ListItem *			first();
 	ListItem *			last();
 
