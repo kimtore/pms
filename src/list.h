@@ -46,7 +46,7 @@ protected:
 	vector<ListItem *>			items;
 	vector<ListItem *>::iterator		seliter;
 	vector<ListItem *>::reverse_iterator	rseliter;
-	uint32_t				top_position_;
+	int32_t					top_position_;
 
 public:
 					List();
@@ -61,13 +61,14 @@ public:
 	void				clear();
 
 	uint32_t			size();
-	uint32_t			top_position();
-	uint32_t			bottom_position();
-	uint32_t			min_top_position();
-	uint32_t			max_top_position();
+	int32_t				top_position();
+	int32_t				bottom_position();
+	int32_t				min_top_position();
+	int32_t				max_top_position();
 	bool				scroll_window(int32_t delta);
-	bool				set_cursor(uint32_t position);
+	bool				set_scroll_position(int32_t delta);
 	bool				move_cursor(int32_t delta);
+	bool				set_cursor(int32_t position);
 	ListItem *			cursor_item();
 	virtual const char *		title() = 0;
 

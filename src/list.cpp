@@ -46,6 +46,7 @@ List::init()
 	seliter = items.begin();
 	rseliter = items.rbegin();
 	top_position_ = 0;
+	cursor_position = 0;
 }
 
 bool
@@ -139,16 +140,16 @@ List::size()
 }
 
 inline
-uint32_t
+int32_t
 List::top_position()
 {
 	return top_position_;
 }
 
-uint32_t
+int32_t
 List::bottom_position()
 {
-	uint32_t p;
+	int32_t p;
 
 	assert(bbox);
 
@@ -166,13 +167,13 @@ List::bottom_position()
 }
 
 inline
-uint32_t
+int32_t
 List::min_top_position()
 {
 	return 0;
 }
 
-uint32_t
+int32_t
 List::max_top_position()
 {
 	assert(bbox);
@@ -181,7 +182,27 @@ List::max_top_position()
 		return 0;
 	}
 
-	return size() - bbox->height();
+	return size() - bbox->height() + 1;
+}
+
+bool
+List::scroll_window(int32_t delta)
+{
+	return set_scroll_position(top_position_ + delta);
+}
+
+bool
+List::set_scroll_position(int32_t position)
+{
+	if (position < min_top_position()) {
+		top_position_ = min_top_position();
+	} else if (position > max_top_position()) {
+		top_position_ = max_top_position();
+	} else {
+		top_position_ = position;
+	}
+
+	return true;
 }
 
 bool
@@ -191,21 +212,7 @@ List::move_cursor(int32_t delta)
 }
 
 bool
-List::scroll_window(int32_t delta)
-{
-	top_position_ += delta;
-
-	if (top_position_ < min_top_position()) {
-		top_position_ = min_top_position();
-	} else if (top_position_ < max_top_position()) {
-		top_position_ = max_top_position();
-	}
-
-	return true;
-}
-
-bool
-List::set_cursor(uint32_t position)
+List::set_cursor(int32_t position)
 {
 	cursor_position = position;
 	if (cursor_position < 0) {
@@ -232,6 +239,7 @@ List::clear()
 
 	while (iter != items.end()) {
 		delete *iter;
+		++iter;
 	}
 
 	items.clear();

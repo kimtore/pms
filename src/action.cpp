@@ -1107,8 +1107,7 @@ handle_command(pms_pending_keys action)
 
 		case PEND_SCROLL_DOWN:
 		case PEND_SCROLL_UP:
-			//FIXME
-			//pms->disp->scrollwin(action == PEND_SCROLL_DOWN ? 1 : -1);
+			list->scroll_window(action == PEND_SCROLL_DOWN ? 1 : -1);
 			break;
 
 		case PEND_CENTER_CURSOR:
