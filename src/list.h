@@ -66,10 +66,27 @@ public:
 	int32_t				min_top_position();
 	int32_t				max_top_position();
 	bool				scroll_window(int32_t delta);
-	bool				set_scroll_position(int32_t delta);
+	bool				set_viewport_position(int32_t delta);
 	bool				move_cursor(int32_t delta);
 	bool				set_cursor(int32_t position);
 	ListItem *			cursor_item();
+
+	/**
+	 * Make sure that the cursor is in the correct place according to
+	 * scroll mode and viewport.
+	 *
+	 * Returns true if cursor position changed, false otherwise.
+	 */
+	bool				adjust_cursor_to_viewport();
+
+	/**
+	 * Make sure that the viewport is showing the correct items, according
+	 * to the cursor position and scroll mode.
+	 *
+	 * Returns true if viewport position changed, false otherwise.
+	 */
+	bool				adjust_viewport_to_cursor();
+
 	virtual const char *		title() = 0;
 
 	/* FIXME: needed? */

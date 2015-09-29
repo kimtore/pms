@@ -22,6 +22,9 @@
 
 #include "display.h"
 #include "list.h"
+#include "pms.h"
+
+extern Pms * pms;
 
 List::List(BBox * bbox_)
 {
@@ -157,7 +160,7 @@ List::bottom_position()
 		return 0;
 	}
 
-	p = top_position() + bbox->height();
+	p = top_position() + bbox->height() - 2;
 
 	if (p >= size()) {
 		p = size() - 1;
@@ -188,11 +191,11 @@ List::max_top_position()
 bool
 List::scroll_window(int32_t delta)
 {
-	return set_scroll_position(top_position_ + delta);
+	return set_viewport_position(top_position_ + delta);
 }
 
 bool
-List::set_scroll_position(int32_t position)
+List::set_viewport_position(int32_t position)
 {
 	if (position < min_top_position()) {
 		top_position_ = min_top_position();
@@ -201,6 +204,8 @@ List::set_scroll_position(int32_t position)
 	} else {
 		top_position_ = position;
 	}
+
+	adjust_cursor_to_viewport();
 
 	return true;
 }
@@ -221,7 +226,59 @@ List::set_cursor(int32_t position)
 		cursor_position = size() - 1;
 	}
 
+	adjust_viewport_to_cursor();
+
 	return true;
+}
+
+bool
+List::adjust_cursor_to_viewport()
+{
+	switch (pms->options->scroll_mode) {
+		case SCROLL_NORMAL:
+			if (cursor_position < top_position()) {
+				cursor_position = top_position();
+			} else if (cursor_position > bottom_position()) {
+				cursor_position = bottom_position();
+			} else {
+				return false;
+			}
+			return true;
+
+		case SCROLL_CENTERED:
+			break;
+
+		case SCROLL_RELATIVE:
+			break;
+
+		default:
+			abort();
+	}
+}
+
+bool
+List::adjust_viewport_to_cursor()
+{
+	switch (pms->options->scroll_mode) {
+		case SCROLL_NORMAL:
+			if (cursor_position < top_position()) {
+				top_position_ = cursor_position;
+			} else if (cursor_position > bottom_position()) {
+				top_position_ = cursor_position - bbox->height() + 2;
+			} else {
+				return false;
+			}
+			return true;
+
+		case SCROLL_CENTERED:
+			break;
+
+		case SCROLL_RELATIVE:
+			break;
+
+		default:
+			abort();
+	}
 }
 
 void
