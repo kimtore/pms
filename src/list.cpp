@@ -37,6 +37,7 @@ List::List()
 
 List::~List()
 {
+	clear();
 }
 
 void
@@ -81,10 +82,10 @@ List::remove(uint32_t position)
 /*
  * Move a list item inside the list to position dest
  */
-/*
 bool
 List::move(uint32_t from, uint32_t to)
 {
+/*
 	ListItem * tmp;
 	vector<ListItem *>::iterator from_iter;
 	vector<ListItem *>::iterator to_iter;
@@ -101,7 +102,7 @@ List::move(uint32_t from, uint32_t to)
 
 	tmp = *from_iter;
 
-	/* Set direction FIXME
+	// Set direction FIXME
 	if (dst == songpos)
 		return false;
 	else if (dst > songpos)
@@ -109,7 +110,7 @@ List::move(uint32_t from, uint32_t to)
 	else
 		direction = -1;
 
-	/* Swap every element on its way
+	// Swap every element on its way
 	while (songpos != dst)
 	{
 		if (!this->swap(songpos, (songpos + direction)))
@@ -118,7 +119,7 @@ List::move(uint32_t from, uint32_t to)
 		songpos += direction;
 	}
 
-	/* Clear queue length
+	// Clear queue length
 	{
 		qlen = 0;
 		qpos = 0;
@@ -127,8 +128,8 @@ List::move(uint32_t from, uint32_t to)
 	}
 
 	return true;
-}
 	*/
+}
 
 inline
 uint32_t
@@ -212,6 +213,8 @@ List::set_cursor(uint32_t position)
 	} else if (cursor_position >= size()) {
 		cursor_position = size() - 1;
 	}
+
+	return true;
 }
 
 void
@@ -248,14 +251,12 @@ List::cursor_item()
 	return items[cursor_position];
 }
 
-inline
 vector<ListItem *>::iterator
 List::begin()
 {
 	return items.begin();
 }
 
-inline
 vector<ListItem *>::iterator
 List::end()
 {

@@ -66,7 +66,6 @@ Songlist::Songlist()
 
 Songlist::~Songlist()
 {
-	this->clear();
 }
 
 /*
@@ -236,7 +235,7 @@ song_t		Songlist::findentry(Item field, bool reverse)
 	/* Sanity checks on environment */
 	s = cursorsong();
 	assert(s);
-	i = cursor();
+	i = cursor_position;
 
 	/* Return our search string */
 	cmp[0] = pms->formatter->format(s, field, true);
@@ -370,6 +369,30 @@ Songlist::add(Song * s)
 	rseliter = items.rbegin();
 
 	return s->pos;
+}
+
+Song *
+Songlist::find(Song * s)
+{
+	song_t i = MATCH_FAILED;
+
+	assert(s);
+
+	if (s->id != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN) {
+		i = match(Pms::tostring(pms->cursong()->pos), 0, size() - 1, MATCH_ID | MATCH_EXACT);
+	} else if (s->pos != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN) {
+		i = match(Pms::tostring(pms->cursong()->pos), 0, size() - 1, MATCH_POS | MATCH_EXACT);
+	}
+
+	if (i == MATCH_FAILED) {
+		i = match(s->file, 0, size() - 1, MATCH_FILE | MATCH_EXACT);
+	}
+
+	if (i == MATCH_FAILED) {
+		return NULL;
+	}
+
+	return song(i);
 }
 
 /*
@@ -710,7 +733,7 @@ Songlist::draw()
 		s = song(i);
 		assert(s);
 
-		if (i == cursor())
+		if (i == cursor_position)
 		{
 			hilight = pms->options->colors->cursor;
 		}

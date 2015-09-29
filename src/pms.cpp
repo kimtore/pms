@@ -221,18 +221,29 @@ Pms::song_changed()
 /**
  * Center the cursor on the currently playing song.
  */
-void
+bool
 Pms::run_cursor_follow_playback()
 {
+	return goto_current_playing_song();
+}
+
+bool
+Pms::goto_current_playing_song()
+{
+	Song * song;
 	Songlist * songlist;
 
 	songlist = SONGLIST(disp->active_list);
-	while (!songlist && !songlist->gotocurrent()) {
+	while (!songlist && (song = songlist->find(cursong())) == NULL) {
 		if (songlist == comm->playlist()) {
-			return;
+			return false;
 		}
 		songlist = comm->playlist();
 	}
+
+	songlist->set_cursor(song->id);
+
+	return true;
 }
 
 /**
@@ -546,7 +557,7 @@ Pms::main()
 			/* Shell command when song finishes */
 			/* FIXME: move into separate function */
 			if (comm->status()->state == MPD_STATE_STOP && input->getpending() != PEND_STOP) {
-				if (options->onplaylistfinish.size() > 0 && cursong() && cursong()->pos == comm->playlist()->end()) {
+				if (options->onplaylistfinish.size() > 0 && cursong() && cursong()->pos == comm->playlist()->size() - 1) {
 					log(MSG_CONSOLE, STOK, _("Reached end of playlist, running automation command: %s"), options->onplaylistfinish.c_str());
 					int code = system(options->onplaylistfinish.c_str());
 				}
@@ -1160,7 +1171,7 @@ Pms::playstring()
 	}
 
 	/* FIXME: separate function? */
-	is_last_in_playlist = (cursong()->pos == static_cast<song_t>(comm->playlist()->end()));
+	is_last_in_playlist = (cursong()->pos == comm->playlist()->size() - 1);
 
 	if (status->repeat) {
 		s += "songs from playlist repeatedly.";
@@ -1332,7 +1343,7 @@ bool			Pms::progress_nextsong()
 	last_song_id = cursong()->id;
 
 	/* Normal progression: reached end of playlist */
-	if (cursong()->pos == static_cast<int>(comm->playlist()->end())) {
+	if (cursong()->pos == static_cast<int>(comm->playlist()->size() - 1)) {
 
 		pms->log(MSG_DEBUG, 0, "Auto-progressing to next song.\n");
 

@@ -19,6 +19,10 @@
 
 #include "list.h"
 
+ListItem::~ListItem()
+{
+}
+
 void
 ListItem::set_selected(bool state)
 {

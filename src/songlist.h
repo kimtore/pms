@@ -125,13 +125,18 @@ public:
 	bool			remove(uint32_t position);
 
 	/**
+	 * Return the first occurrence of a song.
+	 */
+	Song *			find(Song *);
+
+	/**
 	 * Return the song at the specified position.
 	 *
 	 * Will raise an assertion error when the position is invalid.
 	 */
 	Song *			song(uint32_t position);
+
 	unsigned int		length;
-	void			clear();
 	Selection		selection;
 	void			set(Songlist *);
 	void			truncate(unsigned int);
@@ -180,7 +185,6 @@ public:
 	song_t			add(Song *);
 	song_t			add(Songlist *);
 	bool			remove(Song *);
-	bool			move(unsigned int, unsigned int);
 	/*
 	unsigned int		realsize() { return songs.size(); };
 	unsigned int		size() { return filtersongs.size(); };

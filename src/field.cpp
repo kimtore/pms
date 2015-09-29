@@ -639,38 +639,16 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			{
 				if (list->selection.size > 0)
 				{
-					if (list->filtercount() == 0)
-					{
-						sprintf(s, "%ld/%d %s (%s)", static_cast<unsigned long>(list->selection.size),
-								list->size(),
-								Pms::pluralformat(list->size()).c_str(),
-								Pms::timeformat(list->selection.length).c_str());
-					}
-					else
-					{
-						sprintf(s, "%ld/%d/%d %s (%s)", static_cast<unsigned long>(list->selection.size),
-								list->size(),
-								list->realsize(),
-								Pms::pluralformat(list->realsize()).c_str(),
-								Pms::timeformat(list->selection.length).c_str());
-					}
+					sprintf(s, "%ld/%d %s (%s)", static_cast<unsigned long>(list->selection.size),
+							list->size(),
+							Pms::pluralformat(list->size()).c_str(),
+							Pms::timeformat(list->selection.length).c_str());
 				}
 				else
 				{
-					if (list->filtercount() == 0)
-					{
-						sprintf(s, "%d %s (%s)", list->size(),
-								Pms::pluralformat(list->size()).c_str(),
-								Pms::timeformat(list->length).c_str());
-					}
-					else
-					{
-						sprintf(s, "%d/%d %s (%s)",
-								list->size(),
-								list->realsize(),
-								Pms::pluralformat(list->realsize()).c_str(),
-								Pms::timeformat(list->selection.length).c_str());
-					}
+					sprintf(s, "%d %s (%s)", list->size(),
+							Pms::pluralformat(list->size()).c_str(),
+							Pms::timeformat(list->length).c_str());
 				}
 
 			}

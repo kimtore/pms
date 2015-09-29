@@ -71,6 +71,9 @@ public:
 	ListItem *			cursor_item();
 	virtual const char *		title() = 0;
 
+	/* FIXME: needed? */
+	bool				move(uint32_t, uint32_t);
+
 	vector<ListItem *>::iterator	begin();
 	vector<ListItem *>::iterator	end();
 	ListItem *			first();
