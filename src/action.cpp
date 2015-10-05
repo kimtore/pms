@@ -1071,34 +1071,31 @@ handle_command(pms_pending_keys action)
 				break;
 			}
 			list->move_cursor(action == PEND_MOVE_DOWN ? 1 : -1);
-			//if (win) win->wantdraw = true;
 			break;
 
 		case PEND_MOVE_HALFPGDN:
 		case PEND_MOVE_HALFPGUP:
-			//vim seems to integer divide number of rows visible by 
-			//2 unless only one row is visible
+			/* Vim seems to integer divide number of rows visible by 
+			 * 2 unless only one row is visible */
 			i = (list->bbox->height() - 1) / 2;
 			if (i < 1) {
 				i = 1;
 			}
-			//FIXME
-			//pms->disp->scrollwin(i * (action == PEND_MOVE_HALFPGDN ? 1 : -1));
+			list->scroll_window(i * (action == PEND_MOVE_HALFPGDN ? 1 : -1));
 			break;
 
 		case PEND_MOVE_PGDN:
 		case PEND_MOVE_PGUP:
 			i = list->bbox->height();
 			if (i == 4) {
-				//four lines visible: vim leaves one previously 
-				//visible line visible
+				/* Four lines visible: Vim leaves one previously 
+				 * visible line visible */
 				i -= 1;
 			} else if (i > 4) {
-				//more than four lines visible: vim leaves two 
-				//previously visible lines visible
+				/* More than four lines visible: Vim leaves two 
+				 * previously visible lines visible */
 				i -= 2;
 			}
-			//FIXME
 			list->scroll_window(i * (action == PEND_MOVE_PGDN ? 1 : -1));
 			break;
 

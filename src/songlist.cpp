@@ -882,8 +882,13 @@ song_t			Songlist::match(string src, unsigned int from, unsigned int to, long mo
 		return MATCH_FAILED;
 	}
 
-	assert(from < size());
-	assert(to < size());
+	if (from >= size()) {
+		from = size() - 1;
+	}
+
+	if (to >= size()) {
+		to = size() - 1;
+	}
 
 	if (mode & MATCH_REVERSE) {
 		i = from;
