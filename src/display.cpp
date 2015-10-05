@@ -104,14 +104,14 @@ BBox::height()
 bool
 BBox::clear(color * c)
 {
-	uint16_t y = height() - 1;
-	uint16_t w = width();
+	int16_t y = height() - 1;
+	int16_t w = width();
 
 	if (c && wattron(window, c->pair()) == ERR) {
 		return false;
 	}
 
-	while (y != 0) {
+	while (y >= 0) {
 		if (mvwhline(window, y--, 0, ' ', w) == ERR) {
 			return false;
 		}
