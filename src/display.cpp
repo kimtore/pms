@@ -393,26 +393,25 @@ Display::draw_main_window()
 bool
 Display::draw_position_readout()
 {
-	string		text;
-	char		buffer[4];
+	uint32_t	percent;
+	char		buffer[16];
 
-	if (active_list->size() < position_readout.height()) {
-		text = "All";
-	} else if (active_list->top_position() == 0) {
-		text = "Top";
-	} else if (active_list->top_position() == active_list->size() - (position_readout.height() - 1)) {
-		text = "Bot";
+	if (active_list->size() < active_list->bbox->height()) {
+		strcpy(buffer, "All");
+	} else if (active_list->top_position() == active_list->min_top_position()) {
+		strcpy(buffer, "Top");
+	} else if (active_list->top_position() == active_list->max_top_position()) {
+		strcpy(buffer, "Bot");
 	} else {
-		sprintf(buffer, "%2d", 100 * active_list->top_position() / (active_list->size() - (position_readout.height() - 1)));
-		text = buffer;
-		text += "%%";
+		percent = 100 * active_list->top_position() / (active_list->size() - active_list->bbox->height() + 1);
+		sprintf(buffer, "%2d%%%%", percent);
 	}
 
 	/* Clear window */
 	position_readout.clear(NULL);
 
 	/* Draw string */
-	colprint(&position_readout, 0, 0, pms->options->colors->position, "%s", text.c_str());
+	colprint(&position_readout, 0, 0, pms->options->colors->position, buffer);
 
 	return true;
 }
