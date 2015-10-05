@@ -1003,19 +1003,16 @@ long		Interface::select(List * list, int mode, string param)
 	}
 	while (i != MATCH_FAILED)
 	{
-		song = songlist->song(i);
-		if (!song)
-		{
-			pms->log(MSG_DEBUG, STERR, "***BUG*** in Interface::select(): Encountered NULL song!\n");
-			continue;
-		}
+		item = songlist->item(i);
+		assert(item);
 
-		if (mode == SELECT_TOGGLE)
-			songlist->selectsong(song, !song->selected);
-		else if (mode == SELECT_OFF)
-			songlist->selectsong(song, false);
-		else if (mode == SELECT_ON)
-			songlist->selectsong(song, true);
+		if (mode == SELECT_TOGGLE) {
+			item->set_selected(item->selected());
+		} else if (mode == SELECT_OFF) {
+			item->set_selected(false);
+		} else if (mode == SELECT_ON) {
+			item->set_selected(true);
+		}
 
 		/* FIXME: not needed?
 		if (static_cast<unsigned int>(i) == songlist->last())
@@ -1073,7 +1070,7 @@ handle_command(pms_pending_keys action)
 				//pms->drawstatus();
 				break;
 			}
-			pms->disp->active_list->move_cursor(action == PEND_MOVE_DOWN ? 1 : -1);
+			list->move_cursor(action == PEND_MOVE_DOWN ? 1 : -1);
 			//if (win) win->wantdraw = true;
 			break;
 
@@ -1102,7 +1099,7 @@ handle_command(pms_pending_keys action)
 				i -= 2;
 			}
 			//FIXME
-			//pms->disp->scrollwin(i * (action == PEND_MOVE_PGDN ? 1 : -1));
+			list->scroll_window(i * (action == PEND_MOVE_PGDN ? 1 : -1));
 			break;
 
 		case PEND_SCROLL_DOWN:
@@ -1118,32 +1115,15 @@ handle_command(pms_pending_keys action)
 			break;
 
 		case PEND_MOVE_HOME:
-			pms->disp->active_list->set_cursor(0);
+			list->set_cursor(0);
 			break;
 
 		case PEND_MOVE_END:
-			pms->disp->active_list->set_cursor(pms->disp->active_list->size() - 1);
+			list->set_cursor(pms->disp->active_list->size() - 1);
 			break;
 
 		case PEND_GOTO_CURRENT:
-			if (!pms->cursong() || !songlist) return false;
-			assert(false); // GOTOCURRENT FIXME
-			/*
-			song_t		i = MATCH_FAILED;
-
-			if (!pms->cursong()) return false;
-
-			if (pms->cursong()->pos != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN)
-				i = match(Pms::tostring(pms->cursong()->pos), 0, size() - 1, MATCH_POS | MATCH_EXACT);
-			if (i == MATCH_FAILED)
-				i = match(pms->cursong()->file, 0, size() - 1, MATCH_FILE | MATCH_EXACT);
-			if (i == MATCH_FAILED) return false;
-			*/
-			//if (!songlist->gotocurrent()) {
-				pms->log(MSG_STATUS, STERR, "Currently playing song is not here.");
-				return false;
-			//}
-
+			pms->goto_current_playing_song();
 			break;
 
 
@@ -1553,40 +1533,26 @@ handle_command(pms_pending_keys action)
 			break;
 
 		case PEND_CHANGEWIN:
-			/*
-			if (pms->input->param == "playlist")
-				win = pms->disp->findwlist(pms->comm->playlist());
-			else if (pms->input->param == "library")
-				win = pms->disp->findwlist(pms->comm->library());
-			else if (pms->input->param == "windowlist")
-				win = pms->disp->create_windowlist();
-			else
-			{
-				win = pms->disp->findwlist(pms->comm->find_playlist(pms->input->param));
-				if (!win)
-				{
+			if (pms->input->param == "playlist") {
+				pms->disp->activate_list(pms->comm->playlist());
+			} else if (pms->input->param == "library") {
+				pms->disp->activate_list(pms->comm->library());
+			} else if (pms->input->param == "windowlist") {
+				// NOT IMPLEMENTED
+				assert(false);
+			} else {
+				list = pms->disp->find(pms->input->param.c_str());
+				if (!list) {
 					pms->log(MSG_STATUS, STERR, "Change window: invalid parameter '%s'", pms->input->param.c_str());
 					break;
 				}
+				pms->disp->activate_list(list);
 			}
-
-			if (win)
-				setwin(win);
-			*/
-			assert(false);
 
 			break;
 
 		case PEND_LASTWIN:
-			/*
-			if (win && win->type() == WIN_ROLE_WINDOWLIST)
-			{
-				win->switchlastwin();
-				break;
-			}
-			setwin(pms->disp->lastwin);
-			*/
-			assert(false);
+			pms->disp->activate_list(pms->disp->last_list);
 			break;
 
 		case PEND_SHOWBIND:

@@ -112,6 +112,13 @@ public:
 	bool			activate_list(List * list);
 	bool			delete_list(List *);
 
+	/**
+	 * Given a list title, return a matching List object.
+	 *
+	 * Returns a pointer to a List, or NULL if not found.
+	 */
+	List *			find(const char * title);
+
 	bool			draw();
 	bool			draw_topbar();
 	bool			draw_titlebar();

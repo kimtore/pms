@@ -17,7 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
+
 #include "list.h"
+
+ListItem::ListItem(List * owner)
+{
+	assert(owner);
+	list = owner;
+}
 
 ListItem::~ListItem()
 {

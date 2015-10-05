@@ -54,21 +54,77 @@ public:
 	virtual				~List();
 
 	BBox *				bbox;
-	uint32_t			cursor_position;
+	int32_t				cursor_position;
 
 	bool				add(ListItem * item);
 	bool				remove(uint32_t position);
 	void				clear();
 
+	/**
+	 * Return the item at position N, or NULL if out of bounds.
+	 */
+	ListItem *			item(uint32_t index);
+
+	/**
+	 * Return the size of the list.
+	 */
 	uint32_t			size();
+
+	/**
+	 * Return the absolute position of the list item visible in the top of
+	 * the viewport.
+	 */
 	int32_t				top_position();
+
+	/**
+	 * Return the absolute position of the list item visible in the bottom
+	 * of the viewport.
+	 */
 	int32_t				bottom_position();
+
+	/**
+	 * Return the minimum possible value for top_position(), according to
+	 * list and viewport size.
+	 */
 	int32_t				min_top_position();
+
+	/**
+	 * Return the maximum possible value for top_position(), according to
+	 * list and viewport size.
+	 */
 	int32_t				max_top_position();
+
+	/**
+	 * Scroll the viewport by the number of lines specified in delta.
+	 *
+	 * Returns false if the scroll went out of bounds, true otherwise.
+	 */
 	bool				scroll_window(int32_t delta);
-	bool				set_viewport_position(int32_t delta);
+
+	/**
+	 * Set the top position of the viewport to the specified position.
+	 *
+	 * Returns false if the viewport went out of bounds, true otherwise.
+	 */
+	bool				set_viewport_position(int32_t position);
+
+	/**
+	 * Move the cursor by the number of lines specified in delta.
+	 *
+	 * Returns false if the cursor went out of bounds, true otherwise.
+	 */
 	bool				move_cursor(int32_t delta);
+
+	/**
+	 * Move the cursor to the specified position.
+	 *
+	 * Returns false if the cursor went out of bounds, true otherwise.
+	 */
 	bool				set_cursor(int32_t position);
+
+	/**
+	 * Return the list item beneath the cursor, or NULL if the list is empty.
+	 */
 	ListItem *			cursor_item();
 
 	/**
@@ -87,6 +143,9 @@ public:
 	 */
 	bool				adjust_viewport_to_cursor();
 
+	/**
+	 * Return the title of this list as a C string.
+	 */
 	virtual const char *		title() = 0;
 
 	/* FIXME: needed? */

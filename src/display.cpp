@@ -274,6 +274,8 @@ Display::add_list(List * list)
 bool
 Display::activate_list(List * list)
 {
+	assert(list);
+
 	if (list == active_list) {
 		return false;
 	}
@@ -282,6 +284,22 @@ Display::activate_list(List * list)
 	active_list = list;
 
 	return true;
+}
+
+List *
+Display::find(const char * title)
+{
+	vector<List *>::iterator i;
+
+	i = lists.begin();
+	while (i != lists.end()) {
+		if (!strcmp(title, (*i)->title())) {
+			return *i;
+		}
+		++i;
+	}
+
+	return NULL;
 }
 
 bool

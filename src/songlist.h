@@ -43,6 +43,7 @@ using namespace std;
  * Return `x` cast to a Songlist *, or NULL if the list is not a Songlist.
  */
 #define SONGLIST(x) dynamic_cast<Songlist *>(x)
+#define LISTITEMSONG(x) dynamic_cast<ListItemSong *>(x)
 
 enum
 {
@@ -96,7 +97,7 @@ class ListItemSong : public ListItem
 public:
 	Song *		song;
 
-			ListItemSong(Song * s);
+			ListItemSong(List * l, Song * s);
 			~ListItemSong();
 };
 
@@ -115,7 +116,6 @@ public:
 				Songlist();
 				~Songlist();
 
-	bool			ignorecase;
 	List_role		role;
 	string			filename;
 
@@ -127,7 +127,7 @@ public:
 	/**
 	 * Return the first occurrence of a song.
 	 */
-	Song *			find(Song *);
+	ListItemSong *		find(Song *);
 
 	/**
 	 * Return the song at the specified position.
@@ -143,6 +143,12 @@ public:
 
 	bool			sort(string);
 
+	/**
+	 * After a sort procedure, the song->pos are inaccurate. This function
+	 * numbers them sequentially.
+	 */
+	void			renumber_pos();
+
 	vector<song_t> *	matchall(string, long);
 	song_t			match(string, unsigned int, unsigned int, long);
 	bool			match(Song *, string, long);
@@ -157,7 +163,6 @@ public:
 	Song *			cursorsong();
 	void			set_column_size();
 
-	bool			selectsong(Song *, bool);
 	bool			swap(uint32_t, uint32_t);
 
 	/* Pick songs based on playmode */

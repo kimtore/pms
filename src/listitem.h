@@ -20,11 +20,21 @@
 #ifndef _PMS_LISTITEM_H_
 #define _PMS_LISTITEM_H_
 
+class List;
+
 class ListItem
 {
+private:
 	bool			selected_;
 
+protected:
+	/**
+	 * Pointer to a List owning this ListItem.
+	 */
+	List *			list;
+
 public:
+				ListItem(List * owner);
 	virtual			~ListItem();
 
 	void			set_selected(bool state);

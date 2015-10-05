@@ -230,18 +230,22 @@ Pms::run_cursor_follow_playback()
 bool
 Pms::goto_current_playing_song()
 {
-	Song * song;
+	ListItemSong * list_item;
 	Songlist * songlist;
 
 	songlist = SONGLIST(disp->active_list);
-	while (!songlist && (song = songlist->find(cursong())) == NULL) {
+
+	while (!songlist || (list_item = songlist->find(cursong())) == NULL) {
 		if (songlist == comm->playlist()) {
 			return false;
+		} else if (list_item) {
+			break;
 		}
 		songlist = comm->playlist();
+		disp->activate_list(songlist);
 	}
 
-	songlist->set_cursor(song->id);
+	songlist->set_cursor(list_item->song->pos);
 
 	return true;
 }

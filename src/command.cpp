@@ -197,8 +197,12 @@ Control::Control(Connection * n_conn)
 
 Control::~Control()
 {
+	/* FIXME: these are deleted by the Display class.
+	 * Who owns them, really? */
+	/*
 	delete _library;
 	delete _playlist;
+	*/
 	delete st;
 }
 

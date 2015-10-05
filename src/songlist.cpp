@@ -34,9 +34,13 @@
 extern Pms *			pms;
 
 
-ListItemSong::ListItemSong(Song * s)
+ListItemSong::ListItemSong(List * l, Song * s) :
+ListItem(l)
 {
+	assert(l);
 	assert(s);
+
+	list = l;
 	song = s;
 }
 
@@ -61,7 +65,6 @@ Songlist::Songlist()
 	selection.size = 0;
 	selection.length = 0;
 	role = LIST_ROLE_PLAYLIST;
-	ignorecase = pms->options->ignorecase;
 }
 
 Songlist::~Songlist()
@@ -77,7 +80,7 @@ Songlist::song(uint32_t position)
 	assert(position >= 0);
 	assert(position < size());
 
-	return dynamic_cast<ListItemSong *>(items[position])->song;
+	return LISTITEMSONG(items[position])->song;
 }
 
 /*
@@ -343,7 +346,7 @@ Songlist::add(Song * s)
 
 	/* Append song to end of list */
 	if (s->pos == MPD_SONG_NO_NUM || s->pos == size()) {
-		items.push_back(new ListItemSong(s));
+		items.push_back(new ListItemSong(this, s));
 		s->pos = size() - 1;
 
 	/* Insert song into arbitrary position */
@@ -356,7 +359,7 @@ Songlist::add(Song * s)
 			return -1;
 		}
 
-		items.insert(items.begin() + s->pos, new ListItemSong(s));
+		items.insert(items.begin() + s->pos, new ListItemSong(this, s));
 	}
 
 	/* FIXME: new function */
@@ -371,7 +374,7 @@ Songlist::add(Song * s)
 	return s->pos;
 }
 
-Song *
+ListItemSong *
 Songlist::find(Song * s)
 {
 	song_t i = MATCH_FAILED;
@@ -392,7 +395,7 @@ Songlist::find(Song * s)
 		return NULL;
 	}
 
-	return song(i);
+	return LISTITEMSONG(item(i));
 }
 
 /*
@@ -403,13 +406,14 @@ Songlist::find(Song * s)
 bool
 Songlist::remove(Song * s)
 {
+	ListItem * list_item;
+
 	assert(s != NULL);
 
-	selectsong(s, false);
+	list_item = item(s->pos);
+	assert(list_item);
 
-	if (s->pos == MPD_SONG_NO_NUM) {
-		return remove(match(s->file, 0, size() - 1, MATCH_FILE));
-	}
+	list_item->set_selected(false);
 
 	return remove(s->pos);
 }
@@ -442,7 +446,7 @@ Songlist::remove(uint32_t position)
 
 	/* Decrease song position of all following song instances */
 	while (iter != items.end()) {
-		list_item = dynamic_cast<ListItemSong *>(*iter);
+		list_item = LISTITEMSONG(*iter);
 		assert(list_item);
 		assert(list_item->song);
 		--list_item->song->pos;
@@ -456,7 +460,6 @@ Songlist::remove(uint32_t position)
  * Set selection state of a song
  *
  * FIXME
- */
 bool		Songlist::selectsong(Song * song, bool state)
 {
 	assert(false);
@@ -481,6 +484,7 @@ bool		Songlist::selectsong(Song * song, bool state)
 
 	return true;
 }
+ */
 
 /*
  * Return song at cursor position, or NULL if the songlist is empty
@@ -1023,33 +1027,11 @@ bool		Songlist::sort(string sorts)
 	if (sorts.size() == 0)
 		return false;
 
-	ignorecase = pms->options->ignorecase;
-
 	v = Pms::splitstr(sorts, " ");
 
 	/* Sort the real song list */
 	start = items.begin();
 	stop = items.end();
-
-	for (i = 0; i < v->size(); i++)
-	{
-		ft = pms->fieldtypes->lookup((*v)[i]);
-		if (ft == -1)
-			continue;
-
-		func = pms->fieldtypes->sortfunc[(unsigned int)ft];
-		if (func == NULL) continue;
-
-		if (i == 0)
-			std::sort(start, stop, func);
-		else
-			std::stable_sort(start, stop, func);
-	}
-
-	/* Sort the filtered song list */
-	temp = items;
-	start = temp.begin();
-	stop = temp.end();
 
 	for (i = 0; i < v->size(); i++)
 	{
@@ -1067,15 +1049,22 @@ bool		Songlist::sort(string sorts)
 		}
 	}
 
-	if (i == v->size())
-	{
-		items = temp;
-		delete v;
-		return true;
-	}
+	renumber_pos();
 
 	delete v;
-	return false;
+	return true;
+}
+
+void
+Songlist::renumber_pos()
+{
+	ListItemSong * list_item;
+	uint32_t i;
+
+	for (i = 0; i < size(); i++) {
+		list_item = LISTITEMSONG(items[i]);
+		list_item->song->pos = i;
+	}
 }
 
 /*
@@ -1142,8 +1131,8 @@ bool	icstrsort(const string & a, const string & b)
  */
 bool	sort_compare_file(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1152,8 +1141,8 @@ bool	sort_compare_file(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_artist(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1162,8 +1151,8 @@ bool	sort_compare_artist(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_albumartist(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1172,8 +1161,8 @@ bool	sort_compare_albumartist(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_albumartistsort(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1182,8 +1171,8 @@ bool	sort_compare_albumartistsort(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_artistsort(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1192,8 +1181,8 @@ bool	sort_compare_artistsort(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_title(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1202,8 +1191,8 @@ bool	sort_compare_title(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_album(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1212,8 +1201,8 @@ bool	sort_compare_album(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_track(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1222,8 +1211,8 @@ bool	sort_compare_track(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_length(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1232,8 +1221,8 @@ bool	sort_compare_length(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_name(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1242,8 +1231,8 @@ bool	sort_compare_name(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_date(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1252,8 +1241,8 @@ bool	sort_compare_date(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_year(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1262,8 +1251,8 @@ bool	sort_compare_year(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_genre(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1272,8 +1261,8 @@ bool	sort_compare_genre(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_composer(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1282,8 +1271,8 @@ bool	sort_compare_composer(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_performer(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1292,8 +1281,8 @@ bool	sort_compare_performer(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_disc(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
@@ -1302,8 +1291,8 @@ bool	sort_compare_disc(ListItem * a_, ListItem * b_)
 
 bool	sort_compare_comment(ListItem * a_, ListItem * b_)
 {
-	Song * a = dynamic_cast<ListItemSong *>(a_)->song;
-	Song * b = dynamic_cast<ListItemSong *>(b_)->song;
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
 	if (a == NULL && b == NULL)			return true;
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;

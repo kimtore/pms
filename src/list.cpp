@@ -135,6 +135,16 @@ List::move(uint32_t from, uint32_t to)
 	*/
 }
 
+ListItem *
+List::item(uint32_t index)
+{
+	if (index >= size()) {
+		return NULL;
+	}
+
+	return items[index];
+}
+
 inline
 uint32_t
 List::size()
@@ -197,17 +207,20 @@ List::scroll_window(int32_t delta)
 bool
 List::set_viewport_position(int32_t position)
 {
-	if (position < min_top_position()) {
+	bool rc = true;
+
+	top_position_ = position;
+	if (top_position_ < min_top_position()) {
 		top_position_ = min_top_position();
-	} else if (position > max_top_position()) {
+		rc = false;
+	} else if (top_position_ > max_top_position()) {
 		top_position_ = max_top_position();
-	} else {
-		top_position_ = position;
+		rc = false;
 	}
 
 	adjust_cursor_to_viewport();
 
-	return true;
+	return rc;
 }
 
 bool
@@ -219,16 +232,20 @@ List::move_cursor(int32_t delta)
 bool
 List::set_cursor(int32_t position)
 {
+	bool rc = true;
+
 	cursor_position = position;
 	if (cursor_position < 0) {
 		cursor_position = 0;
+		rc = false;
 	} else if (cursor_position >= size()) {
 		cursor_position = size() - 1;
+		rc = false;
 	}
 
 	adjust_viewport_to_cursor();
 
-	return true;
+	return rc;
 }
 
 bool
