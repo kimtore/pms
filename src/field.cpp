@@ -637,12 +637,12 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			list = dynamic_cast<Songlist *>(pms->disp->active_list);
 			if (list)
 			{
-				if (list->selection.size > 0)
+				if (list->selection_params.size > 0)
 				{
-					sprintf(s, "%ld/%d %s (%s)", static_cast<unsigned long>(list->selection.size),
+					sprintf(s, "%ld/%d %s (%s)", static_cast<unsigned long>(list->selection_params.size),
 							list->size(),
 							Pms::pluralformat(list->size()).c_str(),
-							Pms::timeformat(list->selection.length).c_str());
+							Pms::timeformat(list->selection_params.length).c_str());
 				}
 				else
 				{

@@ -311,7 +311,6 @@ public:
 	Songlist *	activelist();
 	bool		activatelist(Songlist *);
 	int		clear(Songlist *);
-	bool		crop(Songlist *, int);
 	unsigned int	move(Songlist *, int offset);
 
 	int		crossfade();

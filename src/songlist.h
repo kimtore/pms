@@ -121,8 +121,6 @@ public:
 
 	bool			draw();
 	const char *		title();
-	//bool			add(ListItem * item);
-	bool			remove(uint32_t position);
 
 	/**
 	 * Return the first occurrence of a song.
@@ -136,8 +134,22 @@ public:
 	 */
 	Song *			song(uint32_t position);
 
+	/**
+	 * Crop the list to a specific song.
+	 *
+	 * Returns true on success, false on failure.
+	 */
+	bool			crop_to_song(Song * song);
+
+	/**
+	 * Crop the list to the list selection.
+	 *
+	 * Returns true on success, false on failure.
+	 */
+	bool			crop_to_selection();
+
 	unsigned int		length;
-	Selection		selection;
+	Selection		selection_params;
 	void			set(Songlist *);
 	void			truncate(unsigned int);
 
@@ -190,6 +202,14 @@ public:
 	song_t			add(Song *);
 	song_t			add(Songlist *);
 	bool			remove(Song *);
+	bool			remove(uint32_t position);
+
+	/**
+	 * Remove a song asynchronously, i.e. send a message to MPD and request
+	 * to remove it.
+	 */
+	virtual bool		remove_async(Song * s) = 0;
+
 	/*
 	unsigned int		realsize() { return songs.size(); };
 	unsigned int		size() { return filtersongs.size(); };

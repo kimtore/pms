@@ -54,12 +54,13 @@ bool		Interface::check_events()
 {
 	List * list;
 	Songlist * songlist;
+	Song * song;
 
 	msg->clear();
 	action = pms->input->getpending();
 
 	list = pms->disp->active_list;
-	songlist = dynamic_cast<Songlist *>(list);
+	songlist = SONGLIST(list);
 
 	switch(action)
 	{
@@ -175,11 +176,16 @@ bool		Interface::check_events()
 			break;
 
 		case PEND_CROP:
-			crop(CROP_PLAYING);
+			song = pms->cursong();
+			if (!song) {
+				/* FIXME: error message */
+				break;
+			}
+			songlist->crop_to_song(song);
 			break;
 
 		case PEND_CROPSELECTION:
-			crop(CROP_SELECTION);
+			songlist->crop_to_selection();
 			break;
 
 		case PEND_DELETE:
@@ -540,6 +546,8 @@ long		Interface::play()
  */
 long		Interface::add(string param)
 {
+	vector<ListItem *>::iterator	selection_iterator;
+
 	ListItemSong *	list_item;
 	Songlist *	songlist;
 	Songlist *	dlist;
@@ -588,25 +596,31 @@ long		Interface::add(string param)
 	if (param.size() > 0)
 	{
 		song = new Song(param);
-		if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID)
+		if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID) {
 			pms->log(MSG_STATUS, STOK, _("Added '%s' to %s."), param.c_str(), s.c_str());
-		else
+		} else {
+			/* FIXME: proper error handling */
 			generr();
+		}
 
 		delete song;
 		return STOK;
 	}
 
 	/* Add selected song(s) */
-	while ((list_item = dynamic_cast<ListItemSong *>(songlist->popnextselected())) != NULL)
-	{
+	selection_iterator = songlist->selection_begin();
+	while (selection_iterator != songlist->selection_end()) {
+		list_item = LISTITEMSONG(*selection_iterator);
 		song = list_item->song;
 		pms->log(MSG_DEBUG, 0, "Adding song at %p with id=%d pos=%d filename=%s\n", song, song->id, song->pos, song->file.c_str());
 		if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID) {
+			list_item->set_selected(false);
 			++i;
 		} else {
+			/* FIXME: proper error handling */
 			generr();
 		}
+		++selection_iterator;
 	}
 
 	if (i == 0) {
@@ -869,27 +883,12 @@ long		Interface::clear()
 }
 
 /*
- * Crop the selected list
- */
-long		Interface::crop(int crop_mode)
-{
-	if (pms->comm->crop(dynamic_cast<Songlist *>(pms->disp->active_list), crop_mode))
-	{
-		pms->log(MSG_CONSOLE, STOK, _("Playlist cropped.\n"));
-		//pms->drawstatus();
-		//pms->disp->actwin()->wantdraw = true;
-		return STOK;
-	}
-	generr();
-	return STERR;
-}
-
-/*
  * Remove selected songs from list
  */
 long
 Interface::remove(Songlist * list)
 {
+	vector<ListItem *>::iterator		selection_iterator;
 	ListItemSong *				list_item;
 	Song *					song;
 	vector<Song *>				songs;
@@ -907,9 +906,12 @@ Interface::remove(Songlist * list)
 		return STERR;
 	}
 
-	while ((list_item = dynamic_cast<ListItemSong *>(list->popnextselected())) != NULL) {
+	selection_iterator = list->selection_begin();
+	while (selection_iterator != list->selection_end()) {
+		list_item = LISTITEMSONG(*selection_iterator);
 		song = list_item->song;
 		songs.push_back(song);
+		++selection_iterator;
 	}
 
 	i = songs.rbegin();

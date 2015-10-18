@@ -996,7 +996,7 @@ bool			Pms::run_shell(string cmd)
 		replace = "";
 		for (i = 0; i < list->size(); i++)
 		{
-			if (!list->selection.size || list->song(i)->selected)
+			if (!list->selection_params.size || list->song(i)->selected)
 			{
 				replace += options->libraryroot;
 				replace += list->song(i)->file;

@@ -47,6 +47,13 @@ public:
 	void			set_synchronized(bool is_sync);
 	bool			exists_in_mpd();
 	void			set_exists_in_mpd(bool exists);
+
+	/**
+	 * Remove a song within this playlist from the MPD version.
+	 *
+	 * Returns true on success, false on failure.
+	 */
+	bool			remove_async(Song * song);
 };
 
 #endif /* _PMS_PLAYLIST_H_ */

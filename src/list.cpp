@@ -46,8 +46,6 @@ List::~List()
 void
 List::init()
 {
-	seliter = items.begin();
-	rseliter = items.rbegin();
 	top_position_ = 0;
 	cursor_position = 0;
 }
@@ -55,6 +53,8 @@ List::init()
 bool
 List::add(ListItem * item)
 {
+	/* FIXME: NOT IMPLEMENTED */
+	assert(false);
 }
 
 /*
@@ -76,9 +76,7 @@ List::remove(uint32_t position)
 	delete *iter;
 	items.erase(iter);
 
-	// FIXME
-	seliter = items.begin();
-	rseliter = items.rbegin();
+	set_selection_cache_valid(false);
 
 	return true;
 }
@@ -365,101 +363,65 @@ List::last()
 	return items.back();
 }
 
-/*
- * Returs a consecutive list of selected songs each call
- */
-ListItem *
-List::get_next_selected()
-{
-	if (lastget == NULL) {
-		seliter = items.begin();
-	}
-
-	while (seliter != items.end()) {
-		if ((*seliter)->selected()) {
-			lastget = *seliter;
-			++seliter;
-			return lastget;
-		}
-		++seliter;
-	}
-
-	/* No selection, return cursor */
-	/* FIXME: override in Songlist
-	if (lastget == NULL) {
-		if (lastget == cursorsong()) {
-			lastget = NULL;
-		} else {
-			lastget = cursorsong();
-		}
-
-		return lastget;
-	}
-	*/
-
-	lastget = NULL;
-	return NULL;
-}
-
-/*
- * Returs a consecutive list of selected songs, and unselects them
- */
-ListItem *
-List::get_prev_selected()
-{
-	if (lastget == NULL) {
-		rseliter = items.rbegin();
-	}
-
-	while (rseliter != items.rend()) {
-		if ((*rseliter)->selected()) {
-			lastget = *rseliter;
-			++rseliter;
-			return lastget;
-		}
-		++rseliter;
-	}
-
-	/* No selection, return cursor */
-	/* FIXME: override in Songlist
-	if (lastget == NULL) {
-		if (lastget == cursorsong()) {
-			lastget = NULL;
-		} else {
-			lastget = cursorsong();
-		}
-
-		return lastget;
-	}
-	*/
-
-	lastget = NULL;
-	return NULL;
-}
-
-/*
- * Returs a consecutive list of selected songs, and unselects them
- */
-ListItem *
-List::popnextselected()
-{
-	ListItem * item;
-
-	item = get_next_selected();
-	if (item) {
-		item->set_selected(false);
-	}
-	return item;
-}
-
-/*
- * Reset iterators
- */
 void
-List::resetgets()
+List::build_selection_cache()
 {
-	lastget = NULL;
-	seliter = items.begin();
-	rseliter = items.rbegin();
+	vector<ListItem *>::const_iterator iter;
+
+	selection.clear();
+
+	iter = items.begin();
+	while (iter != items.end()) {
+		if ((*iter)->selected()) {
+			selection.push_back(*iter);
+		}
+		++iter;
+	}
+
+	set_selection_cache_valid(true);
 }
 
+inline
+bool
+List::selection_cache_valid()
+{
+	return selection_cache_valid_;
+}
+
+void
+List::set_selection_cache_valid(bool state)
+{
+	selection_cache_valid_ = state;
+}
+
+vector<ListItem *>::iterator
+List::selection_begin()
+{
+	if (!selection_cache_valid()) {
+		build_selection_cache();
+	}
+
+	return selection.begin();
+}
+
+vector<ListItem *>::iterator
+List::selection_end()
+{
+	return selection.end();
+}
+
+vector<ListItem *>::reverse_iterator
+List::selection_rbegin()
+{
+	if (!selection_cache_valid()) {
+		build_selection_cache();
+	}
+
+	return selection.rbegin();
+}
+
+vector<ListItem *>::reverse_iterator
+List::selection_rend()
+{
+	return selection.rend();
+}

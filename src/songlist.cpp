@@ -54,7 +54,6 @@ ListItemSong::~ListItemSong()
  */
 Songlist::Songlist()
 {
-	lastget = NULL;
 	position = 0;
 	length = 0;
 	qlen = 0;
@@ -62,8 +61,8 @@ Songlist::Songlist()
 	qnum = 0;
 	qsize = 0;
 	filename = "";
-	selection.size = 0;
-	selection.length = 0;
+	selection_params.size = 0;
+	selection_params.length = 0;
 	role = LIST_ROLE_PLAYLIST;
 }
 
@@ -367,9 +366,7 @@ Songlist::add(Song * s)
 		length += s->time;
 	}
 
-	/* FIXME */
-	seliter = items.begin();
-	rseliter = items.rbegin();
+	set_selection_cache_valid(false);
 
 	return s->pos;
 }
@@ -1304,3 +1301,55 @@ bool	sort_compare_comment(ListItem * a_, ListItem * b_)
 	else 						return icstrsort(a->comment, b->comment);
 }
 
+bool
+Songlist::crop_to_song(Song * song)
+{
+	vector<ListItem *>::reverse_iterator iter;
+	ListItemSong * item;
+	song_t pos;
+
+	pos = match(song->file, 0, size() - 1, MATCH_FILE | MATCH_EXACT);
+
+	if (pos == MATCH_FAILED) {
+		return false;
+	}
+
+	iter = items.rbegin();
+	while (iter != items.rend()) {
+		item = LISTITEMSONG(*iter);
+		assert(item);
+		if (item->song->pos == pos) {
+			continue;
+		}
+		if (!remove_async(item->song)) {
+			/* FIXME: error reporting */
+			return false;
+		}
+		++iter;
+	}
+
+	return true;
+}
+
+bool
+Songlist::crop_to_selection()
+{
+	vector<ListItem *>::reverse_iterator iter;
+	ListItemSong * item;
+	Song * song;
+
+	iter = selection_rbegin();
+	while (iter != selection_rend()) {
+		item = LISTITEMSONG(*iter);
+		if (!item->selected()) {
+			if (!remove_async(item->song)) {
+				return false;
+			}
+		} else {
+			item->set_selected(false);
+		}
+		++iter;
+	}
+
+	return true;
+}

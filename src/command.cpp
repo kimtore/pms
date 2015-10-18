@@ -26,6 +26,8 @@
 #include <mpd/client.h>
 
 #include "command.h"
+#include "queue.h"
+#include "library.h"
 #include "pms.h"
 
 extern Pms *			pms;
@@ -180,8 +182,8 @@ Control::Control(Connection * n_conn)
 	rootdir = new Directory(NULL, "");
 	_song = NULL;
 	st->last_playlist = -1;
-	_playlist = new Songlist;
-	_library = new Songlist;
+	_playlist = new Queue;
+	_library = new Library;
 	_playlist->role = LIST_ROLE_MAIN;
 	_library->role = LIST_ROLE_LIBRARY;
 	_active = NULL;
@@ -907,87 +909,6 @@ Control::remove(Songlist * list, Song * song)
 }
 
 /*
- * Crops the playlist
- * FIXME: de-duplicate
- * FIXME: split into two functions
- */
-bool
-Control::crop(Songlist * list, int mode)
-{
-	unsigned int		i;
-	int			pos;
-	unsigned int		upos;
-	Song *			song;
-	ListItem *		item;
-	ListItemSong *		song_item;
-
-	assert(list != NULL);
-
-	if (list == _library) {
-		pms->msg->assign(STOK, _("The library is read-only."));
-		return false;
-	}
-
-	EXIT_IDLE;
-
-	/* Crop to currently playing song */
-	if (mode == CROP_PLAYING)
-	{
-		song = pms->cursong();
-		if (!song)
-		{
-			pms->msg->assign(STOK, _("No song is playing: can't crop to playing song."));
-			return false;
-		}
-
-		pos = list->match(song->file, 0, list->size() - 1, MATCH_FILE | MATCH_EXACT);
-		if (pos == MATCH_FAILED)
-		{
-			pms->msg->assign(STOK, _("The currently playing song is not in this list."));
-			return false;
-		}
-		upos = static_cast<unsigned int>(pos);
-
-		//list_start();
-		for (i = list->size() - 1; i >= 0; i--)
-		{
-			if (upos != i) {
-				if (list == _playlist) {
-					mpd_run_delete_id(conn->h(), list->song(i)->id);
-				} else {
-					mpd_run_playlist_delete(conn->h(), list->filename.c_str(), static_cast<int>(i));
-				}
-			}
-		}
-
-		return get_error_bool();
-	}
-	/* Crop to selection */
-	else if (mode == CROP_SELECTION)
-	{
-		list->resetgets();
-
-		while ((item = list->get_prev_selected()) != NULL) {
-
-			if (!item->selected()) {
-				song_item = dynamic_cast<ListItemSong *>(item);
-				if (list == _playlist) {
-					mpd_run_delete_id(conn->h(), song_item->song->id);
-				} else {
-					mpd_run_playlist_delete(conn->h(), list->filename.c_str(), song_item->song->pos);
-				}
-			} else {
-				item->set_selected(false);
-			}
-		}
-
-		return get_error_bool();
-	}
-
-	return false;
-}
-
-/*
  * Clears the playlist
  */
 int
@@ -1083,10 +1004,13 @@ Control::move(Songlist * list, int offset)
 	ListItem *	item;
 	ListItemSong *	song_item;
 	Song *		song;
-	int		oldpos;
 	int		newpos;
 	const char *	filename;
 	unsigned int	moved = 0;
+
+
+	/* FIXME: this function must be moved to the Songlist class */
+	assert(false);
 
 	/* Library is read only */
 	/* FIXME: error message */
@@ -1096,9 +1020,9 @@ Control::move(Songlist * list, int offset)
 	filename = list->filename.c_str();
 
 	if (offset < 0) {
-		item = list->get_next_selected();
+		//item = list->get_next_selected();
 	} else {
-		item = list->get_prev_selected();
+		//item = list->get_prev_selected();
 	}
 
 	song_item = dynamic_cast<ListItemSong *>(item);
@@ -1110,47 +1034,36 @@ Control::move(Songlist * list, int offset)
 
 	while (song != NULL)
 	{
-		if (song->pos == MPD_SONG_NO_NUM)
-		{
-			oldpos = list->match(song->file, 0, list->size() - 1, MATCH_FILE | MATCH_EXACT);
-			if (oldpos == MATCH_FAILED)
-				break;
-		}
-		else
-		{
-			oldpos = song->pos;
-		}
+		assert(song->pos != MPD_SONG_NO_NUM);
 
-		newpos = oldpos + offset;
+		newpos = song->pos + offset;
 
-		if (!list->move(oldpos, newpos)) {
+		if (!list->move(song->pos, newpos)) {
 			break;
 		}
 
 		++moved;
 
 		if (list != _playlist) {
-			if (!mpd_send_playlist_move(conn->h(), filename, oldpos, newpos)) {
+			if (!mpd_send_playlist_move(conn->h(), filename, song->pos, newpos)) {
 				break;
 			}
 		} else {
-			if (!mpd_run_move(conn->h(), song->pos, oldpos)) {
+			if (!mpd_run_move(conn->h(), song->pos, song->pos)) {
 				break;
 			}
 		}
 
 		if (offset < 0) {
-			item = list->get_next_selected();
+			//item = list->get_next_selected();
 		} else {
-			item = list->get_prev_selected();
+			//item = list->get_prev_selected();
 		}
 
 		song_item = dynamic_cast<ListItemSong *>(item);
 		song = song_item->song;
 
 	}
-
-	list->resetgets();
 
 	return get_error_bool();
 }

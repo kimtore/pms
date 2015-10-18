@@ -40,13 +40,29 @@ class BBox;
 class List
 {
 private:
-	void					init();
+	void				init();
 
 protected:
-	vector<ListItem *>			items;
-	vector<ListItem *>::iterator		seliter;
-	vector<ListItem *>::reverse_iterator	rseliter;
-	int32_t					top_position_;
+	vector<ListItem *>		items;
+	vector<ListItem *>		selection;
+	int32_t				top_position_;
+	bool				selection_cache_valid_;
+
+	/**
+	 * Build a cache of selected list items, and put them in the selection
+	 * vector.
+	 */
+	void				build_selection_cache();
+
+	/**
+	 * Returns true if the selection cache is up to date, false otherwise.
+	 */
+	bool				selection_cache_valid();
+
+	/**
+	 * Set the selection cache status.
+	 */
+	void				set_selection_cache_valid(bool state);
 
 public:
 					List();
@@ -156,13 +172,29 @@ public:
 	ListItem *			first();
 	ListItem *			last();
 
-	/* Selection iterator emulation */
-	/* FIXME: rewrite to std::iterator */
-	ListItem *			lastget;
-	ListItem *			get_next_selected();
-	ListItem *			get_prev_selected();
-	ListItem *			popnextselected();
-	void				resetgets();
+	/**
+	 * Start iterating over the list selection.
+	 *
+	 * Returns an iterator to the start of the list selection.
+	 */
+	vector<ListItem *>::iterator	selection_begin();
+
+	/**
+	 * Return an iterator to the end of the list selection.
+	 */
+	vector<ListItem *>::iterator	selection_end();
+
+	/**
+	 * Start iterating in reverse over the list selection.
+	 *
+	 * Returns an iterator to the reverse start of the list selection.
+	 */
+	vector<ListItem *>::reverse_iterator	selection_rbegin();
+
+	/**
+	 * Return an iterator to the reverse end of the list selection.
+	 */
+	vector<ListItem *>::reverse_iterator	selection_rend();
 
 	/**
 	 * Dynamically configure the width of the columns.

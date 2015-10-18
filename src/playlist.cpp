@@ -21,7 +21,9 @@
 #include <mpd/client.h>
 
 #include "playlist.h"
+#include "pms.h"
 
+extern Pms * pms;
 
 Playlist::Playlist()
 {
@@ -92,4 +94,11 @@ void
 Playlist::set_exists_in_mpd(bool exists)
 {
 	_exists_in_mpd = exists;
+}
+
+bool
+Playlist::remove_async(Song * song)
+{
+	assert(song);
+	return mpd_run_playlist_delete(pms->conn->h(), filename.c_str(), song->pos);
 }
