@@ -141,13 +141,6 @@ public:
 	 */
 	bool			crop_to_song(Song * song);
 
-	/**
-	 * Crop the list to the list selection.
-	 *
-	 * Returns true on success, false on failure.
-	 */
-	bool			crop_to_selection();
-
 	unsigned int		length;
 	Selection		selection_params;
 	void			set(Songlist *);
@@ -208,7 +201,7 @@ public:
 	 * Remove a song asynchronously, i.e. send a message to MPD and request
 	 * to remove it.
 	 */
-	virtual bool		remove_async(Song * s) = 0;
+	bool			remove_async(ListItem * i);
 
 	/*
 	unsigned int		realsize() { return songs.size(); };

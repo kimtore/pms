@@ -76,10 +76,51 @@ List::remove(uint32_t position)
 	delete *iter;
 	items.erase(iter);
 
+	/* FIXME: async? */
+
 	set_selection_cache_valid(false);
 
 	return true;
 }
+
+bool
+List::crop_to_selection()
+{
+	vector<ListItem *>::reverse_iterator iter;
+	ListItem * item;
+	Song * song;
+
+	iter = selection_rbegin();
+	while (iter != selection_rend()) {
+		if (!item->selected()) {
+			if (!remove_async(item)) {
+				return false;
+			}
+		} else {
+			item->set_selected(false);
+		}
+		++iter;
+	}
+
+	return true;
+}
+
+bool
+List::remove_selection()
+{
+	vector<ListItem *>::reverse_iterator iter;
+
+	iter = selection_rbegin();
+	while (iter != selection_rend()) {
+		if (!remove_async(*iter)) {
+			return false;
+		}
+		++iter;
+	}
+
+	return true;
+}
+
 
 /*
  * Move a list item inside the list to position dest
@@ -367,6 +408,7 @@ void
 List::build_selection_cache()
 {
 	vector<ListItem *>::const_iterator iter;
+	ListItem * item;
 
 	selection.clear();
 
@@ -376,6 +418,12 @@ List::build_selection_cache()
 			selection.push_back(*iter);
 		}
 		++iter;
+	}
+
+	if (!selection.size()) {
+		if ((item = cursor_item()) != NULL) { 
+			selection.push_back(item);
+		}
 	}
 
 	set_selection_cache_valid(true);

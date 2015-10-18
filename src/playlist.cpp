@@ -97,8 +97,9 @@ Playlist::set_exists_in_mpd(bool exists)
 }
 
 bool
-Playlist::remove_async(Song * song)
+Playlist::remove_async(ListItem * i)
 {
-	assert(song);
-	return mpd_run_playlist_delete(pms->conn->h(), filename.c_str(), song->pos);
+	ListItemSong * item_song = LISTITEMSONG(i);
+	assert(item_song->song);
+	return mpd_run_playlist_delete(pms->conn->h(), filename.c_str(), item_song->song->pos);
 }

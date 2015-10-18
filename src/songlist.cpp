@@ -453,6 +453,16 @@ Songlist::remove(uint32_t position)
 	return true;
 }
 
+bool
+Songlist::remove_async(ListItem * i)
+{
+	ListItemSong * list_item = LISTITEMSONG(i);
+
+	assert(list_item);
+
+	return remove(list_item->song);
+}
+
 /*
  * Set selection state of a song
  *
@@ -1321,32 +1331,9 @@ Songlist::crop_to_song(Song * song)
 		if (item->song->pos == pos) {
 			continue;
 		}
-		if (!remove_async(item->song)) {
+		if (!remove_async(item)) {
 			/* FIXME: error reporting */
 			return false;
-		}
-		++iter;
-	}
-
-	return true;
-}
-
-bool
-Songlist::crop_to_selection()
-{
-	vector<ListItem *>::reverse_iterator iter;
-	ListItemSong * item;
-	Song * song;
-
-	iter = selection_rbegin();
-	while (iter != selection_rend()) {
-		item = LISTITEMSONG(*iter);
-		if (!item->selected()) {
-			if (!remove_async(item->song)) {
-				return false;
-			}
-		} else {
-			item->set_selected(false);
 		}
 		++iter;
 	}

@@ -189,7 +189,9 @@ bool		Interface::check_events()
 			break;
 
 		case PEND_DELETE:
-			remove(songlist);
+			if (list->cursor_item()) {
+				list->remove_async(list->cursor_item());
+			}
 			break;
 
 		case PEND_TOGGLESELECT:
@@ -880,53 +882,6 @@ long		Interface::clear()
 	}
 	generr();
 	return STERR;
-}
-
-/*
- * Remove selected songs from list
- */
-long
-Interface::remove(Songlist * list)
-{
-	vector<ListItem *>::iterator		selection_iterator;
-	ListItemSong *				list_item;
-	Song *					song;
-	vector<Song *>				songs;
-	vector<Song *>::reverse_iterator	i;
-
-	/* FIXME: this check should, perhaps, be done earlier? */
-	if (!list) {
-		pms->log(MSG_STATUS, STERR, _("This is not a playlist: you can't remove songs from here."));
-		return STERR;
-	}
-
-	/* FIXME: same goes for this check */
-	if (list == pms->comm->library()) {
-		pms->log(MSG_STATUS, STERR, _("The library is read-only."));
-		return STERR;
-	}
-
-	selection_iterator = list->selection_begin();
-	while (selection_iterator != list->selection_end()) {
-		list_item = LISTITEMSONG(*selection_iterator);
-		song = list_item->song;
-		songs.push_back(song);
-		++selection_iterator;
-	}
-
-	i = songs.rbegin();
-	while (i != songs.rend()) {
-		if (!pms->comm->remove(list, *i)) {
-			return STERR;
-		}
-		++i;
-	}
-
-	/* FIXME: should wantdraw really be set _here_? */
-	//pms->disp->actwin()->wantdraw = true;
-	pms->log(MSG_STATUS, STOK, _("Removed %d %s."), songs.size(), (songs.size() == 1 ? _("song") : _("songs")));
-
-	return STOK;
 }
 
 /*

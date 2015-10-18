@@ -98,7 +98,6 @@ public:
 	long			shuffle();
 	long			clear();
 	long			crop(int);
-	long			remove(Songlist *);
 
 	long			move();
 	long			select(List * list, int mode, string param);

@@ -73,7 +73,6 @@ public:
 	int32_t				cursor_position;
 
 	bool				add(ListItem * item);
-	bool				remove(uint32_t position);
 	void				clear();
 
 	/**
@@ -85,6 +84,33 @@ public:
 	 * Return the size of the list.
 	 */
 	uint32_t			size();
+
+	/**
+	 * Remove an item from the list.
+	 *
+	 * Returns true on success, false on failure.
+	 */
+	bool				remove(uint32_t position);
+
+	/**
+	 * Remove an item asynchronously. Used by subclasses for MPD
+	 * communication when a song removal is requested.
+	 */
+	virtual bool			remove_async(ListItem * i) = 0;
+
+	/**
+	 * Crop the list to the list selection.
+	 *
+	 * Returns true on success, false on failure.
+	 */
+	bool				crop_to_selection();
+
+	/**
+	 * Remove the selected items from the list.
+	 *
+	 * Returns true on success, false on failure.
+	 */
+	bool				remove_selection();
 
 	/**
 	 * Return the absolute position of the list item visible in the top of
