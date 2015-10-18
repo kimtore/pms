@@ -188,12 +188,6 @@ bool		Interface::check_events()
 			songlist->crop_to_selection();
 			break;
 
-		case PEND_DELETE:
-			if (list->cursor_item()) {
-				list->remove_async(list->cursor_item());
-			}
-			break;
-
 		case PEND_TOGGLESELECT:
 			select(list, SELECT_TOGGLE, param);
 			break;
@@ -1444,6 +1438,12 @@ handle_command(pms_pending_keys action)
 				pms->log(MSG_DEBUG, 0, "Window search failed in PEND_CREATEPLAYLIST, win=%p list=%p\n", win, list);
 			}
 			*/
+			break;
+
+		case PEND_DELETE:
+			if (list->cursor_item()) {
+				list->remove_async(list->cursor_item());
+			}
 			break;
 
 		/* Delete a playlist */

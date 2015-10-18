@@ -32,7 +32,7 @@
 
 extern Pms *			pms;
 
-#define EXIT_IDLE		if (is_idle() && (!noidle() || !wait_until_noidle())) { return false; }
+#define EXIT_IDLE		if (!exit_idle()) { return false; }
 
 #define NOIDLE_POLL_TIMEOUT	20  /* time to wait for zmq_poll() to finish after calling noidle() */
 
@@ -284,6 +284,12 @@ bool
 Control::get_error_bool()
 {
 	return (mpd_connection_get_error(conn->h()) == MPD_ERROR_SUCCESS);
+}
+
+bool
+Control::exit_idle()
+{
+	return (!(is_idle() && (!noidle() || !wait_until_noidle())));
 }
 
 /**

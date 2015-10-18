@@ -161,9 +161,7 @@ BBox::refresh()
 
 Display::Display(Control * n_comm)
 {
-	//comm = n_comm;
-	//curwin = NULL;
-	//lastwin = NULL;
+	active_list = NULL;
 }
 
 Display::~Display()

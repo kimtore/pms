@@ -203,6 +203,16 @@ public:
 	 */
 	bool			remove_async(ListItem * i);
 
+	/**
+	 * Add a song length to the list's cached length.
+	 */
+	void			add_song_length(int32_t t);
+
+	/**
+	 * Subtract a song length from the list's cached length.
+	 */
+	void			subtract_song_length(int32_t t);
+
 	/*
 	unsigned int		realsize() { return songs.size(); };
 	unsigned int		size() { return filtersongs.size(); };

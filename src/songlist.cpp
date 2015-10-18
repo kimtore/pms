@@ -343,6 +343,8 @@ Songlist::add(Song * s)
 	assert(s != NULL);
 	assert(s->pos <= size());
 
+	//pms->log(MSG_DEBUG, 0, "Add to queue: id=%d pos=%d uri=%s\n", s->id, s->pos, s->file.c_str());
+
 	/* Append song to end of list */
 	if (s->pos == MPD_SONG_NO_NUM || s->pos == size()) {
 		items.push_back(new ListItemSong(this, s));
@@ -354,21 +356,32 @@ Songlist::add(Song * s)
 		assert(existing_song);
 		assert(existing_song->pos == s->pos);
 
-		if(!remove(existing_song)) {
-			return -1;
-		}
-
-		items.insert(items.begin() + s->pos, new ListItemSong(this, s));
+		subtract_song_length(existing_song->time);
+		delete item(s->pos);
+		items[s->pos] = new ListItemSong(this, s);
 	}
 
-	/* FIXME: new function */
-	if (s->time != MPD_SONG_NO_TIME) {
-		length += s->time;
-	}
+	add_song_length(s->time);
 
 	set_selection_cache_valid(false);
 
 	return s->pos;
+}
+
+void
+Songlist::add_song_length(int32_t t)
+{
+	if (t != MPD_SONG_NO_TIME) {
+		length += t;
+	}
+}
+
+void
+Songlist::subtract_song_length(int32_t t)
+{
+	if (t != MPD_SONG_NO_TIME) {
+		length -= t;
+	}
 }
 
 ListItemSong *
@@ -434,10 +447,11 @@ Songlist::remove(uint32_t position)
 	song_length = s->time;
 
 	if (!List::remove(position)) {
+		assert(false);
 		return false;
 	}
 
-	length -= song_length;
+	subtract_song_length(song_length);
 
 	iter = items.begin() + position;
 

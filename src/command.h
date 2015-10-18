@@ -259,6 +259,13 @@ public:
 	/* True if mpd connection object has errors */
 	bool			get_error_bool();
 
+	/**
+	 * Exit IDLE mode.
+	 *
+	 * Returns true on success, false on failure.
+	 */
+	bool			exit_idle();
+
 	/* Server management */
 	int			authlevel();
 	bool			get_available_commands();
