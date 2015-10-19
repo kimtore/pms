@@ -25,6 +25,7 @@ ListItem::ListItem(List * owner)
 {
 	assert(owner);
 	list = owner;
+	selected_ = false;
 }
 
 ListItem::~ListItem()

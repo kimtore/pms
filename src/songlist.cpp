@@ -732,7 +732,8 @@ Songlist::draw()
 	unsigned int		min;
 	unsigned int		max;
 	int			ii;
-	Song			*s;
+	ListItem *		list_item;
+	Song *			s;
 	string			t;
 	color *			hilight;
 	color *			c;
@@ -755,6 +756,7 @@ Songlist::draw()
 		++counter;
 		hilight = NULL;
 
+		list_item = item(i);
 		s = song(i);
 		assert(s);
 
@@ -762,7 +764,7 @@ Songlist::draw()
 		{
 			hilight = pms->options->colors->cursor;
 		}
-		else if (s->selected)
+		else if (list_item->selected())
 		{
 			hilight = pms->options->colors->selection;
 		}

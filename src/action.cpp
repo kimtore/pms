@@ -184,29 +184,6 @@ bool		Interface::check_events()
 			songlist->crop_to_song(song);
 			break;
 
-		case PEND_CROPSELECTION:
-			songlist->crop_to_selection();
-			break;
-
-		case PEND_TOGGLESELECT:
-			select(list, SELECT_TOGGLE, param);
-			break;
-
-		case PEND_SELECT:
-			select(list, SELECT_ON, param);
-			break;
-
-		case PEND_UNSELECT:
-			select(list, SELECT_OFF, param);
-			break;
-
-		case PEND_CLEARSELECTION:
-			select(list, SELECT_CLEAR, param);
-			break;
-
-		case PEND_SELECTALL:
-			select(list, SELECT_ALL, param);
-			break;
 
 
 
@@ -871,7 +848,7 @@ long		Interface::clear()
 {
 	if (pms->comm->clear(dynamic_cast<Songlist *>(pms->disp->active_list)))
 	{
-		pms->log(MSG_STATUS, STOK, _("Playlist shuffled."));
+		pms->log(MSG_STATUS, STOK, _("Playlist cleared."));
 		return STOK;
 	}
 	generr();
@@ -992,6 +969,7 @@ handle_command(pms_pending_keys action)
 	List *		list = pms->disp->active_list;
 	Songlist *	songlist = dynamic_cast<Songlist *>(list);
 	Songlist *	dlist = NULL;
+	ListItem *	cursor_item = list->cursor_item();
 	Input_mode	mode;
 	int		i = 0;
 	long		l = 0;
@@ -1441,9 +1419,7 @@ handle_command(pms_pending_keys action)
 			break;
 
 		case PEND_DELETE:
-			if (list->cursor_item()) {
-				list->remove_async(list->cursor_item());
-			}
+			list->remove_selection();
 			break;
 
 		/* Delete a playlist */
@@ -1567,6 +1543,39 @@ handle_command(pms_pending_keys action)
 
 			*/
 			assert(false);
+			break;
+
+		case PEND_CROPSELECTION:
+			songlist->crop_to_selection();
+			break;
+
+		case PEND_TOGGLESELECT:
+			if (cursor_item) {
+				cursor_item->set_selected(!cursor_item->selected());
+				if (pms->options->nextafteraction) {
+					list->move_cursor(1);
+				}
+			}
+			break;
+
+		case PEND_SELECT:
+			assert(false);
+			//select(list, SELECT_ON, param);
+			break;
+
+		case PEND_UNSELECT:
+			assert(false);
+			//select(list, SELECT_OFF, param);
+			break;
+
+		case PEND_CLEARSELECTION:
+			assert(false);
+			//select(list, SELECT_CLEAR, param);
+			break;
+
+		case PEND_SELECTALL:
+			assert(false);
+			//select(list, SELECT_ALL, param);
 			break;
 
 		case PEND_RESIZE:
