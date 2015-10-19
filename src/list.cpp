@@ -50,13 +50,6 @@ List::init()
 	cursor_position = 0;
 }
 
-bool
-List::add(ListItem * item)
-{
-	/* FIXME: NOT IMPLEMENTED */
-	assert(false);
-}
-
 /*
  * Remove item in position N from the list.
  *

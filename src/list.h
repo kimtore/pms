@@ -108,7 +108,7 @@ public:
 	/**
 	 * Add an item to the list.
 	 */
-	bool				add(ListItem * item);
+	bool				add_local(ListItem * item);
 
 	/**
 	 * Empty the list by deleting all items.
