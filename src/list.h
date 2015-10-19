@@ -43,9 +43,26 @@ private:
 	void				init();
 
 protected:
+	/**
+	 * Vector containing every item in this list.
+	 */
 	vector<ListItem *>		items;
+
+	/**
+	 * Vector containing the list selection, built with
+	 * build_selection_cache() whenever the list selection is requested
+	 * with one of the selection_begin() or selection_rbegin() accessors.
+	 */
 	vector<ListItem *>		selection;
+
+	/**
+	 * The index of the top item in the viewport.
+	 */
 	int32_t				top_position_;
+
+	/**
+	 * Selection cache state, set to true if up to date, false otherwise.
+	 */
 	bool				selection_cache_valid_;
 
 	/**
@@ -73,13 +90,29 @@ protected:
 
 public:
 					List();
+
 					List(BBox * bbox_);
+
 	virtual				~List();
 
+	/**
+	 * Viewport bounding box.
+	 */
 	BBox *				bbox;
+
+	/**
+	 * Cursor position.
+	 */
 	int32_t				cursor_position;
 
+	/**
+	 * Add an item to the list.
+	 */
 	bool				add(ListItem * item);
+
+	/**
+	 * Empty the list by deleting all items.
+	 */
 	void				clear();
 
 	/**
@@ -194,9 +227,24 @@ public:
 	/* FIXME: needed? */
 	bool				move(uint32_t, uint32_t);
 
+	/**
+	 * Returns an iterator to the start of the item list.
+	 */
 	vector<ListItem *>::iterator	begin();
+
+	/**
+	 * Returns an iterator to the end of the item list.
+	 */
 	vector<ListItem *>::iterator	end();
+
+	/**
+	 * Returns the first item in the list.
+	 */
 	ListItem *			first();
+
+	/**
+	 * Returns the last item in the list.
+	 */
 	ListItem *			last();
 
 	/**
