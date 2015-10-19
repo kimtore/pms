@@ -1274,7 +1274,7 @@ Control::update_library()
 				song = new Song(ent_song);
 				song->id = MPD_SONG_NO_ID;
 				song->pos = MPD_SONG_NO_NUM;
-				_library->add(song);
+				_library->add_local(song);
 				dir->songs.push_back(song);
 				break;
 			case MPD_ENTITY_TYPE_PLAYLIST:
@@ -1443,7 +1443,7 @@ Control::update_playlist(Playlist * playlist)
 				song = new Song(ent_song);
 				song->id = MPD_SONG_NO_ID;
 				song->pos = MPD_SONG_NO_NUM;
-				playlist->add(song);
+				playlist->add_local(song);
 				break;
 			case MPD_ENTITY_TYPE_UNKNOWN:
 				pms->log(MSG_DEBUG, 0, "BUG in retrieve_lists(): entity type not implemented by libmpdclient\n");
@@ -1583,7 +1583,7 @@ Control::update_queue()
 			case MPD_ENTITY_TYPE_SONG:
 				ent_song = mpd_entity_get_song(ent);
 				song = new Song(ent_song);
-				_playlist->add(song);
+				_playlist->add_local(song);
 				break;
 			case MPD_ENTITY_TYPE_UNKNOWN:
 				pms->log(MSG_DEBUG, 0, "BUG in update_queue(): entity type not implemented by libmpdclient\n");

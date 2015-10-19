@@ -284,7 +284,7 @@ void		Songlist::set(Songlist * list)
 		s = new Song(list->song(i));
 		s->id = MPD_SONG_NO_ID;
 		s->pos = MPD_SONG_NO_NUM;
-		add(s);
+		add_local(s);
 	}
 }
 
@@ -310,7 +310,7 @@ void		Songlist::truncate_local(unsigned int maxsize)
 /*
  * Appends an entire list. Returns the id of the first added song.
  */
-song_t		Songlist::add(Songlist * list)
+song_t		Songlist::add_local(Songlist * list)
 {
 	song_t			first = MPD_SONG_NO_ID;
 	song_t			result;
@@ -320,7 +320,7 @@ song_t		Songlist::add(Songlist * list)
 
 	for (i = 0; i < list->size(); i++)
 	{
-		result = add(new Song(list->song(i)));
+		result = add_local(new Song(list->song(i)));
 		if (first == MPD_SONG_NO_ID && result != MPD_SONG_NO_ID)
 			first = result;
 	}
@@ -336,7 +336,7 @@ song_t		Songlist::add(Songlist * list)
  * Returns the zero-indexed position of the added song.
  */
 song_t
-Songlist::add(Song * s)
+Songlist::add_local(Song * s)
 {
 	Song * existing_song;
 

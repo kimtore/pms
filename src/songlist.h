@@ -192,8 +192,8 @@ public:
 	unsigned int		filtercount() { return filters.size(); };
 	*/
 
-	song_t			add(Song *);
-	song_t			add(Songlist *);
+	song_t			add_local(Song *);
+	song_t			add_local(Songlist *);
 	bool			remove_local(Song *);
 	bool			remove_local(uint32_t position);
 
