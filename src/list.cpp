@@ -76,7 +76,9 @@ List::remove(uint32_t position)
 	delete *iter;
 	items.erase(iter);
 
-	/* FIXME: async? */
+	if (cursor_position >= size()) {
+		set_cursor(size() - 1);
+	}
 
 	set_selection_cache_valid(false);
 
