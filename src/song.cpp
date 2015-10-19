@@ -144,7 +144,6 @@ void		Song::init()
 {
 	const string			the = "the";
 	string				tmp;
-	string::const_iterator		iter;
 	vector<string *>		original;
 	vector<string *>		rewritten;
 	vector<string *>::iterator	src;
@@ -159,13 +158,7 @@ void		Song::init()
 
 	/* strip zeros and total tracks from the 'track' tag,
 	 * and store it in 'trackshort'. */
-	iter = track.begin();
-	while (iter != track.end() && *iter != '/') {
-		if (*iter != '0') {
-			trackshort += *iter;
-		}
-		++iter;
-	}
+	trackshort = strip_leading_zeroes(&track);
 
 	/* Generate rudimentary sort names if none available, by
 	 * rewriting 'The Artist' to 'Artist, The'. */
@@ -202,6 +195,25 @@ next:
 		++src;
 		++dest;
 	}
+}
+
+string
+Song::strip_leading_zeroes(string * src)
+{
+	bool zero = true;
+	string s;
+	string::const_iterator iter;
+
+	iter = src->begin();
+	while (iter != src->end() && *iter != '/') {
+		if (!zero || *iter != '0') {
+			zero = false;
+			s += *iter;
+		}
+		++iter;
+	}
+
+	return s;
 }
 
 /*
