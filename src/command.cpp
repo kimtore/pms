@@ -1596,7 +1596,7 @@ Control::update_queue()
 	}
 
 	if ((rc = get_error_bool()) == true) {
-		_playlist->truncate(st->playlist_length);
+		_playlist->truncate_local(st->playlist_length);
 		st->last_playlist = st->playlist;
 	}
 

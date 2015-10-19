@@ -63,7 +63,7 @@ List::add(ListItem * item)
  * Returns true on success, false on failure.
  */
 bool
-List::remove(uint32_t position)
+List::remove_local(uint32_t position)
 {
 	vector<ListItem *>::iterator iter;
 

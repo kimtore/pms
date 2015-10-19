@@ -144,7 +144,7 @@ public:
 	unsigned int		length;
 	Selection		selection_params;
 	void			set(Songlist *);
-	void			truncate(unsigned int);
+	void			truncate_local(unsigned int);
 
 	bool			sort(string);
 
@@ -194,8 +194,8 @@ public:
 
 	song_t			add(Song *);
 	song_t			add(Songlist *);
-	bool			remove(Song *);
-	bool			remove(uint32_t position);
+	bool			remove_local(Song *);
+	bool			remove_local(uint32_t position);
 
 	/**
 	 * Remove a song asynchronously, i.e. send a message to MPD and request

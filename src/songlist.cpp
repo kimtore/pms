@@ -291,7 +291,7 @@ void		Songlist::set(Songlist * list)
 /*
  * Sets the maximum list size
  */
-void		Songlist::truncate(unsigned int maxsize)
+void		Songlist::truncate_local(unsigned int maxsize)
 {
 	unsigned int	i;
 
@@ -303,7 +303,7 @@ void		Songlist::truncate(unsigned int maxsize)
 
 	for (i = size() - 1; i >= maxsize; i--)
 	{
-		remove(static_cast<int>(i));
+		remove_local(static_cast<int>(i));
 	}
 }
 
@@ -414,7 +414,7 @@ Songlist::find(Song * s)
  * Returns true on success, false on failure.
  */
 bool
-Songlist::remove(Song * s)
+Songlist::remove_local(Song * s)
 {
 	ListItem * list_item;
 
@@ -425,7 +425,7 @@ Songlist::remove(Song * s)
 
 	list_item->set_selected(false);
 
-	return remove(s->pos);
+	return remove_local(s->pos);
 }
 
 /*
@@ -434,7 +434,7 @@ Songlist::remove(Song * s)
  * Returns true on success, false on failure.
  */
 bool
-Songlist::remove(uint32_t position)
+Songlist::remove_local(uint32_t position)
 {
 	vector<ListItem *>::iterator iter;
 	ListItemSong * list_item;
@@ -446,7 +446,7 @@ Songlist::remove(uint32_t position)
 
 	song_length = s->time;
 
-	if (!List::remove(position)) {
+	if (!List::remove_local(position)) {
 		assert(false);
 		return false;
 	}
@@ -474,7 +474,7 @@ Songlist::remove_async(ListItem * i)
 
 	assert(list_item);
 
-	return remove(list_item->song);
+	return remove_local(list_item->song);
 }
 
 /*

@@ -90,7 +90,7 @@ public:
 	 *
 	 * Returns true on success, false on failure.
 	 */
-	bool				remove(uint32_t position);
+	bool				remove_local(uint32_t position);
 
 	/**
 	 * Remove an item asynchronously. Used by subclasses for MPD
