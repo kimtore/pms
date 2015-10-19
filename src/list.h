@@ -64,6 +64,13 @@ protected:
 	 */
 	void				set_selection_cache_valid(bool state);
 
+	/**
+	 * Remove an item from the list.
+	 *
+	 * Returns true on success, false on failure.
+	 */
+	bool				remove_local(uint32_t position);
+
 public:
 					List();
 					List(BBox * bbox_);
@@ -84,13 +91,6 @@ public:
 	 * Return the size of the list.
 	 */
 	uint32_t			size();
-
-	/**
-	 * Remove an item from the list.
-	 *
-	 * Returns true on success, false on failure.
-	 */
-	bool				remove_local(uint32_t position);
 
 	/**
 	 * Remove an item from the remote list.
