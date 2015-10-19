@@ -307,9 +307,6 @@ void		Songlist::truncate_local(unsigned int maxsize)
 	}
 }
 
-/*
- * Appends an entire list. Returns the id of the first added song.
- */
 song_t		Songlist::add_local(Songlist * list)
 {
 	song_t			first = MPD_SONG_NO_ID;
@@ -328,13 +325,6 @@ song_t		Songlist::add_local(Songlist * list)
 	return first;
 }
 
-/*
- * Adds a song to the list, either at end or in the middle
- *
- * FIXME: vector::erase from the middle of an array is an inefficient operation!
- *
- * Returns the zero-indexed position of the added song.
- */
 song_t
 Songlist::add_local(Song * s)
 {
@@ -408,11 +398,6 @@ Songlist::find(Song * s)
 	return LISTITEMSONG(item(i));
 }
 
-/*
- * Remove a song from the list.
- *
- * Returns true on success, false on failure.
- */
 bool
 Songlist::remove_local(Song * s)
 {
@@ -428,11 +413,6 @@ Songlist::remove_local(Song * s)
 	return remove_local(s->pos);
 }
 
-/*
- * Remove song in position N from the list.
- *
- * Returns true on success, false on failure.
- */
 bool
 Songlist::remove_local(uint32_t position)
 {

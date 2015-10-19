@@ -112,6 +112,28 @@ private:
 
 	vector<pms_column *>			columns;
 
+protected:
+	/*
+	 * Appends a songlist to the list.
+	 *
+	 * Returns the zero-indexed position of the first song added.
+	 */
+	song_t			add_local(Songlist *);
+
+	/*
+	 * Remove a song from the list.
+	 *
+	 * Returns true on success, false on failure.
+	 */
+	bool			remove_local(Song *);
+
+	/*
+	 * Remove song in position N from the list.
+	 *
+	 * Returns true on success, false on failure.
+	 */
+	bool			remove_local(uint32_t position);
+
 public:
 				Songlist();
 				~Songlist();
@@ -192,14 +214,22 @@ public:
 	unsigned int		filtercount() { return filters.size(); };
 	*/
 
-	song_t			add_local(Song *);
-	song_t			add_local(Songlist *);
-	bool			remove_local(Song *);
-	bool			remove_local(uint32_t position);
+	/*
+	 * Adds or replaces a song to the list, depending on the value of
+	 * song->pos. The latter value is asserted to less than or equal to the
+	 * list size.
+	 *
+	 * FIXME: this function should be protected!
+	 *
+	 * Returns the zero-indexed position of the added song.
+	 */
+	song_t			add_local(Song * s);
 
 	/**
 	 * Remove a song asynchronously, i.e. send a message to MPD and request
 	 * to remove it.
+	 *
+	 * Returns true if the asynchronous call succeeded, false otherwise.
 	 */
 	bool			remove(ListItem * i);
 
