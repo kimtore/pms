@@ -281,7 +281,6 @@ public:
 	song_t			add(Songlist *, Song *);
 	song_t			add(Songlist * source, Songlist * dest);
 	bool			remove(Songlist *, Song *);
-	int			prune(Songlist *, Songlist *);
 
 	/* Play controls */
 	bool			play();

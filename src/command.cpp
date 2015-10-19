@@ -1076,30 +1076,6 @@ Control::move(Songlist * list, int offset)
 
 
 /*
- * Removes all songs from list1 not found in list2
- */
-int		Control::prune(Songlist * list1, Songlist * list2)
-{
-	unsigned int		i;
-	int			pruned = 0;
-
-	if (!list1 || !list2) return pruned;
-
-	for (i = 0; i < list1->size(); i++)
-	{
-		if (list2->match(list1->song(i)->file, 0, list2->size() - 1, MATCH_FILE) == MATCH_FAILED)
-		{
-			pms->log(MSG_DEBUG, 0, "Pruning '%s' from list.\n", list1->song(i)->file.c_str());
-			list1->remove(i);
-			++pruned;
-		}
-	}
-
-	return pruned;
-}
-
-
-/*
  * Starts mpd command list/queue mode
  * FIXME: not implemented
  */
