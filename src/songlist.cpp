@@ -468,7 +468,7 @@ Songlist::remove_local(uint32_t position)
 }
 
 bool
-Songlist::remove_async(ListItem * i)
+Songlist::remove(ListItem * i)
 {
 	ListItemSong * list_item = LISTITEMSONG(i);
 
@@ -1347,7 +1347,7 @@ Songlist::crop_to_song(Song * song)
 		if (item->song->pos == pos) {
 			continue;
 		}
-		if (!remove_async(item)) {
+		if (!remove(item)) {
 			/* FIXME: error reporting */
 			return false;
 		}

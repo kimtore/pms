@@ -28,7 +28,7 @@ extern Pms * pms;
 #define EXIT_IDLE if (!pms->comm->exit_idle()) { return false; }
 
 bool
-Queue::remove_async(ListItem * i)
+Queue::remove(ListItem * i)
 {
 	ListItemSong * item_song;
 	

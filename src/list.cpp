@@ -95,7 +95,7 @@ List::crop_to_selection()
 	iter = selection_rbegin();
 	while (iter != selection_rend()) {
 		if (!item->selected()) {
-			if (!remove_async(item)) {
+			if (!remove(item)) {
 				return false;
 			}
 		} else {
@@ -114,7 +114,7 @@ List::remove_selection()
 
 	iter = selection_rbegin();
 	while (iter != selection_rend()) {
-		if (!remove_async(*iter)) {
+		if (!remove(*iter)) {
 			return false;
 		}
 		++iter;

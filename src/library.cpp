@@ -21,7 +21,7 @@
 #include "library.h"
 
 bool
-Library::remove_async(ListItem * i)
+Library::remove(ListItem * i)
 {
 	/* FIXME: error message */
 	return false;

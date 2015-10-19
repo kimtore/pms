@@ -53,7 +53,7 @@ public:
 	 *
 	 * Returns true on success, false on failure.
 	 */
-	bool			remove_async(ListItem * i);
+	bool			remove(ListItem * i);
 };
 
 #endif /* _PMS_PLAYLIST_H_ */

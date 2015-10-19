@@ -34,7 +34,7 @@ public:
 	 *
 	 * Always returns false.
 	 */
-	bool			remove_async(ListItem * i);
+	bool			remove(ListItem * i);
 };
 
 #endif /* _PMS_LIBRARY_H_ */

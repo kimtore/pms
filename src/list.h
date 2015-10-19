@@ -93,10 +93,11 @@ public:
 	bool				remove_local(uint32_t position);
 
 	/**
-	 * Remove an item asynchronously. Used by subclasses for MPD
-	 * communication when a song removal is requested.
+	 * Remove an item from the remote list.
+	 *
+	 * Returns true on success, false on failure.
 	 */
-	virtual bool			remove_async(ListItem * i) = 0;
+	virtual bool			remove(ListItem * i) = 0;
 
 	/**
 	 * Crop the list to the list selection.

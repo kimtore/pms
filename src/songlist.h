@@ -201,7 +201,7 @@ public:
 	 * Remove a song asynchronously, i.e. send a message to MPD and request
 	 * to remove it.
 	 */
-	bool			remove_async(ListItem * i);
+	bool			remove(ListItem * i);
 
 	/**
 	 * Add a song length to the list's cached length.
