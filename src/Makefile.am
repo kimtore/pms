@@ -1,6 +1,26 @@
 bin_PROGRAMS = pms
 EXTRA_pms_SOURCES = *.h
-pms_SOURCES = action.cpp color.cpp command.cpp config.cpp conn.cpp display.cpp input.cpp list.cpp listitem.cpp songlist.cpp pms.cpp song.cpp field.cpp options.cpp message.cpp playlist.cpp set_parameters.cpp queue.cpp library.cpp
+pms_SOURCES = \
+    action.cpp \
+    color.cpp \
+    command.cpp \
+    config.cpp \
+    conn.cpp \
+    display.cpp \
+    error.cpp \
+    field.cpp \
+    input.cpp \
+    library.cpp \
+    list.cpp \
+    listitem.cpp \
+    message.cpp \
+    options.cpp \
+    playlist.cpp \
+    pms.cpp \
+    queue.cpp \
+    set_parameters.cpp \
+    song.cpp \
+    songlist.cpp
 
 AM_CXXFLAGS = \
 	@glib_CFLAGS@ \
