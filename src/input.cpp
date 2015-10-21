@@ -22,6 +22,7 @@
 #include "input.h"
 #include "config.h"
 #include "pms.h"
+#include "error.h"
 
 extern Pms *		pms;
 
@@ -604,9 +605,7 @@ bool		Input::run(string s, Message & err)
 
 	if (pending == PEND_NONE)
 	{
-		err.code = CERR_UNKNOWN_COMMAND;
-		err.str = _("unknown command");
-		err.str += " '" + s + "'";
+		pms_error(_("unknown command '%s'"), s.c_str());
 		return false;
 	}
 
