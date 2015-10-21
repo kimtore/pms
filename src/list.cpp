@@ -280,6 +280,8 @@ List::set_cursor(int32_t position)
 bool
 List::adjust_cursor_to_viewport()
 {
+	int32_t new_position;
+
 	switch (pms->options->scroll_mode) {
 		case SCROLL_NORMAL:
 			if (cursor_position < top_position()) {
@@ -292,10 +294,22 @@ List::adjust_cursor_to_viewport()
 			return true;
 
 		case SCROLL_CENTERED:
-			break;
+			new_position = top_position() + (bbox->height() / 2);
+			if (new_position >= size()) {
+				if (cursor_position >= size()) {
+					new_position = size() - 1;
+				} else {
+					new_position = cursor_position;
+				}
+			}
+			if (new_position == cursor_position) {
+				return false;
+			}
+			cursor_position = new_position;
+			return true;
 
 		case SCROLL_RELATIVE:
-			break;
+			return false;
 
 		default:
 			abort();
@@ -305,6 +319,8 @@ List::adjust_cursor_to_viewport()
 bool
 List::adjust_viewport_to_cursor()
 {
+	int32_t new_position;
+
 	switch (pms->options->scroll_mode) {
 		case SCROLL_NORMAL:
 			if (cursor_position < top_position()) {
@@ -317,10 +333,20 @@ List::adjust_viewport_to_cursor()
 			return true;
 
 		case SCROLL_CENTERED:
-			break;
+			new_position = cursor_position - (bbox->height() / 2);
+			if (new_position < min_top_position()) {
+				new_position = 0;
+			} if (new_position > max_top_position()) {
+				new_position = max_top_position();
+			}
+			if (new_position == top_position()) {
+				return false;
+			}
+			top_position_ = new_position;
+			return true;
 
 		case SCROLL_RELATIVE:
-			break;
+			return false;
 
 		default:
 			abort();
