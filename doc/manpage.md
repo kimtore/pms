@@ -349,10 +349,10 @@ activate-list
 :   Activate currently viewed list for playback
 
 crop
-:   Crop the current playlist to the currently playing song
-
-cropsel
 :   Crop the current playlist to the selected songs, or song under cursor
+
+crop-playing
+:   Crop the current playlist to the currently playing song
 
 clear
 :   Clear the playlist

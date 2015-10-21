@@ -1885,8 +1885,8 @@ bool init_commandmap()
 	pms->commands->add("stop", "Stop", PEND_STOP);
 	pms->commands->add("shuffle", "Shuffle playlist", PEND_SHUFFLE);
 	pms->commands->add("clear", "Clear the list", PEND_CLEAR);
-	pms->commands->add("crop", "Crops list to currently playing song", PEND_CROP);
-	pms->commands->add("cropsel", "Crops list to selected songs", PEND_CROPSELECTION);
+	pms->commands->add("crop-playing", "Crops list to currently playing song", PEND_CROP);
+	pms->commands->add("crop", "Crops list to selected songs", PEND_CROPSELECTION);
 	pms->commands->add("repeat", "Toggle repeat on/off", PEND_REPEAT);
 	pms->commands->add("random", "Toggle random on/off", PEND_RANDOM);
 	pms->commands->add("single", "Toggle single on/off", PEND_SINGLE);

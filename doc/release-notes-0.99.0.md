@@ -8,3 +8,8 @@ The following configuration options have been changed:
 * Removed `columnspace`
 * Removed `topbarborders`
 * The `topbarN.POS` configuration options have been replaced with a single `topbar` option
+
+## Commands
+
+* `crop` renamed to `crop-playing`
+* `cropsel` renamed to `crop`
