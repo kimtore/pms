@@ -50,12 +50,7 @@ List::init()
 	cursor_position = 0;
 }
 
-/*
- * Remove item in position N from the list.
- *
- * Returns true on success, false on failure.
- */
-bool
+void
 List::remove_local(uint32_t position)
 {
 	vector<ListItem *>::iterator iter;
@@ -65,7 +60,9 @@ List::remove_local(uint32_t position)
 
 	iter = items.begin() + position;
 	assert(iter != items.end());
+	assert(*iter);
 
+	(*iter)->set_selected(false);
 	delete *iter;
 	items.erase(iter);
 
@@ -74,8 +71,6 @@ List::remove_local(uint32_t position)
 	}
 
 	set_selection_cache_valid(false);
-
-	return true;
 }
 
 bool

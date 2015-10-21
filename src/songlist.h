@@ -121,18 +121,9 @@ protected:
 	song_t			add_local(Songlist *);
 
 	/*
-	 * Remove a song from the list.
-	 *
-	 * Returns true on success, false on failure.
-	 */
-	bool			remove_local(Song *);
-
-	/*
 	 * Remove song in position N from the list.
-	 *
-	 * Returns true on success, false on failure.
 	 */
-	bool			remove_local(uint32_t position);
+	void			remove_local(uint32_t position);
 
 public:
 				Songlist();
@@ -227,9 +218,8 @@ public:
 
 	/**
 	 * Remove a song asynchronously, i.e. send a message to MPD and request
-	 * to remove it.
-	 *
-	 * Returns true if the asynchronous call succeeded, false otherwise.
+	 * to remove it. The base class will only call remove_local(), and thus
+	 * always return true.
 	 */
 	bool			remove(ListItem * i);
 

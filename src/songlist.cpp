@@ -398,22 +398,7 @@ Songlist::find(Song * s)
 	return LISTITEMSONG(item(i));
 }
 
-bool
-Songlist::remove_local(Song * s)
-{
-	ListItem * list_item;
-
-	assert(s != NULL);
-
-	list_item = item(s->pos);
-	assert(list_item);
-
-	list_item->set_selected(false);
-
-	return remove_local(s->pos);
-}
-
-bool
+void
 Songlist::remove_local(uint32_t position)
 {
 	vector<ListItem *>::iterator iter;
@@ -426,10 +411,7 @@ Songlist::remove_local(uint32_t position)
 
 	song_length = s->time;
 
-	if (!List::remove_local(position)) {
-		assert(false);
-		return false;
-	}
+	List::remove_local(position);
 
 	subtract_song_length(song_length);
 
@@ -443,8 +425,6 @@ Songlist::remove_local(uint32_t position)
 		--list_item->song->pos;
 		++iter;
 	}
-
-	return true;
 }
 
 bool
@@ -453,8 +433,13 @@ Songlist::remove(ListItem * i)
 	ListItemSong * list_item = LISTITEMSONG(i);
 
 	assert(list_item);
+	assert(list_item->song);
+	assert(list_item->song->pos != MPD_SONG_NO_NUM);
+	assert(list_item->song->pos < size());
 
-	return remove_local(list_item->song);
+	remove_local(list_item->song->pos);
+
+	return true;
 }
 
 /*

@@ -83,10 +83,8 @@ protected:
 
 	/**
 	 * Remove an item from the list.
-	 *
-	 * Returns true on success, false on failure.
 	 */
-	bool				remove_local(uint32_t position);
+	void				remove_local(uint32_t position);
 
 public:
 					List();
