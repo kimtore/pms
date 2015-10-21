@@ -603,9 +603,7 @@ bool		Input::run(string s, Message & err)
 
 	pending = pms->commands->act(s);
 
-	if (pending == PEND_NONE)
-	{
-		pms_error(_("unknown command '%s'"), s.c_str());
+	if (pending == PEND_NONE) {
 		return false;
 	}
 

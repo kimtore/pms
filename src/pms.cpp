@@ -273,7 +273,8 @@ Pms::run_options_changed()
 	if (flags & OPT_GROUP_DISPLAY) {
 		log(MSG_DEBUG, 0, "Some options requiring redraw has been changed; drawing entire screen.\n");
 		disp->resized();
-		disp->forcedraw();
+		disp->draw();
+		disp->refresh();
 	}
 
 	if (flags & OPT_GROUP_CROSSFADE) {

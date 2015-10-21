@@ -494,8 +494,10 @@ Configurator::readline(string buffer)
 			return false;
 		}
 
+		delete tok;
 		proc = buffer.substr(proc.size() + 1);
 		set_parameters = new SetParameters(proc);
+
 		if (!set_parameters->exists()) {
 			pms_error(_("invalid option '%s'"), proc.c_str());
 		} else if (set_parameters->is_valid_query()) {

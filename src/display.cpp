@@ -132,8 +132,8 @@ BBox::resize(const Point & tl_, const Point & br_)
 	if (window != NULL) {
 		rc = delwin(window);
 		assert(rc != ERR);
-		if (rc != ERR) {
-			return false;
+		if (rc == ERR) {
+			abort();
 		}
 		window = NULL;
 	}

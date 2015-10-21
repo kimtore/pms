@@ -30,6 +30,7 @@
 #include "list.h"
 #include "songlist.h"
 #include "pms.h"
+#include "error.h"
 
 extern Pms *			pms;
 
@@ -178,14 +179,11 @@ bool		Interface::check_events()
 		case PEND_CROP:
 			song = pms->cursong();
 			if (!song) {
-				/* FIXME: error message */
+				pms_error(_("no current song; cannot crop"));
 				break;
 			}
 			songlist->crop_to_song(song);
 			break;
-
-
-
 
 		case PEND_FILTERMODE:
 			set_input_mode(INPUT_FILTER);
@@ -218,23 +216,13 @@ bool		Interface::check_events()
 bool
 Interface::exec(string s)
 {
-	if (pms->input->run(s, *msg))
-	{
+	if (pms->input->run(s, *msg)) {
 		pms->drawstatus();
-		handle_command(pms->input->getpending()); //FIXME
-		return true;
-	}
-	else if (pms->input->text.substr(0, 1) == "!")
-	{
+		return handle_command(pms->input->getpending()); //FIXME
+	} else if (pms->input->text.substr(0, 1) == "!") {
 		return shell(pms->input->text.substr(1));
-	}
-	else
-	{
-		if (pms->config->readline(s)) {
-			return true;
-		}
-
-		return false;
+	} else {
+		return pms->config->readline(s);
 	}
 }
 
