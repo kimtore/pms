@@ -21,6 +21,7 @@
  *
  */
 
+#include "error.h"
 #include "pms.h"
 
 #include <mpd/client.h>
@@ -358,6 +359,7 @@ int
 Pms::main()
 {
 	string			t_str;
+	const char *		current_pms_error;
 	char			pass[512] = "";
 	bool			songchanged = false;
 	time_t			timer = 0;
@@ -471,6 +473,13 @@ Pms::main()
 
 		/* For debugging the main loop */
 		log(MSG_DEBUG, 0, "--> Main loop iteration, clock = %ld.%ld\n", timer_now.tv_sec, timer_now.tv_nsec);
+
+		/* Display any error messages */
+		current_pms_error = pms_error_string();
+		if (strlen(current_pms_error)) {
+			log(MSG_STATUS, ERR, "Error: %s", current_pms_error);
+			pms_error_clear();
+		}
 
 		/* Test if some error has occurred */
 		if ((error = mpd_connection_get_error(conn->h())) != MPD_ERROR_SUCCESS) {

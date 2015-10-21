@@ -30,6 +30,7 @@
 #include "mycurses.h"
 #include "config.h"
 #include "pms.h"
+#include "error.h"
 
 using namespace std;
 
@@ -197,10 +198,7 @@ bool			Bindings::add(string b, string command)
 		}
 		else
 		{
-			pms->msg->clear();
-			pms->msg->code = CERR_INVALID_COMMAND;
-			pms->msg->str = _("invalid command");
-			pms->msg->str += " '" + command + "'";
+			pms_error(_("invalid command '%s'"), command.c_str());
 			return false;
 		}
 	}
@@ -269,19 +267,13 @@ bool			Bindings::add(string b, string command)
 					i = KEY_F(i);
 				else
 				{
-					pms->msg->clear();
-					pms->msg->code = CERR_INVALID_KEY;
-					pms->msg->str = _("function key out of range");
-					pms->msg->str += ": " + b;
+					pms_error(_("function key out of range: %s"), b.c_str());
 					return false;
 				}
 			}
 			else
 			{
-				pms->msg->clear();
-				pms->msg->code = CERR_INVALID_KEY;
-				pms->msg->str = _("invalid key");
-				pms->msg->str += " '" + b + "'";
+				pms_error(_("invalid key '%s'"), b.c_str());
 				return false;
 			}
 		}
@@ -391,14 +383,10 @@ bool			Configurator::source(string fn)
 	char		buffer[1024];
 	int		line = 0;
 
-	pms->msg->clear();
-	pms->msg->code = CERR_NONE;
 	fd = fopen(fn.c_str(), "r");
 
-	if (fd == NULL)
-	{
-		pms->msg->code = CERR_NO_FILE;
-		pms->msg->str = fn + _(": could not open file.\n");
+	if (fd == NULL) {
+		pms_error(_("%s: can not open file: %s"), fn.c_str(), strerror(errno));
 		return false;
 	}
 
@@ -409,7 +397,9 @@ bool			Configurator::source(string fn)
 		++line;
 		if (!readline(buffer))
 		{
-			pms->log(MSG_CONSOLE, STERR, _("Encountered an error on line %d.\n"), line);
+			pms_error(_("Error on line %d"), line);
+			pms->log(MSG_CONSOLE, STERR, "%s\n", pms_error_string());
+			pms_error_clear();
 			break;
 		}
 	}
@@ -499,48 +489,25 @@ Configurator::readline(string buffer)
 	if (proc == "set" || proc == "se") {
 
 		if (tok->size() < 2) {
-			pms->msg->code = CERR_MISSING_IDENTIFIER;
-		} else {
-			proc = buffer.substr(proc.size() + 1);
-			set_parameters = new SetParameters(proc);
-			if (!set_parameters->exists()) {
-				pms->msg->code = CERR_INVALID_OPTION;
-			} else if (set_parameters->is_valid_query()) {
-				proc = "  " + set_parameters->repr();
-				pms->log(MSG_STATUS, STOK, proc.c_str());
-			} else if (!set_parameters->has_valid_operator()) {
-				pms->msg->code = CERR_UNEXPECTED_TOKEN;
-			} else if (!set_parameters->commit()) {
-				pms->msg->code = CERR_INVALID_VALUE;
-			}
+			delete tok;
+			pms_error(_("set: missing variable name"));
+			return false;
 		}
 
-		delete tok;
-
-		switch(pms->msg->code)
-		{
-			case CERR_NONE:
-				return true;
-			case CERR_INVALID_VALUE:
-				pms->msg->str = _("invalid value");
-				return false;
-			case CERR_INVALID_IDENTIFIER:
-				pms->msg->str = _("invalid identifier");
-				pms->msg->str += " '" + proc + "'";
-				return false;
-			case CERR_MISSING_IDENTIFIER:
-				pms->msg->str = _("missing name identifier after 'set'");
-				return false;
-			case CERR_MISSING_VALUE:
-				pms->msg->str = _("missing value for configuration option");
-				pms->msg->str += " '" + proc + "'";
-				return false;
-			case CERR_UNEXPECTED_TOKEN:
-				pms->msg->str = _("unexpected token after identifier");
-				return false;
-			default:
-				return false;
+		proc = buffer.substr(proc.size() + 1);
+		set_parameters = new SetParameters(proc);
+		if (!set_parameters->exists()) {
+			pms_error(_("invalid option '%s'"), proc.c_str());
+		} else if (set_parameters->is_valid_query()) {
+			pms->log(MSG_STATUS, STOK, "  %s", set_parameters->repr().c_str());
+			return true;
+		} else if (!set_parameters->has_valid_operator()) {
+			pms_error(_("unexpected token"));
+		} else if (!set_parameters->commit()) {
+			pms_error(_("invalid value"));
 		}
+
+		return false;
 	}
 	else if (proc == "bind" || proc == "map")
 	{
@@ -549,16 +516,13 @@ Configurator::readline(string buffer)
 
 		if (tok->size() == 1)
 		{
-			pms->msg->code = CERR_MISSING_IDENTIFIER;
-			pms->msg->str = _("missing key after 'bind'");
+			pms_error(_("missing key after 'bind'"));
 			return false;
 		}
 
 		if (tok->size() == 2)
 		{
-			pms->msg->code = CERR_MISSING_VALUE;
-			pms->msg->str = _("missing command to bind to key");
-			pms->msg->str += " '" + tok->at(1) + "'";
+			pms_error(_("missing command to bind to key '%s'"), tok->at(1).c_str());
 			return false;
 		}
 
@@ -575,9 +539,7 @@ Configurator::readline(string buffer)
 		{
 			if (!bindings->remove(*it))
 			{
-				pms->msg->code = CERR_INVALID_KEY;
-				pms->msg->str = _("Can't remove binding for key");
-				pms->msg->str += " '" + *it + "'";
+				pms_error(_("Can't remove binding for key '%s'"), (*it).c_str());
 				delete tok;
 				return false;
 			}
@@ -592,16 +554,13 @@ Configurator::readline(string buffer)
 
 		if (tok->size() == 1)
 		{
-			pms->msg->code = CERR_MISSING_IDENTIFIER;
-			pms->msg->str = _("missing names after 'color'");
+			pms_error(_("missing names after 'color'"));
 			return false;
 		}
 
 		if (tok->size() == 2)
 		{
-			pms->msg->code = CERR_MISSING_VALUE;
-			pms->msg->str = _("missing colors to add to ");
-			pms->msg->str += tok->at(1);
+			pms_error(_("missing colors to add to %s"), tok->at(1).c_str());
 			return false;
 		}
 
@@ -613,9 +572,7 @@ Configurator::readline(string buffer)
 	}
 	else
 	{
-		pms->msg->code = CERR_SYNTAX;
-		pms->msg->str = _("syntax error: unexpected");
-		pms->msg->str += " '" + proc + "'";
+		pms_error(_("syntax error: unexpected '%s'"), proc.c_str());
 		return false;
 	}
 
@@ -691,12 +648,8 @@ bool			Configurator::loadconfigs()
 	{
 		if (!source(configfiles[i]))
 		{
-			if (pms->msg->code != CERR_NO_FILE)
-			{
-				pms->log(MSG_CONSOLE, 0, _("\nConfiguration error in file %s:\n%s\n"), configfiles[i].c_str(), pms->msg->str.c_str());
-				return false;
-			}
-			pms->log(MSG_CONSOLE, 0, _("Didn't find configuration file %s\n"), configfiles[i].c_str());
+			pms->log(MSG_CONSOLE, 0, pms_error_string());
+			pms_error_clear();
 		}
 	}
 
@@ -847,35 +800,26 @@ bool			Configurator::set_color(string name, string pairs)
 				else if (name == "comment")
 					dest = field->comment;
 				else
-					pms->msg->code = CERR_INVALID_IDENTIFIER;
+					pms_error(_("invalid identifier '%s'"), name.c_str());
 			}
 		}
 		else
 		{
-			pms->msg->code = CERR_INVALID_IDENTIFIER;
+			pms_error(_("invalid identifier '%s'"), name.c_str());
 		}
 	}
 
 	/* No valid color field */
 	else
 	{
-		pms->msg->code = CERR_INVALID_IDENTIFIER;
-	}
-
-	if (pms->msg->code == CERR_INVALID_IDENTIFIER)
-	{
-		pms->msg->str = _("invalid identifier");
-		pms->msg->str += " '" + name + "'";
-		return false;
+		pms_error(_("invalid identifier '%s'"), name.c_str());
 	}
 
 	pair = Pms::splitstr(pairs);
 	if (pair->size() > 2)
 	{
+		pms_error(_("excess arguments: expected 1 or 2, got %s"), pair->size());
 		delete pair;
-		pms->msg->code = CERR_EXCESS_ARGUMENTS;
-		pms->msg->str = _("excess arguments: expected 1 or 2, got ");
-		pms->msg->str += Pms::tostring(pair->size());
 		return false;
 	}
 
@@ -955,10 +899,7 @@ bool			Configurator::set_color(string name, string pairs)
 		else
 		{
 			delete pair;
-			pms->msg->clear();
-			pms->msg->code = CERR_INVALID_COLOR;
-			pms->msg->str = _("invalid color name");
-			pms->msg->str += " '" + str + "'";
+			pms_error(_("invalid color name '%s'"), str.c_str());
 			return false;
 		}
 	}
