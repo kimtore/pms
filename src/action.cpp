@@ -211,16 +211,18 @@ bool		Interface::check_events()
 }
 
 /*
- * Execute an input string from the command line
+ * Execute an input string from the command line.
+ *
+ * Returns true on success, false otherwise.
  */
-long		Interface::exec(string s)
+bool
+Interface::exec(string s)
 {
 	if (pms->input->run(s, *msg))
 	{
 		pms->drawstatus();
 		handle_command(pms->input->getpending()); //FIXME
-
-		return STOK;
+		return true;
 	}
 	else if (pms->input->text.substr(0, 1) == "!")
 	{
@@ -228,19 +230,11 @@ long		Interface::exec(string s)
 	}
 	else
 	{
-		if (pms->config->readline(s))
-		{
-			//pms->resetstatus(-1);
-		}
-		else
-		{
-			if (pms->msg->code == CERR_NONE)
-				pms->log(MSG_STATUS, STOK, "  %s", pms->msg->str.c_str());
-			else
-				pms->log(MSG_STATUS, STERR, _("Error %d: %s"), pms->msg->code, pms->msg->str.c_str());
+		if (pms->config->readline(s)) {
+			return true;
 		}
 
-		return pms->msg->code;
+		return false;
 	}
 }
 

@@ -49,7 +49,7 @@ public:
 	/*
 	 * PMS specific stuff
 	 */
-	long			exec(string);
+	bool			exec(string);
 	long			version();
 	long			redraw();
 	long			rehash();
