@@ -507,6 +507,8 @@ Configurator::readline(string buffer)
 			pms_error(_("unexpected token"));
 		} else if (!set_parameters->commit()) {
 			pms_error(_("invalid value"));
+		} else {
+			return true;
 		}
 
 		return false;
