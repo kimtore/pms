@@ -219,8 +219,6 @@ ScrollModeOption::set(void * value)
 		parent->scroll_mode = SCROLL_NORMAL;
 	} else if (*s == "center" || *s == "centered" || *s == "centre" || *s == "centred") {
 		parent->scroll_mode = SCROLL_CENTERED;
-	} else if (*s == "relative") {
-		parent->scroll_mode = SCROLL_RELATIVE;
 	} else {
 		return false;
 	}

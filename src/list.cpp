@@ -308,9 +308,6 @@ List::adjust_cursor_to_viewport()
 			cursor_position = new_position;
 			return true;
 
-		case SCROLL_RELATIVE:
-			return false;
-
 		default:
 			abort();
 	}
@@ -344,9 +341,6 @@ List::adjust_viewport_to_cursor()
 			}
 			top_position_ = new_position;
 			return true;
-
-		case SCROLL_RELATIVE:
-			return false;
 
 		default:
 			abort();

@@ -567,9 +567,6 @@ normal
 centered
 :   The cursor is always in the middle of the window, except when it is near the top or bottom of the list. The spellings *center*, *centre*, and *centred* are also accepted.
 
-relative
-:   The position of the cursor in the confines of the window is proportional to the position of the visible songs relative to the whole song list. Try it out to get a better idea of how it works.
-
 # FILES
 
 * /etc/xdg/pms/rc

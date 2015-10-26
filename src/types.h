@@ -135,8 +135,7 @@ pms_pending_keys;
 typedef enum
 {
 	SCROLL_NORMAL = 0,
-	SCROLL_CENTERED,
-	SCROLL_RELATIVE
+	SCROLL_CENTERED
 
 }
 pms_scroll_mode;

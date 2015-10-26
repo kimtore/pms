@@ -7,6 +7,7 @@ The following configuration options have been changed:
 * Removed `stopdelay`
 * Removed `columnspace`
 * Removed `topbarborders`
+* Removed `scrollmode=relative`
 * The `topbarN.POS` configuration options have been replaced with a single `topbar` option
 
 ## Commands
