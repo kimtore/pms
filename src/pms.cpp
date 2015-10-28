@@ -1400,7 +1400,9 @@ void			Pms::init_default_keymap()
 	bindings->add("^E", "scroll-down");
 	bindings->add("z", "center-cursor");
 	bindings->add("home", "move-home");
+	bindings->add("^A", "move-home");
 	bindings->add("end", "move-end");
+	bindings->add("G", "move-end");
 	bindings->add("g", "goto-current");
 	bindings->add("R", "goto-random");
 	bindings->add("j", "move-down");
@@ -1414,8 +1416,6 @@ void			Pms::init_default_keymap()
 	bindings->add("1", "change-window playlist");
 	bindings->add("2", "change-window library");
 	bindings->add("w", "change-window windowlist");
-	// TODO: add this for a later version
-	//bindings->add("W", "change-window directorylist");
 	bindings->add("tab", "last-window");
 
 	/* Searching */
@@ -1429,6 +1429,7 @@ void			Pms::init_default_keymap()
 	bindings->add("b", "add-album");
 	bindings->add("B", "play-album");
 	bindings->add("delete", "remove");
+	bindings->add("x", "remove");
 	bindings->add("C", "crop");
 	bindings->add("insert", "toggle-select");
 	bindings->add("F12", "activate-list");
@@ -1436,7 +1437,7 @@ void			Pms::init_default_keymap()
 	bindings->add("J", "move 1");
 	bindings->add("K", "move -1");
 
-	/* Controls */
+	/* Player controls */
 	bindings->add("return", "play");
 	bindings->add("kpenter", "play");
 	bindings->add("backspace", "stop");
@@ -1444,7 +1445,7 @@ void			Pms::init_default_keymap()
 	bindings->add("space", "toggle-play");
 	bindings->add("l", "next");
 	bindings->add("h", "prev");
-	bindings->add("M", "mute");
+	bindings->add("m", "mute");
 	bindings->add("r", "repeat");
 	bindings->add("z", "random");
 	bindings->add("c", "consume");

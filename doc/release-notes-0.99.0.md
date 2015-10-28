@@ -14,3 +14,7 @@ The following configuration options have been changed:
 
 * `crop` renamed to `crop-playing`
 * `cropsel` renamed to `crop`
+
+## Defaults
+
+* The default keyboard bindings have been changed
