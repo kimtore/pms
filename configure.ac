@@ -7,7 +7,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_SRCDIR([src/pms.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
-
+AC_LANG(C++)
 # Enable debugging?
 AX_CHECK_ENABLE_DEBUG
 
@@ -47,9 +47,10 @@ AC_DEFINE_UNQUOTED([GETTEXT_PACKAGE],
 
 # Other stuff
 AC_ARG_ENABLE([regex],
-       [AS_HELP_STRING([--enable-regex], [Support pattern matching through the boost regex library (default: disable)])],
+              [AS_HELP_STRING([--enable-regex], [Support pattern matching through c++11 regex (needs gcc >= 4.9 or other compatible compiler) (default: disable)])],
        [case "${enableval}" in
-               yes) AC_CHECK_LIB([boost_regex], [main]) ;;
+            yes) AX_CXX_COMPILE_STDCXX_11([noext], [mandatory])
+            AC_DEFINE([HAVE_REGEX], [1], [C++ 11 is available and regex is part of it]);;
        esac])
 
 AC_CONFIG_FILES([Makefile
