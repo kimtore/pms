@@ -167,9 +167,8 @@ Mpd_status::alive() const
 {
 	/* FIXME: what is this? */
 	assert(0);
+	return false;
 }
-
-
 
 /*
  * Command class manages commands sent to and from mpd
@@ -1099,7 +1098,7 @@ Control::move(Songlist * list, int offset)
 		return 0;
 
 	filename = list->filename.c_str();
-	
+
 	if (offset < 0) {
 		song = list->getnextselected();
 	} else {
@@ -1874,7 +1873,7 @@ Control::is_idle()
 	return _is_idle;
 }
 
-bool
+void
 Control::set_is_idle(bool i)
 {
 	_is_idle = i;

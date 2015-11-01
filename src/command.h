@@ -190,7 +190,7 @@ private:
 public:
 					Directory(Directory *, string);
 					~Directory();
-	
+
 	int				cursor;
 	vector<Song *>			songs;
 	vector<Directory *>		children;
@@ -301,7 +301,7 @@ public:
 	bool			noidle();
 	bool			wait_until_noidle();
 	bool			is_idle();
-	bool			set_is_idle(bool);
+	void			set_is_idle(bool);
 
 	/* List management */
 	Playlist *		find_playlist(string filename);
@@ -329,5 +329,5 @@ public:
 	bool		song_changed();
 	Songlist *	plist(int);
 };
- 
+
 #endif /* _PMS_COMMAND_H_ */

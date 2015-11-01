@@ -109,7 +109,7 @@ public:
 	bool			wrap;
 	List_role		role;
 	string			filename;
-	
+
 	Song *			song(song_t);
 	unsigned int		length;
 	void			clear();
@@ -122,7 +122,7 @@ public:
 	vector<song_t> *	matchall(string, long);
 	song_t			match(string, unsigned int, unsigned int, long);
 	bool			match(Song *, string, long);
-#ifdef HAVE_LIBBOOST_REGEX
+#ifdef HAVE_REGEX
 	bool			regexmatch(string *, string *);
 #endif
 	bool			exactmatch(string *, string *);

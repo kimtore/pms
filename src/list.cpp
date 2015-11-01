@@ -22,8 +22,8 @@
 
 
 #include "../config.h"
-#ifdef HAVE_LIBBOOST_REGEX
-	#include <boost/regex.hpp>
+#ifdef HAVE_REGEX
+	#include <regex>
 #endif
 #include "conn.h"
 #include "list.h"
@@ -233,7 +233,7 @@ song_t		Songlist::prevof(string s)
  * Finds next or previous entry of any type.
  */
 song_t		Songlist::findentry(Item field, bool reverse)
-{	
+{
 	Song *		song;
 	song_t		i = MATCH_FAILED;
 	long		mode = 0;
@@ -394,7 +394,7 @@ Songlist::filter_clear()
 		delete *it;
 		++it;
 	}
-	
+
 	filters.clear();
 	filtersongs = songs;
 }
@@ -436,7 +436,7 @@ bool		Songlist::filter_match(Song * s)
 
 	if (filters.size() == 0)
 		return true;
-	
+
 	it = filters.begin();
 	while (it != filters.end())
 	{
@@ -455,7 +455,7 @@ Filter *	Songlist::lastfilter()
 {
 	if (filters.size() == 0)
 		return NULL;
-	
+
 	return filters[filters.size() - 1];
 }
 
@@ -912,7 +912,7 @@ unsigned int		Songlist::cursor()
 unsigned int		Songlist::qlength()
 {
 	unsigned int		i, songpos;
-	
+
 	/* Find current playing song */
 	if (!pms->cursong() || pms->cursong()->id == MPD_SONG_NO_ID || pms->cursong()->pos == MPD_SONG_NO_NUM)
 	{
@@ -982,8 +982,8 @@ bool			Songlist::match(Song * song, string src, long mode)
 	bool				matched;
 	unsigned int			j;
 
-	/* try the sources in order of likeliness. ID etc last since if we're 
-	 * searching for them we likely won't be searching any of the other 
+	/* try the sources in order of likeliness. ID etc last since if we're
+	 * searching for them we likely won't be searching any of the other
 	 * fields. */
 	if (mode & MATCH_TITLE)			sources.push_back(song->title);
 	if (mode & MATCH_ARTIST)		sources.push_back(song->artist);
@@ -1007,7 +1007,7 @@ bool			Songlist::match(Song * song, string src, long mode)
 	{
 		if (mode & MATCH_EXACT)
 			matched = exactmatch(&(sources[j]), &src);
-#ifdef HAVE_LIBBOOST_REGEX
+#ifdef HAVE_REGEX
 		else if (pms->options->regexsearch)
 			matched = regexmatch(&(sources[j]), &src);
 #endif
@@ -1141,7 +1141,7 @@ bool		Songlist::perform_match(string * haystack, string * needle, int type)
 	}
 	if (type == 1 && it_needle == needle->end() && it_haystack != haystack->end())
 	{
-		/* need exact and got to the end of the needle but not the end of the 
+		/* need exact and got to the end of the needle but not the end of the
 		 * haystack */
 		return false;
 	}
@@ -1152,18 +1152,18 @@ bool		Songlist::perform_match(string * haystack, string * needle, int type)
 /*
  * Performs a case-insensitive regular expression match
  */
-#ifdef HAVE_LIBBOOST_REGEX
+#ifdef HAVE_REGEX
 bool		Songlist::regexmatch(string * source, string * pattern)
 {
-	bool			matched;
-	boost::regex		reg;
-
+	bool		matched;
+	regex		reg;
 	try
+
 	{
-		reg.assign(*pattern, boost::regex_constants::icase);
-		matched = boost::regex_search(source->begin(), source->end(), reg);
+		reg.assign(*pattern, std::regex_constants::icase);
+		matched = regex_search(*source, reg);
 	}
-	catch (boost::regex_error & err)
+	catch (std::regex_error& err)
 	{
 		return false;
 	}

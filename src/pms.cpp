@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 	}
 
 	delete pms;
-	return exitcode;	
+	return exitcode;
 }
 
 /**
@@ -330,6 +330,8 @@ Pms::run_all_events()
 	if (run_stdin_events()) {
 		return true;
 	}
+
+	return false;
 }
 
 /*
@@ -634,7 +636,7 @@ int			Pms::init()
 	char *			port;
 	char *			password;
 	const char *		charset = NULL;
-	
+
 	/* Internal pointers */
 	msg = new Message();
 	interface = new Interface();
@@ -799,7 +801,7 @@ vector<string> *	Pms::splitstr(string str, string delimiter)
 		last = str.find_first_not_of(delimiter, pos);
 		pos = str.find_first_of(delimiter, last);
 	}
-	
+
 	return tokens;
 }
 
@@ -822,7 +824,7 @@ string			Pms::joinstr(vector<string> * source, vector<string>::iterator start, v
 			dest += delimiter;
 		}
 	}
-	
+
 	return dest;
 }
 
@@ -972,8 +974,8 @@ bool			Pms::run_shell(string cmd)
 	}
 
 	/*
-	 * ##: path to each song in selection (or each song on the current 
-	 * playlist if there is no selection), each enclosed with doublequotes 
+	 * ##: path to each song in selection (or each song on the current
+	 * playlist if there is no selection), each enclosed with doublequotes
 	 * and separated by spaces
 	 */
 	list = disp->actwin()->plist();
@@ -1052,7 +1054,7 @@ Song *			Pms::cursong()
 	return comm->song();
 }
 
-/* 
+/*
  * Reset status to its natural state.
  */
 void
@@ -1334,7 +1336,7 @@ bool			Pms::progress_nextsong()
 	last_song_id = cursong()->id;
 
 	/* Normal progression: reached end of playlist */
-	if (cursong()->pos == static_cast<int>(playlist->list->end())) { 
+	if (cursong()->pos == static_cast<int>(playlist->list->end())) {
 
 		pms->log(MSG_DEBUG, 0, "Auto-progressing to next song.\n");
 

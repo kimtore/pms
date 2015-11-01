@@ -14,7 +14,8 @@ same machine.
 The client only works with MPD versions >= 0.15.0.
 
 You'll need `glib >= 2.0`, `ncurses >= 5.0`, and `libmpdclient >= 2.5` to build
-PMS. Installing `boost_regex >= 1.36.0` will enable regular expression searches.
+PMS. If your c++ compiler supports c++11's regex (like `gcc-c++ >= 4.9`),
+it will enable regular expression searches.
 In addition, if building from Git, you'll need the `intltool` package. On
 Debian-based systems, you can install them by running:
 
