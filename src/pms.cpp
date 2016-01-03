@@ -545,7 +545,6 @@ Pms::main()
 			//disp->actwin()->wantdraw = true;
 			comm->library()->sort(options->sort);
 			comm->library()->set_column_size();
-			//connect_window_list();
 			comm->clear_finished_update(MPD_IDLE_DATABASE);
 		}
 
@@ -587,11 +586,9 @@ Pms::main()
 			comm->clear_finished_update(MPD_IDLE_PLAYER);
 		}
 
-		/* Create windows containing MPD playlists. */
-		if (comm->has_finished_update(MPD_IDLE_STORED_PLAYLIST)) {
-			//connect_window_list();
-			comm->clear_finished_update(MPD_IDLE_STORED_PLAYLIST);
-		}
+		/* Clear out "stored playlist" updates, they are handled
+		 * directly in Command class */
+		comm->clear_finished_update(MPD_IDLE_STORED_PLAYLIST);
 
 		/* Reset status */
 		if (needs_statusbar_reset()) {

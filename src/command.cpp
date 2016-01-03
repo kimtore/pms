@@ -1455,6 +1455,8 @@ Control::update_playlist(Playlist * playlist)
 		mpd_entity_free(ent);
 	}
 
+	playlist->set_column_size();
+
 	return get_error_bool();
 }
 
