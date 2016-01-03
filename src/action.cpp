@@ -1155,11 +1155,14 @@ handle_command(pms_pending_keys action)
 			pms->drawstatus();
 			if (pms->input->mode() == INPUT_JUMP)
 			{
-				i = list->cursor_position;
-				if ((unsigned int)i >= list->size()) i = 0;
-				assert(false);
-				// FIXME
-				//songlist->jumpto(pms->input->text, i);
+				/* FIXME: implement Songlist::match() for other kinds of lists */
+				assert(songlist);
+
+				i = songlist->cursor_position - 1;
+				i = i >= 0 ? i : songlist->size() - 1;
+				i = songlist->match(pms->input->text, songlist->cursor_position, i, MATCH_ALL);
+
+				songlist->set_cursor(i);
 			}
 			break;
 
@@ -1177,12 +1180,17 @@ handle_command(pms_pending_keys action)
 			else if (mode == INPUT_JUMP)
 			{
 				pms->input->searchterm = pms->input->text;
-				assert(false);
 
-				/* FIXME
-				if (win->posof_jump(pms->input->text, 0) == -1)
+				/* FIXME: implement Songlist::match() for other kinds of lists */
+				assert(songlist);
+
+				i = songlist->cursor_position - 1;
+				i = i >= 0 ? i : songlist->size() - 1;
+				i = songlist->match(pms->input->searchterm, songlist->cursor_position, i, MATCH_ALL);
+
+				if (i == -1) {
 					pms->log(MSG_STATUS, STERR, _("Pattern not found: %s"), pms->input->text.c_str());
-					*/
+				}
 
 				//else do nothing so the search command is left visible
 			}
