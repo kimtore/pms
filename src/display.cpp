@@ -285,6 +285,46 @@ Display::activate_list(List * list)
 }
 
 List *
+Display::next_list()
+{
+	vector<List *>::const_iterator i;
+
+	for (i = lists.begin(); i != lists.end(); i++) {
+		if (*i == active_list) {
+			if (++i == lists.end()) {
+				return *(lists.begin());
+			}
+			return *i;
+		}
+	}
+
+	/* Active list not found in lists vector */
+	assert(false);
+
+	return NULL;
+}
+
+List *
+Display::previous_list()
+{
+	vector<List *>::const_reverse_iterator i;
+
+	for (i = lists.rbegin(); i != lists.rend(); i++) {
+		if (*i == active_list) {
+			if (++i == lists.rend()) {
+				return *(lists.rbegin());
+			}
+			return *i;
+		}
+	}
+
+	/* Active list not found in lists vector */
+	assert(false);
+
+	return NULL;
+}
+
+List *
 Display::find(const char * title)
 {
 	vector<List *>::iterator i;

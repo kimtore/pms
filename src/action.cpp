@@ -1429,19 +1429,13 @@ handle_command(pms_pending_keys action)
 			
 
 		case PEND_NEXTWIN:
-			/*
-			if (!setwin(pms->disp->nextwindow()))
-				pms->log(MSG_STATUS, STERR, "There is no next window.");
-			*/
-			assert(false);
+			list = pms->disp->next_list();
+			pms->disp->activate_list(list);
 			break;
 
 		case PEND_PREVWIN:
-			/*
-			if (!setwin(pms->disp->prevwindow()))
-				pms->log(MSG_STATUS, STERR, "There is no previous window.");
-			*/
-			assert(false);
+			list = pms->disp->previous_list();
+			pms->disp->activate_list(list);
 			break;
 
 		case PEND_CHANGEWIN:

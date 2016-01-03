@@ -113,6 +113,18 @@ public:
 	bool			delete_list(List *);
 
 	/**
+	 * @return List* The next list of all lists. Wraps around if the active
+	 * list is the last in series.
+	 */
+	List *			next_list();
+
+	/**
+	 * @return List* The previous list of all lists. Wraps around if the
+	 * active list is the first in series.
+	 */
+	List *			previous_list();
+
+	/**
 	 * Given a list title, return a matching List object.
 	 *
 	 * Returns a pointer to a List, or NULL if not found.
@@ -133,9 +145,6 @@ public:
 	Song *				cursorsong();
 	void				forcedraw();
 	void				set_xterm_title();
-
-	List *			next_list();
-	List *			previous_list();
 };
  
 void	colprint(BBox * bbox, int y, int x, color * c, const char *fmt, ...);
