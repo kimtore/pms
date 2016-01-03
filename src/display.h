@@ -108,9 +108,22 @@ public:
 
 	mmask_t			setmousemask();
 
-	bool			add_list(List * list);
+	/**
+	 * Add a List to the collection of lists, and set its bounding box size.
+	 */
+	void			add_list(List * list);
+
+	/**
+	 * Set a List as the visible list.
+	 *
+	 * Returns true if a new list was activated.
+	 */
 	bool			activate_list(List * list);
-	bool			delete_list(List *);
+
+	/**
+	 * Remove a List from the collection of lists.
+	 */
+	void			remove_list(List * list);
 
 	/**
 	 * @return List* The next list of all lists. Wraps around if the active

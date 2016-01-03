@@ -261,12 +261,11 @@ Display::refresh()
 	position_readout.refresh();
 }
 
-bool
+void
 Display::add_list(List * list)
 {
 	lists.push_back(list);
 	list->set_bounding_box(&main_window);
-	return true;
 }
 
 bool
@@ -282,6 +281,24 @@ Display::activate_list(List * list)
 	active_list = list;
 
 	return true;
+}
+
+void
+Display::remove_list(List * list)
+{
+	vector<List *>::iterator it;
+
+	assert(list);
+
+	for (it = lists.begin(); it != lists.end(); it++) {
+		if (*it == list) {
+			lists.erase(it);
+			return;
+		}
+	}
+
+	/* BUG: list should be here */
+	assert(false);
 }
 
 List *

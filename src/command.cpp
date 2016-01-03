@@ -1355,6 +1355,7 @@ Control::update_playlist_index()
 			local_playlist = new Playlist();
 			local_playlist->filename = name;
 			playlists.push_back(local_playlist);
+			pms->disp->add_list(local_playlist);
 		}
 
 		local_playlist->assign_metadata_from_mpd(playlist);
@@ -1390,6 +1391,7 @@ Control::update_playlists()
 		playlist = *playlist_iterator;
 
 		if (!playlist->exists_in_mpd()) {
+			pms->disp->remove_list(playlist);
 			delete playlist;
 			playlist_iterator = playlists.erase(playlist_iterator);
 			continue;
