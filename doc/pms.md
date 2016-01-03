@@ -1,6 +1,6 @@
 % PMS(1) Practical Music Search
 % Kim Tore Jensen <kimtjen@gmail.com>
-% August 29, 2015
+% January 3, 2016
 
 # NAME
 

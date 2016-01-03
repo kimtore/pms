@@ -24,6 +24,12 @@ AX_WITH_CURSES
 PKG_CHECK_MODULES([glib], [glib-2.0 >= 2.0],, [AC_MSG_ERROR([glib 2.0 or newer is required])])
 PKG_CHECK_MODULES([libmpdclient], [libmpdclient >= 2.5],, [AC_MSG_ERROR([libmpdclient 2.5 or newer is required])])
 
+# Check for Pandoc
+AC_PATH_PROG(PANDOC,pandoc,no)
+if [[ "x$PANDOC" = xno ]]; then
+    AC_MSG_ERROR([Pandoc is required to build the manual page])
+fi
+
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h libintl.h limits.h locale.h netdb.h netinet/in.h stdlib.h string.h sys/param.h sys/socket.h sys/time.h unistd.h])
 
@@ -55,5 +61,6 @@ AC_ARG_ENABLE([regex],
 
 AC_CONFIG_FILES([Makefile
                  po/Makefile.in
-                 src/Makefile])
+                 src/Makefile
+                 doc/Makefile])
 AC_OUTPUT
