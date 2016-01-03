@@ -382,7 +382,7 @@ Songlist::find(Song * s)
 	assert(s);
 
 	if (s->id != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN) {
-		i = match(Pms::tostring(pms->cursong()->pos), 0, size() - 1, MATCH_ID | MATCH_EXACT);
+		i = match(Pms::tostring(pms->cursong()->id), 0, size() - 1, MATCH_ID | MATCH_EXACT);
 	} else if (s->pos != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN) {
 		i = match(Pms::tostring(pms->cursong()->pos), 0, size() - 1, MATCH_POS | MATCH_EXACT);
 	}
