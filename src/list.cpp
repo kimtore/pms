@@ -483,3 +483,50 @@ List::selection_rend()
 {
 	return selection.rend();
 }
+
+ListItem *
+List::match(string pattern, unsigned int from, unsigned int to, long flags)
+{
+	ListItem * it;
+	int i;
+
+	if (!size()) {
+		return NULL;
+	}
+
+	assert(from < size());
+	assert(to < size());
+
+	if (flags & MATCH_REVERSE) {
+		i = from;
+		from = to;
+		to = i;
+	}
+
+	i = from;
+
+	while (true)
+	{
+		if (i < 0) {
+			i = size() - 1;
+		} else if (i >= size()) {
+			i = 0;
+		}
+
+		it = item(i);
+
+		assert(it);
+
+		if (it->match(pattern, flags)) {
+			return it;
+		}
+
+		if (i == to) {
+			break;
+		}
+
+		i += (flags & MATCH_REVERSE ? -1 : 1);
+	}
+
+	return NULL;
+}

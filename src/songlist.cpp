@@ -49,6 +49,12 @@ ListItemSong::~ListItemSong()
 	delete song;
 }
 
+bool
+ListItemSong::match(string term, long flags)
+{
+	return song->match(term, flags);
+}
+
 /*
  * Playlist class
  */
@@ -90,6 +96,7 @@ Songlist::song(uint32_t position)
 Song *
 Songlist::next_song_in_direction(Song * s, uint8_t direction, song_t * id)
 {
+	ListItem *	it;
 	song_t		i = MATCH_FAILED;
 
 	assert(direction == 1 || direction == -1);
@@ -104,20 +111,20 @@ Songlist::next_song_in_direction(Song * s, uint8_t direction, song_t * id)
 
 	/* Find the current song in this list */
 	if (s->pos != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN) {
-		i = match(Pms::tostring(s->pos), 0, size() - 1, MATCH_POS);
+		it = match(Pms::tostring(s->pos), 0, size() - 1, MATCH_POS);
 	}
 
 	/* Fallback to file path */
-	if (i == MATCH_FAILED) {
-		i = match(s->file, 0, size() - 1, MATCH_EXACT | MATCH_FILE);
-		if (i == MATCH_FAILED && !size()) {
+	if (!it) {
+		it = match(s->file, 0, size() - 1, MATCH_EXACT | MATCH_FILE);
+		if (!it && !size()) {
 			return NULL;
 		}
 	}
 
 	/* Wrap around */
 	/* FIXME: not our responsibility */
-	i += direction;
+	i = LISTITEMSONG(it)->song->pos + direction;
 	if (i < 0 || i >= size()) {
 		if (!pms->comm->status()->repeat) {
 			return NULL;
@@ -220,6 +227,7 @@ Songlist::prevof(string s)
  */
 song_t		Songlist::findentry(Item field, bool reverse)
 {
+	ListItem *	it;
 	Song *		s;
 	song_t		i = MATCH_FAILED;
 	long		mode = 0;
@@ -243,24 +251,21 @@ song_t		Songlist::findentry(Item field, bool reverse)
 	cmp[0] = pms->formatter->format(s, field, true);
 
 	/* Perform a match */
-	i = match(cmp[0], i, i - 1, mode | MATCH_NOT | MATCH_EXACT);
-	if (i == MATCH_FAILED)
-	{
+	it = match(cmp[0], i, i - 1, mode | MATCH_NOT | MATCH_EXACT);
+	if (!it) {
 		pms->log(MSG_DEBUG, 0, "gotonextentry() fails with mode = %d\n", mode);
-		return i;
+		return MPD_SONG_NO_NUM;
 	}
 
-	s = song(i);
+	s = LISTITEMSONG(it)->song;
 
 	/* Reverse match must match first entry, not last */
 	if (reverse)
 	{
 		cmp[0] = pms->formatter->format(s, field, true);
-		i = match(cmp[0], i, i - 1, mode | MATCH_NOT | MATCH_EXACT);
-		if (i != MATCH_FAILED)
-		{
-			if (++i == size())
-				i = 0;
+		it = match(cmp[0], i, i - 1, mode | MATCH_NOT | MATCH_EXACT);
+		if (it && it == last()) {
+			i = 0;
 		}
 	}
 
@@ -377,25 +382,21 @@ Songlist::subtract_song_length(int32_t t)
 ListItemSong *
 Songlist::find(Song * s)
 {
-	song_t i = MATCH_FAILED;
+	ListItem * it = NULL;
 
 	assert(s);
 
 	if (s->id != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN) {
-		i = match(Pms::tostring(pms->cursong()->id), 0, size() - 1, MATCH_ID | MATCH_EXACT);
+		it = match(Pms::tostring(pms->cursong()->id), 0, size() - 1, MATCH_ID | MATCH_EXACT);
 	} else if (s->pos != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN) {
-		i = match(Pms::tostring(pms->cursong()->pos), 0, size() - 1, MATCH_POS | MATCH_EXACT);
+		it = match(Pms::tostring(pms->cursong()->pos), 0, size() - 1, MATCH_POS | MATCH_EXACT);
 	}
 
-	if (i == MATCH_FAILED) {
-		i = match(s->file, 0, size() - 1, MATCH_FILE | MATCH_EXACT);
+	if (!it) {
+		it = match(s->file, 0, size() - 1, MATCH_FILE | MATCH_EXACT);
 	}
 
-	if (i == MATCH_FAILED) {
-		return NULL;
-	}
-
-	return LISTITEMSONG(item(i));
+	return LISTITEMSONG(it);
 }
 
 void
@@ -802,208 +803,6 @@ Songlist::title()
 }
 
 /*
- * Match a single song against criteria
- */
-bool			Songlist::match(Song * song, string src, long mode)
-{
-	vector<string>			sources;
-	bool				matched;
-	unsigned int			j;
-
-	/* try the sources in order of likeliness. ID etc last since if we're
-	 * searching for them we likely won't be searching any of the other
-	 * fields. */
-	if (mode & MATCH_TITLE)			sources.push_back(song->title);
-	if (mode & MATCH_ARTIST)		sources.push_back(song->artist);
-	if (mode & MATCH_ALBUMARTIST)		sources.push_back(song->albumartist);
-	if (mode & MATCH_COMPOSER)		sources.push_back(song->composer);
-	if (mode & MATCH_PERFORMER)		sources.push_back(song->performer);
-	if (mode & MATCH_ALBUM)			sources.push_back(song->album);
-	if (mode & MATCH_GENRE)			sources.push_back(song->genre);
-	if (mode & MATCH_DATE)			sources.push_back(song->date);
-	if (mode & MATCH_COMMENT)		sources.push_back(song->comment);
-	if (mode & MATCH_TRACKSHORT)		sources.push_back(song->trackshort);
-	if (mode & MATCH_DISC)			sources.push_back(song->disc);
-	if (mode & MATCH_FILE)			sources.push_back(song->file);
-	if (mode & MATCH_ARTISTSORT)		sources.push_back(song->artistsort);
-	if (mode & MATCH_ALBUMARTISTSORT)	sources.push_back(song->albumartistsort);
-	if (mode & MATCH_YEAR)			sources.push_back(song->year);
-	if (mode & MATCH_ID)			sources.push_back(Pms::tostring(song->id));
-	if (mode & MATCH_POS)			sources.push_back(Pms::tostring(song->pos));
-
-	for (j = 0; j < sources.size(); j++)
-	{
-		if (mode & MATCH_EXACT)
-			matched = exactmatch(&(sources[j]), &src);
-#ifdef HAVE_REGEX
-		else if (pms->options->regexsearch)
-			matched = regexmatch(&(sources[j]), &src);
-#endif
-		else
-			matched = inmatch(&(sources[j]), &src);
-
-		if (matched)
-		{
-			if (!(mode & MATCH_NOT))
-				return true;
-			else
-				continue;
-		}
-		else
-		{
-			if (mode & MATCH_NOT)
-				return true;
-		}
-	}
-
-	return false;
-}
-
-/*
- * Find next match in the range from..to.
- */
-song_t			Songlist::match(string src, unsigned int from, unsigned int to, long mode)
-{
-	int i;
-
-	if (!size()) {
-		return MATCH_FAILED;
-	}
-
-	if (from >= size()) {
-		from = size() - 1;
-	}
-
-	if (to >= size()) {
-		to = size() - 1;
-	}
-
-	if (mode & MATCH_REVERSE) {
-		i = from;
-		from = to;
-		to = i;
-	}
-
-	i = from;
-
-	while (true)
-	{
-		if (i < 0)
-			i = size() - 1;
-		else if (i >= size())
-			i = 0;
-
-		if (!song(i)) {
-			i += (mode & MATCH_REVERSE ? -1 : 1);
-			continue;
-		}
-
-		if (match(song(i), src, mode))
-			return i;
-
-		if (i == to)
-			break;
-
-		i += (mode & MATCH_REVERSE ? -1 : 1);
-	}
-
-	return MATCH_FAILED;
-}
-
-/*
- * Perform an exact match
- */
-bool		Songlist::exactmatch(string * source, string * pattern)
-{
-	return perform_match(source, pattern, 1);
-}
-
-/*
- * Perform an in-string match
- */
-bool		Songlist::inmatch(string * source, string * pattern)
-{
-	return perform_match(source, pattern, 0);
-}
-
-/*
- * Performs a case-insensitive match.
- * type:
- *  0 = match inside string also
- *  1 = match entire string only
- */
-bool		Songlist::perform_match(string * haystack, string * needle, int type)
-{
-	bool			matched = (type == 1);
-
-	string::iterator	it_haystack;
-	string::iterator	it_needle;
-
-	for (it_haystack = haystack->begin(), it_needle = needle->begin(); it_haystack != haystack->end() && it_needle != needle->end(); it_haystack++)
-	{
-		/* exit if there aren't enough characters left to match the string */
-		if (haystack->end() - it_haystack < needle->end() - it_needle)
-			return false;
-
-		/* check next character in needle with character in haystack */
-		if (::toupper(*it_needle) == ::toupper(*it_haystack))
-		{
-			/* matched a letter -- look for next letter */
-			matched = true;
-			it_needle++;
-		}
-		else if (type == 1)
-		{
-			/* didn't match a letter but need exact match */
-			return false;
-		}
-		else
-		{
-			/* didn't match a letter -- start from first letter of needle */
-			matched = false;
-			it_needle = needle->begin();
-		}
-	}
-
-	if (it_needle != needle->end())
-	{
-		/* end of the haystack before getting to the end of the needle */
-		return false;
-	}
-	if (type == 1 && it_needle == needle->end() && it_haystack != haystack->end())
-	{
-		/* need exact and got to the end of the needle but not the end of the
-		 * haystack */
-		return false;
-	}
-
-	return matched;
-}
-
-/*
- * Performs a case-insensitive regular expression match
- */
-#ifdef HAVE_REGEX
-bool		Songlist::regexmatch(string * source, string * pattern)
-{
-	bool		matched;
-	regex		reg;
-	try
-
-	{
-		reg.assign(*pattern, std::regex_constants::icase);
-		matched = regex_search(*source, reg);
-	}
-	catch (std::regex_error& err)
-	{
-		return false;
-	}
-	return matched;
-}
-#endif
-
-
-/*
  * Sort list by sort string.
  * sorts is a space-separated list of sort arguments.
  */
@@ -1296,23 +1095,21 @@ bool
 Songlist::crop_to_song(Song * song)
 {
 	vector<ListItem *>::reverse_iterator iter;
-	ListItemSong * item;
-	song_t pos;
+	ListItem * it;
 
-	pos = match(song->file, 0, size() - 1, MATCH_FILE | MATCH_EXACT);
+	it = match(song->file, 0, size() - 1, MATCH_FILE | MATCH_EXACT);
 
-	if (pos == MATCH_FAILED) {
+	if (!it) {
 		return false;
 	}
 
 	iter = items.rbegin();
 	while (iter != items.rend()) {
-		item = LISTITEMSONG(*iter);
-		assert(item);
-		if (item->song->pos == pos) {
+		if (*iter == it) {
 			continue;
 		}
-		if (!remove(item)) {
+		assert(LISTITEMSONG(*iter));
+		if (!remove(LISTITEMSONG(*iter))) {
 			/* FIXME: error reporting */
 			return false;
 		}

@@ -22,6 +22,7 @@
  */
 
 
+#include "search.h"
 #include "song.h"
 #include "songlist.h"
 #include "pms.h"
@@ -232,4 +233,62 @@ string		Song::dirname()
 		return ret;
 
 	return file.substr(0, p);
+}
+
+bool
+Song::match(string term, long flags)
+{
+	vector<string>	sources;
+	bool		matched;
+	unsigned int	j;
+
+	/* try the sources in order of likeliness. ID etc last since if we're
+	 * searching for them we likely won't be searching any of the other
+	 * fields. */
+	if (flags & MATCH_TITLE)		sources.push_back(title);
+	if (flags & MATCH_ARTIST)		sources.push_back(artist);
+	if (flags & MATCH_ALBUMARTIST)		sources.push_back(albumartist);
+	if (flags & MATCH_COMPOSER)		sources.push_back(composer);
+	if (flags & MATCH_PERFORMER)		sources.push_back(performer);
+	if (flags & MATCH_ALBUM)		sources.push_back(album);
+	if (flags & MATCH_GENRE)		sources.push_back(genre);
+	if (flags & MATCH_DATE)			sources.push_back(date);
+	if (flags & MATCH_COMMENT)		sources.push_back(comment);
+	if (flags & MATCH_TRACKSHORT)		sources.push_back(trackshort);
+	if (flags & MATCH_DISC)			sources.push_back(disc);
+	if (flags & MATCH_FILE)			sources.push_back(file);
+	if (flags & MATCH_ARTISTSORT)		sources.push_back(artistsort);
+	if (flags & MATCH_ALBUMARTISTSORT)	sources.push_back(albumartistsort);
+	if (flags & MATCH_YEAR)			sources.push_back(year);
+	if (flags & MATCH_ID)			sources.push_back(Pms::tostring(id));
+	if (flags & MATCH_POS)			sources.push_back(Pms::tostring(pos));
+
+	for (j = 0; j < sources.size(); j++)
+	{
+		if (flags & MATCH_EXACT) {
+			matched = match_exact(&(sources[j]), &term);
+		}
+#ifdef HAVE_REGEX
+		else if (pms->options->regexsearch) {
+			matched = match_regex(&(sources[j]), &term);
+		}
+#endif
+		else {
+			matched = match_inside(&(sources[j]), &term);
+		}
+
+		if (matched) {
+			if (!(flags & MATCH_NOT)) {
+				return true;
+			} else {
+				continue;
+			}
+		}
+
+		if (flags & MATCH_NOT) {
+			return true;
+		}
+	}
+
+	return false;
 }

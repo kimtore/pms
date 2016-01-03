@@ -905,17 +905,13 @@ long		Interface::select(List * list, int mode, string param)
 	}
 
 	/* Perform on range of objects */
-	i = songlist->match(param, 0, songlist->size() - 1, MATCH_ALL);
-	if (i == MATCH_FAILED)
-	{
+	item = songlist->match(param, 0, songlist->size() - 1, MATCH_ALL);
+	if (!item) {
 		pms->log(MSG_STATUS, STERR, _("No songs matching pattern %s"), param.c_str());
 		return STERR;
 	}
-	while (i != MATCH_FAILED)
-	{
-		item = songlist->item(i);
-		assert(item);
 
+	while (item) {
 		if (mode == SELECT_TOGGLE) {
 			item->set_selected(item->selected());
 		} else if (mode == SELECT_OFF) {
@@ -929,7 +925,7 @@ long		Interface::select(List * list, int mode, string param)
 			break;
 		*/
 
-		i = songlist->match(param, ++i, songlist->size() - 1, MATCH_ALL);
+		item = songlist->match(param, ++i, songlist->size() - 1, MATCH_ALL);
 	}
 
 	//win->wantdraw = true;
@@ -952,6 +948,7 @@ handle_command(pms_pending_keys action)
 	Songlist *	songlist = dynamic_cast<Songlist *>(list);
 	Songlist *	dlist = NULL;
 	ListItem *	cursor_item = list->cursor_item();
+	ListItem *	item;
 	Input_mode	mode;
 	int		i = 0;
 	long		l = 0;
@@ -1155,14 +1152,13 @@ handle_command(pms_pending_keys action)
 			pms->drawstatus();
 			if (pms->input->mode() == INPUT_JUMP)
 			{
-				/* FIXME: implement Songlist::match() for other kinds of lists */
+				i = list->cursor_position - 1;
+				i = i >= 0 ? i : list->size() - 1;
+				item = songlist->match(pms->input->text, list->cursor_position, i, MATCH_ALL);
+
+				/* FIXME: ->pos implementation should be moved to ListItem, otherwise this will crash */
 				assert(songlist);
-
-				i = songlist->cursor_position - 1;
-				i = i >= 0 ? i : songlist->size() - 1;
-				i = songlist->match(pms->input->text, songlist->cursor_position, i, MATCH_ALL);
-
-				songlist->set_cursor(i);
+				list->set_cursor(LISTITEMSONG(item)->song->pos);
 			}
 			break;
 
@@ -1181,14 +1177,11 @@ handle_command(pms_pending_keys action)
 			{
 				pms->input->searchterm = pms->input->text;
 
-				/* FIXME: implement Songlist::match() for other kinds of lists */
-				assert(songlist);
+				i = list->cursor_position - 1;
+				i = i >= 0 ? i : list->size() - 1;
+				item = songlist->match(pms->input->text, list->cursor_position, i, MATCH_ALL);
 
-				i = songlist->cursor_position - 1;
-				i = i >= 0 ? i : songlist->size() - 1;
-				i = songlist->match(pms->input->searchterm, songlist->cursor_position, i, MATCH_ALL);
-
-				if (i == -1) {
+				if (!item) {
 					pms->log(MSG_STATUS, STERR, _("Pattern not found: %s"), pms->input->text.c_str());
 				}
 
@@ -1645,6 +1638,7 @@ int		multiplay(long mode, int playmode)
 	Songlist *		playlist;
 	Songlist *		list;
 	Song *			song;
+	ListItem *		item;
 	int			i = MATCH_FAILED;
 	int			listend;
 	int			first = -1;
@@ -1672,7 +1666,7 @@ int		multiplay(long mode, int playmode)
 			if (!song->album.size()) return false;
 			pattern = song->album;
 
-			if (playlist->match(pattern, playlist->size() - 1, playlist->size() - 1, mode | MATCH_EXACT) == MATCH_FAILED)
+			if (!playlist->match(pattern, playlist->size() - 1, playlist->size() - 1, mode | MATCH_EXACT))
 			{
 				//last track of the current playlist is not part of this album
 				i = 0;
@@ -1682,8 +1676,9 @@ int		multiplay(long mode, int playmode)
 			{
 				//last track of the current playlist is part of this album
 				//get last track of the album
-				song = list->song(list->match(pattern, 0, list->size() - 1, mode | MATCH_EXACT | MATCH_REVERSE));
-				if (playlist->match(song->file, playlist->size() - 1, playlist->size() - 1, MATCH_FILE | MATCH_EXACT) != MATCH_FAILED)
+				item = list->match(pattern, 0, list->size() - 1, mode | MATCH_EXACT | MATCH_REVERSE);
+				song = LISTITEMSONG(item)->song;
+				if (playlist->match(song->file, playlist->size() - 1, playlist->size() - 1, MATCH_FILE | MATCH_EXACT))
 				{
 					//last track of playlist matches last track of album
 					i = 0;
@@ -1693,7 +1688,8 @@ int		multiplay(long mode, int playmode)
 				{
 					//find position in the library of the playlist's last track, 
 					//start adding from the one after that
-					i = list->match(static_cast<ListItemSong *>(playlist->last())->song->file, 0, list->size() - 1, MATCH_FILE | MATCH_EXACT) + 1;
+					item = list->match(LISTITEMSONG(playlist->last())->song->file, 0, list->size() - 1, MATCH_FILE | MATCH_EXACT);
+					i = LISTITEMSONG(item)->song->pos + 1;
 					pms->log(MSG_STATUS, STOK, _("%s remainder of album '%s' by %s"), pmode.c_str(), song->album.c_str(), song->artist.c_str());
 				}
 			}
@@ -1716,12 +1712,16 @@ int		multiplay(long mode, int playmode)
 
 	while (i < list->size())
 	{
-		i = list->match(pattern, i, list->size() - 1, mode | MATCH_EXACT);
-		if (i == MATCH_FAILED) break;
+		item = list->match(pattern, i, list->size() - 1, mode | MATCH_EXACT);
+		if (!item) {
+			break;
+		}
+		assert(LISTITEMSONG(item));
+		i = LISTITEMSONG(item)->song->pos;
 		if (first == -1) {
 			first = playlist->size();
 		}
-		if (pms->comm->add(playlist, list->song(i)) == MPD_SONG_NO_ID) {
+		if (pms->comm->add(playlist, LISTITEMSONG(item)->song) == MPD_SONG_NO_ID) {
 			return false;
 		}
 		++i;

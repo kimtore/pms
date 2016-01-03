@@ -52,6 +52,13 @@ public:
 	string		strip_leading_zeroes(string * src);
 	string		dirname();
 
+	/**
+	 * Match this song against a search string and criteria flags.
+	 *
+	 * Returns true if song matches, false otherwise.
+	 */
+	bool		match(string term, long flags);
+
 	/* Custom parameters only used by PMS */
 	
 	bool		selected;

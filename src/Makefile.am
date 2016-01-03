@@ -18,6 +18,7 @@ pms_SOURCES = \
     playlist.cpp \
     pms.cpp \
     queue.cpp \
+	search.cpp \
     set_parameters.cpp \
     song.cpp \
     songlist.cpp

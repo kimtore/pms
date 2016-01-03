@@ -99,6 +99,8 @@ public:
 
 			ListItemSong(List * l, Song * s);
 			~ListItemSong();
+
+	bool		match(string term, long flags);
 };
 
 class Songlist : public List
@@ -166,16 +168,6 @@ public:
 	 * numbers them sequentially.
 	 */
 	void			renumber_pos();
-
-	vector<song_t> *	matchall(string, long);
-	song_t			match(string, unsigned int, unsigned int, long);
-	bool			match(Song *, string, long);
-#ifdef HAVE_REGEX
-	bool			regexmatch(string *, string *);
-#endif
-	bool			exactmatch(string *, string *);
-	bool			inmatch(string *, string *);
-	bool			perform_match(string *, string *, int);
 
 	unsigned int		cursor();
 	Song *			cursorsong();

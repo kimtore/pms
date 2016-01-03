@@ -47,3 +47,9 @@ ListItem::selected()
 {
 	return selected_;
 }
+
+bool
+ListItem::match(string term, long flags)
+{
+	return false;
+}

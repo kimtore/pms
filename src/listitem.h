@@ -20,6 +20,10 @@
 #ifndef _PMS_LISTITEM_H_
 #define _PMS_LISTITEM_H_
 
+#include <string>
+
+using namespace std;
+
 class List;
 
 class ListItem
@@ -46,6 +50,14 @@ public:
 	 * @return Selection state.
 	 */
 	bool			selected();
+
+	/**
+	 * Match this ListItem against search criteria. This method should be
+	 * overridden in subclasses.
+	 *
+	 * Returns true if the match succeeds, false otherwise.
+	 */
+	virtual bool		match(string term, long flags);
 };
 
 #endif /* _PMS_LISTITEM_H_ */

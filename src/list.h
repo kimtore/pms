@@ -145,6 +145,13 @@ public:
 	 */
 	void				set_selection_cache_valid(bool state);
 
+	/*
+	 * Find next matching ListItem in the range from..to.
+	 *
+	 * Returns a ListItem pointer if a match was found, or NULL if no match.
+	 */
+	ListItem *			match(string pattern, unsigned int from, unsigned int to, long flags);
+
 	/**
 	 * Return the absolute position of the list item visible in the top of
 	 * the viewport.
