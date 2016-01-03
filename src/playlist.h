@@ -37,9 +37,15 @@ private:
 	time_t			_last_modified;
 	bool			_synchronized;
 	bool			_exists_in_mpd;
+	string			_filename;
 
 public:
 	Playlist();
+
+	/**
+	 * Override base class.
+	 */
+	const char *		title();
 
 	void			assign_metadata_from_mpd(mpd_playlist * playlist);
 	time_t			get_last_modified();

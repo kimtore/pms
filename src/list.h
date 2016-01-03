@@ -66,6 +66,11 @@ protected:
 	bool				selection_cache_valid_;
 
 	/**
+	 * Title of this list, shown at the top.
+	 */
+	string				title_;
+
+	/**
 	 * Build a cache of selected list items, and put them in the selection
 	 * vector.
 	 */
@@ -228,7 +233,12 @@ public:
 	/**
 	 * Return the title of this list as a C string.
 	 */
-	virtual const char *		title() = 0;
+	virtual const char *		title();
+
+	/**
+	 * Set the title of this list.
+	 */
+	void				set_title(string new_title);
 
 	/* FIXME: needed? */
 	bool				move(uint32_t, uint32_t);

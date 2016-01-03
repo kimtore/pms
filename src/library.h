@@ -28,6 +28,8 @@
 class Library : public Songlist
 {
 public:
+				Library();
+
 	/**
 	 * Called when the user requests to remove a song from the MPD library.
 	 * The library is read-only, so an error is returned.

@@ -28,6 +28,8 @@
 class Queue : public Songlist
 {
 public:
+				Queue();
+
 	/**
 	 * Remove a song from the MPD queue.
 	 *

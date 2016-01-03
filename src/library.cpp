@@ -20,6 +20,11 @@
 
 #include "library.h"
 
+Library::Library()
+{
+	set_title("Library");
+}
+
 bool
 Library::remove(ListItem * i)
 {

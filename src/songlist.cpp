@@ -29,6 +29,7 @@
 #include "songlist.h"
 #include "song.h"
 #include "config.h"
+#include "queue.h"
 #include "pms.h"
 
 extern Pms *			pms;
@@ -69,7 +70,6 @@ Songlist::Songlist()
 	filename = "";
 	selection_params.size = 0;
 	selection_params.length = 0;
-	role = LIST_ROLE_PLAYLIST;
 }
 
 Songlist::~Songlist()
@@ -110,7 +110,7 @@ Songlist::next_song_in_direction(Song * s, uint8_t direction, song_t * id)
 	}
 
 	/* Find the current song in this list */
-	if (s->pos != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN) {
+	if (s->pos != MPD_SONG_NO_NUM && QUEUE(this)) {
 		it = match(Pms::tostring(s->pos), 0, size() - 1, MATCH_POS);
 	}
 
@@ -386,9 +386,9 @@ Songlist::find(Song * s)
 
 	assert(s);
 
-	if (s->id != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN) {
+	if (s->id != MPD_SONG_NO_NUM && QUEUE(this)) {
 		it = match(Pms::tostring(pms->cursong()->id), 0, size() - 1, MATCH_ID | MATCH_EXACT);
-	} else if (s->pos != MPD_SONG_NO_NUM && role == LIST_ROLE_MAIN) {
+	} else if (s->pos != MPD_SONG_NO_NUM && QUEUE(this)) {
 		it = match(Pms::tostring(pms->cursong()->pos), 0, size() - 1, MATCH_POS | MATCH_EXACT);
 	}
 
@@ -735,7 +735,7 @@ Songlist::draw()
 			hilight = pms->options->colors->selection;
 		}
 		else if (pms->cursong()) {
-                        if ((role == LIST_ROLE_MAIN && pms->cursong()->id == s->id) || (role != LIST_ROLE_MAIN && s->file == pms->cursong()->file)) {
+                        if ((QUEUE(this) && pms->cursong()->id == s->id) || (!QUEUE(this) && s->file == pms->cursong()->file)) {
 				hilight = pms->options->colors->current;
 			}
 		}
@@ -783,23 +783,6 @@ Songlist::draw()
 	}
 
 	return true;
-}
-
-const char *
-Songlist::title()
-{
-	/* FIXME: use subclasses */
-	switch(role) {
-		case LIST_ROLE_MAIN:
-			return "Queue";
-		case LIST_ROLE_LIBRARY:
-			return "Library";
-		case LIST_ROLE_PLAYLIST:
-			return filename.c_str();
-		default:;
-	}
-
-	assert(false);
 }
 
 /*

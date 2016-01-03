@@ -347,6 +347,18 @@ List::adjust_viewport_to_cursor()
 	}
 }
 
+const char *
+List::title()
+{
+	return title_.c_str();
+}
+
+void
+List::set_title(string new_title)
+{
+	title_ = new_title;
+}
+
 void
 List::set_bounding_box(BBox * bbox_)
 {

@@ -27,6 +27,11 @@ extern Pms * pms;
 
 #define EXIT_IDLE if (!pms->comm->exit_idle()) { return false; }
 
+Queue::Queue()
+{
+	set_title("Queue");
+}
+
 bool
 Queue::remove(ListItem * i)
 {

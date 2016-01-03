@@ -184,8 +184,6 @@ Control::Control(Connection * n_conn)
 	st->last_playlist = -1;
 	_playlist = new Queue;
 	_library = new Library;
-	_playlist->role = LIST_ROLE_MAIN;
-	_library->role = LIST_ROLE_LIBRARY;
 	_active = NULL;
 	_is_idle = false;
 	command_mode = 0;

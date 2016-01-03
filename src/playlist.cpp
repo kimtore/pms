@@ -41,6 +41,12 @@ Playlist::get_last_modified()
 	return _last_modified;
 }
 
+const char *
+Playlist::title()
+{
+	return _filename.c_str();
+}
+
 /**
  * Set filename and last_modified tags from MPD playlist.
  */
@@ -49,7 +55,7 @@ Playlist::assign_metadata_from_mpd(mpd_playlist * playlist)
 {
 	time_t last_mod = _last_modified;
 
-	filename = mpd_playlist_get_path(playlist);
+	_filename = mpd_playlist_get_path(playlist);
 	_last_modified = mpd_playlist_get_last_modified(playlist);
 	_exists_in_mpd = true;
 
@@ -101,5 +107,5 @@ Playlist::remove(ListItem * i)
 {
 	ListItemSong * item_song = LISTITEMSONG(i);
 	assert(item_song->song);
-	return mpd_run_playlist_delete(pms->conn->h(), filename.c_str(), item_song->song->pos);
+	return mpd_run_playlist_delete(pms->conn->h(), _filename.c_str(), item_song->song->pos);
 }

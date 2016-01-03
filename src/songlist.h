@@ -78,14 +78,6 @@ enum
 	MATCH_GTE		= 1 << 25
 };
 
-typedef enum
-{
-	LIST_ROLE_MAIN,
-	LIST_ROLE_LIBRARY,
-	LIST_ROLE_PLAYLIST
-}
-List_role;
-
 struct Selection
 {
 	song_t				size;
@@ -131,11 +123,9 @@ public:
 				Songlist();
 				~Songlist();
 
-	List_role		role;
 	string			filename;
 
 	bool			draw();
-	const char *		title();
 
 	/**
 	 * Return the first occurrence of a song.
