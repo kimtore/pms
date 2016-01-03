@@ -37,7 +37,14 @@ public:
 				ListItem(List * owner);
 	virtual			~ListItem();
 
+	/**
+	 * Set whether this ListItem is selected in the list context.
+	 */
 	void			set_selected(bool state);
+
+	/**
+	 * @return Selection state.
+	 */
 	bool			selected();
 };
 

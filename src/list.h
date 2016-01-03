@@ -77,11 +77,6 @@ protected:
 	bool				selection_cache_valid();
 
 	/**
-	 * Set the selection cache status.
-	 */
-	void				set_selection_cache_valid(bool state);
-
-	/**
 	 * Remove an item from the list.
 	 */
 	void				remove_local(uint32_t position);
@@ -143,6 +138,12 @@ public:
 	 * Returns true on success, false on failure.
 	 */
 	bool				remove_selection();
+
+	/**
+	 * Set the selection cache status. If false, the cache will be
+	 * regenerated next time the list selection is needed.
+	 */
+	void				set_selection_cache_valid(bool state);
 
 	/**
 	 * Return the absolute position of the list item visible in the top of

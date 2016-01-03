@@ -35,7 +35,11 @@ ListItem::~ListItem()
 void
 ListItem::set_selected(bool state)
 {
+	if (state == selected_) {
+		return;
+	}
 	selected_ = state;
+	list->set_selection_cache_valid(false);
 }
 
 bool
