@@ -544,20 +544,30 @@ List::match(string pattern, unsigned int from, unsigned int to, long flags)
 }
 
 ListItem *
-List::match_until_cursor(string pattern, long flags)
+List::match_wrap_around(string pattern, int32_t from, long flags)
 {
-	int32_t from;
 	int32_t to;
 
 	if (!size()) {
 		return NULL;
 	}
 
-	from = cursor_position;
-	if (from == 0) {
-		to = size() - 1;
-	} else {
+	if (flags & ~MATCH_REVERSE) {
+		if (from >= size()) {
+			from = 0;
+		}
 		to = from - 1;
+		if (to < 0) {
+			to = size() - 1;
+		}
+	} else {
+		if (from < 0) {
+			from = size() - 1;
+		}
+		to = from + 1;
+		if (to >= size()) {
+			to = 0;
+		}
 	}
 
 	return match(pattern, from, to, flags);
