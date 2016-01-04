@@ -27,8 +27,9 @@ PKG_CHECK_MODULES([libmpdclient], [libmpdclient >= 2.5],, [AC_MSG_ERROR([libmpdc
 # Check for Pandoc
 AC_PATH_PROG(PANDOC,pandoc,no)
 if [[ "x$PANDOC" = xno ]]; then
-    AC_MSG_ERROR([Pandoc is required to build the manual page])
+    AC_MSG_WARN([The manual page will not be built.])
 fi
+AM_CONDITIONAL([PANDOC], [test "x$PANDOC" = xyes])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h libintl.h limits.h locale.h netdb.h netinet/in.h stdlib.h string.h sys/param.h sys/socket.h sys/time.h unistd.h])
