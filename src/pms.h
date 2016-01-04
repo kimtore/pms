@@ -36,6 +36,7 @@
 #define PMS_EXIT_NOWINDOWS 6
 #define PMS_EXIT_CONFIGERR 7
 #define PMS_EXIT_LOMEM 8
+#define PMS_EXIT_NOSIGNAL 9
 
 #include "../config.h"
 #include <assert.h>
@@ -72,6 +73,13 @@ using namespace std;
 void					debug(const char *, ...);
 struct timespec				difftime(struct timespec, struct timespec);
 
+/**
+ * Signal handler for SIGWINCH.
+ *
+ * This function must not be called until the pms object has been instantiated.
+ */
+void
+signal_handle_sigwinch(int signal);
 
 /*
  * This is the program itself, everything is run within here.

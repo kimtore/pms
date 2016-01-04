@@ -142,7 +142,7 @@ pms_pending_keys	Input::dispatch()
 	this->param.clear();
 
 	if (ch == KEY_RESIZE) {
-		pending = PEND_RESIZE;
+		pending = PEND_NONE;
 		return pending;
 	}
 

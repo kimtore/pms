@@ -76,6 +76,13 @@ public:
 	uint16_t	width();
 	uint16_t	height();
 
+	/**
+	 * Run a real ncurses wclear() on this BBox.
+	 *
+	 * Returns true if successful, false otherwise.
+	 */
+	bool		force_clear();
+
 	bool		clear(color * c);
 	bool		refresh();
 	bool		resize(const Point & tl_, const Point & br_);

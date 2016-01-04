@@ -102,6 +102,16 @@ BBox::height()
 }
 
 bool
+BBox::force_clear()
+{
+	if (wclear(window) == ERR) {
+		return false;
+	}
+
+	return true;
+}
+
+bool
 BBox::clear(color * c)
 {
 	int16_t y = height() - 1;
@@ -192,6 +202,7 @@ Display::init()
 	initscr();
 	raw();
 	noecho();
+	nodelay(stdscr, false);
 	keypad(stdscr, true);
 	setmousemask();
 
@@ -489,15 +500,16 @@ Display::draw()
 /*
  * Redraws all visible windows regardless of state
  */
-void		Display::forcedraw()
+void
+Display::forcedraw()
 {
-	assert(false);
-	/*
-	topbar->draw();
-	statusbar->draw();
-	positionreadout->draw();
-	if (curwin) curwin->draw();
-	*/
+	vector<List *>::iterator it;
+
+	for (it = lists.begin(); it != lists.end(); it++) {
+		(*it)->bbox->force_clear();
+	}
+
+	draw();
 }
 
 /*

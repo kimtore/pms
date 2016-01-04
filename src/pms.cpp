@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
+#include <signal.h>
 
 /* Maximum time to spend waiting for events in main loop */
 #define MAIN_LOOP_INTERVAL 1000
@@ -62,6 +63,13 @@ int main(int argc, char *argv[])
 
 	delete pms;
 	return exitcode;
+}
+
+void
+signal_handle_sigwinch(int signal)
+{
+	assert(pms);
+	pms->options->set_changed_flags(OPT_GROUP_DISPLAY);
 }
 
 /**
@@ -272,9 +280,10 @@ Pms::run_options_changed()
 
 	if (flags & OPT_GROUP_DISPLAY) {
 		log(MSG_DEBUG, 0, "Some options requiring redraw has been changed; drawing entire screen.\n");
+		endwin();
+		refresh();
 		disp->resized();
 		disp->draw();
-		disp->refresh();
 	}
 
 	if (flags & OPT_GROUP_CROSSFADE) {
@@ -283,8 +292,7 @@ Pms::run_options_changed()
 
 	if (flags & OPT_GROUP_COLUMNS) {
 		log(MSG_DEBUG, 0, "Some options requiring change of column width has been changed.\n");
-		// FIXME
-		//disp->active_list->set_column_size();
+		disp->resized();
 	}
 
 	if (flags & OPT_GROUP_SORT) {
@@ -647,6 +655,7 @@ int			Pms::init()
 {
 	string			str;
 	vector<string> *	tok;
+	struct sigaction	sa;
 
 	int			exitcode;
 	char *			host;
@@ -753,6 +762,15 @@ int			Pms::init()
 	input	= new Input();
 	if (!conn || !comm || !disp || !input)
 		return PMS_EXIT_LOMEM;
+
+	/* Set up signal handling */
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sa.sa_handler = signal_handle_sigwinch;
+	if (sigaction(SIGWINCH, &sa, NULL)) {
+		perror("Unable to register SIGWINCH signal handler");
+		return PMS_EXIT_NOSIGNAL;
+	}
 
 	/* Initialization finished */
 	return PMS_EXIT_SUCCESS;
