@@ -141,6 +141,11 @@ pms_pending_keys	Input::dispatch()
 	this->pending = PEND_NONE;
 	this->param.clear();
 
+	if (ch == KEY_RESIZE) {
+		pending = PEND_RESIZE;
+		return pending;
+	}
+
 	if (_mode == INPUT_NORMAL)
 		return dispatch_normal();
 	else if (_mode == INPUT_LIST)
@@ -242,12 +247,6 @@ pms_pending_keys	Input::dispatch_normal()
 
 	if (ch == -1)
 		return PEND_NONE;
-
-	if (ch == KEY_RESIZE)
-	{
-		pending = PEND_RESIZE;
-		return pending;
-	}
 
 	/* Mouse event */
 	/* FIXME: refactor
