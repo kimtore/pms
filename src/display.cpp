@@ -59,42 +59,36 @@ BBox::BBox()
 	window = NULL;
 }
 
-inline
 uint16_t
 BBox::top()
 {
 	return tl.y;
 }
 
-inline
 uint16_t
 BBox::bottom()
 {
 	return br.y;
 }
 
-inline
 uint16_t
 BBox::left()
 {
 	return tl.x;
 }
 
-inline
 uint16_t
 BBox::right()
 {
 	return br.x;
 }
 
-inline
 uint16_t
 BBox::width()
 {
 	return br.x - tl.x + 1;
 }
 
-inline
 uint16_t
 BBox::height()
 {
