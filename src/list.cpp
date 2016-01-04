@@ -174,14 +174,12 @@ List::item(uint32_t index)
 	return items[index];
 }
 
-inline
 uint32_t
 List::size()
 {
 	return items.size();
 }
 
-inline
 int32_t
 List::top_position()
 {
@@ -208,7 +206,6 @@ List::bottom_position()
 	return p;
 }
 
-inline
 int32_t
 List::min_top_position()
 {
@@ -451,7 +448,6 @@ List::build_selection_cache()
 	set_selection_cache_valid(true);
 }
 
-inline
 bool
 List::selection_cache_valid()
 {

@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+extern Pms * pms;
 
 Song::Song(const mpd_song * song)
 {
