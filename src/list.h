@@ -151,11 +151,19 @@ public:
 	void				set_selection_cache_valid(bool state);
 
 	/*
-	 * Find next matching ListItem in the range from..to.
+	 * Find matching ListItem in the range from..to.
 	 *
 	 * Returns a ListItem pointer if a match was found, or NULL if no match.
 	 */
 	ListItem *			match(string pattern, unsigned int from, unsigned int to, long flags);
+
+	/**
+	 * Find matching ListItem, starting from after the cursor position,
+	 * wrapping around and searching to the item beneath the cursor.
+	 *
+	 * Returns a ListItem pointer if a match was found, or NULL if no match.
+	 */
+	ListItem *			match_until_cursor(string pattern, long flags);
 
 	/**
 	 * Return the absolute position of the list item visible in the top of

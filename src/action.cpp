@@ -1152,9 +1152,10 @@ handle_command(pms_pending_keys action)
 			pms->drawstatus();
 			if (pms->input->mode() == INPUT_JUMP)
 			{
-				i = list->cursor_position - 1;
-				i = i >= 0 ? i : list->size() - 1;
-				item = songlist->match(pms->input->text, list->cursor_position, i, MATCH_ALL);
+				item = songlist->match_until_cursor(pms->input->text, MATCH_ALL);
+				if (!item) {
+					break;
+				}
 
 				/* FIXME: ->pos implementation should be moved to ListItem, otherwise this will crash */
 				assert(songlist);
@@ -1177,9 +1178,7 @@ handle_command(pms_pending_keys action)
 			{
 				pms->input->searchterm = pms->input->text;
 
-				i = list->cursor_position - 1;
-				i = i >= 0 ? i : list->size() - 1;
-				item = songlist->match(pms->input->text, list->cursor_position, i, MATCH_ALL);
+				item = songlist->match_until_cursor(pms->input->text, MATCH_ALL);
 
 				if (!item) {
 					pms->log(MSG_STATUS, STERR, _("Pattern not found: %s"), pms->input->text.c_str());

@@ -542,3 +542,23 @@ List::match(string pattern, unsigned int from, unsigned int to, long flags)
 
 	return NULL;
 }
+
+ListItem *
+List::match_until_cursor(string pattern, long flags)
+{
+	int32_t from;
+	int32_t to;
+
+	if (!size()) {
+		return NULL;
+	}
+
+	from = cursor_position;
+	if (from == 0) {
+		to = size() - 1;
+	} else {
+		to = from - 1;
+	}
+
+	return match(pattern, from, to, flags);
+}
