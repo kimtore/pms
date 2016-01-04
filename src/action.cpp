@@ -1240,7 +1240,13 @@ handle_command(pms_pending_keys action)
 
 		/* Searching */
 		case PEND_JUMPNEXT:
-			item = list->match_wrap_around(pms->input->text, list->cursor_position + 1, MATCH_ALL);
+		case PEND_JUMPPREV:
+			i = MATCH_ALL;
+			if (action == PEND_JUMPPREV) {
+				i |= MATCH_REVERSE;
+			}
+
+			item = list->match_wrap_around(pms->input->text, list->cursor_position + (action == PEND_JUMPNEXT ? 1 : -1), i);
 			if (!item) {
 				pms->log(MSG_STATUS, STERR, "Pattern not found: %s", pms->input->searchterm.c_str());
 				break;
@@ -1250,26 +1256,6 @@ handle_command(pms_pending_keys action)
 			assert(songlist);
 			pms->log(MSG_STATUS, STOK, "/%s", pms->input->searchterm.c_str());
 			list->set_cursor(LISTITEMSONG(item)->song->pos);
-			break;
-
-		case PEND_JUMPPREV:
-			assert(false);
-			/*
-			if (!win || win->type() != WIN_ROLE_PLAYLIST)
-			{
-				pms->log(MSG_STATUS, STERR, _("Can't search within this window."));
-				break;
-			}
-			pms->log(MSG_STATUS, STOK, "?%s", pms->input->searchterm.c_str());
-			if (win->jumpto(pms->input->searchterm, win->plist()->cursor(), true))
-			{
-				pms->log(MSG_STATUS, STOK, "?%s", pms->input->searchterm.c_str());
-			}
-			else
-			{
-				pms->log(MSG_STATUS, STERR, "Pattern not found: %s", pms->input->searchterm.c_str());
-			}
-			*/
 			break;
 
 		case PEND_JUMPMODE:

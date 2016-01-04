@@ -509,12 +509,6 @@ List::match(string pattern, unsigned int from, unsigned int to, long flags)
 	assert(from < size());
 	assert(to < size());
 
-	if (flags & MATCH_REVERSE) {
-		i = from;
-		from = to;
-		to = i;
-	}
-
 	i = from;
 
 	while (true)
@@ -552,7 +546,7 @@ List::match_wrap_around(string pattern, int32_t from, long flags)
 		return NULL;
 	}
 
-	if (flags & ~MATCH_REVERSE) {
+	if (!(flags & MATCH_REVERSE)) {
 		if (from >= size()) {
 			from = 0;
 		}
