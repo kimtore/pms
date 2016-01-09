@@ -1,7 +1,7 @@
 /* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS	<<Practical Music Search>>
- * Copyright (C) 2006-2015  Kim Tore Jensen
+ * Copyright (C) 2006-2016  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -254,12 +254,12 @@ Pms::goto_current_playing_song()
 	songlist = SONGLIST(disp->active_list);
 
 	while (!songlist || (list_item = songlist->find(cursong())) == NULL) {
-		if (songlist == comm->playlist()) {
+		if (songlist == comm->queue()) {
 			return false;
 		} else if (list_item) {
 			break;
 		}
-		songlist = comm->playlist();
+		songlist = comm->queue();
 		disp->activate_list(songlist);
 	}
 
@@ -451,15 +451,15 @@ Pms::main()
 
 	/* Add queue and library to display class.
 	 * FIXME: not our responsibility? */
-	disp->add_list(comm->playlist());
+	disp->add_list(comm->queue());
 	disp->add_list(comm->library());
 
 	/* Focus startup list */
 	if (options->startuplist == "playlist") {
 		disp->activate_list(comm->library());
-		disp->activate_list(comm->playlist());
+		disp->activate_list(comm->queue());
 	} else if (options->startuplist == "library") {
-		disp->activate_list(comm->playlist());
+		disp->activate_list(comm->queue());
 		disp->activate_list(comm->library());
 	} else {
 		assert(false);
@@ -570,7 +570,7 @@ Pms::main()
 		 * triggers draw, etc. */
 		/* FIXME: move responsibilities? */
 		if (comm->has_finished_update(MPD_IDLE_PLAYLIST)) {
-			comm->playlist()->set_column_size();
+			comm->queue()->set_column_size();
 			comm->clear_finished_update(MPD_IDLE_PLAYLIST);
 		}
 
@@ -580,7 +580,7 @@ Pms::main()
 			/* Shell command when song finishes */
 			/* FIXME: move into separate function */
 			if (comm->status()->state == MPD_STATE_STOP && input->getpending() != PEND_STOP) {
-				if (options->onplaylistfinish.size() > 0 && cursong() && cursong()->pos == comm->playlist()->size() - 1) {
+				if (options->onplaylistfinish.size() > 0 && cursong() && cursong()->pos == comm->queue()->size() - 1) {
 					log(MSG_CONSOLE, STOK, _("Reached end of playlist, running automation command: %s"), options->onplaylistfinish.c_str());
 					int code = system(options->onplaylistfinish.c_str());
 				}
@@ -1165,7 +1165,7 @@ Pms::playstring()
 		return s;
 	}
 
-	playlist_is_active = (comm->activelist() == comm->playlist());
+	playlist_is_active = (comm->activelist() == comm->queue());
 	library_is_active = (comm->activelist() == comm->library());
 
 	s = "Playing ";
@@ -1189,7 +1189,7 @@ Pms::playstring()
 	}
 
 	/* FIXME: separate function? */
-	is_last_in_playlist = (cursong()->pos == comm->playlist()->size() - 1);
+	is_last_in_playlist = (cursong()->pos == comm->queue()->size() - 1);
 
 	if (status->repeat) {
 		s += "songs from playlist repeatedly.";
@@ -1342,7 +1342,7 @@ bool			Pms::progress_nextsong()
 	 * because MPD handles the rest. */
 	list = comm->activelist();
 	assert(list != NULL);
-	if (list == comm->playlist()) {
+	if (list == comm->queue()) {
 		return false;
 	}
 
@@ -1361,7 +1361,7 @@ bool			Pms::progress_nextsong()
 	last_song_id = cursong()->id;
 
 	/* Normal progression: reached end of playlist */
-	if (cursong()->pos == static_cast<int>(comm->playlist()->size() - 1)) {
+	if (cursong()->pos == static_cast<int>(comm->queue()->size() - 1)) {
 
 		pms->log(MSG_DEBUG, 0, "Auto-progressing to next song.\n");
 
@@ -1370,7 +1370,7 @@ bool			Pms::progress_nextsong()
 		{
 			pms->log(MSG_DEBUG, 0, "Playback follows cursor: last cursor=%p, now cursor=%p.\n", lastcursor, disp->cursorsong());
 			lastcursor = disp->cursorsong();
-			last_song_id = comm->add(comm->playlist(), lastcursor);
+			last_song_id = comm->add(comm->queue(), lastcursor);
 		}
 
 		/* Normal song progression */

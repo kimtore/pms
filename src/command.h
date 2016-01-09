@@ -215,7 +215,7 @@ private:
 	bool			_is_idle;
 
 	Song			*_song;
-	Songlist		*_playlist;
+	Songlist		*_queue;
 	Songlist		*_library;
 	Songlist		*_active;
 
@@ -326,7 +326,7 @@ public:
 
 	Mpd_status	*status() { return st; };
 	Song		*song() { return _song; };
-	Songlist	*playlist() { return _playlist; };
+	Songlist	*queue() { return _queue; };
 	Songlist	*library() { return _library; };
 
 	bool		increment();

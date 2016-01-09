@@ -479,7 +479,7 @@ long		Interface::play()
 
 	if (song->id == MPD_SONG_NO_ID)
 	{
-		s = pms->comm->add(pms->comm->playlist(), song);
+		s = pms->comm->add(pms->comm->queue(), song);
 		if (s == MPD_SONG_NO_ID)
 		{
 			generr();
@@ -511,7 +511,7 @@ long		Interface::add(string param)
 	size_t		i = 0;
 
 	songlist = dynamic_cast<Songlist *>(pms->disp->active_list);
-	dlist = pms->comm->playlist();
+	dlist = pms->comm->queue();
 
 	if (!songlist) return STERR;
 
@@ -526,9 +526,9 @@ long		Interface::add(string param)
 	{
 		pms->log(MSG_DEBUG, 0, "Adding list to list.\n");
 		list = win->current()->plist();
-		pms->comm->add(list, pms->comm->playlist());
+		pms->comm->add(list, pms->comm->queue());
 		pms->log(MSG_STATUS, STOK, _("%d songs from %s appended to playlist."), list->size(), list->filename.c_str());
-		setwin(pms->disp->findwlist(pms->comm->playlist()));
+		setwin(pms->disp->findwlist(pms->comm->queue()));
 		return STOK;
 	}
 	*/
@@ -540,7 +540,7 @@ long		Interface::add(string param)
 		assert(false);
 	}
 
-	if (dlist == pms->comm->playlist())
+	if (dlist == pms->comm->queue())
 		s = _("playlist");
 	else if (dlist == pms->comm->library())
 		s = _("library");
@@ -616,7 +616,7 @@ Interface::prev()
 	cs = pms->cursong();
 	if (cs == NULL)
 	{
-		if (pms->comm->playlist()->size() == 0) {
+		if (pms->comm->queue()->size() == 0) {
 			pms->log(MSG_STATUS, STERR, _("Can't skip backwards because the playlist is empty."));
 			return STERR;
 		}
@@ -627,7 +627,7 @@ Interface::prev()
 		if (cs->pos <= 0)
 		{
 			if (pms->comm->status()->repeat) {
-				i = pms->comm->playlist()->size();
+				i = pms->comm->queue()->size();
 			}
 			else
 			{
@@ -642,13 +642,13 @@ Interface::prev()
 	}
 
 	--i;
-	if (i < 0 || i >= pms->comm->playlist()->size())
+	if (i < 0 || i >= pms->comm->queue()->size())
 	{
 		pms->log(MSG_CONSOLE, STERR, _("Previous song: out of range.\n"));
 		return STERR;
 	}
 
-	cs = pms->comm->playlist()->song(i);
+	cs = pms->comm->queue()->song(i);
 	pms->comm->playid(cs->id);
 	//pms->drawstatus();
 
@@ -1061,7 +1061,7 @@ handle_command(pms_pending_keys action)
 			if (!songlist) songlist = pms->comm->library();
 
 			/* Don't re-add songs from playlist, but rather play them again. */
-			if (songlist == pms->comm->playlist()) {
+			if (songlist == pms->comm->queue()) {
 				if (action == PEND_PLAYRANDOM)
 				{
 					song = songlist->randsong();
@@ -1084,15 +1084,15 @@ handle_command(pms_pending_keys action)
 				{
 					song = songlist->randsong();
 					if (sn == MPD_SONG_NO_NUM)
-						sn = pms->comm->add(pms->comm->playlist(), song);
+						sn = pms->comm->add(pms->comm->queue(), song);
 					else
-						pms->comm->add(pms->comm->playlist(), song);
+						pms->comm->add(pms->comm->queue(), song);
 				}
 			}
 			else
 			{
 				song = songlist->randsong();
-				sn = pms->comm->add(pms->comm->playlist(), song);
+				sn = pms->comm->add(pms->comm->queue(), song);
 			}
 
 			if (sn == MPD_SONG_NO_NUM)
@@ -1312,7 +1312,7 @@ handle_command(pms_pending_keys action)
 				if (action == PEND_SAVEPLAYLIST)
 				{
 					// if this is not the exact version of the playlist itself, remember to clear it out.
-					if (tmpwin->plist() != pms->comm->playlist() || tmpwin->plist()->filtercount() > 0)
+					if (tmpwin->plist() != pms->comm->queue() || tmpwin->plist()->filtercount() > 0)
 					{
 						pms->comm->clear(list);
 					}
@@ -1418,7 +1418,7 @@ handle_command(pms_pending_keys action)
 
 		case PEND_CHANGEWIN:
 			if (pms->input->param == "playlist") {
-				pms->disp->activate_list(pms->comm->playlist());
+				pms->disp->activate_list(pms->comm->queue());
 			} else if (pms->input->param == "library") {
 				pms->disp->activate_list(pms->comm->library());
 			} else if (pms->input->param == "windowlist") {
@@ -1566,24 +1566,24 @@ int		playnext(int playnow)
 	Song *		song;
 	int		i;
 
-	last_item = dynamic_cast<ListItemSong *>(pms->comm->playlist()->last());
+	last_item = dynamic_cast<ListItemSong *>(pms->comm->queue()->last());
 
 	if (!pms->comm->status()->random) {
 		if (!pms->cursong() || last_item->song->pos != pms->cursong()->pos)
-			song = pms->comm->playlist()->nextsong();
+			song = pms->comm->queue()->nextsong();
 		else
 			song = pms->comm->activelist()->nextsong();
 
 		if (!song) return MPD_SONG_NO_ID;
 
 		if (song->id == MPD_SONG_NO_NUM)
-			i = pms->comm->add(pms->comm->playlist(), song);
+			i = pms->comm->add(pms->comm->queue(), song);
 		else
 			i = song->id;
 	} else {
 		if (pms->cursong() && last_item->song->pos != pms->cursong()->pos)
 		{
-			song = pms->comm->playlist()->nextsong();
+			song = pms->comm->queue()->nextsong();
 			if (!song) return MPD_SONG_NO_ID;
 			i = song->id;
 		}
@@ -1591,7 +1591,7 @@ int		playnext(int playnow)
 		{
 			song = pms->comm->activelist()->randsong();
 			if (!song) return MPD_SONG_NO_ID;
-			i = pms->comm->add(pms->comm->playlist(), song);
+			i = pms->comm->add(pms->comm->queue(), song);
 		}
 	}
 
@@ -1623,7 +1623,7 @@ int		multiplay(long mode, int playmode)
 	string			pmode;
 
 	list = dynamic_cast<Songlist *>(pms->disp->active_list);
-	playlist = pms->comm->playlist();
+	playlist = pms->comm->queue();
 	if (list == playlist) return false;
 	song = list->cursorsong();
 	if (song == NULL) return false;

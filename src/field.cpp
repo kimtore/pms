@@ -1,7 +1,7 @@
 /* vi:set ts=8 sts=8 sw=8 noet:
  *
  * PMS  <<Practical Music Search>>
- * Copyright (C) 2006-2015  Kim Tore Jensen
+ * Copyright (C) 2006-2016  Kim Tore Jensen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -661,17 +661,17 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			break;
 
 		case QUEUESIZE:
-			if (!pms->comm || !pms->comm->playlist()) return "";
+			if (!pms->comm || !pms->comm->queue()) return "";
 
-			tmpint = pms->comm->playlist()->qnumber();
+			tmpint = pms->comm->queue()->qnumber();
 			retstr = Pms::tostring(tmpint);
-			retstr += " " + Pms::pluralformat(tmpint) + " (" + Pms::timeformat(pms->comm->playlist()->qlength()) + ")";
+			retstr += " " + Pms::pluralformat(tmpint) + " (" + Pms::timeformat(pms->comm->queue()->qlength()) + ")";
 			break;
 
 		case LIVEQUEUESIZE:
-			if (!pms->comm || !pms->comm->status() || !pms->comm->playlist()) return "";
+			if (!pms->comm || !pms->comm->status() || !pms->comm->queue()) return "";
 
-			if (pms->comm->playlist()->size() == 0)
+			if (pms->comm->queue()->size() == 0)
 			{
 				retstr = "0 songs (0:00)";
 				break;
@@ -681,18 +681,18 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			{
 				case MPD_STATE_PLAY:
 				case MPD_STATE_PAUSE:
-					tmp = Pms::timeformat(pms->comm->playlist()->qlength() + pms->comm->status()->time_total - pms->comm->status()->time_elapsed);
-					tmpint = pms->comm->playlist()->qnumber() + 1;
+					tmp = Pms::timeformat(pms->comm->queue()->qlength() + pms->comm->status()->time_total - pms->comm->status()->time_elapsed);
+					tmpint = pms->comm->queue()->qnumber() + 1;
 					break;
 				default:
 					if (pms->cursong())
 					{
-						tmpint = pms->comm->playlist()->qnumber() + 1;
-						tmp = Pms::timeformat(pms->comm->playlist()->qlength() + pms->cursong()->time);
+						tmpint = pms->comm->queue()->qnumber() + 1;
+						tmp = Pms::timeformat(pms->comm->queue()->qlength() + pms->cursong()->time);
 						break;
 					}
-					tmpint = pms->comm->playlist()->qnumber();
-					tmp = Pms::timeformat(pms->comm->playlist()->qlength());
+					tmpint = pms->comm->queue()->qnumber();
+					tmp = Pms::timeformat(pms->comm->queue()->qlength());
 					break;
 			}
 			retstr = Pms::tostring(tmpint);

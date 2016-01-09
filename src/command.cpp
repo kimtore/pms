@@ -182,7 +182,7 @@ Control::Control(Connection * n_conn)
 	rootdir = new Directory(NULL, "");
 	_song = NULL;
 	st->last_playlist = -1;
-	_playlist = new Queue;
+	_queue = new Queue;
 	_library = new Library;
 	_active = NULL;
 	_is_idle = false;
@@ -201,7 +201,7 @@ Control::~Control()
 	 * Who owns them, really? */
 	/*
 	delete _library;
-	delete _playlist;
+	delete _queue;
 	*/
 	delete st;
 }
@@ -840,7 +840,7 @@ Control::add(Songlist * list, Song * song)
 
 	pms->log(MSG_DEBUG, 0, "Adding song %s to list %s\n", song->file.c_str(), list->filename.c_str());
 
-	if (list == _playlist) {
+	if (list == _queue) {
 		return mpd_run_add_id(conn->h(), song->file.c_str());
 	} else if (list != _library) {
 		if (list->filename.size() == 0) {
@@ -856,7 +856,7 @@ Control::add(Songlist * list, Song * song)
 	if (finish())
 	{
 		nsong = new Song(song);
-		if (list == _playlist)
+		if (list == _queue)
 		{
 			nsong->id = i;
 			nsong->pos = playlist()->size();
@@ -894,7 +894,7 @@ Control::remove(Songlist * list, Song * song)
 	pms->log(MSG_DEBUG, 0, "Removing song with id=%d pos=%d uri=%s from list %s.\n", song->id, song->pos, song->file.c_str(), list->filename.c_str());
 
 	/* Remove song from queue */
-	if (list == _playlist) {
+	if (list == _queue) {
 		// All songs must have ID's
 		// FIXME: version requirement
 		assert(song->id != MPD_SONG_NO_ID);
@@ -931,7 +931,7 @@ Control::clear(Songlist * list)
 
 	pms->log(MSG_DEBUG, 0, "Clearing playlist\n");
 
-	if (list == _playlist) {
+	if (list == _queue) {
 		if ((r = mpd_run_clear(conn->h()))) {
 			st->last_playlist = -1;
 		}
@@ -1048,7 +1048,7 @@ Control::move(Songlist * list, int offset)
 
 		++moved;
 
-		if (list != _playlist) {
+		if (list != _queue) {
 			if (!mpd_send_playlist_move(conn->h(), filename, song->pos, newpos)) {
 				break;
 			}
@@ -1571,7 +1571,7 @@ Control::update_queue()
 	pms->log(MSG_DEBUG, 0, "Updating playlist from version %d to %d\n", st->last_playlist, st->playlist);
 
 	if (st->last_playlist == -1) {
-		_playlist->clear();
+		_queue->clear();
 	}
 
 	if (!mpd_send_queue_changes_meta(conn->h(), st->last_playlist)) {
@@ -1585,7 +1585,7 @@ Control::update_queue()
 			case MPD_ENTITY_TYPE_SONG:
 				ent_song = mpd_entity_get_song(ent);
 				song = new Song(ent_song);
-				_playlist->add_local(song);
+				_queue->add_local(song);
 				break;
 			case MPD_ENTITY_TYPE_UNKNOWN:
 				pms->log(MSG_DEBUG, 0, "BUG in update_queue(): entity type not implemented by libmpdclient\n");
@@ -1598,7 +1598,7 @@ Control::update_queue()
 	}
 
 	if ((rc = get_error_bool()) == true) {
-		_playlist->truncate_local(st->playlist_length);
+		_queue->truncate_local(st->playlist_length);
 		st->last_playlist = st->playlist;
 	}
 
