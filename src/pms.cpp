@@ -1411,8 +1411,8 @@ void			Pms::init_default_keymap()
 	bindings->add("R", "goto-random");
 	bindings->add("j", "move-down");
 	bindings->add("k", "move-up");
-	bindings->add("t", "prev-window");
-	bindings->add("T", "next-window");
+	bindings->add("t", "next-window");
+	bindings->add("T", "prev-window");
 	bindings->add("(", "prev-of album");
 	bindings->add(")", "next-of album");
 	bindings->add("{", "prev-of artist");
