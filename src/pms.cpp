@@ -175,6 +175,15 @@ Pms::has_stdin_events()
 	return FD_ISSET(STDIN_FILENO, &poll_file_descriptors);
 }
 
+bool
+Pms::set_active_playback_list(Songlist * list)
+{
+	assert(list);
+
+	comm->activatelist(list);
+	drawstatus();
+}
+
 /**
  * Check if there is an MPD IDLE event on the MPD socket.
  * Set pending flags on the Control class, and sets real idle status.
@@ -454,13 +463,6 @@ Pms::main()
 		disp->activate_list(comm->library());
 	} else {
 		assert(false);
-	}
-
-	// FIXME: will be needed several places. Refactor into separate function.
-	if (pms->options->followwindow) {
-		comm->activatelist(SONGLIST(disp->active_list));
-	} else {
-		comm->activatelist(comm->playlist());
 	}
 
 	disp->draw();
@@ -1138,7 +1140,6 @@ string
 Pms::playstring()
 {
 	string		s;
-	string		list_name = "<unknown>";
 	bool		is_last_in_playlist;
 	bool		playlist_is_active;
 	bool		library_is_active;
@@ -1147,6 +1148,7 @@ Pms::playstring()
 	status = comm->status();
 
 	assert(status != NULL);
+	assert(comm->activelist());
 
 	if (!conn->connected()) {
 		s = "Not connected.";
@@ -1163,21 +1165,8 @@ Pms::playstring()
 		return s;
 	}
 
-	if (comm->activelist()) {
-		list_name = comm->activelist()->filename;
-	}
-
 	playlist_is_active = (comm->activelist() == comm->playlist());
 	library_is_active = (comm->activelist() == comm->library());
-
-	/* FIXME: playlist should give the correct name in a name() function */
-	if (list_name.size() == 0) {
-		if (playlist_is_active) {
-			list_name = "playlist";
-		} else if (library_is_active) {
-			list_name = "library";
-		}
-	}
 
 	s = "Playing ";
 
@@ -1236,7 +1225,7 @@ Pms::playstring()
 		return s;
 	}
 
-	s += "songs from " + list_name + ".";
+	s += "songs from " + string(comm->activelist()->title()) + ".";
 
 	return s;
 }

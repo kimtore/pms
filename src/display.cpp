@@ -285,6 +285,11 @@ Display::activate_list(List * list)
 	last_list = active_list;
 	active_list = list;
 
+	/* FIXME: other callback mechanism instead of direct call? */
+	if (SONGLIST(list) && pms->options->followwindow) {
+		pms->set_active_playback_list(SONGLIST(list));
+	}
+
 	return true;
 }
 

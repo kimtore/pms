@@ -110,7 +110,6 @@ private:
 
 	/* Private functions */
 	void				init_default_keymap();
-	bool				connect_window_list();
 	bool				progress_nextsong();
 
 	/* Options/arguments */
@@ -157,6 +156,13 @@ public:
 	bool				poll_events(long timeout_ms);
 	bool				has_mpd_events();
 	bool				has_stdin_events();
+
+	/**
+	 * Activate a list for playback.
+	 *
+	 * Returns true if the active list changed, false otherwise.
+	 */
+	bool				set_active_playback_list(Songlist * list);
 
 	/* Public member functions */
 	bool				run_has_idle_events();
