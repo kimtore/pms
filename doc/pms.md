@@ -123,103 +123,103 @@ Colors are defined with
 ## Configuration options
 
 addtoreturns (*boolean*)
-:   If set, the *add-to* command will return focus to the original window. Else, the destination will be focused. Default: *unset* 
+:   If set, the *add-to* command will return focus to the original window. Else, the destination will be focused. Default: *unset*
 
 columnborders (*boolean*)
-:   If set, draw borders between columns. Default: *unset* 
+:   If set, draw borders between columns. Default: *unset*
 
 columns=*tag [tag [...]]*
-:   Columns to show in every song list. See *TAGS* below for possible options. Default: *artist track title album length* 
+:   Columns to show in every song list. See *TAGS* below for possible options. Default: *artist track title album length*
 
 crossfade=*integer*
-:   *FIXME:BROKEN* Set crossfade time in seconds. 0 turns crossfade off completely. Default: *(MPD’s setting)* 
+:   *FIXME:BROKEN* Set crossfade time in seconds. 0 turns crossfade off completely. Default: *(MPD’s setting)*
 
 debug (*boolean*)
-:   Turn debugging mode on or off. Default: *unset* 
+:   Turn debugging mode on or off. Default: *unset*
 
 followcursor (*boolean*)
-:   If set, playback will follow cursor position. Default: *unset* 
+:   If set, playback will follow cursor position. Default: *unset*
 
 followplayback (*boolean*)
-:   If set, the cursor will go to the currently playing song and playlist when it changes. Default: *unset* 
+:   If set, the cursor will go to the currently playing song and songlist when the current song changes. Default: *unset*
 
 followwindow (*boolean*)
-:   If set, playback will continue in the active window. Default: *unset* 
+:   If set, playback will continue in the active window. Default: *unset*
 
 host=*string*
-:   The hostname of the MPD server. Default: *localhost* 
+:   The hostname of the MPD server. Default: *localhost*
 
 ignorecase (*boolean*)
-:   Ignore case when sorting and searching. The alias *ic* can also be used. Default: *set* 
+:   Ignore case when sorting and searching. The alias *ic* can also be used. Default: *set*
 
 libraryroot=*string*
-:   Optional path to the library’s root. See *!string* below. If used, it should have a trailing slash. Default: *(empty string)* 
+:   Optional path to the library’s root. See *!string* below. If used, it should have a trailing slash. Default: *(empty string)*
 
 mouse (*boolean*)
-:   If set, PMS will listen for mouse input. Mouse support is incomplete, and the slightly hacky mousewheel support available with standard versions of ncurses is less than ideal, but a couple of actions have been implemented, see *MOUSE ACTIONS*.  Default: *unset* 
+:   If set, PMS will listen for mouse input. Mouse support is incomplete, and the slightly hacky mousewheel support available with standard versions of ncurses is less than ideal, but a couple of actions have been implemented, see *MOUSE ACTIONS*.  Default: *unset*
 
 mpd_timeout=*integer*
 :   Sets MPD timeout, in seconds. If the MPD server does not send a response during this time span, the operation is aborted. Increase this value for slow or unstable connections. Default: *2*.
 
 msg_buffer_size=*integer*
-:   How many log lines to keep in the console. A value of 0 keeps all lines. Default: *1024* 
+:   How many log lines to keep in the console. A value of 0 keeps all lines. Default: *1024*
 
 nextafteraction (*boolean*)
-:   Move cursor to next item after the song is selected, unselected, or added to a playlist. Default: *set* 
+:   Move cursor to next item after the song is selected, unselected, or added to a songlist. Default: *set*
 
 nextinterval=*integer*
-:   This setting controls how many seconds from the current song ends until PMS automatically adds the next song to MPD’s playlist. Default: *5* 
+:   This setting controls how many seconds from the current song ends until PMS automatically adds the next song to MPD’s queue. Default: *5*
 
 onplaylistfinish=*string*
-:   Specify a shell command to run when the playlist finishes and playback stops. Default: *(empty string)* 
+:   Specify a shell command to run when the queue finishes and playback stops. Default: *(empty string)*
 
 password=*string*
-:   The password to the MPD server. Default: *(empty string)* 
+:   The password to the MPD server. Default: *(empty string)*
 
 port=*integer*
-:   The port that the MPD server listens on. Default: *6600* 
+:   The port that the MPD server listens on. Default: *6600*
 
 reconnectdelay=*integer*
-:   If the connection to the MPD server is lost, this option specifies how many seconds that should elapse between each connection retry. Note that the first connection retry will happen immediately after an error occured; this option only affects subsequent retries. Default: *10* 
+:   If the connection to the MPD server is lost, this option specifies how many seconds that should elapse between each connection retry. Note that the first connection retry will happen immediately after an error occured; this option only affects subsequent retries. Default: *10*
 
 regexsearch (*boolean*)
-:   Use regular expressions for search terms. Default: *unset* 
+:   Use regular expressions for search terms. Default: *unset*
 
 resetstatus=*integer*
-:   Set how many seconds before resetting the statusbar text to the default value. Default: *3* 
+:   Set how many seconds before resetting the statusbar text to the default value. Default: *3*
 
 scroll=*string*
-:   Set scroll mode. For possible options, see *SCROLL MODES* below. Default: *normal* 
+:   Set scroll mode. For possible options, see *SCROLL MODES* below. Default: *normal*
 
 scrolloff=*integer*
-:   When *scroll* is set to *normal*, try to keep this many songs above and below the cursor at all times. The alias *so* can also be used. Default: *0* 
+:   When *scroll* is set to *normal*, try to keep this many songs above and below the cursor at all times. The alias *so* can also be used. Default: *0*
 
 sort=*tag [tag [...]]*
-:   Tags by which to sort the library. See *TAGS* below for possible options. The sort is stable. Default: *track disc album date albumartistsort* 
+:   Tags by which to sort the library. See *TAGS* below for possible options. The sort is stable. Default: *track disc album date albumartistsort*
 
 startuplist=*string*
-:   Specify which playlist should be activated and focused at program startup. Possible options are *playlist*, *library*, or an arbitrary name of an existing playlist. Default: *playlist* 
+:   Specify which songlist should be activated and focused at program startup. Possible options are *queue*, *library*, or an arbitrary name of an existing songlist. Default: *queue*
 
 status_pause=*string*
-:   Topbar status string when paused. Default: *‖* or *||*, depending on whether or not unicode is available.  
+:   Topbar status string when paused. Default: *‖* or *||*, depending on whether or not unicode is available.
 
 status_play=*string*
-:   Topbar status string when playing. Default: *▶* or *|>*, depending on whether or not unicode is available.  
+:   Topbar status string when playing. Default: *▶* or *|>*, depending on whether or not unicode is available.
 
 status_stop=*string*
-:   Topbar status string when stopped. Default: *■* or *[]*, depending on whether or not unicode is available.  
+:   Topbar status string when stopped. Default: *■* or *[]*, depending on whether or not unicode is available.
 
 status_unknown=*string*
-:   Topbar status string when status is unknown. Default: *?* or *??*, depending on whether or not unicode is available.  
+:   Topbar status string when status is unknown. Default: *?* or *??*, depending on whether or not unicode is available.
 
 topbar=*string*
-:   Configure what is displayed in the topbar. See *Configuring the topbar* for format syntax, available tags, and default values.  
+:   Configure what is displayed in the topbar. See *Configuring the topbar* for format syntax, available tags, and default values.
 
 topbarvisible (*boolean*)
-:   If set, the topbar is visible. Default: *set* 
+:   If set, the topbar is visible. Default: *set*
 
 xtermtitle=*string*
-:   If set, the XTerm window title will be set to the specified string. Default: *PMS: %playstate%%ifcursong% %artist% – %title%%endif%* 
+:   If set, the XTerm window title will be set to the specified string. Default: *PMS: %playstate%%ifcursong% %artist% – %title%%endif%*
 
 
 ## Configuring the topbar
@@ -273,16 +273,16 @@ play
 :   Play the song under the cursor.
 
 add
-:   Add the selected song(s), or the selected playlist if in windowlist mode, to the queue.
+:   Add the selected song(s), or the selected songlist if in windowlist mode, to the queue.
 
 add-to
-:   Add the selected song(s) to a chosen playlist.
+:   Add the selected song(s) to a chosen songlist.
 
 next
-:   Play the next song from the playlist or library.
+:   Play the next song from the queue or library.
 
 really-next
-:   DEPRECATED. Play the next song from the playlist or library.
+:   DEPRECATED. Play the next song from the queue or library.
 
 prev
 :   Play the previous song.
@@ -320,63 +320,63 @@ play-random [*NUMBER*]
 :   Add and play one or *NUMBER* random songs from the visible list.
 
 add-album
-:   Add all songs from the selected album to playlist. If part of the album already is at the end of the playlist, the remainder is added.
+:   Add all songs from the selected album to the queue. If part of the album already is at the end of the queue, the remainder is added.
 
 add-all
-:   Add all songs from the currently visible list to playlist.
+:   Add all songs from the currently visible list to the queue.
 
 add-artist
-:   Add all songs from the selected artist to the playlist
+:   Add all songs from the selected artist to the the queue.
 
 add-random [n]
-:   Add one or n random songs from the visible list to the playlist.
+:   Add one or n random songs from the visible list to the queue.
 
 remove
-:   Remove selected song from playlist
+:   Remove selected song from songlist.
 
 ## Playlist management
 
-create string
-:   Create a new empty playlist with given name
+create *STRING*
+:   Create a new empty playlist with given name.
 
-save string
-:   Saves the current list view into a new playlist file with given filename
+save *STRING*
+:   Saves the current songlist into a new playlist file with given name.
 
-delete-list [string]
+delete-list [*STRING*]
 :   Permanently delete the named playlist if given or else the current playlist
 
 activate-list
-:   Activate currently viewed list for playback
+:   Activate currently viewed songlist for playback.
 
 crop
-:   Crop the current playlist to the selected songs, or song under cursor
+:   Crop the current songlist to the selected songs, or song under cursor if none are selected.
 
 crop-playing
-:   Crop the current playlist to the currently playing song
+:   Crop the current songlist to the currently playing song.
 
 clear
-:   Clear the playlist
+:   Clear the queue.
 
 shuffle
-:   Shuffle the playlist
+:   Shuffle the queue.
 
-move integer
+move *NUMBER*
 :   Move the selected songs by the given offset. A positive offset moves songs down; a negative offset moves songs up.
 
-update [string]
+update [*STRING*]
 :   Ask MPD to update the music library. string can be a file in the music library, or one of this, thisdir, current or currentdir.
 
-select [string]
-:   Select songs matching a search term.  If no parameter is given, the song under the cursor is affected.  
+select [*STRING*]
+:   Select songs matching a search term.  If no parameter is given, the song under the cursor is affected.
 
-unselect [string]
+unselect [*STRING*]
 :   Unselect songs matching a search term.  If no parameter is given, the song under the cursor is affected.
 
-toggle-select [string]
+toggle-select [*STRING*]
 :   Toggle selection of songs matching a search term.  If no parameter is given, the song under the cursor is affected.
 
 clear-selection
-:   Unselect all songs in the playlist
+:   Unselect all songs in the current songlist.
 
 ## Application
 
@@ -389,8 +389,8 @@ help
 command-mode
 :   Enter command mode, where you can enter configuration options or perform other commands (including those which are not mapped to any key)
 
-change-window *playlist|library|windowlist*
-:   Change the active window to playlist, library or windowlist
+change-window *queue|library|windowlist*
+:   Change the active window to queue, library or windowlist
 
 next-window
 :   Move to the next window
@@ -436,11 +436,11 @@ clear-topbar [integer]
 
         !transcribe ##
 
-    Open the selected songs (or, with no selection, all songs on the playlist) in Transcribe
+    Open the selected songs (or, with no selection, all songs in the songlist) in Transcribe
 
         !cp ## /media/removabledrive
 
-    Copy the selected songs (or, with no selection, all songs on the playlist) to a USB stick or portable media player
+    Copy the selected songs (or, with no selection, all songs in the songlist) to a USB stick or portable media player
 
     All paths are prefixed with the string in the config variable libraryroot.
 
@@ -483,10 +483,10 @@ center-cursor
 :   Scroll the list such that the cursor is centered (only has an effect when scroll is set to normal)
 
 filter
-:   Enter filter mode: type to filter the current view for songs. Songs that don’t match are removed from the view. Use the clear-filters command to return to the original view.  
+:   Enter filter mode: type to filter the current view for songs. Songs that don’t match are removed from the view. Use the clear-filters command to return to the original view.
 
 clear-filters
-:   Clear all filters from the current playlist.
+:   Clear all filters from the current songlist.
 
 quick-find
 :   Enter quick-find mode: type to jump to next matched song
@@ -504,10 +504,10 @@ prev-of string
 :   Parameter should be a field name (see *TAGS*) – jump up the list to the first (topmost) of a set of tracks which have in common the next differing value of the given field.  To put that another way, the cursor moves up until the given field changes, then keeps going until just before it would change again.
 
 goto-current
-:   Jumps to the current playing song, if any
+:   Jump to the current playing song, if any.
 
 goto-random
-:   Jump to a random song in the playlist
+:   Jump to a random song in the current songlist.
 
 # TAGS
 

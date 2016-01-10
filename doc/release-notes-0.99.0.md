@@ -9,6 +9,7 @@ The following configuration options have been changed:
 * Removed `topbarborders`
 * Removed `scrollmode=relative`
 * The `topbarN.POS` configuration options have been replaced with a single `topbar` option
+* The `playlist` window argument has been renamed to `queue`
 
 ## Commands
 

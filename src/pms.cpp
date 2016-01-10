@@ -455,7 +455,7 @@ Pms::main()
 	disp->add_list(comm->library());
 
 	/* Focus startup list */
-	if (options->startuplist == "playlist") {
+	if (options->startuplist == "queue") {
 		disp->activate_list(comm->library());
 		disp->activate_list(comm->queue());
 	} else if (options->startuplist == "library") {
@@ -1175,7 +1175,7 @@ Pms::playstring()
 	}
 
 	if (status->random) {
-		s += "random songs from playlist.";
+		s += "random songs from queue.";
 		return s;
 	}
 
@@ -1192,7 +1192,7 @@ Pms::playstring()
 	is_last_in_playlist = (cursong()->pos == comm->queue()->size() - 1);
 
 	if (status->repeat) {
-		s += "songs from playlist repeatedly.";
+		s += "songs from queue repeatedly.";
 		return s;
 	}
 
@@ -1200,7 +1200,7 @@ Pms::playstring()
 		if (is_last_in_playlist) {
 			s += "this song, then stopping.";
 		} else {
-			s += "songs from playlist.";
+			s += "songs from queue.";
 		}
 		return s;
 	}
@@ -1217,7 +1217,7 @@ Pms::playstring()
 		if (!status->consume) {
 			s += "through ";
 		}
-		s += "playlist, then ";
+		s += "queue, then ";
 	}
 
 	if (!playlist_is_active && options->followcursor) {
@@ -1417,7 +1417,7 @@ void			Pms::init_default_keymap()
 	bindings->add(")", "next-of album");
 	bindings->add("{", "prev-of artist");
 	bindings->add("}", "next-of artist");
-	bindings->add("1", "change-window playlist");
+	bindings->add("1", "change-window queue");
 	bindings->add("2", "change-window library");
 	bindings->add("w", "change-window windowlist");
 	bindings->add("tab", "last-window");

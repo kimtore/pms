@@ -507,7 +507,6 @@ long		Interface::add(string param)
 	Songlist *	songlist;
 	Songlist *	dlist;
 	Song *		song;
-	string		s;
 	size_t		i = 0;
 
 	songlist = dynamic_cast<Songlist *>(pms->disp->active_list);
@@ -540,19 +539,13 @@ long		Interface::add(string param)
 		assert(false);
 	}
 
-	if (dlist == pms->comm->queue())
-		s = _("playlist");
-	else if (dlist == pms->comm->library())
-		s = _("library");
-	else
-		s = dlist->filename;
-
+	
 	/* Add arbitrary file or stream */
 	if (param.size() > 0)
 	{
 		song = new Song(param);
 		if (pms->comm->add(dlist, song) != MPD_SONG_NO_ID) {
-			pms->log(MSG_STATUS, STOK, _("Added '%s' to %s."), param.c_str(), s.c_str());
+			pms->log(MSG_STATUS, STOK, _("Added '%s' to %s."), param.c_str(), dlist->title());
 		} else {
 			/* FIXME: proper error handling */
 			generr();
@@ -583,7 +576,7 @@ long		Interface::add(string param)
 	} else {
 		if (i == 1 && pms->options->nextafteraction)
 			pms->disp->active_list->move_cursor(1);
-		pms->log(MSG_STATUS, STOK, _("Added %d %s to %s."), i, (i == 1 ? "song" : "songs"), s.c_str());
+		pms->log(MSG_STATUS, STOK, _("Added %d %s to %s."), i, (i == 1 ? "song" : "songs"), dlist->title());
 	}
 
 	return STOK;
@@ -816,7 +809,7 @@ long		Interface::shuffle()
 {
 	if (pms->comm->shuffle())
 	{
-		pms->log(MSG_STATUS, STOK, _("Playlist shuffled."));
+		pms->log(MSG_STATUS, STOK, _("Queue shuffled."));
 		return STOK;
 	}
 	generr();
@@ -830,7 +823,7 @@ long		Interface::clear()
 {
 	if (pms->comm->clear(dynamic_cast<Songlist *>(pms->disp->active_list)))
 	{
-		pms->log(MSG_STATUS, STOK, _("Playlist cleared."));
+		pms->log(MSG_STATUS, STOK, _("Queue cleared."));
 		return STOK;
 	}
 	generr();
@@ -1417,7 +1410,7 @@ handle_command(pms_pending_keys action)
 			break;
 
 		case PEND_CHANGEWIN:
-			if (pms->input->param == "playlist") {
+			if (pms->input->param == "queue") {
 				pms->disp->activate_list(pms->comm->queue());
 			} else if (pms->input->param == "library") {
 				pms->disp->activate_list(pms->comm->library());
