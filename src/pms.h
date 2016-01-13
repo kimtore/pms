@@ -38,6 +38,9 @@
 #define PMS_EXIT_LOMEM 8
 #define PMS_EXIT_NOSIGNAL 9
 
+#define PENDING_ACTION_NONE		0
+#define PENDING_ACTION_STARTUPLIST	1 << 0
+
 #include "../config.h"
 #include <assert.h>
 #include <cstdarg>
@@ -108,6 +111,10 @@ private:
 	/* Internal timer */
 	struct timespec			get_clock();
 
+	/* Pending actions bitmask. A combination of the PENDING_ACTION_*
+	 * defined above. */
+	uint32_t			pending_actions;
+
 	/* Private functions */
 	void				init_default_keymap();
 	bool				progress_nextsong();
@@ -163,6 +170,35 @@ public:
 	 * Returns true if the active list changed, false otherwise.
 	 */
 	bool				set_active_playback_list(Songlist * list);
+
+	/**
+	 * Add a pending action that should be performed during the right place
+	 * in the main loop.
+	 */
+	void				add_pending_actions(uint32_t flags);
+
+	/**
+	 * Remove a pending action.
+	 */
+	void				remove_pending_actions(uint32_t flags);
+
+	/**
+	 * Set pending action flags.
+	 */
+	void				set_pending_actions(uint32_t flags);
+
+	/**
+	 * @returns true if there are any pending actions matching the flags
+	 * parameter, false otherwise.
+	 */
+	bool				has_pending_actions(uint32_t flags);
+
+	/**
+	 * Activate the startup list.
+	 *
+	 * @returns true if the list exists, false otherwise.
+	 */
+	bool				activate_startup_list();
 
 	/* Public member functions */
 	bool				run_has_idle_events();

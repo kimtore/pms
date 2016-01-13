@@ -198,7 +198,7 @@ sort=*tag [tag [...]]*
 :   Tags by which to sort the library. See *TAGS* below for possible options. The sort is stable. Default: *track disc album date albumartistsort*
 
 startuplist=*string*
-:   Specify which songlist should be activated and focused at program startup. Possible options are *queue*, *library*, or an arbitrary name of an existing songlist. Default: *queue*
+:   Specify which songlist should be activated and focused at program startup. Possible options are *Queue*, *Library*, or an arbitrary name of an existing songlist. Note that this option is case sensitive. Default: *Queue*
 
 status_pause=*string*
 :   Topbar status string when paused. Default: *‖* or *||*, depending on whether or not unicode is available.

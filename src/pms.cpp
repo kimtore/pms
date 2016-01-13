@@ -184,6 +184,45 @@ Pms::set_active_playback_list(Songlist * list)
 	drawstatus();
 }
 
+void
+Pms::add_pending_actions(uint32_t flags)
+{
+	set_pending_actions(pending_actions | flags);
+}
+
+void
+Pms::remove_pending_actions(uint32_t flags)
+{
+	set_pending_actions(pending_actions & ~flags);
+}
+
+void
+Pms::set_pending_actions(uint32_t flags)
+{
+	pending_actions = flags;
+}
+
+bool
+Pms::has_pending_actions(uint32_t flags)
+{
+	return (pending_actions & flags);
+}
+
+bool
+Pms::activate_startup_list()
+{
+	List * list;
+
+	list = disp->find(options->startuplist.c_str());
+	if (!list) {
+		pms_error("Invalid startup list: %s", options->startuplist.c_str());
+		return false;
+	}
+
+	disp->activate_list(list);
+	return true;
+}
+
 /**
  * Check if there is an MPD IDLE event on the MPD socket.
  * Set pending flags on the Control class, and sets real idle status.
@@ -388,6 +427,9 @@ Pms::main()
 	enum mpd_error		error;
 	enum mpd_server_error	server_error;
 
+	/* Reset pending actions */
+	set_pending_actions(PENDING_ACTION_NONE);
+
 	/* Connection */
 	printf(_("Connecting to host %s, port %ld..."), options->host.c_str(), options->port);
 
@@ -454,19 +496,10 @@ Pms::main()
 	disp->add_list(comm->queue());
 	disp->add_list(comm->library());
 
-	/* Focus startup list */
-	if (options->startuplist == "queue") {
-		disp->activate_list(comm->library());
-		disp->activate_list(comm->queue());
-	} else if (options->startuplist == "library") {
-		disp->activate_list(comm->queue());
-		disp->activate_list(comm->library());
-	} else {
-		assert(false);
-	}
-
-	disp->draw();
-	disp->refresh();
+	/* Make sure a list is always activated, and trigger a later switch to
+	 * the configured startup list. */
+	disp->activate_list(comm->queue());
+	add_pending_actions(PENDING_ACTION_STARTUPLIST);
 
 	/* Reset all clocks */
 	timer_now = get_clock();
@@ -608,6 +641,12 @@ Pms::main()
 		/* Update user interface based on changed options. */
 		if (run_options_changed()) {
 			continue;
+		}
+
+		/* Change the active list according to the `startuplist' option. */
+		if (has_pending_actions(PENDING_ACTION_STARTUPLIST)) {
+			activate_startup_list();
+			remove_pending_actions(PENDING_ACTION_STARTUPLIST);
 		}
 
 		disp->draw();
