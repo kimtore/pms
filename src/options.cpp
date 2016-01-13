@@ -319,7 +319,7 @@ Options::reset()
 	scroll = "normal";
 	scrolloff = 0;
 	sort = "track disc album date albumartistsort";
-	startuplist = "playlist";
+	startuplist = "Queue";
 	status_pause = Pms::unicode() ? "‖" : "||";
 	status_play = Pms::unicode() ? "▶" : "|>";
 	status_stop = Pms::unicode() ? "■" : "[]";
