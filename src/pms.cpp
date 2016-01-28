@@ -498,6 +498,7 @@ Pms::main()
 
 	/* Make sure a list is always activated, and trigger a later switch to
 	 * the configured startup list. */
+	disp->activate_list(comm->library());
 	disp->activate_list(comm->queue());
 	add_pending_actions(PENDING_ACTION_STARTUPLIST);
 
