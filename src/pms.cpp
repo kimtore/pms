@@ -500,6 +500,7 @@ Pms::main()
 	 * the configured startup list. */
 	disp->activate_list(comm->library());
 	disp->activate_list(comm->queue());
+	set_active_playback_list(comm->queue());
 	add_pending_actions(PENDING_ACTION_STARTUPLIST);
 
 	/* Reset all clocks */
