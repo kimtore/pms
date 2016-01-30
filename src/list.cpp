@@ -159,9 +159,8 @@ List::move(uint32_t from, uint32_t to)
 		qnum = 0;
 		qsize = 0;
 	}
-
-	return true;
 	*/
+	return true;
 }
 
 ListItem *

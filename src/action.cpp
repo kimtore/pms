@@ -1771,9 +1771,8 @@ int		createwindow(string param, List *& win, Songlist *& list)
 
 	if (!win)
 		return -3;
-
-	return 0;
 	*/
+	return 0;
 }
 
 

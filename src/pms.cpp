@@ -180,8 +180,9 @@ Pms::set_active_playback_list(Songlist * list)
 {
 	assert(list);
 
-	comm->activatelist(list);
+	bool ret = comm->activatelist(list);
 	drawstatus();
+	return ret;
 }
 
 void
