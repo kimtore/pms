@@ -213,6 +213,7 @@ bool		Control::finish()
 {
 	// FIXME: this function must die
 	assert(0);
+	return false;
 
 	/*
 	mpd_finishCommand(conn->h());
