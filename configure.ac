@@ -25,9 +25,14 @@ PKG_CHECK_MODULES([glib], [glib-2.0 >= 2.0],, [AC_MSG_ERROR([glib 2.0 or newer i
 PKG_CHECK_MODULES([libmpdclient], [libmpdclient >= 2.5],, [AC_MSG_ERROR([libmpdclient 2.5 or newer is required])])
 
 # Check for Pandoc
-AC_PATH_PROG(PANDOC,pandoc,no)
-if [[ "x$PANDOC" = xno ]]; then
-    AC_MSG_WARN([The manual page will not be built.])
+AC_ARG_WITH([doc], AS_HELP_STRING([--with-doc],[Build the manpage (default: disabled)]))
+if [test "x$with_doc" != "xno"]; then
+	AC_PATH_PROG(PANDOC,pandoc,no)
+	if [[ "x$PANDOC" = "xno" ]]; then
+	    AC_MSG_WARN([The manual page will not be built.])
+	fi
+else
+	PANDOC="no"
 fi
 AM_CONDITIONAL([PANDOC], [test "x$PANDOC" != xno])
 
