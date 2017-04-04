@@ -1,6 +1,0 @@
-#!/bin/sh
-clear
-make 2>errlog || (cat errlog; exit 1)
-if [ $? == 0 ]; then
-	gdb ./pms 2>errlog
-fi
