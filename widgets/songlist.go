@@ -258,6 +258,14 @@ func (w *SongListWidget) Size() (int, int) {
 	return w.view.Size()
 }
 
+func (w *SongListWidget) Name() string {
+	return w.songlist.Name
+}
+
+func (w *SongListWidget) Columns() []column {
+	return w.columns
+}
+
 // PositionReadout returns a combination of PositionLongReadout() and PositionShortReadout().
 func (w *SongListWidget) PositionReadout() string {
 	return fmt.Sprintf("%s    %s", w.PositionLongReadout(), w.PositionShortReadout())

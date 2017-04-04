@@ -101,5 +101,7 @@ func (i *Index) Search(q string) (r *songlist.SongList, err error) {
 
 	console.Log("Query '%s' returned %d results over threshold of %.2f (total %d results) in %s", q, r.Len(), SEARCH_SCORE_THRESHOLD, sr.Total, sr.Took)
 
+	r.Name = fmt.Sprintf("Q: %s", q)
+
 	return
 }

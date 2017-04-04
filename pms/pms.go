@@ -189,7 +189,9 @@ func (pms *PMS) retrieveLibrary() (*songlist.SongList, error) {
 	}
 	console.Log("ListAllInfo in %s", time.Since(timer).String())
 
-	return songlist.NewFromAttrlist(list), nil
+	s := songlist.NewFromAttrlist(list)
+	s.Name = "Library"
+	return s, nil
 }
 
 func (pms *PMS) openIndex() error {

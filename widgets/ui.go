@@ -11,15 +11,20 @@ import (
 
 type UI struct {
 	// UI elements
-	App      *views.Application
-	Layout   *views.BoxLayout
-	Topbar   *views.TextBar
-	Multibar *MultibarWidget
-	Songlist *SongListWidget
+	App           *views.Application
+	Layout        *views.BoxLayout
+	Topbar        *views.TextBar
+	Columnheaders *ColumnheadersWidget
+	Multibar      *MultibarWidget
+	Songlist      *SongListWidget
 
 	// Data resources
 	Index           *index.Index
 	defaultSongList *songlist.SongList
+
+	// Styles
+	styleTopbar      tcell.Style
+	styleTopbarTitle tcell.Style
 
 	views.WidgetWatchers
 }
@@ -31,21 +36,24 @@ func NewUI() *UI {
 
 	ui.Layout = views.NewBoxLayout(views.Vertical)
 	ui.Topbar = views.NewTextBar()
+	ui.Columnheaders = NewColumnheadersWidget()
 	ui.Multibar = NewMultibarWidget()
 	ui.Songlist = NewSongListWidget()
 
 	ui.Layout.AddWidget(ui.Topbar, 0)
+	ui.Layout.AddWidget(ui.Columnheaders, 0)
 	ui.Layout.AddWidget(ui.Songlist, 2)
 	ui.Layout.AddWidget(ui.Multibar, 0)
 
 	ui.Multibar.Watch(ui)
 	ui.Songlist.Watch(ui)
 
-	str := version.ShortName() + " " + version.Version()
-	style := tcell.StyleDefault
-	style = style.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite)
-	ui.Topbar.SetStyle(style)
-	ui.Topbar.SetLeft(str, style)
+	ui.styleTopbar = tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite)
+	ui.styleTopbarTitle = tcell.StyleDefault.Foreground(tcell.ColorWhite)
+
+	ui.Topbar.SetStyle(ui.styleTopbar)
+	ui.Topbar.SetLeft(version.ShortName(), ui.styleTopbar)
+	ui.Topbar.SetRight(version.Version(), ui.styleTopbar)
 
 	ui.Multibar.SetDefaultText("Type to search.")
 
@@ -107,6 +115,8 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 
 	case *EventListChanged:
 		ui.App.Update()
+		ui.Topbar.SetCenter(" "+ui.Songlist.Name()+" ", ui.styleTopbarTitle)
+		ui.Columnheaders.SetColumns(ui.Songlist.Columns())
 		return true
 
 	case *EventInputChanged:
