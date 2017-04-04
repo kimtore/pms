@@ -87,6 +87,8 @@ func main() {
 			case <-pms.EventIndex:
 				console.Log("Search index updated, assigning to UI")
 				ui.SetIndex(pms.Index)
+			case <-pms.EventMPD:
+				console.Log("MPD sent some updates")
 			}
 		}
 	}()

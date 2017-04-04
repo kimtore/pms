@@ -17,9 +17,10 @@ import (
 )
 
 type PMS struct {
-	MpdClient *mpd.Client
-	Index     *index.Index
-	Library   *songlist.SongList
+	MpdClient        *mpd.Client
+	MpdClientWatcher *mpd.Watcher
+	Index            *index.Index
+	Library          *songlist.SongList
 
 	host     string
 	port     string
@@ -30,7 +31,7 @@ type PMS struct {
 
 	EventLibrary chan int
 	EventIndex   chan int
-	EventMPD     chan int
+	EventMPD     chan string
 }
 
 func createDirectory(dir string) error {
@@ -100,8 +101,30 @@ func (pms *PMS) Reconnect() error {
 	if err != nil {
 		return err
 	}
+	pms.MpdClientWatcher, err = mpd.NewWatcher(`tcp`, addr, pms.password)
+	if err != nil {
+		pms.MpdClient.Close()
+		return err
+	}
+	go pms.Watch()
 	err = pms.Sync()
 	return err
+}
+
+func (pms *PMS) Watch() {
+	for {
+		select {
+		case ev := <-pms.MpdClientWatcher.Error:
+			console.Log("Watcher returned error: %s", ev)
+			panic(ev)
+		case ev, ok := <-pms.MpdClientWatcher.Event:
+			console.Log("MPD IDLE: %s", ev)
+			pms.EventMPD <- ev
+			if !ok {
+				return
+			}
+		}
+	}
 }
 
 // Sync retrieves the MPD library and stores it as a SongList in the
@@ -203,6 +226,6 @@ func New() *PMS {
 	pms := &PMS{}
 	pms.EventLibrary = make(chan int)
 	pms.EventIndex = make(chan int)
-	pms.EventMPD = make(chan int)
+	pms.EventMPD = make(chan string)
 	return pms
 }
