@@ -62,9 +62,16 @@ func (ui *UI) SetDefaultSonglist(s *songlist.SongList) {
 	ui.defaultSongList = s
 }
 
-func (ui *UI) Run() {
-	defer ui.App.Quit()
-	ui.App.Run()
+func (ui *UI) Start() {
+	ui.App.Start()
+}
+
+func (ui *UI) Wait() error {
+	return ui.App.Wait()
+}
+
+func (ui *UI) Quit() {
+	ui.App.Quit()
 }
 
 func (ui *UI) Draw() {
