@@ -90,9 +90,6 @@ func (pms *PMS) Connect(host, port, password string) error {
 	pms.host = host
 	pms.port = port
 	pms.password = password
-	pms.EventLibrary = make(chan int)
-	pms.EventIndex = make(chan int)
-	pms.EventMPD = make(chan int)
 	return pms.Reconnect()
 }
 
@@ -203,5 +200,9 @@ func (pms *PMS) ReIndex() {
 }
 
 func New() *PMS {
-	return &PMS{}
+	pms := &PMS{}
+	pms.EventLibrary = make(chan int)
+	pms.EventIndex = make(chan int)
+	pms.EventMPD = make(chan int)
+	return pms
 }

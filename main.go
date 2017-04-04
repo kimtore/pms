@@ -80,9 +80,6 @@ func main() {
 	go func() {
 		for {
 			select {
-			case <-time.After(100 * time.Millisecond):
-				// FIXME: need a default case here? Figure out how to make Go
-				// not block when only receiving on the pms channels.
 			case <-pms.EventLibrary:
 				console.Log("Song library updated in MPD, assigning to UI")
 				ui.Songlist.SetSongList(pms.Library)
