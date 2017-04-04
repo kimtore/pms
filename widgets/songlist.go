@@ -1,13 +1,15 @@
 package widgets
 
 import (
+	"fmt"
+	"math"
+	"time"
+
+	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/songlist"
 
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
-
-	"fmt"
-	"math"
 )
 
 type SongListWidget struct {
@@ -16,6 +18,7 @@ type SongListWidget struct {
 	viewport    views.ViewPort
 	cursor      int
 	cursorStyle tcell.Style
+	columns     []column
 
 	views.WidgetWatchers
 }
@@ -27,9 +30,17 @@ func min(a, b int) int {
 	return b
 }
 
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func NewSongListWidget() (w *SongListWidget) {
 	w = &SongListWidget{}
 	w.songlist = &songlist.SongList{}
+	w.columns = make([]column, 0)
 	w.cursorStyle = tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack)
 	return
 }
@@ -38,7 +49,63 @@ func (w *SongListWidget) SetSongList(s *songlist.SongList) {
 	//console.Log("setSongList(%p)", s)
 	w.songlist = s
 	w.setViewportSize()
+	cols := []string{
+		"Artist",
+		"Track",
+		"Title",
+		"Album",
+		"Date",
+		"Time",
+	}
+	w.SetColumns(cols)
 	PostEventListChanged(w)
+}
+
+func (w *SongListWidget) SetColumns(cols []string) {
+	timer := time.Now()
+	ch := make(chan int, len(cols))
+	w.columns = make([]column, len(cols))
+	for i := range cols {
+		go func(i int) {
+			w.columns[i].Tag = cols[i]
+			w.columns[i].Set(w.songlist)
+			w.columns[i].SetWidth(w.columns[i].Mid())
+			ch <- 0
+		}(i)
+	}
+	for i := 0; i < len(cols); i++ {
+		<-ch
+	}
+	w.expandColumns()
+	console.Log("SetColumns on %d songs in %s", w.songlist.Len(), time.Since(timer).String())
+}
+
+func (w *SongListWidget) expandColumns() {
+	_, _, xmax, _ := w.viewport.GetVisible()
+	totalWidth := 0
+	poolSize := len(w.columns)
+	saturation := make([]bool, poolSize)
+	for i := range w.columns {
+		totalWidth += w.columns[i].Width()
+	}
+	for {
+		for i := range w.columns {
+			if totalWidth > xmax {
+				return
+			}
+			if poolSize > 0 && saturation[i] {
+				continue
+			}
+			col := &w.columns[i]
+			if poolSize > 0 && col.Width() > col.MaxWidth() {
+				saturation[i] = true
+				poolSize--
+				continue
+			}
+			col.SetWidth(col.Width() + 1)
+			totalWidth++
+		}
+	}
 }
 
 func (w *SongListWidget) Draw() {
@@ -50,14 +117,31 @@ func (w *SongListWidget) Draw() {
 	style := tcell.StyleDefault
 	for y := ymin; y <= ymax; y++ {
 		s := w.songlist.Songs[y]
-		str := s.Tags["file"]
 		if y == w.cursor {
 			style = w.cursorStyle
 		} else {
 			style = tcell.StyleDefault
 		}
-		for x := 0; x < len(str); x++ {
-			w.viewport.SetContent(x, y, rune(str[x]), nil, style)
+		x := 0
+		rightPadding := 1
+		for col := 0; col < len(w.columns); col++ {
+			if col+1 == len(w.columns) {
+				rightPadding = 0
+			}
+			str := s.Tags[w.columns[col].Tag]
+			strmin := min(len(str), w.columns[col].Width()-rightPadding)
+			strmax := w.columns[col].Width()
+			n := 0
+			for n < strmin {
+				w.viewport.SetContent(x, y, rune(str[n]), nil, style)
+				n++
+				x++
+			}
+			for n < strmax {
+				w.viewport.SetContent(x, y, ' ', nil, style)
+				n++
+				x++
+			}
 		}
 	}
 	w.PostEventWidgetContent(w)
