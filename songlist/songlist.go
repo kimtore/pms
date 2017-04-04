@@ -1,12 +1,14 @@
 package songlist
 
 import (
-	"github.com/ambientsound/pms/song"
-
 	"bufio"
 	"io"
 	"sort"
 	"strings"
+
+	"github.com/fhs/gompd/mpd"
+
+	"github.com/ambientsound/pms/song"
 )
 
 type SongList struct {
@@ -61,4 +63,14 @@ func NewFromFile(file io.Reader) (songs *SongList) {
 		}
 	}
 	return
+}
+
+func NewFromAttrlist(attrlist []mpd.Attrs) *SongList {
+	songs := New()
+	for _, attrs := range attrlist {
+		s := &song.Song{}
+		s.Tags = attrs
+		songs.Add(s)
+	}
+	return songs
 }

@@ -20,13 +20,15 @@ type Index struct {
 	SongList   *songlist.SongList
 }
 
-func New(loc string, s *songlist.SongList) (i Index, err error) {
+func New(loc string, s *songlist.SongList) (*Index, error) {
+	var err error
+	i := &Index{}
 	i.bleveIndex, err = i.open(loc)
 	if err != nil {
 		i.bleveIndex, err = i.create(loc)
 	}
 	i.SongList = s
-	return
+	return i, err
 }
 
 func (i *Index) create(loc string) (index bleve.Index, err error) {
