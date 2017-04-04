@@ -99,7 +99,7 @@ func (i *Index) Search(q string) (r *songlist.SongList, err error) {
 		//console.Log("%.2f %s\n", hit.Score, song.Tags["file"])
 	}
 
-	console.Log("%s: %d out of total %d results in %s", q, r.Len(), sr.Total, sr.Took)
+	console.Log("Query '%s' returned %d results over threshold of %.2f (total %d results) in %s", q, r.Len(), SEARCH_SCORE_THRESHOLD, sr.Total, sr.Took)
 
 	return
 }

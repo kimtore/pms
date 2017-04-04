@@ -3,9 +3,7 @@ package widgets
 import (
 	"fmt"
 	"math"
-	"time"
 
-	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/songlist"
 
 	"github.com/gdamore/tcell"
@@ -62,7 +60,7 @@ func (w *SongListWidget) SetSongList(s *songlist.SongList) {
 }
 
 func (w *SongListWidget) SetColumns(cols []string) {
-	timer := time.Now()
+	//timer := time.Now()
 	ch := make(chan int, len(cols))
 	w.columns = make([]column, len(cols))
 	for i := range cols {
@@ -77,7 +75,7 @@ func (w *SongListWidget) SetColumns(cols []string) {
 		<-ch
 	}
 	w.expandColumns()
-	console.Log("SetColumns on %d songs in %s", w.songlist.Len(), time.Since(timer).String())
+	//console.Log("SetColumns on %d songs in %s", w.songlist.Len(), time.Since(timer).String())
 }
 
 func (w *SongListWidget) expandColumns() {

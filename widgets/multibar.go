@@ -34,7 +34,7 @@ func (m *MultibarWidget) setRunes(r []rune) {
 		s = m.defaultText
 	}
 	m.SetLeft(s, tcell.StyleDefault)
-	console.Log("Multibar> %s", s)
+	//console.Log("Multibar> %s", s)
 }
 
 func (m *MultibarWidget) GetRuneString() string {
@@ -80,7 +80,7 @@ func (m *MultibarWidget) HandleEvent(ev tcell.Event) bool {
 			return true
 
 		}
-		console.Log("%s", ev.Key())
+		console.Log("Unhandled event in Multibar: %s", ev.Key())
 	}
 	return false
 }
