@@ -18,10 +18,10 @@ type PlaybarWidget struct {
 }
 
 var playRunes = map[string]rune{
-	pms.StatePlay:    '▶',
-	pms.StatePause:   '⏸',
-	pms.StateStop:    '⏹',
-	pms.StateUnknown: '�',
+	pms.StatePlay:    '\u25b6',
+	pms.StatePause:   '\u23f8',
+	pms.StateStop:    '\u23f9',
+	pms.StateUnknown: '\u2bd1',
 }
 
 func NewPlaybarWidget() *PlaybarWidget {
@@ -39,11 +39,12 @@ func (w *PlaybarWidget) SetSong(s *song.Song) {
 }
 
 func (w *PlaybarWidget) drawNext(x, y int, s string, style tcell.Style) int {
-	p := 0
-	for p = 0; p < len(s); p++ {
-		w.view.SetContent(x+p, y, rune(s[p]), nil, style)
+	strlen := 0
+	for p, r := range s {
+		w.view.SetContent(x+p, y, r, nil, style)
+		strlen++
 	}
-	return x + p
+	return x + strlen
 }
 
 func (w *PlaybarWidget) Draw() {

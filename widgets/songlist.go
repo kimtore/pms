@@ -119,10 +119,15 @@ func (w *SongListWidget) Draw() {
 	if w.view == nil || w.songlist == nil {
 		return
 	}
+
 	ymin, ymax := w.getVisibleBoundaries()
 	style := tcell.StyleDefault
+
 	for y := ymin; y <= ymax; y++ {
+
 		s := w.songlist.Songs[y]
+
+		// Style based on song's role
 		if y == w.cursor {
 			style = w.cursorStyle
 		} else {
@@ -130,16 +135,22 @@ func (w *SongListWidget) Draw() {
 		}
 		x := 0
 		rightPadding := 1
+
+		// Draw each column separately
 		for col := 0; col < len(w.columns); col++ {
+
+			// Convert tag to runes
+			str := s.Tags[w.columns[col].Tag]
+			runes := []rune(str)
+
 			if col+1 == len(w.columns) {
 				rightPadding = 0
 			}
-			str := s.Tags[w.columns[col].Tag]
-			strmin := min(len(str), w.columns[col].Width()-rightPadding)
+			strmin := min(len(runes), w.columns[col].Width()-rightPadding)
 			strmax := w.columns[col].Width()
 			n := 0
 			for n < strmin {
-				w.viewport.SetContent(x, y, rune(str[n]), nil, style)
+				w.viewport.SetContent(x, y, runes[n], nil, style)
 				n++
 				x++
 			}
