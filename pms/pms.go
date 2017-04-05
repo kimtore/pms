@@ -128,20 +128,40 @@ func (pms *PMS) Connect(host, port, password string) error {
 
 func (pms *PMS) Reconnect() error {
 	var err error
+
 	addr := makeAddress(pms.host, pms.port)
+
 	pms.MpdClient, err = mpd.DialAuthenticated(`tcp`, addr, pms.password)
 	if err != nil {
 		return err
 	}
+
 	pms.MpdClientWatcher, err = mpd.NewWatcher(`tcp`, addr, pms.password)
 	if err != nil {
-		pms.MpdClient.Close()
-		return err
+		goto errors
 	}
-	pms.UpdatePlayerStatus()
-	pms.UpdateCurrentSong()
 	go pms.watch()
+
+	err = pms.UpdatePlayerStatus()
+	if err != nil {
+		goto errors
+	}
+
+	err = pms.UpdateCurrentSong()
+	if err != nil {
+		goto errors
+	}
+
 	err = pms.Sync()
+	if err != nil {
+		goto errors
+	}
+
+	return nil
+
+errors:
+	pms.MpdClient.Close()
+	pms.MpdClientWatcher.Close()
 	return err
 }
 
@@ -154,10 +174,15 @@ func (pms *PMS) watch() {
 		case ev, ok := <-pms.MpdClientWatcher.Event:
 			console.Log("MPD IDLE: %s", ev)
 			if !ok {
+				console.Log("goroutine watch() returning")
+				pms.Reconnect()
 				return
 			}
-			pms.UpdatePlayerStatus()
-			pms.UpdateCurrentSong()
+			if pms.UpdatePlayerStatus() == nil && pms.UpdateCurrentSong() == nil {
+				return
+			}
+			close(pms.MpdClientWatcher.Event)
+			console.Log("MPD connection timeout, reconnecting.")
 		}
 	}
 }
@@ -237,6 +262,10 @@ func (pms *PMS) openIndex() error {
 		return fmt.Errorf("Unable to create index directory %s!", index_dir)
 	}
 
+	if pms.Index != nil {
+		pms.Index.Close()
+	}
+
 	pms.Index, err = index.New(index_dir, pms.Library)
 	if err != nil {
 		return fmt.Errorf("Unable to acquire index: %s", err)
@@ -269,8 +298,7 @@ func (pms *PMS) UpdateCurrentSong() error {
 	return nil
 }
 
-// UpdatePlayerStatus queries the MPD server for its status struct, and places
-// a normalized copy in pms.MpdStatus.
+// UpdatePlayerStatus populates pms.MpdStatus with data from the MPD server.
 func (pms *PMS) UpdatePlayerStatus() error {
 	attrs, err := pms.MpdClient.Status()
 	if err != nil {

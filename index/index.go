@@ -51,6 +51,10 @@ func (i *Index) open(loc string) (index bleve.Index, err error) {
 	return
 }
 
+func (i *Index) Close() error {
+	return i.bleveIndex.Close()
+}
+
 func (i *Index) IndexFull() {
 	var err error
 	b := i.bleveIndex.NewBatch()
