@@ -26,6 +26,8 @@ type UI struct {
 	styleTopbar      tcell.Style
 	styleTopbarTitle tcell.Style
 
+	// TCell
+	view views.View
 	views.WidgetWatchers
 }
 
@@ -34,16 +36,10 @@ func NewUI() *UI {
 
 	ui.App = &views.Application{}
 
-	ui.Layout = views.NewBoxLayout(views.Vertical)
 	ui.Topbar = views.NewTextBar()
 	ui.Columnheaders = NewColumnheadersWidget()
 	ui.Multibar = NewMultibarWidget()
 	ui.Songlist = NewSongListWidget()
-
-	ui.Layout.AddWidget(ui.Topbar, 0)
-	ui.Layout.AddWidget(ui.Columnheaders, 0)
-	ui.Layout.AddWidget(ui.Songlist, 2)
-	ui.Layout.AddWidget(ui.Multibar, 0)
 
 	ui.Multibar.Watch(ui)
 	ui.Songlist.Watch(ui)
@@ -57,9 +53,19 @@ func NewUI() *UI {
 
 	ui.Multibar.SetDefaultText("Type to search.")
 
+	ui.CreateLayout()
 	ui.App.SetRootWidget(ui)
 
 	return ui
+}
+
+func (ui *UI) CreateLayout() {
+	ui.Layout = views.NewBoxLayout(views.Vertical)
+	ui.Layout.AddWidget(ui.Topbar, 0)
+	ui.Layout.AddWidget(ui.Columnheaders, 0)
+	ui.Layout.AddWidget(ui.Songlist, 2)
+	ui.Layout.AddWidget(ui.Multibar, 0)
+	ui.Layout.SetView(ui.view)
 }
 
 func (ui *UI) SetIndex(i *index.Index) {
@@ -87,15 +93,18 @@ func (ui *UI) Draw() {
 }
 
 func (ui *UI) Resize() {
+	ui.CreateLayout()
 	ui.Layout.Resize()
+	ui.PostEventWidgetResize(ui)
 }
 
 func (ui *UI) SetView(v views.View) {
+	ui.view = v
 	ui.Layout.SetView(v)
 }
 
 func (ui *UI) Size() (int, int) {
-	return ui.Layout.Size()
+	return ui.view.Size()
 }
 
 func (ui *UI) HandleEvent(ev tcell.Event) bool {

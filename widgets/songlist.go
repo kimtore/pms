@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/songlist"
 
 	"github.com/gdamore/tcell"
@@ -117,7 +116,6 @@ func (w *SongListWidget) expandColumns() {
 }
 
 func (w *SongListWidget) Draw() {
-	//console.Log("Draw() with view=%p", w.view)
 	if w.view == nil || w.songlist == nil {
 		return
 	}
@@ -158,7 +156,6 @@ func (w *SongListWidget) Draw() {
 
 func (w *SongListWidget) getVisibleBoundaries() (ymin, ymax int) {
 	_, ymin, _, ymax = w.viewport.GetVisible()
-	//console.Log("GetVisible() says ymin %d, ymax %d", ymin, ymax)
 	return
 }
 
@@ -186,13 +183,10 @@ func (w *SongListWidget) validateCursor(ymin, ymax int) {
 }
 
 func (w *SongListWidget) setViewportSize() {
-	//console.Log("setViewportSize()")
 	x, y := w.Size()
 	w.viewport.Resize(0, 0, -1, -1)
 	w.viewport.SetContentSize(x, w.songlist.Len(), true)
-	//console.Log("SetContentSize(%d, %d)", x, w.songlist.Len())
 	w.viewport.SetSize(x, min(y, w.songlist.Len()))
-	//console.Log("SetSize(%d, %d)", x, min(y, w.songlist.Len()))
 	w.validateCursorVisible()
 	w.AutoSetColumnWidths()
 	w.PostEventWidgetContent(w)
@@ -228,7 +222,6 @@ func (w *SongListWidget) Resize() {
 }
 
 func (w *SongListWidget) HandleEvent(ev tcell.Event) bool {
-	//console.Log("HandleEvent()")
 	switch ev := ev.(type) {
 	case *tcell.EventKey:
 		switch ev.Key() {
@@ -258,7 +251,6 @@ func (w *SongListWidget) HandleEvent(ev tcell.Event) bool {
 }
 
 func (w *SongListWidget) SetView(v views.View) {
-	//console.Log("SetView(%p)", v)
 	w.view = v
 	w.viewport.SetView(w.view)
 }

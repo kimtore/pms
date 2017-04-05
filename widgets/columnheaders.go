@@ -46,15 +46,9 @@ func (c *ColumnheadersWidget) Size() (int, int) {
 }
 
 func (c *ColumnheadersWidget) Resize() {
+	// Handled by SongListWidget
 }
 
 func (c *ColumnheadersWidget) HandleEvent(ev tcell.Event) bool {
-	/*
-		switch ev := ev.(type) {
-		case *tcell.EventKey:
-			return true
-		}
-		return false
-	*/
 	return false
 }
