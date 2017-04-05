@@ -11,9 +11,11 @@ import (
 
 type UI struct {
 	// UI elements
-	App           *views.Application
-	Layout        *views.BoxLayout
+	App    *views.Application
+	Layout *views.BoxLayout
+
 	Topbar        *views.TextBar
+	Playbar       *PlaybarWidget
 	Columnheaders *ColumnheadersWidget
 	Multibar      *MultibarWidget
 	Songlist      *SongListWidget
@@ -37,12 +39,14 @@ func NewUI() *UI {
 	ui.App = &views.Application{}
 
 	ui.Topbar = views.NewTextBar()
+	ui.Playbar = NewPlaybarWidget()
 	ui.Columnheaders = NewColumnheadersWidget()
 	ui.Multibar = NewMultibarWidget()
 	ui.Songlist = NewSongListWidget()
 
 	ui.Multibar.Watch(ui)
 	ui.Songlist.Watch(ui)
+	ui.Playbar.Watch(ui)
 
 	ui.styleTopbar = tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite)
 	ui.styleTopbarTitle = tcell.StyleDefault.Foreground(tcell.ColorWhite)
@@ -62,6 +66,7 @@ func NewUI() *UI {
 func (ui *UI) CreateLayout() {
 	ui.Layout = views.NewBoxLayout(views.Vertical)
 	ui.Layout.AddWidget(ui.Topbar, 0)
+	ui.Layout.AddWidget(ui.Playbar, 0)
 	ui.Layout.AddWidget(ui.Columnheaders, 0)
 	ui.Layout.AddWidget(ui.Songlist, 2)
 	ui.Layout.AddWidget(ui.Multibar, 0)

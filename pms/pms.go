@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ambientsound/pms/console"
@@ -255,16 +256,27 @@ func (pms *PMS) UpdatePlayerStatus() error {
 		return err
 	}
 
+	console.Log("MPD player status: %s", attrs)
+
 	pms.MpdStatus.Audio = attrs["audio"]
 	pms.MpdStatus.Err = attrs["err"]
 	pms.MpdStatus.State = attrs["state"]
+
+	// The time field is divided into ELAPSED:LENGTH.
+	// We only need the length field, since the elapsed field is sent as a
+	// floating point value.
+	split := strings.Split(attrs["time"], ":")
+	if len(split) == 2 {
+		pms.MpdStatus.Time, _ = strconv.Atoi(split[1])
+	} else {
+		pms.MpdStatus.Time = -1
+	}
 
 	pms.MpdStatus.Bitrate, _ = strconv.Atoi(attrs["bitrate"])
 	pms.MpdStatus.Playlist, _ = strconv.Atoi(attrs["playlist"])
 	pms.MpdStatus.PlaylistLength, _ = strconv.Atoi(attrs["playlistLength"])
 	pms.MpdStatus.Song, _ = strconv.Atoi(attrs["song"])
 	pms.MpdStatus.SongID, _ = strconv.Atoi(attrs["songID"])
-	pms.MpdStatus.Time, _ = strconv.Atoi(attrs["time"])
 	pms.MpdStatus.Volume, _ = strconv.Atoi(attrs["volume"])
 
 	pms.MpdStatus.Elapsed, _ = strconv.ParseFloat(attrs["elapsed"], 64)

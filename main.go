@@ -89,6 +89,8 @@ func main() {
 				ui.SetIndex(pms.Index)
 			case <-pms.EventPlayer:
 				console.Log("Player state has changed")
+				ui.Playbar.SetPlayerStatus(pms.MpdStatus)
+				ui.App.Update()
 			}
 		}
 	}()
