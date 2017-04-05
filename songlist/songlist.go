@@ -37,7 +37,7 @@ func (s *SongList) Len() int {
 }
 
 func (s *SongList) Less(a, b int) bool {
-	return s.Songs[a].Tags[s.currentSortCriteria] < s.Songs[b].Tags[s.currentSortCriteria]
+	return s.Songs[a].TagString(s.currentSortCriteria) < s.Songs[b].TagString(s.currentSortCriteria)
 }
 
 func (s *SongList) Swap(a, b int) {
@@ -59,7 +59,7 @@ func NewFromFile(file io.Reader) (songs *SongList) {
 			s = song.New()
 		}
 		if s != nil {
-			s.Tags[tokens[0]] = tokens[1]
+			s.Tags[tokens[0]] = []rune(tokens[1])
 		}
 	}
 	return

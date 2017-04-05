@@ -259,7 +259,7 @@ func (pms *PMS) UpdateCurrentSong() error {
 		return err
 	}
 
-	console.Log("MPD current song: %s", attrs)
+	console.Log("MPD current song: %s", attrs["file"])
 
 	pms.CurrentSong = song.New()
 	pms.CurrentSong.SetTags(attrs)

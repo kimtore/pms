@@ -48,12 +48,12 @@ func (w *SongListWidget) SetSongList(s *songlist.SongList) {
 	w.songlist = s
 	w.setViewportSize()
 	cols := []string{
-		"Artist",
-		"Track",
-		"Title",
-		"Album",
-		"Date",
-		"Time",
+		"artist",
+		"track",
+		"title",
+		"album",
+		"date",
+		"time",
 	}
 	w.SetColumns(cols)
 	PostEventListChanged(w)

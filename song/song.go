@@ -2,6 +2,7 @@ package song
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/ambientsound/pms/utils"
 
@@ -12,26 +13,39 @@ type Song struct {
 	ID       int
 	Position int
 	Time     int
-	Tags     mpd.Attrs
+	Tags     Taglist
 }
+
+type Tag []rune
+
+type Taglist map[string]Tag
 
 func New() (s *Song) {
 	s = &Song{}
-	s.Tags = make(mpd.Attrs)
+	s.Tags = make(Taglist)
 	return
 }
 
+func (s *Song) TagString(key string) string {
+	return string(s.Tags[key])
+}
+
 func (s *Song) SetTags(tags mpd.Attrs) {
-	s.Tags = tags
+	s.Tags = make(Taglist)
+	for key := range tags {
+		lowKey := strings.ToLower(key)
+		s.Tags[lowKey] = []rune(tags[key])
+	}
 	s.AutoFill()
 }
 
+// AutoFill post-processes and caches song tags.
 func (s *Song) AutoFill() {
 	var err error
-	s.Time, err = strconv.Atoi(s.Tags["Time"])
+	s.Time, err = strconv.Atoi(s.TagString("time"))
 	if err == nil {
-		s.Tags["Time"] = utils.TimeString(s.Time)
+		s.Tags["time"] = utils.TimeRunes(s.Time)
 	} else {
-		s.Tags["Time"] = `--:--`
+		s.Tags["time"] = utils.TimeRunes(-1)
 	}
 }

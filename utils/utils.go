@@ -15,3 +15,7 @@ func TimeString(secs int) string {
 	}
 	return fmt.Sprintf("%02d:%02d", minutes, secs)
 }
+
+func TimeRunes(secs int) []rune {
+	return []rune(TimeString(secs))
+}
