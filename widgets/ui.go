@@ -9,6 +9,8 @@ import (
 	"github.com/gdamore/tcell/views"
 )
 
+type StyleMap map[string]tcell.Style
+
 type UI struct {
 	// UI elements
 	App    *views.Application
@@ -24,13 +26,9 @@ type UI struct {
 	Index           *index.Index
 	defaultSongList *songlist.SongList
 
-	// Styles
-	styleTopbar      tcell.Style
-	styleTopbarTitle tcell.Style
-
 	// TCell
 	view views.View
-	views.WidgetWatchers
+	widget
 }
 
 func NewUI() *UI {
@@ -48,12 +46,15 @@ func NewUI() *UI {
 	ui.Songlist.Watch(ui)
 	ui.Playbar.Watch(ui)
 
-	ui.styleTopbar = tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite)
-	ui.styleTopbarTitle = tcell.StyleDefault.Foreground(tcell.ColorWhite)
+	ui.SetStyleMap(StyleMap{
+		"default": tcell.StyleDefault,
+		"topbar":  tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite),
+		"title":   tcell.StyleDefault.Foreground(tcell.ColorWhite),
+	})
 
-	ui.Topbar.SetStyle(ui.styleTopbar)
-	ui.Topbar.SetLeft(version.ShortName(), ui.styleTopbar)
-	ui.Topbar.SetRight(version.Version(), ui.styleTopbar)
+	ui.Topbar.SetStyle(ui.styles["topbar"])
+	ui.Topbar.SetLeft(version.ShortName(), ui.styles["topbar"])
+	ui.Topbar.SetRight(version.Version(), ui.styles["topbar"])
 
 	ui.Multibar.SetDefaultText("Type to search.")
 
@@ -129,7 +130,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 
 	case *EventListChanged:
 		ui.App.Update()
-		ui.Topbar.SetCenter(" "+ui.Songlist.Name()+" ", ui.styleTopbarTitle)
+		ui.Topbar.SetCenter(" "+ui.Songlist.Name()+" ", ui.styles["title"])
 		ui.Columnheaders.SetColumns(ui.Songlist.Columns())
 		return true
 
