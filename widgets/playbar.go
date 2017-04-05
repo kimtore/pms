@@ -55,20 +55,18 @@ func (w *PlaybarWidget) drawNextChar(x, y int, r rune, style tcell.Style) int {
 
 func (w *PlaybarWidget) Draw() {
 	x, y := 0, 0
-	style := tcell.StyleDefault
 
-	x = w.drawNextChar(x, y, playRunes[w.status.State], style)
-	x = w.drawNext(x+1, y, []rune(w.status.State), style)
-	x = w.drawNextChar(x+1, y, '[', style)
-	x = w.drawNext(x, y, []rune(utils.TimeString(int(w.status.Elapsed))), style)
-	x = w.drawNextChar(x, y, '/', style)
-	x = w.drawNext(x, y, []rune(utils.TimeString(w.status.Time)), style)
-	x = w.drawNextChar(x, y, ']', style)
+	x = w.drawNextChar(x, y, playRunes[w.status.State], w.Style("symbol"))
+	x = w.drawNextChar(x+1, y, '[', w.Style("separator"))
+	x = w.drawNext(x, y, []rune(utils.TimeString(int(w.status.Elapsed))), w.Style("elapsed"))
+	x = w.drawNextChar(x, y, '/', w.Style("separator"))
+	x = w.drawNext(x, y, []rune(utils.TimeString(w.status.Time)), w.Style("time"))
+	x = w.drawNextChar(x, y, ']', w.Style("separator"))
 
 	if w.song != nil {
-		x = w.drawNext(x+1, y, w.song.Tags["artist"], style)
-		x = w.drawNextChar(x+1, y, '-', style)
-		x = w.drawNext(x+1, y, w.song.Tags["title"], style)
+		x = w.drawNext(x+1, y, w.song.Tags["artist"], w.Style("artist"))
+		x = w.drawNextChar(x+1, y, '-', w.Style("separator"))
+		x = w.drawNext(x+1, y, w.song.Tags["title"], w.Style("title"))
 	}
 }
 

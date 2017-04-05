@@ -1,7 +1,8 @@
 package widgets
 
 import (
-	"github.com/gdamore/tcell"
+	"strings"
+
 	"github.com/gdamore/tcell/views"
 )
 
@@ -9,7 +10,7 @@ type ColumnheadersWidget struct {
 	columns []column
 	view    views.View
 
-	views.WidgetWatchers
+	widget
 }
 
 func NewColumnheadersWidget() (c *ColumnheadersWidget) {
@@ -23,13 +24,13 @@ func (c *ColumnheadersWidget) SetColumns(cols []column) {
 }
 
 func (c *ColumnheadersWidget) Draw() {
-	style := tcell.StyleDefault.Foreground(tcell.ColorYellow)
 	x := 0
 	y := 0
 	for i := range c.columns {
 		col := &c.columns[i]
-		for p := 0; p < len(col.Tag); p++ {
-			c.view.SetContent(x+p, y, rune(col.Tag[p]), nil, style)
+		title := []rune(strings.Title(col.Tag))
+		for p, r := range title {
+			c.view.SetContent(x+p, y, r, nil, c.Style("header"))
 		}
 		x += col.Width()
 	}
@@ -43,12 +44,4 @@ func (c *ColumnheadersWidget) Size() (int, int) {
 	x, y := c.view.Size()
 	y = 1
 	return x, y
-}
-
-func (c *ColumnheadersWidget) Resize() {
-	// Handled by SongListWidget
-}
-
-func (c *ColumnheadersWidget) HandleEvent(ev tcell.Event) bool {
-	return false
 }

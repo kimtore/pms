@@ -10,6 +10,10 @@ type widget struct {
 	views.WidgetWatchers
 }
 
+func (w *widget) Style(s string) tcell.Style {
+	return w.styles[s]
+}
+
 func (w *widget) SetStyleMap(m StyleMap) {
 	w.styles = m
 }

@@ -11,14 +11,13 @@ import (
 )
 
 type SongListWidget struct {
-	songlist    *songlist.SongList
-	view        views.View
-	viewport    views.ViewPort
-	cursor      int
-	cursorStyle tcell.Style
-	columns     []column
+	songlist *songlist.SongList
+	view     views.View
+	viewport views.ViewPort
+	cursor   int
+	columns  []column
 
-	views.WidgetWatchers
+	widget
 }
 
 func min(a, b int) int {
@@ -39,7 +38,6 @@ func NewSongListWidget() (w *SongListWidget) {
 	w = &SongListWidget{}
 	w.songlist = &songlist.SongList{}
 	w.columns = make([]column, 0)
-	w.cursorStyle = tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack)
 	return
 }
 
@@ -121,17 +119,19 @@ func (w *SongListWidget) Draw() {
 	}
 
 	ymin, ymax := w.getVisibleBoundaries()
-	style := tcell.StyleDefault
+	style := w.Style("default")
+	cursor := false
 
 	for y := ymin; y <= ymax; y++ {
 
 		s := w.songlist.Songs[y]
 
 		// Style based on song's role
-		if y == w.cursor {
-			style = w.cursorStyle
+		cursor = y == w.cursor
+		if cursor {
+			style = w.Style("cursor")
 		} else {
-			style = tcell.StyleDefault
+			style = w.Style("default")
 		}
 		x := 0
 		rightPadding := 1
@@ -140,7 +140,11 @@ func (w *SongListWidget) Draw() {
 		for col := 0; col < len(w.columns); col++ {
 
 			// Convert tag to runes
-			str := s.Tags[w.columns[col].Tag]
+			key := w.columns[col].Tag
+			str := s.Tags[key]
+			if !cursor {
+				style = w.Style(key)
+			}
 			runes := []rune(str)
 
 			if col+1 == len(w.columns) {

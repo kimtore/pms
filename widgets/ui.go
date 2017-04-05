@@ -48,13 +48,36 @@ func NewUI() *UI {
 
 	ui.SetStyleMap(StyleMap{
 		"default": tcell.StyleDefault,
+		"title":   tcell.StyleDefault.Background(tcell.ColorBlack).Foreground(tcell.ColorWhite),
 		"topbar":  tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite),
-		"title":   tcell.StyleDefault.Foreground(tcell.ColorWhite),
 	})
 
-	ui.Topbar.SetStyle(ui.styles["topbar"])
-	ui.Topbar.SetLeft(version.ShortName(), ui.styles["topbar"])
-	ui.Topbar.SetRight(version.Version(), ui.styles["topbar"])
+	ui.Columnheaders.SetStyleMap(StyleMap{
+		"header": tcell.StyleDefault.Foreground(tcell.ColorGreen).Bold(true),
+	})
+
+	ui.Playbar.SetStyleMap(StyleMap{
+		"artist":  tcell.StyleDefault.Foreground(tcell.ColorYellow),
+		"default": tcell.StyleDefault,
+		"elapsed": tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"time":    tcell.StyleDefault.Foreground(tcell.ColorTeal),
+		"title":   tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+	})
+
+	ui.Songlist.SetStyleMap(StyleMap{
+		"album":   tcell.StyleDefault.Foreground(tcell.ColorTeal),
+		"artist":  tcell.StyleDefault.Foreground(tcell.ColorYellow),
+		"cursor":  tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack),
+		"date":    tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"default": tcell.StyleDefault,
+		"time":    tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
+		"title":   tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		"track":   tcell.StyleDefault.Foreground(tcell.ColorGreen),
+	})
+
+	ui.Topbar.SetStyle(ui.Style("topbar"))
+	ui.Topbar.SetLeft(version.ShortName(), ui.Style("topbar"))
+	ui.Topbar.SetRight(version.Version(), ui.Style("topbar"))
 
 	ui.Multibar.SetDefaultText("Type to search.")
 
@@ -130,7 +153,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 
 	case *EventListChanged:
 		ui.App.Update()
-		ui.Topbar.SetCenter(" "+ui.Songlist.Name()+" ", ui.styles["title"])
+		ui.Topbar.SetCenter(" "+ui.Songlist.Name()+" ", ui.Style("title"))
 		ui.Columnheaders.SetColumns(ui.Songlist.Columns())
 		return true
 
