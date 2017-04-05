@@ -68,8 +68,8 @@ func NewFromFile(file io.Reader) (songs *SongList) {
 func NewFromAttrlist(attrlist []mpd.Attrs) *SongList {
 	songs := New()
 	for _, attrs := range attrlist {
-		s := &song.Song{}
-		s.Tags = attrs
+		s := song.New()
+		s.SetTags(attrs)
 		songs.Add(s)
 	}
 	return songs
