@@ -17,6 +17,7 @@ import (
 )
 
 type PMS struct {
+	MpdStatus        PlayerStatus
 	MpdClient        *mpd.Client
 	MpdClientWatcher *mpd.Watcher
 	Index            *index.Index
@@ -31,8 +32,36 @@ type PMS struct {
 
 	EventLibrary chan int
 	EventIndex   chan int
-	EventMPD     chan string
+	EventPlayer  chan int
 }
+
+// PlayerStatus contains information about MPD's player status.
+type PlayerStatus struct {
+	Audio          string
+	Bitrate        int
+	Consume        bool
+	Elapsed        float64
+	Err            string
+	MixRampDB      float64
+	Playlist       int
+	PlaylistLength int
+	Random         bool
+	Repeat         bool
+	Single         bool
+	Song           int
+	SongID         int
+	State          string
+	Time           int
+	Volume         int
+}
+
+// Strings found in the PlayerStatus.State variable.
+const (
+	StatePlay    string = "play"
+	StateStop    string = "stop"
+	StatePause   string = "pause"
+	StateUnknown string = "unknown"
+)
 
 func createDirectory(dir string) error {
 	dir_mode := os.ModeDir | 0755
@@ -106,12 +135,13 @@ func (pms *PMS) Reconnect() error {
 		pms.MpdClient.Close()
 		return err
 	}
-	go pms.Watch()
+	pms.UpdatePlayerStatus()
+	go pms.watch()
 	err = pms.Sync()
 	return err
 }
 
-func (pms *PMS) Watch() {
+func (pms *PMS) watch() {
 	for {
 		select {
 		case ev := <-pms.MpdClientWatcher.Error:
@@ -119,7 +149,7 @@ func (pms *PMS) Watch() {
 			panic(ev)
 		case ev, ok := <-pms.MpdClientWatcher.Event:
 			console.Log("MPD IDLE: %s", ev)
-			pms.EventMPD <- ev
+			pms.UpdatePlayerStatus()
 			if !ok {
 				return
 			}
@@ -217,6 +247,39 @@ func (pms *PMS) openIndex() error {
 	return nil
 }
 
+// UpdatePlayerStatus queries the MPD server for its status struct, and places
+// a normalized copy in pms.MpdStatus.
+func (pms *PMS) UpdatePlayerStatus() error {
+	attrs, err := pms.MpdClient.Status()
+	if err != nil {
+		return err
+	}
+
+	pms.MpdStatus.Audio = attrs["audio"]
+	pms.MpdStatus.Err = attrs["err"]
+	pms.MpdStatus.State = attrs["state"]
+
+	pms.MpdStatus.Bitrate, _ = strconv.Atoi(attrs["bitrate"])
+	pms.MpdStatus.Playlist, _ = strconv.Atoi(attrs["playlist"])
+	pms.MpdStatus.PlaylistLength, _ = strconv.Atoi(attrs["playlistLength"])
+	pms.MpdStatus.Song, _ = strconv.Atoi(attrs["song"])
+	pms.MpdStatus.SongID, _ = strconv.Atoi(attrs["songID"])
+	pms.MpdStatus.Time, _ = strconv.Atoi(attrs["time"])
+	pms.MpdStatus.Volume, _ = strconv.Atoi(attrs["volume"])
+
+	pms.MpdStatus.Elapsed, _ = strconv.ParseFloat(attrs["elapsed"], 64)
+	pms.MpdStatus.MixRampDB, _ = strconv.ParseFloat(attrs["mixRampDB"], 64)
+
+	pms.MpdStatus.Consume, _ = strconv.ParseBool(attrs["consume"])
+	pms.MpdStatus.Random, _ = strconv.ParseBool(attrs["random"])
+	pms.MpdStatus.Repeat, _ = strconv.ParseBool(attrs["repeat"])
+	pms.MpdStatus.Single, _ = strconv.ParseBool(attrs["single"])
+
+	pms.EventPlayer <- 0
+
+	return nil
+}
+
 func (pms *PMS) ReIndex() {
 	timer := time.Now()
 	pms.Index.IndexFull()
@@ -228,6 +291,6 @@ func New() *PMS {
 	pms := &PMS{}
 	pms.EventLibrary = make(chan int)
 	pms.EventIndex = make(chan int)
-	pms.EventMPD = make(chan string)
+	pms.EventPlayer = make(chan int)
 	return pms
 }
