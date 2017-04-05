@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/songlist"
 
 	"github.com/gdamore/tcell"
@@ -59,6 +60,13 @@ func (w *SongListWidget) SetSongList(s *songlist.SongList) {
 	PostEventListChanged(w)
 }
 
+func (w *SongListWidget) AutoSetColumnWidths() {
+	for i := range w.columns {
+		w.columns[i].SetWidth(w.columns[i].Mid())
+	}
+	w.expandColumns()
+}
+
 func (w *SongListWidget) SetColumns(cols []string) {
 	//timer := time.Now()
 	ch := make(chan int, len(cols))
@@ -67,18 +75,20 @@ func (w *SongListWidget) SetColumns(cols []string) {
 		go func(i int) {
 			w.columns[i].Tag = cols[i]
 			w.columns[i].Set(w.songlist)
-			w.columns[i].SetWidth(w.columns[i].Mid())
 			ch <- 0
 		}(i)
 	}
 	for i := 0; i < len(cols); i++ {
 		<-ch
 	}
-	w.expandColumns()
+	w.AutoSetColumnWidths()
 	//console.Log("SetColumns on %d songs in %s", w.songlist.Len(), time.Since(timer).String())
 }
 
 func (w *SongListWidget) expandColumns() {
+	if len(w.columns) == 0 {
+		return
+	}
 	_, _, xmax, _ := w.viewport.GetVisible()
 	totalWidth := 0
 	poolSize := len(w.columns)
@@ -184,6 +194,7 @@ func (w *SongListWidget) setViewportSize() {
 	w.viewport.SetSize(x, min(y, w.songlist.Len()))
 	//console.Log("SetSize(%d, %d)", x, min(y, w.songlist.Len()))
 	w.validateCursorVisible()
+	w.AutoSetColumnWidths()
 	w.PostEventWidgetContent(w)
 }
 
@@ -212,8 +223,8 @@ func (w *SongListWidget) Cursor() int {
 }
 
 func (w *SongListWidget) Resize() {
-	//console.Log("Resize()")
 	w.setViewportSize()
+	w.PostEventWidgetResize(w)
 }
 
 func (w *SongListWidget) HandleEvent(ev tcell.Event) bool {
@@ -253,8 +264,6 @@ func (w *SongListWidget) SetView(v views.View) {
 }
 
 func (w *SongListWidget) Size() (int, int) {
-	//x, y := w.view.Size()
-	//console.Log("Size() returns %d, %d", x, y)
 	return w.view.Size()
 }
 
