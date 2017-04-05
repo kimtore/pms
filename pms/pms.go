@@ -11,6 +11,7 @@ import (
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/index"
+	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/xdg"
 
@@ -23,6 +24,7 @@ type PMS struct {
 	MpdClientWatcher *mpd.Watcher
 	Index            *index.Index
 	Library          *songlist.SongList
+	CurrentSong      *song.Song
 
 	host     string
 	port     string
@@ -137,6 +139,7 @@ func (pms *PMS) Reconnect() error {
 		return err
 	}
 	pms.UpdatePlayerStatus()
+	pms.UpdateCurrentSong()
 	go pms.watch()
 	err = pms.Sync()
 	return err
@@ -150,10 +153,11 @@ func (pms *PMS) watch() {
 			panic(ev)
 		case ev, ok := <-pms.MpdClientWatcher.Event:
 			console.Log("MPD IDLE: %s", ev)
-			pms.UpdatePlayerStatus()
 			if !ok {
 				return
 			}
+			pms.UpdatePlayerStatus()
+			pms.UpdateCurrentSong()
 		}
 	}
 }
@@ -244,6 +248,23 @@ func (pms *PMS) openIndex() error {
 	}
 
 	console.Log("Opened index in %s", time.Since(timer).String())
+
+	return nil
+}
+
+// UpdateCurrentSong stores a local copy of the currently playing song.
+func (pms *PMS) UpdateCurrentSong() error {
+	attrs, err := pms.MpdClient.CurrentSong()
+	if err != nil {
+		return err
+	}
+
+	console.Log("MPD current song: %s", attrs)
+
+	pms.CurrentSong = song.New()
+	pms.CurrentSong.SetTags(attrs)
+
+	pms.EventPlayer <- 0
 
 	return nil
 }

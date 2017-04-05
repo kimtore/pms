@@ -90,6 +90,7 @@ func main() {
 			case <-pms.EventPlayer:
 				console.Log("Player state has changed")
 				ui.Playbar.SetPlayerStatus(pms.MpdStatus)
+				ui.Playbar.SetSong(pms.CurrentSong)
 				ui.App.Update()
 			}
 		}

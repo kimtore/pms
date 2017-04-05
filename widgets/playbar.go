@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"github.com/ambientsound/pms/pms"
+	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/utils"
 
 	"github.com/gdamore/tcell"
@@ -11,6 +12,7 @@ import (
 type PlaybarWidget struct {
 	status pms.PlayerStatus
 	view   views.View
+	song   *song.Song
 
 	views.WidgetWatchers
 }
@@ -31,6 +33,11 @@ func (w *PlaybarWidget) SetPlayerStatus(s pms.PlayerStatus) {
 	w.PostEventWidgetContent(w)
 }
 
+func (w *PlaybarWidget) SetSong(s *song.Song) {
+	w.song = s
+	w.PostEventWidgetContent(w)
+}
+
 func (w *PlaybarWidget) drawNext(x, y int, s string, style tcell.Style) int {
 	p := 0
 	for p = 0; p < len(s); p++ {
@@ -45,9 +52,17 @@ func (w *PlaybarWidget) Draw() {
 
 	x = w.drawNext(x, y, string(playRunes[w.status.State]), style)
 	x = w.drawNext(x+1, y, w.status.State, style)
-	x = w.drawNext(x+1, y, utils.TimeString(int(w.status.Elapsed)), style)
-	x = w.drawNext(x+1, y, "/", style)
-	x = w.drawNext(x+1, y, utils.TimeString(w.status.Time), style)
+	x = w.drawNext(x+1, y, "[", style)
+	x = w.drawNext(x, y, utils.TimeString(int(w.status.Elapsed)), style)
+	x = w.drawNext(x, y, "/", style)
+	x = w.drawNext(x, y, utils.TimeString(w.status.Time), style)
+	x = w.drawNext(x, y, "]", style)
+
+	if w.song != nil {
+		x = w.drawNext(x+1, y, w.song.Tags["Artist"], style)
+		x = w.drawNext(x+1, y, "-", style)
+		x = w.drawNext(x+1, y, w.song.Tags["Title"], style)
+	}
 }
 
 func (w *PlaybarWidget) SetView(v views.View) {
