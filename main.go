@@ -73,7 +73,6 @@ func main() {
 		err := pms.Connect(opts.MpdHost, opts.MpdPort, opts.MpdPassword)
 		if err != nil {
 			console.Log("%s", err)
-			panic(err)
 		}
 	}()
 
@@ -82,16 +81,23 @@ func main() {
 			select {
 			case <-pms.EventLibrary:
 				console.Log("Song library updated in MPD, assigning to UI")
-				ui.Songlist.SetSongList(pms.Library)
-				ui.SetDefaultSonglist(pms.Library)
+				ui.App.PostFunc(func() {
+					ui.Songlist.SetSongList(pms.Library)
+					ui.SetDefaultSonglist(pms.Library)
+					ui.App.Update()
+				})
 			case <-pms.EventIndex:
 				console.Log("Search index updated, assigning to UI")
-				ui.SetIndex(pms.Index)
+				ui.App.PostFunc(func() {
+					ui.SetIndex(pms.Index)
+				})
 			case <-pms.EventPlayer:
 				console.Log("Player state has changed")
-				ui.Playbar.SetPlayerStatus(pms.MpdStatus)
-				ui.Playbar.SetSong(pms.CurrentSong)
-				ui.App.Update()
+				ui.App.PostFunc(func() {
+					ui.Playbar.SetPlayerStatus(pms.MpdStatus)
+					ui.Playbar.SetSong(pms.CurrentSong)
+					ui.App.Update()
+				})
 			}
 		}
 	}()
