@@ -25,9 +25,16 @@ pms 2>/tmp/pms.log  # or /dev/null
 ```
 
 
-## Configuring
+## Requirements
 
 PMS wants to build a search index from MPD's database. In order to be truly practical, PMS must support fuzzy matching, scoring, and sub-millisecond full-text searches. This is accomplished by leveraging [Bleve](https://github.com/blevesearch/bleve), a full-text search and indexing library.
+
+A full-text search index takes up both space and memory. For a library of about 30 000 songs, you should expect using about 500MB of disk space and around 1GB of RAM.
+
+PMS is multithreaded and will benefit from multicore CPUs.
+
+
+## Configuring
 
 ### MPD
 
