@@ -204,16 +204,35 @@ func (pms *PMS) watchMpdClients() {
 
 	// Watch for IDLE events
 	go func() {
-		for ev := range pms.MpdClientWatcher.Event {
-			console.Log("MPD says it has IDLE events on the following subsystem: %s", ev)
+		var err error
+
+		for subsystem := range pms.MpdClientWatcher.Event {
+
+			console.Log("MPD says it has IDLE events on the following subsystem: %s", subsystem)
 			if pms.PingConnect() != nil {
 				console.Log("Failed to establish the control connection, we are running in the dark!")
 				continue
 			}
-			if pms.UpdatePlayerStatus() == nil && pms.UpdateCurrentSong() == nil {
-				continue
+
+			switch subsystem {
+			case "database":
+				err = pms.Sync()
+			case "player":
+				err = pms.UpdatePlayerStatus()
+				if err != nil {
+					break
+				}
+				err = pms.UpdateCurrentSong()
+			case "options":
+				err = pms.UpdatePlayerStatus()
+			case "mixer":
+				err = pms.UpdatePlayerStatus()
+			default:
+				console.Log("Ignoring updates by subsystem %s", subsystem)
 			}
-			console.Log("Failed to fetch player status and current song!")
+			if err != nil {
+				console.Log("Error updating status: %s", err)
+			}
 		}
 	}()
 }
