@@ -158,7 +158,7 @@ func (pms *PMS) Connect() error {
 		goto errors
 	}
 
-	go pms.watch()
+	go pms.watchMpdClients()
 
 	err = pms.UpdatePlayerStatus()
 	if err != nil {
@@ -211,7 +211,7 @@ func (pms *PMS) PingConnect() error {
 	return err
 }
 
-func (pms *PMS) watch() {
+func (pms *PMS) watchMpdClients() {
 	go func() {
 		for err := range pms.MpdClientWatcher.Error {
 			console.Log("Error in MPD IDLE connection: %s", err)
