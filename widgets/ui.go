@@ -46,10 +46,11 @@ func NewUI() *UI {
 	ui.Songlist.Watch(ui)
 	ui.Playbar.Watch(ui)
 
+	// Styles for widgets that don't have their own class yet.
 	ui.SetStyleMap(StyleMap{
 		"default": tcell.StyleDefault,
-		"title":   tcell.StyleDefault.Background(tcell.ColorBlack).Foreground(tcell.ColorWhite),
-		"topbar":  tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite),
+		"title":   tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite).Bold(true),
+		"topbar":  tcell.StyleDefault.Foreground(tcell.ColorYellow).Bold(true),
 	})
 
 	ui.Columnheaders.SetStyleMap(StyleMap{
