@@ -48,9 +48,8 @@ func NewUI() *UI {
 
 	// Styles for widgets that don't have their own class yet.
 	ui.SetStyleMap(StyleMap{
-		"default": tcell.StyleDefault,
-		"title":   tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite).Bold(true),
-		"topbar":  tcell.StyleDefault.Foreground(tcell.ColorYellow).Bold(true),
+		"title":  tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite).Bold(true),
+		"topbar": tcell.StyleDefault.Foreground(tcell.ColorYellow).Bold(true),
 	})
 
 	ui.Columnheaders.SetStyleMap(StyleMap{
@@ -58,22 +57,22 @@ func NewUI() *UI {
 	})
 
 	ui.Playbar.SetStyleMap(StyleMap{
-		"artist":  tcell.StyleDefault.Foreground(tcell.ColorYellow),
-		"default": tcell.StyleDefault,
-		"elapsed": tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"time":    tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"title":   tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		"artist":   tcell.StyleDefault.Foreground(tcell.ColorYellow),
+		"elapsed":  tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"switches": tcell.StyleDefault.Foreground(tcell.ColorTeal),
+		"time":     tcell.StyleDefault.Foreground(tcell.ColorTeal),
+		"title":    tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		"volume":   tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
 	})
 
 	ui.Songlist.SetStyleMap(StyleMap{
-		"album":   tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"artist":  tcell.StyleDefault.Foreground(tcell.ColorYellow),
-		"cursor":  tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack),
-		"date":    tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"default": tcell.StyleDefault,
-		"time":    tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
-		"title":   tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
-		"track":   tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"album":  tcell.StyleDefault.Foreground(tcell.ColorTeal),
+		"artist": tcell.StyleDefault.Foreground(tcell.ColorYellow),
+		"cursor": tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack),
+		"date":   tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"time":   tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
+		"title":  tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		"track":  tcell.StyleDefault.Foreground(tcell.ColorGreen),
 	})
 
 	ui.Topbar.SetStyle(ui.Style("topbar"))

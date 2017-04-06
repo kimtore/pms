@@ -1,6 +1,8 @@
 package widgets
 
 import (
+	"fmt"
+
 	"github.com/ambientsound/pms/pms"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/utils"
@@ -23,6 +25,13 @@ var playRunes = map[string]rune{
 	pms.StatePause:   '\u23f8',
 	pms.StateStop:    '\u23f9',
 	pms.StateUnknown: '\u2bd1',
+}
+
+func StatusRune(r rune, val bool) rune {
+	if val {
+		return r
+	}
+	return '-'
 }
 
 func NewPlaybarWidget() *PlaybarWidget {
@@ -56,15 +65,22 @@ func (w *PlaybarWidget) drawNextChar(x, y int, r rune, style tcell.Style) int {
 func (w *PlaybarWidget) Draw() {
 	x, y := 0, 0
 
-	x = w.drawNextChar(x, y, playRunes[w.status.State], w.Style("symbol"))
-	x = w.drawNextChar(x+1, y, '[', w.Style("separator"))
-	x = w.drawNext(x, y, []rune(utils.TimeString(int(w.status.Elapsed))), w.Style("elapsed"))
-	x = w.drawNextChar(x, y, '/', w.Style("separator"))
-	x = w.drawNext(x, y, []rune(utils.TimeString(w.status.Time)), w.Style("time"))
-	x = w.drawNextChar(x, y, ']', w.Style("separator"))
+	// 54% ----   00:00 ■ 00:00   Artist - Title
+
+	volume := fmt.Sprintf("%d%%", w.status.Volume)
+	x = w.drawNext(x, y, []rune(volume), w.Style("volume"))
+
+	x = w.drawNextChar(x+1, y, StatusRune('c', w.status.Consume), w.Style("switches"))
+	x = w.drawNextChar(x+0, y, StatusRune('z', w.status.Random), w.Style("switches"))
+	x = w.drawNextChar(x+0, y, StatusRune('s', w.status.Single), w.Style("switches"))
+	x = w.drawNextChar(x+0, y, StatusRune('r', w.status.Repeat), w.Style("switches"))
+
+	x = w.drawNext(x+3, y, []rune(utils.TimeString(int(w.status.Elapsed))), w.Style("elapsed"))
+	x = w.drawNextChar(x+1, y, playRunes[w.status.State], w.Style("symbol"))
+	x = w.drawNext(x+1, y, []rune(utils.TimeString(w.status.Time)), w.Style("time"))
 
 	if w.song != nil {
-		x = w.drawNext(x+1, y, w.song.Tags["artist"], w.Style("artist"))
+		x = w.drawNext(x+3, y, w.song.Tags["artist"], w.Style("artist"))
 		x = w.drawNextChar(x+1, y, '-', w.Style("separator"))
 		x = w.drawNext(x+1, y, w.song.Tags["title"], w.Style("title"))
 	}
@@ -75,7 +91,6 @@ func (w *PlaybarWidget) SetView(v views.View) {
 }
 
 func (w *PlaybarWidget) Size() (int, int) {
-	x, y := w.view.Size()
-	y = 1
-	return x, y
+	x, _ := w.view.Size()
+	return x, 2
 }
