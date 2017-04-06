@@ -38,34 +38,6 @@ type PMS struct {
 	EventPlayer  chan int
 }
 
-// PlayerStatus contains information about MPD's player status.
-type PlayerStatus struct {
-	Audio          string
-	Bitrate        int
-	Consume        bool
-	Elapsed        float64
-	Err            string
-	MixRampDB      float64
-	Playlist       int
-	PlaylistLength int
-	Random         bool
-	Repeat         bool
-	Single         bool
-	Song           int
-	SongID         int
-	State          string
-	Time           int
-	Volume         int
-}
-
-// Strings found in the PlayerStatus.State variable.
-const (
-	StatePlay    string = "play"
-	StateStop    string = "stop"
-	StatePause   string = "pause"
-	StateUnknown string = "unknown"
-)
-
 func createDirectory(dir string) error {
 	dir_mode := os.ModeDir | 0755
 	return os.MkdirAll(dir, dir_mode)
