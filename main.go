@@ -69,12 +69,8 @@ func main() {
 	defer ui.Quit()
 	console.Log("UI initialized in %s", time.Since(timer).String())
 
-	go func() {
-		err := pms.Connect(opts.MpdHost, opts.MpdPort, opts.MpdPassword)
-		if err != nil {
-			console.Log("%s", err)
-		}
-	}()
+	pms.SetConnectionParams(opts.MpdHost, opts.MpdPort, opts.MpdPassword)
+	go pms.LoopConnect()
 
 	go func() {
 		for {

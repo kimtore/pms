@@ -118,28 +118,46 @@ func (pms *PMS) readIndexStateFile() (int, error) {
 	return 0, fmt.Errorf("No data in index file")
 }
 
-func (pms *PMS) Connect(host, port, password string) error {
+func (pms *PMS) SetConnectionParams(host, port, password string) {
 	pms.MpdClient = nil
 	pms.host = host
 	pms.port = port
 	pms.password = password
-	return pms.Reconnect()
 }
 
-func (pms *PMS) Reconnect() error {
+func (pms *PMS) LoopConnect() {
+	for {
+		err := pms.Connect()
+		if err == nil {
+			return
+		}
+		console.Log("Error while connecting to MPD: %s", err)
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func (pms *PMS) Connect() error {
 	var err error
 
 	addr := makeAddress(pms.host, pms.port)
 
-	pms.MpdClient, err = mpd.DialAuthenticated(`tcp`, addr, pms.password)
-	if err != nil {
-		return err
-	}
+	pms.MpdClient = nil
+	pms.MpdClientWatcher = nil
+
+	console.Log("Establishing MPD IDLE connection to %s...", addr)
 
 	pms.MpdClientWatcher, err = mpd.NewWatcher(`tcp`, addr, pms.password)
 	if err != nil {
+		console.Log("Connection error: %s", err)
 		goto errors
 	}
+	console.Log("Successfully connected to %s.", addr)
+
+	err = pms.PingConnect()
+	if err != nil {
+		goto errors
+	}
+
 	go pms.watch()
 
 	err = pms.UpdatePlayerStatus()
@@ -160,31 +178,59 @@ func (pms *PMS) Reconnect() error {
 	return nil
 
 errors:
-	pms.MpdClient.Close()
-	pms.MpdClientWatcher.Close()
+	if pms.MpdClient != nil {
+		pms.MpdClient.Close()
+	}
+	if pms.MpdClientWatcher != nil {
+		pms.MpdClientWatcher.Close()
+	}
+	return err
+}
+
+func (pms *PMS) PingConnect() error {
+	var err error
+
+	addr := makeAddress(pms.host, pms.port)
+
+	if pms.MpdClient != nil {
+		err = pms.MpdClient.Ping()
+		console.Log("MPD control connection timeout.")
+	}
+
+	if pms.MpdClient == nil || err != nil {
+		console.Log("Establishing MPD control connection to %s...", addr)
+		pms.MpdClient, err = mpd.DialAuthenticated(`tcp`, addr, pms.password)
+		if err != nil {
+			console.Log("Connection error: %s", err)
+		}
+		console.Log("Successfully connected to %s.", addr)
+	}
+
 	return err
 }
 
 func (pms *PMS) watch() {
-	for {
-		select {
-		case ev := <-pms.MpdClientWatcher.Error:
-			console.Log("Watcher returned error: %s", ev)
-			panic(ev)
-		case ev, ok := <-pms.MpdClientWatcher.Event:
-			console.Log("MPD IDLE: %s", ev)
-			if !ok {
-				console.Log("goroutine watch() returning")
-				pms.Reconnect()
-				return
+	go func() {
+		for err := range pms.MpdClientWatcher.Error {
+			console.Log("Error in MPD IDLE connection: %s", err)
+			pms.MpdClient.Close()
+			pms.MpdClientWatcher.Close()
+		}
+		go pms.LoopConnect()
+	}()
+	go func() {
+		for ev := range pms.MpdClientWatcher.Event {
+			console.Log("MPD says it has IDLE events on the following subsystem: %s", ev)
+			if pms.PingConnect() != nil {
+				console.Log("Failed to establish the control connection, we are running in the dark!")
+				continue
 			}
 			if pms.UpdatePlayerStatus() == nil && pms.UpdateCurrentSong() == nil {
-				return
+				continue
 			}
-			close(pms.MpdClientWatcher.Event)
-			console.Log("MPD connection timeout, reconnecting.")
+			console.Log("Failed to fetch player status and current song!")
 		}
-	}
+	}()
 }
 
 // Sync retrieves the MPD library and stores it as a SongList in the
