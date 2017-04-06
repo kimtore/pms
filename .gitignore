@@ -22,7 +22,6 @@ compile
 Makefile
 *.o
 config.h
-config.*
 depcomp
 missing
 po/Makefile*
@@ -31,3 +30,7 @@ install-sh
 /build/
 tags
 doc/pms.1
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+install_manifest.txt

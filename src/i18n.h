@@ -24,10 +24,15 @@
 #ifndef _HAVE_I18N_H_
 
 #include "../config.h"
-#include <libintl.h>
-#include <locale.h>
 #include <glib.h>
 
+#ifndef CMAKE_BUILD
+#include <libintl.h>
+#include <locale.h>
+
 #define _(x) gettext(x)
+#else
+#define _(x) x
+#endif /* CMAKE_BUILD */
 
 #endif /* _HAVE_I18N_H_ */

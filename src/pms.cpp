@@ -716,9 +716,11 @@ int			Pms::init()
 	setlocale(LC_ALL, "");
 	setlocale(LC_CTYPE, "");
 	g_get_charset(&charset);
+#ifndef CMAKE_BUILD
 	bindtextdomain(GETTEXT_PACKAGE, LOCALE_DIR);
 	bind_textdomain_codeset(GETTEXT_PACKAGE, charset);
 	textdomain(GETTEXT_PACKAGE);
+#endif //CMAKE_BUILD
 
 	/* Print program header */
 	printf("%s v%s\n%s\n", PMS_NAME, PACKAGE_VERSION, PMS_COPYRIGHT);

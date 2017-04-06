@@ -16,12 +16,28 @@ The client only works with MPD versions >= 0.15.0.
 You'll need `glib >= 2.0`, `ncurses >= 5.0`, and `libmpdclient >= 2.5` to build
 PMS. If your c++ compiler supports c++11's regex (like `gcc-c++ >= 4.9`),
 it will enable regular expression searches.
-In addition, if building from Git, you'll need the `intltool` package. On
-Debian-based systems, you can install them by running:
 
+To install the dependencies on Debian-based systems you may run:
 ```
-sudo apt-get install build-essential intltool libncursesw5-dev libglib2.0-dev libmpdclient-dev
+sudo apt-get install build-essential libncursesw5-dev libglib2.0-dev libmpdclient-dev
 ```
+
+Pandoc is required to build the manpage (it is created by default, unless pandoc is missing).
+
+PMS can be build with CMake or GNU autotools.
+
+### Building with CMake
+
+The following commands are required to build and install PMS with CMake:
+```
+cmake .
+make
+sudo make install
+```
+
+### Building with autotools
+
+If building from Git with autotools, you'll need the `intltool` package as well.
 
 To build from a release tarball, run:
 
