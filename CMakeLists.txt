@@ -41,24 +41,36 @@ find_package(Ncursesw REQUIRED)
 pkg_check_modules(GLIB REQUIRED glib-2.0>=2.0)
 pkg_check_modules(MPDC REQUIRED libmpdclient>=2.5)
 
-option(regex "Enable regex support" YES)
-if(regex)
+option(ENABLE_REGEX "Enable regex support" YES)
+if(ENABLE_REGEX)
 	if(CMAKE_COMPILER_IS_GNUCXX)
 		execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GXX_VERSION)
 		if(GXX_VERSION VERSION_LESS 4.9)
 			message("g++ of at least 4.9 is required for proper regex support.")
-			set(regex NO)
+			set(ENABLE_REGEX NO)
 		endif()
 	endif()
+	set(HAVE_REGEX ${ENABLE_REGEX})
 endif()
 
-if(regex)
-	target_compile_definitions(pms PUBLIC -DHAVE_REGEX=1)
+set(PACKAGE_VERSION 0.99.0)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
+	execute_process(
+		COMMAND git describe --always
+		OUTPUT_VARIABLE GIT_COMMIT_HASH
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	set(PACKAGE_VERSION ${PACKAGE_VERSION}-${GIT_COMMIT_HASH})
 endif()
 
-target_compile_definitions(pms PUBLIC -DCMAKE_BUILD)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+
+# we need a dir in the builddir to include config.h as ../config.h
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src)
 
 target_include_directories(pms PUBLIC
+	${CMAKE_CURRENT_BINARY_DIR}/src
 	${CURSES_INCLUDE_PATH}
 	${GLIB_INCLUDE_DIRS}
 	${MPDC_INCLUDE_DIRS}

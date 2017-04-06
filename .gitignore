@@ -22,7 +22,6 @@ compile
 Makefile
 *.o
 config.h
-config.*
 depcomp
 missing
 po/Makefile*
