@@ -88,7 +88,6 @@ func main() {
 					ui.SetIndex(pms.Index)
 				})
 			case <-pms.EventPlayer:
-				console.Log("Player state has changed")
 				ui.App.PostFunc(func() {
 					ui.Playbar.SetPlayerStatus(pms.MpdStatus)
 					ui.Playbar.SetSong(pms.CurrentSong)

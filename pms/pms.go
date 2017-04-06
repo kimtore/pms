@@ -26,6 +26,8 @@ type PMS struct {
 	Library          *songlist.SongList
 	CurrentSong      *song.Song
 
+	ticker chan time.Time
+
 	host     string
 	port     string
 	password string
@@ -131,6 +133,7 @@ func (pms *PMS) Connect() error {
 	}
 
 	go pms.watchMpdClients()
+	go pms.runTicker()
 
 	err = pms.UpdatePlayerStatus()
 	if err != nil {
@@ -155,6 +158,10 @@ errors:
 	}
 	if pms.MpdClientWatcher != nil {
 		pms.MpdClientWatcher.Close()
+	}
+	if pms.ticker != nil {
+		close(pms.ticker)
+		pms.ticker = nil
 	}
 	return err
 }
@@ -184,6 +191,8 @@ func (pms *PMS) PingConnect() error {
 }
 
 func (pms *PMS) watchMpdClients() {
+
+	// Monitor connection for errors and terminate when an error occurs
 	go func() {
 		for err := range pms.MpdClientWatcher.Error {
 			console.Log("Error in MPD IDLE connection: %s", err)
@@ -192,6 +201,8 @@ func (pms *PMS) watchMpdClients() {
 		}
 		go pms.LoopConnect()
 	}()
+
+	// Watch for IDLE events
 	go func() {
 		for ev := range pms.MpdClientWatcher.Event {
 			console.Log("MPD says it has IDLE events on the following subsystem: %s", ev)
@@ -205,6 +216,23 @@ func (pms *PMS) watchMpdClients() {
 			console.Log("Failed to fetch player status and current song!")
 		}
 	}()
+}
+
+// runTicker starts a ticker that will increase the elapsed time every second.
+func (pms *PMS) runTicker() {
+	pms.ticker = make(chan time.Time, 0)
+
+	go func() {
+		ticker := time.NewTicker(time.Millisecond * 1000)
+		defer ticker.Stop()
+		for t := range ticker.C {
+			pms.ticker <- t
+		}
+	}()
+	for _ = range pms.ticker {
+		pms.MpdStatus.Tick()
+		pms.EventPlayer <- 0
+	}
 }
 
 // Sync retrieves the MPD library and stores it as a SongList in the
@@ -324,6 +352,8 @@ func (pms *PMS) UpdatePlayerStatus() error {
 	if err != nil {
 		return err
 	}
+
+	pms.MpdStatus.SetTime()
 
 	console.Log("MPD player status: %s", attrs)
 
