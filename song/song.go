@@ -48,4 +48,7 @@ func (s *Song) AutoFill() {
 	} else {
 		s.Tags["time"] = utils.TimeRunes(-1)
 	}
+	if len(s.Tags["date"]) >= 4 {
+		s.Tags["year"] = s.Tags["date"][:4]
+	}
 }

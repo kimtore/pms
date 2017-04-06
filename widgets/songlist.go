@@ -50,7 +50,7 @@ func (w *SongListWidget) SetSongList(s *songlist.SongList) {
 		"track",
 		"title",
 		"album",
-		"date",
+		"year",
 		"time",
 	}
 	w.SetColumns(cols)

@@ -73,6 +73,7 @@ func NewUI() *UI {
 		"time":   tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
 		"title":  tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
 		"track":  tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"year":   tcell.StyleDefault.Foreground(tcell.ColorGreen),
 	})
 
 	ui.Topbar.SetStyle(ui.Style("topbar"))
