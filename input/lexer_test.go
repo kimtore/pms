@@ -1,4 +1,4 @@
-package input
+package input_test
 
 import (
 	"testing"
