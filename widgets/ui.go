@@ -46,35 +46,31 @@ func NewUI() *UI {
 	ui.Songlist.Watch(ui)
 	ui.Playbar.Watch(ui)
 
-	// Styles for widgets that don't have their own class yet.
-	ui.SetStyleMap(StyleMap{
-		"title":  tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite).Bold(true),
-		"topbar": tcell.StyleDefault.Foreground(tcell.ColorYellow).Bold(true),
-	})
-
-	ui.Columnheaders.SetStyleMap(StyleMap{
-		"header": tcell.StyleDefault.Foreground(tcell.ColorGreen).Bold(true),
-	})
-
-	ui.Playbar.SetStyleMap(StyleMap{
+	styles := StyleMap{
+		"album":    tcell.StyleDefault.Foreground(tcell.ColorTeal),
 		"artist":   tcell.StyleDefault.Foreground(tcell.ColorYellow),
+		"cursor":   tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack),
+		"date":     tcell.StyleDefault.Foreground(tcell.ColorGreen),
 		"elapsed":  tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"header":   tcell.StyleDefault.Foreground(tcell.ColorGreen).Bold(true),
 		"switches": tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"time":     tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"title":    tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
-		"volume":   tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
-	})
-
-	ui.Songlist.SetStyleMap(StyleMap{
-		"album":  tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"artist": tcell.StyleDefault.Foreground(tcell.ColorYellow),
-		"cursor": tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack),
-		"date":   tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"time":   tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
-		"title":  tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		//"time":     tcell.StyleDefault.Foreground(tcell.ColorTeal),
+		"time":  tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
+		"title": tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		//"title":  tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite).Bold(true),
+		//"title":  tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		"topbar": tcell.StyleDefault.Foreground(tcell.ColorYellow).Bold(true),
 		"track":  tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"volume": tcell.StyleDefault.Foreground(tcell.ColorGreen),
 		"year":   tcell.StyleDefault.Foreground(tcell.ColorGreen),
-	})
+	}
+
+	// Styles for widgets that don't have their own class yet.
+	ui.SetStyleMap(styles)
+
+	ui.Columnheaders.SetStyleMap(styles)
+	ui.Playbar.SetStyleMap(styles)
+	ui.Songlist.SetStyleMap(styles)
 
 	ui.Topbar.SetStyle(ui.Style("topbar"))
 	ui.Topbar.SetLeft(version.ShortName(), ui.Style("topbar"))
