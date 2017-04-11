@@ -132,7 +132,8 @@ func (pms *PMS) Connect() error {
 		goto errors
 	}
 
-	go pms.watchMpdClients()
+	go pms.watchMpdIdleErrors()
+	go pms.watchMpdIdleEvents()
 	go pms.runTicker()
 
 	err = pms.UpdatePlayerStatus()
@@ -190,51 +191,48 @@ func (pms *PMS) PingConnect() error {
 	return err
 }
 
-func (pms *PMS) watchMpdClients() {
+// Monitor connection for errors and terminate when an error occurs
+func (pms *PMS) watchMpdIdleErrors() {
+	for err := range pms.MpdClientWatcher.Error {
+		console.Log("Error in MPD IDLE connection: %s", err)
+		pms.MpdClient.Close()
+		pms.MpdClientWatcher.Close()
+	}
+	go pms.LoopConnect()
+}
 
-	// Monitor connection for errors and terminate when an error occurs
-	go func() {
-		for err := range pms.MpdClientWatcher.Error {
-			console.Log("Error in MPD IDLE connection: %s", err)
-			pms.MpdClient.Close()
-			pms.MpdClientWatcher.Close()
+// Watch for IDLE events and trigger actions when events arrive
+func (pms *PMS) watchMpdIdleEvents() {
+	var err error
+
+	for subsystem := range pms.MpdClientWatcher.Event {
+
+		console.Log("MPD says it has IDLE events on the following subsystem: %s", subsystem)
+		if pms.PingConnect() != nil {
+			console.Log("Failed to establish the control connection, we are running in the dark!")
+			continue
 		}
-		go pms.LoopConnect()
-	}()
 
-	// Watch for IDLE events
-	go func() {
-		var err error
-
-		for subsystem := range pms.MpdClientWatcher.Event {
-
-			console.Log("MPD says it has IDLE events on the following subsystem: %s", subsystem)
-			if pms.PingConnect() != nil {
-				console.Log("Failed to establish the control connection, we are running in the dark!")
-				continue
-			}
-
-			switch subsystem {
-			case "database":
-				err = pms.Sync()
-			case "player":
-				err = pms.UpdatePlayerStatus()
-				if err != nil {
-					break
-				}
-				err = pms.UpdateCurrentSong()
-			case "options":
-				err = pms.UpdatePlayerStatus()
-			case "mixer":
-				err = pms.UpdatePlayerStatus()
-			default:
-				console.Log("Ignoring updates by subsystem %s", subsystem)
-			}
+		switch subsystem {
+		case "database":
+			err = pms.Sync()
+		case "player":
+			err = pms.UpdatePlayerStatus()
 			if err != nil {
-				console.Log("Error updating status: %s", err)
+				break
 			}
+			err = pms.UpdateCurrentSong()
+		case "options":
+			err = pms.UpdatePlayerStatus()
+		case "mixer":
+			err = pms.UpdatePlayerStatus()
+		default:
+			console.Log("Ignoring updates by subsystem %s", subsystem)
 		}
-	}()
+		if err != nil {
+			console.Log("Error updating status: %s", err)
+		}
+	}
 }
 
 // runTicker starts a ticker that will increase the elapsed time every second.
