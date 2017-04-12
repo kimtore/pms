@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/parser"
 	"github.com/stretchr/testify/assert"
 )
@@ -141,22 +140,6 @@ func TestOptionParser(t *testing.T) {
 		} else {
 			assert.Nil(t, err, fmt.Sprintf("Expected no errors when parsing: %s", name))
 			assert.Equal(t, check, token, fmt.Sprintf("Expected result when parsing: %s", name))
-		}
-	}
-}
-
-// TestSetParser tests
-func TestSetParser(t *testing.T) {
-	str := "foo=bar baz invfoo nobar"
-	parse := parser.NewSetParser()
-	token := input.Token{}
-	pos := 0
-	npos := 0
-	for {
-		token, npos = input.NextToken(str[pos:])
-		pos += npos
-		if token.Class == input.TokenEnd {
-			break
 		}
 	}
 }

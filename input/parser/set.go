@@ -2,9 +2,6 @@ package parser
 
 import (
 	"fmt"
-
-	"github.com/ambientsound/pms/input"
-	"github.com/ambientsound/pms/options"
 )
 
 type OptionToken struct {
@@ -14,18 +11,6 @@ type OptionToken struct {
 	Negate bool
 	Invert bool
 	Query  bool
-}
-
-// SetParser parses input text starting with "set"
-type SetParser struct {
-	opts   *options.Options
-	tokens []OptionToken
-}
-
-func NewSetParser() *SetParser {
-	p := &SetParser{}
-	p.tokens = make([]OptionToken, 0)
-	return p
 }
 
 // Parse parses a option=value string, accounting for inversion, negation, and queries.
@@ -77,19 +62,4 @@ func (t *OptionToken) Parse(runes []rune) error {
 		}
 	}
 	return nil
-}
-
-func (p *SetParser) Parse(t input.Token) error {
-	if t.Class == input.TokenEnd {
-		return nil
-	}
-	if t.Class != input.TokenIdentifier {
-		return fmt.Errorf("Unknown input '%s', expected identifier", string(t.Runes))
-	}
-	tok := OptionToken{}
-	err := tok.Parse(t.Runes)
-	if err != nil {
-		p.tokens = append(p.tokens, tok)
-	}
-	return err
 }
