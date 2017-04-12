@@ -24,6 +24,10 @@ func (o *IntOption) Key() string {
 	return o.key
 }
 
+func (o *IntOption) IntValue() int {
+	return o.value
+}
+
 func (o *IntOption) Value() interface{} {
 	return o.value
 }

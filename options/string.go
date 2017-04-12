@@ -21,6 +21,10 @@ func (o *StringOption) Key() string {
 	return o.key
 }
 
+func (o *StringOption) StringValue() string {
+	return o.value
+}
+
 func (o *StringOption) Value() interface{} {
 	return o.value
 }
