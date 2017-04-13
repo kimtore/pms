@@ -1,15 +1,15 @@
-package actions_test
+package commands_test
 
 import (
 	"testing"
 
 	"github.com/ambientsound/pms/input"
-	"github.com/ambientsound/pms/input/actions"
+	"github.com/ambientsound/pms/input/commands"
 	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"
 )
 
-// TestSet tests the pms.input.actions.Set.Parse() function. A string of input
+// TestSet tests the pms.input.commands.Set.Parse() function. A string of input
 // parameters are given, and Parse() is expected to populate a options.Options
 // struct with parsed values.
 func TestSet(t *testing.T) {
@@ -40,7 +40,7 @@ func TestSet(t *testing.T) {
 	opts.Add(opt)
 
 	input_string := "foo=bar intopt=3 nobar invbaz"
-	parser := actions.NewSet(&opts)
+	parser := commands.NewSet(&opts)
 
 	pos := 0
 	npos := 0
