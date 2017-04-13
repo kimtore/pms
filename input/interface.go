@@ -5,19 +5,17 @@ import (
 
 	"github.com/ambientsound/pms/input/commands"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/options"
 )
 
 type commandMap map[string]commands.Command
 
 // Interface reads user input, tokenizes it, and dispatches the tokens to their respective commands.
 type Interface struct {
-	opts     *options.Options
 	handlers commandMap
 }
 
-func NewInterface(opts *options.Options) *Interface {
-	i := &Interface{opts: opts}
+func NewInterface() *Interface {
+	i := &Interface{}
 	i.handlers = make(commandMap, 0)
 	return i
 }
@@ -34,13 +32,22 @@ func (i *Interface) Execute(line string) error {
 		pos += nextPos
 
 		// First identifier; try to find a command handler
-		if cmd == nil && token.Class == lexer.TokenIdentifier {
+		if cmd == nil {
 			key := token.String()
-			if cmd, ok = i.handlers[key]; ok {
-				cmd.Reset()
+			switch token.Class {
+			case lexer.TokenIdentifier:
+				if cmd, ok = i.handlers[key]; ok {
+					cmd.Reset()
+					continue
+				}
+				return fmt.Errorf("Not a command: %s", key)
+			case lexer.TokenComment:
 				continue
+			case lexer.TokenEnd:
+				return nil
+			default:
+				return fmt.Errorf("Unexpected '%s', expected identifier", key)
 			}
-			return fmt.Errorf("Not a command: %s", key)
 		}
 
 		err = cmd.Execute(token)
@@ -48,6 +55,7 @@ func (i *Interface) Execute(line string) error {
 		if err != nil {
 			return fmt.Errorf("Error while parsing input %s: %s", string(token.Runes), err)
 		}
+
 		if token.Class == lexer.TokenEnd {
 			break
 		}

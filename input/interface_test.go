@@ -17,7 +17,7 @@ func TestInterfaceSet(t *testing.T) {
 	var err error
 
 	opts := options.New()
-	iface := input.NewInterface(&opts)
+	iface := input.NewInterface()
 
 	iface.Register("set", commands.NewSet(&opts))
 
