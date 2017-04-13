@@ -36,7 +36,7 @@ func TestStringOption(t *testing.T) {
 }
 
 func TestIntOption(t *testing.T) {
-	opt, err := options.NewIntOption("foo", "3984")
+	opt, err := options.NewIntOption("foo", 3984)
 	if err != nil {
 		t.Fatalf("NewIntOption() failed initialization: %s", err)
 	}

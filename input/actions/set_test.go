@@ -24,7 +24,7 @@ func TestSet(t *testing.T) {
 	}
 	opts.Add(opt)
 
-	if opt, err = options.NewIntOption("intopt", "4"); err != nil {
+	if opt, err = options.NewIntOption("intopt", 4); err != nil {
 		t.Fatalf("Cannot add new integer option: %s", err)
 	}
 	opts.Add(opt)

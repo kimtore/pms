@@ -7,10 +7,10 @@ type IntOption struct {
 	value int
 }
 
-func NewIntOption(key string, value string) (o *IntOption, err error) {
+func NewIntOption(key string, value int) (o *IntOption, err error) {
 	o = &IntOption{}
 	o.key = key
-	err = o.Set(value)
+	o.value = value
 	return
 }
 
