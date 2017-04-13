@@ -11,6 +11,8 @@ import (
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/index"
+	"github.com/ambientsound/pms/input"
+	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/xdg"
@@ -18,13 +20,16 @@ import (
 	"github.com/fhs/gompd/mpd"
 )
 
+// PMS is a kitchen sink of different objects, glued together as a singleton class.
 type PMS struct {
 	MpdStatus        PlayerStatus
 	MpdClient        *mpd.Client
 	MpdClientWatcher *mpd.Watcher
-	Index            *index.Index
-	Library          *songlist.SongList
 	CurrentSong      *song.Song
+	Index            *index.Index
+	Interface        *input.Interface
+	Library          *songlist.SongList
+	Options          *options.Options
 
 	ticker chan time.Time
 
@@ -420,5 +425,7 @@ func New() *PMS {
 	pms.EventLibrary = make(chan int)
 	pms.EventIndex = make(chan int)
 	pms.EventPlayer = make(chan int)
+	pms.Options = options.New()
+	pms.Options.AddDefaultOptions()
 	return pms
 }

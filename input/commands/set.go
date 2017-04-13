@@ -38,6 +38,10 @@ func (p *Set) Execute(t lexer.Token) error {
 
 	opt := p.opts.Get(tok.Key)
 
+	if opt == nil {
+		return fmt.Errorf("No such option: %s", tok.Key)
+	}
+
 	if tok.Query {
 		return nil // FIXME: statusbar feedback
 	}

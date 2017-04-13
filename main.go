@@ -7,6 +7,9 @@ import (
 	"time"
 
 	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/input"
+	"github.com/ambientsound/pms/input/commands"
+	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/pms"
 	"github.com/ambientsound/pms/version"
 	"github.com/ambientsound/pms/widgets"
@@ -68,6 +71,19 @@ func main() {
 	ui.Start()
 	defer ui.Quit()
 	console.Log("UI initialized in %s", time.Since(timer).String())
+
+	// Set up the command-line interface
+	pms.Interface = input.NewInterface()
+	pms.Interface.Register("se", commands.NewSet(pms.Options))
+	pms.Interface.Register("set", commands.NewSet(pms.Options))
+
+	lines := strings.Split(options.Defaults, "\n")
+	for _, line := range lines {
+		err = pms.Interface.Execute(line)
+		if err != nil {
+			console.Log("Error while reading default configuration: %s", err)
+		}
+	}
 
 	pms.SetConnectionParams(opts.MpdHost, opts.MpdPort, opts.MpdPassword)
 	go pms.LoopConnect()

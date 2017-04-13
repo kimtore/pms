@@ -15,13 +15,13 @@ type Option interface {
 	Set(value string) error
 }
 
-func New() Options {
+func New() *Options {
 	o := Options{}
 	o.opts = make(map[string]Option, 0)
-	return o
+	return &o
 }
 
-func (o *Options) SetDefaults() {
+func (o *Options) AddDefaultOptions() {
 	var err error
 	var opt Option
 	if opt, err = NewStringOption("pms", "Practical Music Search"); err == nil {
