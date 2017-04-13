@@ -3,29 +3,31 @@ package commands
 import (
 	"fmt"
 
-	"github.com/ambientsound/pms/input"
+	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/options"
 )
 
 // Set manipulates a Options table by parsing input tokens from the "set" command.
 type Set struct {
-	opts   *options.Options
-	tokens []parser.OptionToken
+	opts *options.Options
 }
 
 func NewSet(opts *options.Options) *Set {
 	p := &Set{}
 	p.opts = opts
-	p.tokens = make([]parser.OptionToken, 0)
+	p.Reset()
 	return p
 }
 
-func (p *Set) Parse(t input.Token) error {
-	if t.Class == input.TokenEnd {
+func (p *Set) Reset() {
+}
+
+func (p *Set) Execute(t lexer.Token) error {
+	if t.Class == lexer.TokenEnd {
 		return nil
 	}
-	if t.Class != input.TokenIdentifier {
+	if t.Class != lexer.TokenIdentifier {
 		return fmt.Errorf("Unknown input '%s', expected identifier", string(t.Runes))
 	}
 	tok := parser.OptionToken{}

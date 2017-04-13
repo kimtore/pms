@@ -3,19 +3,19 @@ package commands_test
 import (
 	"testing"
 
-	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/commands"
+	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"
 )
 
-// TestSet tests the pms.input.commands.Set.Parse() function. A string of input
-// parameters are given, and Parse() is expected to populate a options.Options
+// TestSet tests the pms.input.commands.Set.Execute() function. A string of input
+// parameters are given, and Execute() is expected to populate a options.Options
 // struct with parsed values.
 func TestSet(t *testing.T) {
 	var opt options.Option
 	var err error
-	var token input.Token
+	var token lexer.Token
 
 	opts := options.New()
 
@@ -40,19 +40,19 @@ func TestSet(t *testing.T) {
 	opts.Add(opt)
 
 	input_string := "foo=bar intopt=3 nobar invbaz"
-	parser := commands.NewSet(&opts)
+	cmd := commands.NewSet(&opts)
 
 	pos := 0
 	npos := 0
 
 	for {
-		token, npos = input.NextToken(input_string[pos:])
+		token, npos = lexer.NextToken(input_string[pos:])
 		pos += npos
-		err = parser.Parse(token)
+		err = cmd.Execute(token)
 		if err != nil {
 			t.Fatalf("Error while parsing input %s: %s", string(token.Runes), err)
 		}
-		if token.Class == input.TokenEnd {
+		if token.Class == lexer.TokenEnd {
 			break
 		}
 	}

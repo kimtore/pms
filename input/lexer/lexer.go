@@ -1,4 +1,4 @@
-package input
+package lexer
 
 import (
 	"unicode"
@@ -44,4 +44,8 @@ func NextToken(input string) (t Token, pos int) {
 		t.Runes = append(t.Runes, r)
 	}
 	return
+}
+
+func (t *Token) String() string {
+	return string(t.Runes)
 }
