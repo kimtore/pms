@@ -109,6 +109,12 @@ func main() {
 					ui.Playbar.SetSong(pms.CurrentSong)
 					ui.App.Update()
 				})
+			case s := <-ui.EventInputCommand:
+				console.Log("Input command received from Multibar: %s", s)
+				err = pms.Interface.Execute(s)
+				if err != nil {
+					console.Log("Error: %s", err)
+				}
 			}
 		}
 	}()

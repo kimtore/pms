@@ -25,6 +25,16 @@ func PostEventInputChanged(w eventfulWidget) {
 	w.PostEvent(ev)
 }
 
+type EventInputFinished struct {
+	widgetEvent
+}
+
+func PostEventInputFinished(w eventfulWidget) {
+	ev := &EventInputFinished{}
+	ev.SetWidget(w)
+	w.PostEvent(ev)
+}
+
 type EventListChanged struct {
 	widgetEvent
 }

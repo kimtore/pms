@@ -22,6 +22,9 @@ type UI struct {
 	Multibar      *MultibarWidget
 	Songlist      *SongListWidget
 
+	// Input events
+	EventInputCommand chan string
+
 	// Data resources
 	Index           *index.Index
 	defaultSongList *songlist.SongList
@@ -76,10 +79,12 @@ func NewUI() *UI {
 	ui.Topbar.SetLeft(version.ShortName(), ui.Style("topbar"))
 	ui.Topbar.SetRight(version.Version(), ui.Style("topbar"))
 
-	ui.Multibar.SetDefaultText("Type to search.")
+	ui.Multibar.SetDefaultText("Ready.")
 
 	ui.CreateLayout()
 	ui.App.SetRootWidget(ui)
+
+	ui.EventInputCommand = make(chan string, 0)
 
 	return ui
 }
@@ -155,8 +160,25 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 		return true
 
 	case *EventInputChanged:
-		term := ui.Multibar.GetRuneString()
-		ui.runIndexSearch(term)
+		term := ui.Multibar.RuneString()
+		mode := ui.Multibar.Mode()
+		switch mode {
+		case MultibarModeSearch:
+			ui.runIndexSearch(term)
+		}
+		return true
+
+	case *EventInputFinished:
+		term := ui.Multibar.RuneString()
+		mode := ui.Multibar.Mode()
+		switch mode {
+		case MultibarModeCommandInput:
+			ui.EventInputCommand <- term
+		case MultibarModeSearch:
+			ui.runIndexSearch("")
+			ui.runIndexSearch(term)
+		}
+		ui.Multibar.SetMode(MultibarModeCommand)
 		return true
 
 	case *EventScroll:
