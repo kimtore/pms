@@ -24,7 +24,7 @@
 #ifndef _HAVE_I18N_H_
 
 #include "../config.h"
-#include <glib.h>
+#include <langinfo.h>
 
 #ifndef CMAKE_BUILD
 #include <libintl.h>
