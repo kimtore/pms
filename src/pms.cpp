@@ -715,7 +715,7 @@ int			Pms::init()
 	/* Setup locales and internationalization */
 	setlocale(LC_ALL, "");
 	setlocale(LC_CTYPE, "");
-	g_get_charset(&charset);
+	charset = nl_langinfo(CODESET);
 #ifndef CMAKE_BUILD
 	bindtextdomain(GETTEXT_PACKAGE, LOCALE_DIR);
 	bind_textdomain_codeset(GETTEXT_PACKAGE, charset);
@@ -1004,10 +1004,7 @@ string			Pms::formtext(string text)
  */
 bool			Pms::unicode()
 {
-	const char *		charset = NULL;
-
-	g_get_charset(&charset);
-	return strcmp(charset, "UTF-8") == 0;
+	return strcmp(nl_langinfo(CODESET), "UTF-8") == 0;
 }
 
 

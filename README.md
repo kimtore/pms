@@ -13,13 +13,13 @@ same machine.
 
 The client only works with MPD versions >= 0.15.0.
 
-You'll need `glib >= 2.0`, `ncurses >= 5.0`, and `libmpdclient >= 2.5` to build
-PMS. If your c++ compiler supports c++11's regex (like `gcc-c++ >= 4.9`),
+You'll need `ncurses >= 5.0` and `libmpdclient >= 2.5` to build PMS.
+If your c++ compiler supports c++11's regex (like `gcc-c++ >= 4.9`),
 it will enable regular expression searches.
 
 To install the dependencies on Debian-based systems you may run:
 ```
-sudo apt-get install build-essential libncursesw5-dev libglib2.0-dev libmpdclient-dev
+sudo apt-get install build-essential libncursesw5-dev libmpdclient-dev
 ```
 
 Pandoc is required to build the manpage (it is created by default, unless pandoc is missing).

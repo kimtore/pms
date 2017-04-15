@@ -21,7 +21,6 @@ AC_PROG_MAKE_SET
 
 # Checks for libraries.
 AX_WITH_CURSES
-PKG_CHECK_MODULES([glib], [glib-2.0 >= 2.0],, [AC_MSG_ERROR([glib 2.0 or newer is required])])
 PKG_CHECK_MODULES([libmpdclient], [libmpdclient >= 2.5],, [AC_MSG_ERROR([libmpdclient 2.5 or newer is required])])
 
 # Check for Pandoc
@@ -37,7 +36,7 @@ fi
 AM_CONDITIONAL([PANDOC], [test "x$PANDOC" != xno])
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h libintl.h limits.h locale.h netdb.h netinet/in.h stdlib.h string.h sys/param.h sys/socket.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h langinfo.h libintl.h limits.h locale.h netdb.h netinet/in.h stdlib.h string.h sys/param.h sys/socket.h sys/time.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL

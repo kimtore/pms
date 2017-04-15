@@ -38,7 +38,6 @@ set(CURSES_NEED_WIDE true)
 include(FindPkgConfig)
 find_package(Threads REQUIRED)
 find_package(Ncursesw REQUIRED)
-pkg_check_modules(GLIB REQUIRED glib-2.0>=2.0)
 pkg_check_modules(MPDC REQUIRED libmpdclient>=2.5)
 
 option(ENABLE_REGEX "Enable regex support" YES)
@@ -72,14 +71,12 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src)
 target_include_directories(pms PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}/src
 	${CURSES_INCLUDE_PATH}
-	${GLIB_INCLUDE_DIRS}
 	${MPDC_INCLUDE_DIRS}
 )
 
 target_link_libraries(pms
 	${CMAKE_THREADS_LIBS_INIT}
 	${CURSES_LIBRARIES}
-	${GLIB_LIBRARIES}
 	${MPDC_LIBRARIES}
 )
 
