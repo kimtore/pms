@@ -103,6 +103,7 @@ void			Colortable::clear()
 	delete fields.composer;
 	delete fields.performer;
 	delete fields.disc;
+	delete fields.discshort;
 	delete fields.comment;
 
 	/* field types for the topbar */
@@ -124,6 +125,7 @@ void			Colortable::clear()
 	delete topbar.fields.composer;
 	delete topbar.fields.performer;
 	delete topbar.fields.disc;
+	delete topbar.fields.discshort;
 	delete topbar.fields.comment;
 
 	/* list colors */
@@ -197,6 +199,7 @@ void			Colortable::defaults()
 	fields.composer				= new color(COLOR_WHITE, -1, 0);
 	fields.performer			= new color(COLOR_WHITE, -1, 0);
 	fields.disc				= new color(COLOR_BLACK, -1, 0);
+	fields.discshort			= new color(COLOR_BLACK, -1, 0);
 	fields.comment				= new color(COLOR_WHITE, -1, 0);
 
 	/* field types for the topbar */
@@ -218,6 +221,7 @@ void			Colortable::defaults()
 	topbar.fields.composer			= new color(COLOR_WHITE, -1, 0);
 	topbar.fields.performer			= new color(COLOR_WHITE, -1, 0);
 	topbar.fields.disc			= new color(COLOR_BLACK, -1, 0);
+	topbar.fields.discshort			= new color(COLOR_BLACK, -1, 0);
 	topbar.fields.comment			= new color(COLOR_WHITE, -1, 0);
 
 	/* list colors */

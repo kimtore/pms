@@ -639,6 +639,9 @@ Songlist::set_column_size()
 			case FIELD_DISC:
 				ui = s->disc.size();
 				break;
+			case FIELD_DISCSHORT:
+				ui = s->discshort.size();
+				break;
 			case FIELD_COMMENT:
 				ui = s->comment.size();
 				break;

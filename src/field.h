@@ -55,6 +55,7 @@ typedef enum
 	FIELD_COMPOSER,
 	FIELD_PERFORMER,
 	FIELD_DISC,
+	FIELD_DISCSHORT,
 	FIELD_COMMENT,
 
 	/* Conditionals */

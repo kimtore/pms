@@ -98,6 +98,7 @@ Song::Song(const Song * song)
 	composer		= song->composer;
 	performer		= song->performer;
 	disc			= song->disc;
+	discshort		= song->discshort;
 	comment			= song->comment;
 
 	time			= song->time;
@@ -128,6 +129,7 @@ Song::Song(const string uri)
 	composer		= "";
 	performer		= "";
 	disc			= "";
+	discshort		= "";
 	comment			= "";
 
 	time			= MPD_SONG_NO_TIME;
@@ -161,6 +163,10 @@ void		Song::init()
 	/* strip zeros and total tracks from the 'track' tag,
 	 * and store it in 'trackshort'. */
 	trackshort = strip_leading_zeroes(&track);
+
+	/* strip zeros and total discs from the 'disc' tag,
+	 * and store it in 'discshort'. */
+	discshort = strip_leading_zeroes(&disc);
 
 	/* Generate rudimentary sort names if none available, by
 	 * rewriting 'The Artist' to 'Artist, The'. */
@@ -256,7 +262,7 @@ Song::match(string term, long flags)
 	if (flags & MATCH_DATE)			sources.push_back(date);
 	if (flags & MATCH_COMMENT)		sources.push_back(comment);
 	if (flags & MATCH_TRACKSHORT)		sources.push_back(trackshort);
-	if (flags & MATCH_DISC)			sources.push_back(disc);
+	if (flags & MATCH_DISCSHORT)		sources.push_back(discshort);
 	if (flags & MATCH_FILE)			sources.push_back(file);
 	if (flags & MATCH_ARTISTSORT)		sources.push_back(artistsort);
 	if (flags & MATCH_ALBUMARTISTSORT)	sources.push_back(albumartistsort);

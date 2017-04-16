@@ -63,6 +63,7 @@ public:
 	
 	bool		selected;
 	string		trackshort;
+	string		discshort;
 
 	/* Standard parameters imported from libmpdclient.h */
 
