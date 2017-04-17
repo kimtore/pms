@@ -7,11 +7,8 @@ type IntOption struct {
 	value int
 }
 
-func NewIntOption(key string, value int) (o *IntOption, err error) {
-	o = &IntOption{}
-	o.key = key
-	o.value = value
-	return
+func NewIntOption(key string, value int) *IntOption {
+	return &IntOption{key: key, value: value}
 }
 
 func (o *IntOption) Set(value string) error {

@@ -13,31 +13,15 @@ import (
 // parameters are given, and Execute() is expected to populate a options.Options
 // struct with parsed values.
 func TestSet(t *testing.T) {
-	var opt options.Option
 	var err error
 	var token lexer.Token
 
 	opts := options.New()
 
-	if opt, err = options.NewStringOption("foo", "this string must die"); err != nil {
-		t.Fatalf("Cannot add new string option: %s", err)
-	}
-	opts.Add(opt)
-
-	if opt, err = options.NewIntOption("intopt", 4); err != nil {
-		t.Fatalf("Cannot add new integer option: %s", err)
-	}
-	opts.Add(opt)
-
-	if opt, err = options.NewBoolOption("bar", true); err != nil {
-		t.Fatalf("Cannot add new boolean option: %s", err)
-	}
-	opts.Add(opt)
-
-	if opt, err = options.NewBoolOption("baz", false); err != nil {
-		t.Fatalf("Cannot add new boolean option: %s", err)
-	}
-	opts.Add(opt)
+	opts.Add(options.NewStringOption("foo", "this string must die"))
+	opts.Add(options.NewIntOption("intopt", 4))
+	opts.Add(options.NewBoolOption("bar", true))
+	opts.Add(options.NewBoolOption("baz", false))
 
 	input_string := "foo=bar intopt=3 nobar invbaz"
 	cmd := commands.NewSet(opts)

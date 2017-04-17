@@ -13,7 +13,6 @@ import (
 // verb "set", dispatches the input line to this handler, and correctly
 // manipulates the options table.
 func TestInterfaceSet(t *testing.T) {
-	var opt options.Option
 	var err error
 
 	opts := options.New()
@@ -21,10 +20,7 @@ func TestInterfaceSet(t *testing.T) {
 
 	iface.Register("set", commands.NewSet(opts))
 
-	if opt, err = options.NewStringOption("foo", "this string must die"); err != nil {
-		t.Fatalf("Cannot add new string option: %s", err)
-	}
-	opts.Add(opt)
+	opts.Add(options.NewStringOption("foo", "this string must die"))
 
 	err = iface.Execute("set foo=something")
 	assert.Nil(t, err)

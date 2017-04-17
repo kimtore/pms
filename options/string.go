@@ -5,11 +5,13 @@ type StringOption struct {
 	value string
 }
 
-func NewStringOption(key string, value string) (o *StringOption, err error) {
-	o = &StringOption{}
-	o.key = key
-	err = o.Set(value)
-	return
+func NewStringOption(key string, value string) *StringOption {
+	o := &StringOption{key: key}
+	err := o.Set(value)
+	if err != nil {
+		panic(err)
+	}
+	return o
 }
 
 func (o *StringOption) Set(value string) error {

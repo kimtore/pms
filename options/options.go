@@ -21,14 +21,6 @@ func New() *Options {
 	return &o
 }
 
-func (o *Options) AddDefaultOptions() {
-	var err error
-	var opt Option
-	if opt, err = NewStringOption("pms", "Practical Music Search"); err == nil {
-		o.Add(opt)
-	}
-}
-
 func (o *Options) Add(opt Option) {
 	o.opts[opt.Key()] = opt
 }
