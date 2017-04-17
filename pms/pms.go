@@ -49,6 +49,7 @@ type PMS struct {
 	EventLibrary chan int
 	EventMessage chan string
 	EventPlayer  chan int
+	QuitSignal   chan int
 }
 
 func createDirectory(dir string) error {
@@ -444,9 +445,11 @@ func (pms *PMS) ReIndex() {
 // SetupCLI instantiates the different commands PMS understands, such as set; bind; etc.
 func (pms *PMS) setupCLI() {
 	pms.CLI = input.NewCLI()
+	pms.CLI.Register("bind", commands.NewBind())
+	pms.CLI.Register("q", commands.NewQuit(pms.QuitSignal))
+	pms.CLI.Register("quit", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("se", commands.NewSet(pms.Options))
 	pms.CLI.Register("set", commands.NewSet(pms.Options))
-	pms.CLI.Register("bind", commands.NewBind())
 }
 
 func (pms *PMS) readDefaultConfiguration() {
@@ -469,6 +472,9 @@ func (pms *PMS) setupUI() {
 func (pms *PMS) Main() {
 	for {
 		select {
+		case <-pms.QuitSignal:
+			console.Log("Received quit signal, exiting.")
+			pms.UI.Quit()
 		case <-pms.EventLibrary:
 			console.Log("Song library updated in MPD, assigning to UI")
 			pms.UI.App.PostFunc(func() {
@@ -520,6 +526,7 @@ func New() *PMS {
 	pms.EventLibrary = make(chan int)
 	pms.EventMessage = make(chan string, 16)
 	pms.EventPlayer = make(chan int)
+	pms.QuitSignal = make(chan int, 1)
 
 	pms.Options = options.New()
 	pms.Options.AddDefaultOptions()
