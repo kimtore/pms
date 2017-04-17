@@ -202,12 +202,12 @@ func (pms *PMS) PingConnect() error {
 	}
 
 	if pms.MpdClient == nil || err != nil {
-		pms.Message("Establishing MPD control connection to %s...", addr)
+		console.Log("Establishing MPD control connection to %s...", addr)
 		pms.MpdClient, err = mpd.DialAuthenticated(`tcp`, addr, pms.password)
 		if err != nil {
-			pms.Error("Connection error: %s", err)
+			pms.Error("MPD control connection error: %s", err)
 		}
-		pms.Message("Connected to %s.", addr)
+		console.Log("Connected to %s.", addr)
 	}
 
 	return err
