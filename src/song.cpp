@@ -64,6 +64,11 @@ Song::Song(const mpd_song * song)
 	track			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_TRACK, 0));
 	name			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_NAME, 0));
 	date			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_DATE, 0));
+#if LIBMPDCLIENT_CHECK_VERSION(2, 12, 0)
+	originaldate		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_ORIGINAL_DATE, 0));
+#else
+	originaldate		= "";
+#endif
 
 	genre			= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_GENRE, 0));
 	composer		= Pms::tostring(mpd_song_get_tag(song, MPD_TAG_COMPOSER, 0));
@@ -123,7 +128,9 @@ Song::Song(const string uri)
 	trackshort		= "";
 	name			= "";
 	date			= "";
+	originaldate		= "";
 	year			= "";
+	originalyear		= "";
 
 	genre			= "";
 	composer		= "";
@@ -158,6 +165,13 @@ void		Song::init()
 		year = date.substr(0, 4);
 	} else {
 		year = "";
+	}
+
+	/* original year from original date */
+	if (originaldate.size() >= 4) {
+		originalyear = originaldate.substr(0, 4);
+	} else {
+		originalyear = "";
 	}
 
 	/* strip zeros and total tracks from the 'track' tag,
@@ -260,6 +274,7 @@ Song::match(string term, long flags)
 	if (flags & MATCH_ALBUM)		sources.push_back(album);
 	if (flags & MATCH_GENRE)		sources.push_back(genre);
 	if (flags & MATCH_DATE)			sources.push_back(date);
+	if (flags & MATCH_ORIGINALDATE)		sources.push_back(originaldate);
 	if (flags & MATCH_COMMENT)		sources.push_back(comment);
 	if (flags & MATCH_TRACKSHORT)		sources.push_back(trackshort);
 	if (flags & MATCH_DISCSHORT)		sources.push_back(discshort);
@@ -267,6 +282,7 @@ Song::match(string term, long flags)
 	if (flags & MATCH_ARTISTSORT)		sources.push_back(artistsort);
 	if (flags & MATCH_ALBUMARTISTSORT)	sources.push_back(albumartistsort);
 	if (flags & MATCH_YEAR)			sources.push_back(year);
+	if (flags & MATCH_ORIGINALYEAR)		sources.push_back(originalyear);
 	if (flags & MATCH_ID)			sources.push_back(Pms::tostring(id));
 	if (flags & MATCH_POS)			sources.push_back(Pms::tostring(pos));
 

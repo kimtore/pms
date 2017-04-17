@@ -791,8 +791,12 @@ bool			Configurator::set_color(string name, string pairs)
 					dest = field->time;
 				else if (name == "date")
 					dest = field->date;
+				else if (name == "originaldate")
+					dest = field->originaldate;
 				else if (name == "year")
 					dest = field->year;
+				else if (name == "originalyear")
+					dest = field->originalyear;
 				else if (name == "name")
 					dest = field->name;
 				else if (name == "composer")

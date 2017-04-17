@@ -744,7 +744,9 @@ int			Pms::init()
 	fieldtypes->add("trackshort", _("No"), FIELD_TRACKSHORT, 3, sort_compare_track);
 	fieldtypes->add("length", _("Length"), FIELD_TIME, 7, sort_compare_length);
 	fieldtypes->add("date", _("Date"), FIELD_DATE, 11, sort_compare_date);
+	fieldtypes->add("originaldate", _("Original date"), FIELD_ORIGINALDATE, 0, sort_compare_originaldate);
 	fieldtypes->add("year", _("Year"), FIELD_YEAR, 5, sort_compare_year);
+	fieldtypes->add("originalyear", _("Orig"), FIELD_ORIGINALYEAR, 5, sort_compare_originalyear);
 	fieldtypes->add("name", _("Name"), FIELD_NAME, 0, sort_compare_name);
 	fieldtypes->add("genre", _("Genre"), FIELD_GENRE, 0, sort_compare_genre);
 	fieldtypes->add("composer", _("Composer"), FIELD_COMPOSER, 0, sort_compare_composer);

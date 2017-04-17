@@ -62,7 +62,9 @@ typedef struct
 	color *			trackshort;
 	color *			time;
 	color *			date;
+	color *			originaldate;
 	color *			year;
+	color *			originalyear;
 	color *			name;
 	color *			composer;
 	color *			performer;
