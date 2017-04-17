@@ -53,7 +53,7 @@ func (i *Interface) Execute(line string) error {
 		err = cmd.Execute(token)
 
 		if err != nil {
-			return fmt.Errorf("Error while parsing input %s: %s", string(token.Runes), err)
+			return err
 		}
 
 		if token.Class == lexer.TokenEnd {

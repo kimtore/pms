@@ -68,6 +68,7 @@ func main() {
 	pms.Interface = input.NewInterface()
 	pms.Interface.Register("se", commands.NewSet(pms.Options))
 	pms.Interface.Register("set", commands.NewSet(pms.Options))
+	pms.Interface.Register("bind", commands.NewBind())
 
 	lines := strings.Split(options.Defaults, "\n")
 	for _, line := range lines {
