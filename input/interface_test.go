@@ -9,14 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestInterfaceSet tests that input.Interface registers a handler under the
+// TestCLISet tests that input.CLI registers a handler under the
 // verb "set", dispatches the input line to this handler, and correctly
 // manipulates the options table.
-func TestInterfaceSet(t *testing.T) {
+func TestCLISet(t *testing.T) {
 	var err error
 
 	opts := options.New()
-	iface := input.NewInterface()
+	iface := input.NewCLI()
 
 	iface.Register("set", commands.NewSet(opts))
 

@@ -9,18 +9,18 @@ import (
 
 type commandMap map[string]commands.Command
 
-// Interface reads user input, tokenizes it, and dispatches the tokens to their respective commands.
-type Interface struct {
+// CLI reads user input, tokenizes it, and dispatches the tokens to their respective commands.
+type CLI struct {
 	handlers commandMap
 }
 
-func NewInterface() *Interface {
-	i := &Interface{}
+func NewCLI() *CLI {
+	i := &CLI{}
 	i.handlers = make(commandMap, 0)
 	return i
 }
 
-func (i *Interface) Execute(line string) error {
+func (i *CLI) Execute(line string) error {
 	var pos, nextPos int
 	var token lexer.Token
 	var cmd commands.Command
@@ -64,7 +64,7 @@ func (i *Interface) Execute(line string) error {
 	return nil
 }
 
-func (i *Interface) Register(verb string, cmd commands.Command) error {
+func (i *CLI) Register(verb string, cmd commands.Command) error {
 	if _, ok := i.handlers[verb]; ok {
 		return fmt.Errorf("Handler with verb '%s' already exists", verb)
 	}

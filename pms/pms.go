@@ -27,7 +27,7 @@ type PMS struct {
 	MpdClientWatcher *mpd.Watcher
 	CurrentSong      *song.Song
 	Index            *index.Index
-	Interface        *input.Interface
+	CLI              *input.CLI
 	Library          *songlist.SongList
 	Options          *options.Options
 

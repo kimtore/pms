@@ -65,14 +65,14 @@ func main() {
 	console.Log("UI initialized in %s", time.Since(timer).String())
 
 	// Set up the command-line interface
-	pms.Interface = input.NewInterface()
-	pms.Interface.Register("se", commands.NewSet(pms.Options))
-	pms.Interface.Register("set", commands.NewSet(pms.Options))
-	pms.Interface.Register("bind", commands.NewBind())
+	pms.CLI = input.NewCLI()
+	pms.CLI.Register("se", commands.NewSet(pms.Options))
+	pms.CLI.Register("set", commands.NewSet(pms.Options))
+	pms.CLI.Register("bind", commands.NewBind())
 
 	lines := strings.Split(options.Defaults, "\n")
 	for _, line := range lines {
-		err = pms.Interface.Execute(line)
+		err = pms.CLI.Execute(line)
 		if err != nil {
 			console.Log("Error while reading default configuration: %s", err)
 		}
@@ -117,7 +117,7 @@ func main() {
 				})
 			case s := <-ui.EventInputCommand:
 				console.Log("Input command received from Multibar: %s", s)
-				err = pms.Interface.Execute(s)
+				err = pms.CLI.Execute(s)
 				if err != nil {
 					ui.App.PostFunc(func() {
 						ui.Multibar.SetErrorText("ERROR: %s", err)
