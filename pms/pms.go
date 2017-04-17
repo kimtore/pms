@@ -40,8 +40,10 @@ type PMS struct {
 	libraryVersion int
 	indexVersion   int
 
-	EventLibrary chan int
+	EventError   chan string
 	EventIndex   chan int
+	EventLibrary chan int
+	EventMessage chan string
 	EventPlayer  chan int
 }
 
@@ -97,6 +99,16 @@ func (pms *PMS) readIndexStateFile() (int, error) {
 	return 0, fmt.Errorf("No data in index file")
 }
 
+func (pms *PMS) Message(format string, a ...interface{}) {
+	s := fmt.Sprintf(format, a...)
+	pms.EventMessage <- s
+}
+
+func (pms *PMS) Error(format string, a ...interface{}) {
+	s := fmt.Sprintf(format, a...)
+	pms.EventError <- s
+}
+
 func (pms *PMS) SetConnectionParams(host, port, password string) {
 	pms.MpdClient = nil
 	pms.host = host
@@ -110,7 +122,7 @@ func (pms *PMS) LoopConnect() {
 		if err == nil {
 			return
 		}
-		console.Log("Error while connecting to MPD: %s", err)
+		pms.Error("Error while connecting to MPD: %s", err)
 		time.Sleep(1 * time.Second)
 	}
 }
@@ -123,14 +135,14 @@ func (pms *PMS) Connect() error {
 	pms.MpdClient = nil
 	pms.MpdClientWatcher = nil
 
-	console.Log("Establishing MPD IDLE connection to %s...", addr)
+	pms.Message("Establishing MPD IDLE connection to %s...", addr)
 
 	pms.MpdClientWatcher, err = mpd.NewWatcher(`tcp`, addr, pms.password)
 	if err != nil {
-		console.Log("Connection error: %s", err)
+		pms.Error("Connection error: %s", err)
 		goto errors
 	}
-	console.Log("Successfully connected to %s.", addr)
+	pms.Message("Connected to %s.", addr)
 
 	err = pms.PingConnect()
 	if err != nil {
@@ -156,9 +168,14 @@ func (pms *PMS) Connect() error {
 		goto errors
 	}
 
+	pms.Message("Ready.")
+
 	return nil
 
 errors:
+
+	pms.Error("ERROR: %s", err)
+
 	if pms.MpdClient != nil {
 		pms.MpdClient.Close()
 	}
@@ -180,17 +197,17 @@ func (pms *PMS) PingConnect() error {
 	if pms.MpdClient != nil {
 		err = pms.MpdClient.Ping()
 		if err != nil {
-			console.Log("MPD control connection timeout.")
+			pms.Error("MPD control connection timeout.")
 		}
 	}
 
 	if pms.MpdClient == nil || err != nil {
-		console.Log("Establishing MPD control connection to %s...", addr)
+		pms.Message("Establishing MPD control connection to %s...", addr)
 		pms.MpdClient, err = mpd.DialAuthenticated(`tcp`, addr, pms.password)
 		if err != nil {
-			console.Log("Connection error: %s", err)
+			pms.Error("Connection error: %s", err)
 		}
-		console.Log("Successfully connected to %s.", addr)
+		pms.Message("Connected to %s.", addr)
 	}
 
 	return err
@@ -199,7 +216,7 @@ func (pms *PMS) PingConnect() error {
 // Monitor connection for errors and terminate when an error occurs
 func (pms *PMS) watchMpdIdleErrors() {
 	for err := range pms.MpdClientWatcher.Error {
-		console.Log("Error in MPD IDLE connection: %s", err)
+		pms.Error("Error in MPD IDLE connection: %s", err)
 		pms.MpdClient.Close()
 		pms.MpdClientWatcher.Close()
 	}
@@ -214,7 +231,7 @@ func (pms *PMS) watchMpdIdleEvents() {
 
 		console.Log("MPD says it has IDLE events on the following subsystem: %s", subsystem)
 		if pms.PingConnect() != nil {
-			console.Log("Failed to establish the control connection, we are running in the dark!")
+			pms.Error("IDLE: failed to establish MPD control connection: going out of sync with MPD!")
 			continue
 		}
 
@@ -235,7 +252,7 @@ func (pms *PMS) watchMpdIdleEvents() {
 			console.Log("Ignoring updates by subsystem %s", subsystem)
 		}
 		if err != nil {
-			console.Log("Error updating status: %s", err)
+			pms.Error("Error updating status: %s", err)
 		}
 	}
 }
@@ -276,14 +293,14 @@ func (pms *PMS) Sync() error {
 	console.Log("Sync(): local version is %d", pms.libraryVersion)
 
 	if libraryVersion != pms.libraryVersion {
-		console.Log("Sync(): retrieving library from MPD...")
+		pms.Message("Retrieving library metadata, %s songs...", stats["songs"])
 		library, err := pms.retrieveLibrary()
 		if err != nil {
 			return fmt.Errorf("Error while retrieving library from MPD: %s", err)
 		}
 		pms.Library = library
 		pms.libraryVersion = libraryVersion
-		console.Log("Sync(): local version updated to %d", pms.libraryVersion)
+		pms.Message("Library metadata at at version %d.", pms.libraryVersion)
 		pms.EventLibrary <- 1
 	}
 
@@ -346,7 +363,7 @@ func (pms *PMS) openIndex() error {
 		console.Log("Sync(): couldn't read index state file: %s", err)
 	}
 
-	console.Log("Opened index in %s", time.Since(timer).String())
+	console.Log("Opened search index in %s", time.Since(timer).String())
 
 	return nil
 }
@@ -417,13 +434,15 @@ func (pms *PMS) ReIndex() {
 	timer := time.Now()
 	pms.Index.IndexFull()
 	pms.indexVersion = pms.libraryVersion
-	console.Log("Indexed songlist in %s", time.Since(timer).String())
+	pms.Message("Song library index complete, took %s", time.Since(timer).String())
 }
 
 func New() *PMS {
 	pms := &PMS{}
-	pms.EventLibrary = make(chan int)
+	pms.EventError = make(chan string, 16)
 	pms.EventIndex = make(chan int)
+	pms.EventLibrary = make(chan int)
+	pms.EventMessage = make(chan string, 16)
 	pms.EventPlayer = make(chan int)
 	pms.Options = options.New()
 	pms.Options.AddDefaultOptions()

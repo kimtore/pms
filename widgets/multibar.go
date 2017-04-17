@@ -39,12 +39,12 @@ func NewMultibarWidget() *MultibarWidget {
 
 func (m *MultibarWidget) SetText(format string, a ...interface{}) {
 	m.text = fmt.Sprintf(format, a...)
-	m.SetLeft(m.text, m.Style("statusbar"))
+	m.DrawStatusbar()
 }
 
 func (m *MultibarWidget) SetErrorText(format string, a ...interface{}) {
 	m.errorText = fmt.Sprintf(format, a...)
-	m.SetLeft(m.errorText, m.Style("errorText"))
+	m.DrawStatusbar()
 }
 
 func (m *MultibarWidget) SetMode(mode int) error {
@@ -67,23 +67,32 @@ func (m *MultibarWidget) Mode() int {
 }
 
 func (m *MultibarWidget) setRunes(r []rune) {
-	var s string
-	var st tcell.Style
-
 	m.runes = r
-	s = m.RuneString()
+	m.DrawStatusbar()
+}
 
-	// Visual feedback
+// Draw the statusbar part of the Multibar.
+func (m *MultibarWidget) DrawStatusbar() {
+	var st tcell.Style
+	var s string
+
 	switch m.inputMode {
 	case MultibarModeCommandInput:
-		s = ":" + s
+		s = ":" + m.RuneString()
 		st = m.Style("commandText")
 	case MultibarModeSearch:
-		s = "/" + s
+		s = "/" + m.RuneString()
 		st = m.Style("searchText")
 	default:
-		s = m.text
-		st = m.Style("statusbar")
+		if len(m.errorText) > 0 {
+			s = m.errorText
+			st = m.Style("errorText")
+		} else {
+			s = m.text
+			st = m.Style("statusbar")
+		}
+		m.errorText = ""
+		m.text = ""
 	}
 
 	m.SetLeft(s, st)
