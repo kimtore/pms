@@ -46,8 +46,8 @@ func (t *KeySequenceToken) Parse(runes []rune) error {
 				break
 			}
 			s := strings.ToLower(string(special_characters[1:]))
-			if key, ok := keyNames[s]; ok {
-				t.Sequence = append(t.Sequence, KeyEvent{Key: key})
+			if _, ok := keyNames[s]; ok {
+				t.Sequence = append(t.Sequence, keyNames[s])
 			} else {
 				special_characters = append(special_characters, r)
 				t.addRunes(special_characters)
