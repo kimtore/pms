@@ -156,10 +156,10 @@ Item			Formatter::field_to_item(string f)
 		return FIELD_PERFORMER;
 	else if (f == "disc")
 		return FIELD_DISC;
-	else if (f == "comment")
-		return FIELD_COMMENT;
 	else if (f == "discshort")
 		return FIELD_DISCSHORT;
+	else if (f == "comment")
+		return FIELD_COMMENT;
 
 	/* Conditionals */
 	else if (f == "ifcursong")
