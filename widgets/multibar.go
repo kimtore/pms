@@ -34,7 +34,12 @@ func NewMultibarWidget() *MultibarWidget {
 
 func (m *MultibarWidget) SetDefaultText(s string) {
 	m.defaultText = s
-	m.setRunes(m.runes)
+	m.SetLeft(s, m.Style("statusbar"))
+}
+
+func (m *MultibarWidget) SetErrorText(s string) {
+	m.errorText = s
+	m.SetLeft(s, m.Style("errorText"))
 }
 
 func (m *MultibarWidget) SetMode(mode int) error {
@@ -58,6 +63,8 @@ func (m *MultibarWidget) Mode() int {
 
 func (m *MultibarWidget) setRunes(r []rune) {
 	var s string
+	var st tcell.Style
+
 	m.runes = r
 	s = m.RuneString()
 
@@ -65,14 +72,16 @@ func (m *MultibarWidget) setRunes(r []rune) {
 	switch m.inputMode {
 	case MultibarModeCommandInput:
 		s = ":" + s
+		st = m.Style("commandText")
 	case MultibarModeSearch:
 		s = "/" + s
+		st = m.Style("searchText")
 	default:
 		s = m.defaultText
+		st = m.Style("statusbar")
 	}
 
-	m.SetLeft(s, tcell.StyleDefault)
-	//console.Log("Multibar> %s", s)
+	m.SetLeft(s, st)
 }
 
 func (m *MultibarWidget) RuneString() string {

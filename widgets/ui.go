@@ -51,34 +51,36 @@ func NewUI() *UI {
 	ui.Playbar.Watch(ui)
 
 	styles := StyleMap{
-		"album":    tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"artist":   tcell.StyleDefault.Foreground(tcell.ColorYellow),
-		"cursor":   tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack),
-		"date":     tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"elapsed":  tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"header":   tcell.StyleDefault.Foreground(tcell.ColorGreen).Bold(true),
-		"switches": tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		//"time":     tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"time":  tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
-		"title": tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
-		//"title":  tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite).Bold(true),
-		//"title":  tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
-		"topbar": tcell.StyleDefault.Foreground(tcell.ColorYellow).Bold(true),
-		"track":  tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"volume": tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"year":   tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"album":       tcell.StyleDefault.Foreground(tcell.ColorTeal),
+		"artist":      tcell.StyleDefault.Foreground(tcell.ColorYellow),
+		"commandText": tcell.StyleDefault,
+		"cursor":      tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack),
+		"date":        tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"elapsed":     tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"errorText":   tcell.StyleDefault.Background(tcell.ColorRed).Foreground(tcell.ColorWhite).Bold(true),
+		"header":      tcell.StyleDefault.Foreground(tcell.ColorGreen).Bold(true),
+		"readout":     tcell.StyleDefault,
+		"searchText":  tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		"statusbar":   tcell.StyleDefault,
+		"switches":    tcell.StyleDefault.Foreground(tcell.ColorTeal),
+		"time":        tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
+		"title":       tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		"topbar":      tcell.StyleDefault.Foreground(tcell.ColorYellow).Bold(true),
+		"track":       tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"volume":      tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"year":        tcell.StyleDefault.Foreground(tcell.ColorGreen),
 	}
 
 	// Styles for widgets that don't have their own class yet.
 	ui.SetStyleMap(styles)
+	ui.Topbar.SetStyle(ui.Style("topbar"))
+	ui.Topbar.SetLeft(version.ShortName(), ui.Style("topbar"))
+	ui.Topbar.SetRight(version.Version(), ui.Style("topbar"))
 
 	ui.Columnheaders.SetStyleMap(styles)
 	ui.Playbar.SetStyleMap(styles)
 	ui.Songlist.SetStyleMap(styles)
-
-	ui.Topbar.SetStyle(ui.Style("topbar"))
-	ui.Topbar.SetLeft(version.ShortName(), ui.Style("topbar"))
-	ui.Topbar.SetRight(version.Version(), ui.Style("topbar"))
+	ui.Multibar.SetStyleMap(styles)
 
 	ui.Multibar.SetDefaultText("Ready.")
 
@@ -197,7 +199,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 
 func (ui *UI) refreshPositionReadout() {
 	str := ui.Songlist.PositionReadout()
-	ui.Multibar.SetRight(str, tcell.StyleDefault)
+	ui.Multibar.SetRight(str, ui.Style("readout"))
 }
 
 func (ui *UI) runIndexSearch(term string) {

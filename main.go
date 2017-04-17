@@ -105,7 +105,7 @@ func main() {
 				console.Log("Input command received from Multibar: %s", s)
 				err = pms.Interface.Execute(s)
 				if err != nil {
-					console.Log("Error: %s", err)
+					ui.Multibar.SetErrorText(fmt.Sprintf("ERROR: %s", err))
 				}
 			}
 		}
