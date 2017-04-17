@@ -14,8 +14,6 @@ import (
 	"github.com/ambientsound/pms/version"
 	"github.com/ambientsound/pms/widgets"
 
-	"github.com/fhs/gompd/mpd"
-
 	"github.com/jessevdk/go-flags"
 )
 
@@ -26,12 +24,6 @@ type Options struct {
 	MpdHost     string `long:"host" description:"MPD host (MPD_HOST environment variable)" default:"localhost"`
 	MpdPort     string `long:"port" description:"MPD port (MPD_PORT environment variable)" default:"6600"`
 	MpdPassword string `long:"password" description:"MPD password"`
-}
-
-func dial(mpd_host, mpd_port string) (c *mpd.Client, err error) {
-	addr := fmt.Sprintf("%s:%s", mpd_host, mpd_port)
-	c, err = mpd.Dial(`tcp`, addr)
-	return
 }
 
 func main() {
