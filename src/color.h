@@ -67,6 +67,7 @@ typedef struct
 	color *			composer;
 	color *			performer;
 	color *			disc;
+	color *			discshort;
 	color *			comment;
 
 } colortable_fields;

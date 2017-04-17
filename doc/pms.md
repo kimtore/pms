@@ -516,7 +516,7 @@ Tags are used for sorting, columns, topbar, and several other things.
 The following tags can be used everywhere *TAGS* are supported:
 
     album, albumartist, albumartistsort, artist, artistsort, comment, composer,
-    date, disc, file, genre, name, num, performer, time, title, track,
+    date, disc, discshort, file, genre, name, num, performer, time, title, track,
     trackshort, year
 
 # COLORS

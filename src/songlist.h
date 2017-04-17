@@ -62,7 +62,7 @@ enum
 	MATCH_GENRE		= 1 << 12,
 	MATCH_COMPOSER		= 1 << 13,
 	MATCH_PERFORMER		= 1 << 14,
-	MATCH_DISC		= 1 << 15,
+	MATCH_DISCSHORT		= 1 << 15,
 	MATCH_COMMENT		= 1 << 16,
 	MATCH_YEAR		= 1 << 17,
 

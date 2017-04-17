@@ -158,6 +158,8 @@ Item			Formatter::field_to_item(string f)
 		return FIELD_DISC;
 	else if (f == "comment")
 		return FIELD_COMMENT;
+	else if (f == "discshort")
+		return FIELD_DISCSHORT;
 
 	/* Conditionals */
 	else if (f == "ifcursong")
@@ -527,6 +529,12 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 			retstr = song->disc;
 			break;
 
+		case FIELD_DISCSHORT:
+			if (!song) return retstr;
+			retstr = song->discshort;
+			break;
+
+
 
 		/* Times */
 
@@ -857,6 +865,10 @@ color *			Formatter::getcolor(Item i, colortable_fields * f)
 			c = f->disc;
 			break;
 
+		case FIELD_DISCSHORT:
+			c = f->discshort;
+			break;
+
 		case TIME_ELAPSED:
 			c = pms->options->colors->topbar.time_elapsed;
 			break;
@@ -1030,7 +1042,11 @@ long			Formatter::item_to_match(Item i)
 			break;
 
 		case FIELD_DISC:
-			l = MATCH_DISC;
+		case FIELD_DISCSHORT:
+			/* Only match the short one so we don't get every track
+			 * of an album whose disc numbers are marked up as x/2
+			 * when searching for songs from disc 2 */
+			l = MATCH_DISCSHORT;
 			break;
 
 		default:

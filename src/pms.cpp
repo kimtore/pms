@@ -750,6 +750,7 @@ int			Pms::init()
 	fieldtypes->add("composer", _("Composer"), FIELD_COMPOSER, 0, sort_compare_composer);
 	fieldtypes->add("performer", _("Performer"), FIELD_PERFORMER, 0, sort_compare_performer);
 	fieldtypes->add("disc", _("Disc"), FIELD_DISC, 5, sort_compare_disc);
+	fieldtypes->add("discshort", _("D"), FIELD_DISCSHORT, 2, sort_compare_disc);
 	fieldtypes->add("comment", _("Comment"), FIELD_COMMENT, 0, sort_compare_comment);
 
 	/* Set up default bindings */

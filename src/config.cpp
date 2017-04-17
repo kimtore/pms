@@ -801,6 +801,8 @@ bool			Configurator::set_color(string name, string pairs)
 					dest = field->performer;
 				else if (name == "disc")
 					dest = field->disc;
+				else if (name == "discshort")
+					dest = field->discshort;
 				else if (name == "comment")
 					dest = field->comment;
 				else
