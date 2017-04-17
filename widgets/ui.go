@@ -82,7 +82,7 @@ func NewUI() *UI {
 	ui.Songlist.SetStyleMap(styles)
 	ui.Multibar.SetStyleMap(styles)
 
-	ui.Multibar.SetDefaultText("Ready.")
+	ui.Multibar.SetText("Ready.")
 
 	ui.CreateLayout()
 	ui.App.SetRootWidget(ui)

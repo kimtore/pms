@@ -10,16 +10,21 @@ import (
 )
 
 type MultibarWidget struct {
-	runes       []rune
-	defaultText string
-	errorText   string
-	inputMode   int
-	styles      StyleMap
+	// runes contain user input, while
+	// text and errorText contains text set by the program.
+	runes     []rune
+	text      string
+	errorText string
+
+	inputMode int
+	styles    StyleMap
 
 	views.TextBar
 	widget
 }
 
+// Different input modes are handled in different ways. Check
+// MultibarWidget.inputMode against these constants.
 const (
 	MultibarModeCommand = iota
 	MultibarModeCommandInput
@@ -32,14 +37,14 @@ func NewMultibarWidget() *MultibarWidget {
 	return m
 }
 
-func (m *MultibarWidget) SetDefaultText(s string) {
-	m.defaultText = s
-	m.SetLeft(s, m.Style("statusbar"))
+func (m *MultibarWidget) SetText(format string, a ...interface{}) {
+	m.text = fmt.Sprintf(format, a...)
+	m.SetLeft(m.text, m.Style("statusbar"))
 }
 
-func (m *MultibarWidget) SetErrorText(s string) {
-	m.errorText = s
-	m.SetLeft(s, m.Style("errorText"))
+func (m *MultibarWidget) SetErrorText(format string, a ...interface{}) {
+	m.errorText = fmt.Sprintf(format, a...)
+	m.SetLeft(m.errorText, m.Style("errorText"))
 }
 
 func (m *MultibarWidget) SetMode(mode int) error {
@@ -77,7 +82,7 @@ func (m *MultibarWidget) setRunes(r []rune) {
 		s = "/" + s
 		st = m.Style("searchText")
 	default:
-		s = m.defaultText
+		s = m.text
 		st = m.Style("statusbar")
 	}
 
