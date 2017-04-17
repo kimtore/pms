@@ -17,9 +17,9 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-var buildVersion string = "undefined"
+var buildVersion = "undefined"
 
-type Options struct {
+type cliOptions struct {
 	Version     bool   `short:"v" long:"version" description:"Print program version"`
 	MpdHost     string `long:"host" description:"MPD host (MPD_HOST environment variable)" default:"localhost"`
 	MpdPort     string `long:"port" description:"MPD port (MPD_PORT environment variable)" default:"6600"`
@@ -28,7 +28,7 @@ type Options struct {
 
 func main() {
 	var timer time.Time
-	var opts Options
+	var opts cliOptions
 
 	version.SetVersion(buildVersion)
 	fmt.Printf("%s %s\n", version.LongName(), version.Version())
