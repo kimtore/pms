@@ -1,15 +1,10 @@
 #!/bin/bash
 # Re-build PMS
 
-set -e
+set -xe
 
-intltoolize --force
-aclocal -I m4
-autoreconf --force --install --verbose
-./configure
+mkdir -p build
+cd build
+cmake ..
 make clean
 make
-
-echo
-echo "Build finished."
-echo
