@@ -40,7 +40,7 @@ func TestSet(t *testing.T) {
 	opts.Add(opt)
 
 	input_string := "foo=bar intopt=3 nobar invbaz"
-	cmd := commands.NewSet(&opts)
+	cmd := commands.NewSet(opts)
 
 	pos := 0
 	npos := 0

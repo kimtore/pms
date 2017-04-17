@@ -19,7 +19,7 @@ func TestInterfaceSet(t *testing.T) {
 	opts := options.New()
 	iface := input.NewInterface()
 
-	iface.Register("set", commands.NewSet(&opts))
+	iface.Register("set", commands.NewSet(opts))
 
 	if opt, err = options.NewStringOption("foo", "this string must die"); err != nil {
 		t.Fatalf("Cannot add new string option: %s", err)
