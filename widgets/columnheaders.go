@@ -3,6 +3,7 @@ package widgets
 import (
 	"strings"
 
+	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
 )
 
@@ -11,6 +12,7 @@ type ColumnheadersWidget struct {
 	view    views.View
 
 	widget
+	views.WidgetWatchers
 }
 
 func NewColumnheadersWidget() (c *ColumnheadersWidget) {
@@ -44,4 +46,11 @@ func (c *ColumnheadersWidget) Size() (int, int) {
 	x, y := c.view.Size()
 	y = 1
 	return x, y
+}
+
+func (w *ColumnheadersWidget) Resize() {
+}
+
+func (w *ColumnheadersWidget) HandleEvent(ev tcell.Event) bool {
+	return false
 }

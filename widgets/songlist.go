@@ -18,6 +18,7 @@ type SongListWidget struct {
 	columns  []column
 
 	widget
+	views.WidgetWatchers
 }
 
 func min(a, b int) int {

@@ -32,6 +32,7 @@ type UI struct {
 	// TCell
 	view views.View
 	widget
+	views.WidgetWatchers
 }
 
 func NewUI() *UI {

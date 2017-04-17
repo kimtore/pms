@@ -10,11 +10,14 @@ import (
 )
 
 type MultibarWidget struct {
-	views.TextBar
-
 	runes       []rune
 	defaultText string
+	errorText   string
 	inputMode   int
+	styles      StyleMap
+
+	views.TextBar
+	widget
 }
 
 const (
@@ -168,4 +171,7 @@ func (m *MultibarWidget) HandleEvent(ev tcell.Event) bool {
 		return m.handleTextInputEvent(ev)
 	}
 	return false
+}
+
+func (w *MultibarWidget) Resize() {
 }

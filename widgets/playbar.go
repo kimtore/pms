@@ -18,6 +18,7 @@ type PlaybarWidget struct {
 	styles StyleMap
 
 	widget
+	views.WidgetWatchers
 }
 
 var playRunes = map[string]rune{
@@ -108,4 +109,11 @@ func (w *PlaybarWidget) SetView(v views.View) {
 func (w *PlaybarWidget) Size() (int, int) {
 	x, _ := w.view.Size()
 	return x, 3
+}
+
+func (w *PlaybarWidget) Resize() {
+}
+
+func (w *PlaybarWidget) HandleEvent(ev tcell.Event) bool {
+	return false
 }
