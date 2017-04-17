@@ -197,7 +197,7 @@ func (pms *PMS) PingConnect() error {
 	if pms.MpdClient != nil {
 		err = pms.MpdClient.Ping()
 		if err != nil {
-			pms.Error("MPD control connection timeout.")
+			console.Log("MPD control connection timeout.")
 		}
 	}
 
