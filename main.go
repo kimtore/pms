@@ -17,7 +17,7 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-var build_version string = "undefined"
+var buildVersion string = "undefined"
 
 type Options struct {
 	Version     bool   `short:"v" long:"version" description:"Print program version"`
@@ -30,7 +30,7 @@ func main() {
 	var timer time.Time
 	var opts Options
 
-	version.SetVersion(build_version)
+	version.SetVersion(buildVersion)
 	fmt.Printf("%s %s\n", version.LongName(), version.Version())
 
 	remainder, err := flags.Parse(&opts)
