@@ -13,6 +13,7 @@ import (
 	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/commands"
+	"github.com/ambientsound/pms/input/keys"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
@@ -34,6 +35,7 @@ type PMS struct {
 	UI               *widgets.UI
 	Library          *songlist.SongList
 	Options          *options.Options
+	Sequencer        *keys.Sequencer
 
 	ticker chan time.Time
 
@@ -445,7 +447,7 @@ func (pms *PMS) ReIndex() {
 // SetupCLI instantiates the different commands PMS understands, such as set; bind; etc.
 func (pms *PMS) setupCLI() {
 	pms.CLI = input.NewCLI()
-	pms.CLI.Register("bind", commands.NewBind())
+	pms.CLI.Register("bind", commands.NewBind(pms.Sequencer))
 	pms.CLI.Register("q", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("quit", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("se", commands.NewSet(pms.Options))
@@ -530,6 +532,8 @@ func New() *PMS {
 
 	pms.Options = options.New()
 	pms.Options.AddDefaultOptions()
+
+	pms.Sequencer = keys.NewSequencer()
 
 	pms.setupCLI()
 	pms.setupUI()

@@ -11,8 +11,41 @@ type KeyEvent struct {
 	Rune rune
 }
 
+func (a KeyEvent) Equals(b KeyEvent) bool {
+	if a.Key != b.Key {
+		return false
+	}
+	if a.Key == tcell.KeyRune {
+		if a.Rune != b.Rune {
+			return false
+		}
+	}
+	return true
+}
+
+type KeyEvents []KeyEvent
+
+func (a KeyEvents) Equals(b KeyEvents) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	return a.StartsWith(b)
+}
+
+func (a KeyEvents) StartsWith(b KeyEvents) bool {
+	if len(a) < len(b) {
+		return false
+	}
+	for i := range b {
+		if !a[i].Equals(b[i]) {
+			return false
+		}
+	}
+	return true
+}
+
 type KeySequenceToken struct {
-	Sequence []KeyEvent
+	Sequence KeyEvents
 }
 
 func (t *KeySequenceToken) addRunes(runes []rune) {
@@ -24,7 +57,7 @@ func (t *KeySequenceToken) addRunes(runes []rune) {
 // Parse parses a sequence of keystrokes defined as a string, and creates a
 // slice of KeyEvent structs, representing individual keystrokes.
 func (t *KeySequenceToken) Parse(runes []rune) error {
-	t.Sequence = make([]KeyEvent, 0)
+	t.Sequence = make(KeyEvents, 0)
 
 	parse_special := false
 	special_characters := make([]rune, 0)

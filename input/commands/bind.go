@@ -2,29 +2,29 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/input/parser"
 )
 
-type runeString []rune
-
 // Bind maps a key sequence to the execution of a command.
 type Bind struct {
-	sentence []runeString
-	token    *parser.KeySequenceToken
+	sentence  []string
+	token     *parser.KeySequenceToken
+	sequencer *keys.Sequencer
 }
 
-func NewBind() *Bind {
-	p := &Bind{}
+func NewBind(s *keys.Sequencer) *Bind {
+	p := &Bind{sequencer: s}
 	p.Reset()
 	return p
 }
 
 func (p *Bind) Reset() {
 	p.token = nil
-	p.sentence = make([]runeString, 0)
+	p.sentence = make([]string, 0)
 }
 
 func (p *Bind) Execute(t lexer.Token) error {
@@ -38,7 +38,7 @@ func (p *Bind) Execute(t lexer.Token) error {
 				return err
 			}
 		} else {
-			p.sentence = append(p.sentence, t.Runes)
+			p.sentence = append(p.sentence, string(t.Runes))
 		}
 
 	case lexer.TokenEnd:
@@ -61,6 +61,6 @@ func (p *Bind) Execute(t lexer.Token) error {
 }
 
 func (p *Bind) bind() error {
-	console.Log("Binding key input sequence %v => %v", p.token, p.sentence)
-	return nil
+	sentence := strings.Join(p.sentence, " ")
+	return p.sequencer.AddBind(p.token.Sequence, sentence)
 }
