@@ -59,7 +59,7 @@ func main() {
 	pms := pms.New()
 
 	timer = time.Now()
-	ui := widgets.NewUI()
+	ui := widgets.NewUI(pms.Options)
 	ui.Start()
 	defer ui.Quit()
 	console.Log("UI initialized in %s", time.Since(timer).String())
@@ -88,6 +88,7 @@ func main() {
 				console.Log("Song library updated in MPD, assigning to UI")
 				ui.App.PostFunc(func() {
 					ui.Songlist.SetSongList(pms.Library)
+					ui.Songlist.SetColumns(strings.Split(pms.Options.StringValue("columns"), ","))
 					ui.SetDefaultSonglist(pms.Library)
 					ui.App.Update()
 				})

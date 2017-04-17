@@ -1,7 +1,10 @@
 package widgets
 
 import (
+	"strings"
+
 	"github.com/ambientsound/pms/index"
+	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/version"
 
@@ -28,6 +31,7 @@ type UI struct {
 	// Data resources
 	Index           *index.Index
 	defaultSongList *songlist.SongList
+	options         *options.Options
 
 	// TCell
 	view views.View
@@ -35,10 +39,11 @@ type UI struct {
 	views.WidgetWatchers
 }
 
-func NewUI() *UI {
+func NewUI(opts *options.Options) *UI {
 	ui := &UI{}
 
 	ui.App = &views.Application{}
+	ui.options = opts
 
 	ui.Topbar = views.NewTextBar()
 	ui.Playbar = NewPlaybarWidget()
@@ -207,6 +212,7 @@ func (ui *UI) runIndexSearch(term string) {
 	if len(term) == 0 {
 		ui.Songlist.SetCursor(0)
 		ui.Songlist.SetSongList(ui.defaultSongList)
+		ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
 		return
 	}
 	if len(term) == 1 {
@@ -216,6 +222,7 @@ func (ui *UI) runIndexSearch(term string) {
 	if err == nil {
 		ui.Songlist.SetCursor(0)
 		ui.Songlist.SetSongList(results)
+		ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
 		return
 	}
 }

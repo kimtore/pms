@@ -46,15 +46,6 @@ func (w *SongListWidget) SetSongList(s *songlist.SongList) {
 	//console.Log("setSongList(%p)", s)
 	w.songlist = s
 	w.setViewportSize()
-	cols := []string{
-		"artist",
-		"track",
-		"title",
-		"album",
-		"year",
-		"time",
-	}
-	w.SetColumns(cols)
 	PostEventListChanged(w)
 }
 
@@ -66,21 +57,21 @@ func (w *SongListWidget) AutoSetColumnWidths() {
 }
 
 func (w *SongListWidget) SetColumns(cols []string) {
-	//timer := time.Now()
-	ch := make(chan int, len(cols))
+	ch := make(chan int, len(w.columns))
 	w.columns = make([]column, len(cols))
-	for i := range cols {
+
+	for i := range w.columns {
 		go func(i int) {
 			w.columns[i].Tag = cols[i]
 			w.columns[i].Set(w.songlist)
 			ch <- 0
 		}(i)
 	}
-	for i := 0; i < len(cols); i++ {
+	for i := 0; i < len(w.columns); i++ {
 		<-ch
 	}
 	w.AutoSetColumnWidths()
-	//console.Log("SetColumns on %d songs in %s", w.songlist.Len(), time.Since(timer).String())
+	PostEventListChanged(w)
 }
 
 func (w *SongListWidget) expandColumns() {
