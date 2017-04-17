@@ -1,4 +1,4 @@
-package pms
+package mpd
 
 import "time"
 

@@ -12,9 +12,12 @@ import (
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input"
+	"github.com/ambientsound/pms/input/commands"
+	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/widgets"
 	"github.com/ambientsound/pms/xdg"
 
 	"github.com/fhs/gompd/mpd"
@@ -22,12 +25,13 @@ import (
 
 // PMS is a kitchen sink of different objects, glued together as a singleton class.
 type PMS struct {
-	MpdStatus        PlayerStatus
+	MpdStatus        pms_mpd.PlayerStatus
 	MpdClient        *mpd.Client
 	MpdClientWatcher *mpd.Watcher
 	CurrentSong      *song.Song
 	Index            *index.Index
 	CLI              *input.CLI
+	UI               *widgets.UI
 	Library          *songlist.SongList
 	Options          *options.Options
 
@@ -437,14 +441,91 @@ func (pms *PMS) ReIndex() {
 	pms.Message("Song library index complete, took %s", time.Since(timer).String())
 }
 
+// SetupCLI instantiates the different commands PMS understands, such as set; bind; etc.
+func (pms *PMS) setupCLI() {
+	pms.CLI = input.NewCLI()
+	pms.CLI.Register("se", commands.NewSet(pms.Options))
+	pms.CLI.Register("set", commands.NewSet(pms.Options))
+	pms.CLI.Register("bind", commands.NewBind())
+}
+
+func (pms *PMS) readDefaultConfiguration() {
+	lines := strings.Split(options.Defaults, "\n")
+	for _, line := range lines {
+		err := pms.CLI.Execute(line)
+		if err != nil {
+			console.Log("Error while reading default configuration: %s", err)
+		}
+	}
+}
+
+func (pms *PMS) setupUI() {
+	timer := time.Now()
+	pms.UI = widgets.NewUI(pms.Options)
+	pms.UI.Start()
+	console.Log("UI initialized in %s", time.Since(timer).String())
+}
+
+func (pms *PMS) Main() {
+	for {
+		select {
+		case <-pms.EventLibrary:
+			console.Log("Song library updated in MPD, assigning to UI")
+			pms.UI.App.PostFunc(func() {
+				pms.UI.Songlist.SetSongList(pms.Library)
+				pms.UI.Songlist.SetColumns(strings.Split(pms.Options.StringValue("columns"), ","))
+				pms.UI.SetDefaultSonglist(pms.Library)
+				pms.UI.App.Update()
+			})
+		case <-pms.EventIndex:
+			console.Log("Search index updated, assigning to UI")
+			pms.UI.App.PostFunc(func() {
+				pms.UI.SetIndex(pms.Index)
+			})
+		case <-pms.EventPlayer:
+			pms.UI.App.PostFunc(func() {
+				pms.UI.Playbar.SetPlayerStatus(pms.MpdStatus)
+				pms.UI.Playbar.SetSong(pms.CurrentSong)
+				pms.UI.App.Update()
+			})
+		case s := <-pms.EventMessage:
+			console.Log(s)
+			pms.UI.App.PostFunc(func() {
+				pms.UI.Multibar.SetText(s)
+				pms.UI.App.Update()
+			})
+		case s := <-pms.EventError:
+			console.Log(s)
+			pms.UI.App.PostFunc(func() {
+				pms.UI.Multibar.SetErrorText(s)
+				pms.UI.App.Update()
+			})
+		case s := <-pms.UI.EventInputCommand:
+			console.Log("Input command received from Multibar: %s", s)
+			err := pms.CLI.Execute(s)
+			if err != nil {
+				pms.UI.App.PostFunc(func() {
+					pms.UI.Multibar.SetErrorText("ERROR: %s", err)
+				})
+			}
+		}
+	}
+}
+
 func New() *PMS {
 	pms := &PMS{}
+
 	pms.EventError = make(chan string, 16)
 	pms.EventIndex = make(chan int)
 	pms.EventLibrary = make(chan int)
 	pms.EventMessage = make(chan string, 16)
 	pms.EventPlayer = make(chan int)
+
 	pms.Options = options.New()
 	pms.Options.AddDefaultOptions()
+
+	pms.setupCLI()
+	pms.setupUI()
+
 	return pms
 }

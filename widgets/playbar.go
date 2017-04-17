@@ -3,7 +3,7 @@ package widgets
 import (
 	"fmt"
 
-	"github.com/ambientsound/pms/pms"
+	"github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/utils"
 
@@ -12,7 +12,7 @@ import (
 )
 
 type PlaybarWidget struct {
-	status pms.PlayerStatus
+	status mpd.PlayerStatus
 	view   views.View
 	song   *song.Song
 	styles StyleMap
@@ -22,10 +22,10 @@ type PlaybarWidget struct {
 }
 
 var playRunes = map[string]rune{
-	pms.StatePlay:    '\u25b6',
-	pms.StatePause:   '\u23f8',
-	pms.StateStop:    '\u23f9',
-	pms.StateUnknown: '\u2bd1',
+	mpd.StatePlay:    '\u25b6',
+	mpd.StatePause:   '\u23f8',
+	mpd.StateStop:    '\u23f9',
+	mpd.StateUnknown: '\u2bd1',
 }
 
 func StatusRune(r rune, val bool) rune {
@@ -39,7 +39,7 @@ func NewPlaybarWidget() *PlaybarWidget {
 	return &PlaybarWidget{}
 }
 
-func (w *PlaybarWidget) SetPlayerStatus(s pms.PlayerStatus) {
+func (w *PlaybarWidget) SetPlayerStatus(s mpd.PlayerStatus) {
 	w.status = s
 	w.PostEventWidgetContent(w)
 }

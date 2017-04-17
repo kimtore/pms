@@ -4,15 +4,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/ambientsound/pms/console"
-	"github.com/ambientsound/pms/input"
-	"github.com/ambientsound/pms/input/commands"
-	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/pms"
 	"github.com/ambientsound/pms/version"
-	"github.com/ambientsound/pms/widgets"
 
 	"github.com/jessevdk/go-flags"
 )
@@ -27,7 +22,6 @@ type cliOptions struct {
 }
 
 func main() {
-	var timer time.Time
 	var opts cliOptions
 
 	version.SetVersion(buildVersion)
@@ -57,77 +51,13 @@ func main() {
 	}
 
 	pms := pms.New()
-
-	timer = time.Now()
-	ui := widgets.NewUI(pms.Options)
-	ui.Start()
-	defer ui.Quit()
-	console.Log("UI initialized in %s", time.Since(timer).String())
-
-	// Set up the command-line interface
-	pms.CLI = input.NewCLI()
-	pms.CLI.Register("se", commands.NewSet(pms.Options))
-	pms.CLI.Register("set", commands.NewSet(pms.Options))
-	pms.CLI.Register("bind", commands.NewBind())
-
-	lines := strings.Split(options.Defaults, "\n")
-	for _, line := range lines {
-		err = pms.CLI.Execute(line)
-		if err != nil {
-			console.Log("Error while reading default configuration: %s", err)
-		}
-	}
+	defer pms.UI.Quit()
 
 	pms.SetConnectionParams(opts.MpdHost, opts.MpdPort, opts.MpdPassword)
 	go pms.LoopConnect()
 
-	go func() {
-		for {
-			select {
-			case <-pms.EventLibrary:
-				console.Log("Song library updated in MPD, assigning to UI")
-				ui.App.PostFunc(func() {
-					ui.Songlist.SetSongList(pms.Library)
-					ui.Songlist.SetColumns(strings.Split(pms.Options.StringValue("columns"), ","))
-					ui.SetDefaultSonglist(pms.Library)
-					ui.App.Update()
-				})
-			case <-pms.EventIndex:
-				console.Log("Search index updated, assigning to UI")
-				ui.App.PostFunc(func() {
-					ui.SetIndex(pms.Index)
-				})
-			case <-pms.EventPlayer:
-				ui.App.PostFunc(func() {
-					ui.Playbar.SetPlayerStatus(pms.MpdStatus)
-					ui.Playbar.SetSong(pms.CurrentSong)
-					ui.App.Update()
-				})
-			case s := <-pms.EventMessage:
-				console.Log(s)
-				ui.App.PostFunc(func() {
-					ui.Multibar.SetText(s)
-					ui.App.Update()
-				})
-			case s := <-pms.EventError:
-				console.Log(s)
-				ui.App.PostFunc(func() {
-					ui.Multibar.SetErrorText(s)
-					ui.App.Update()
-				})
-			case s := <-ui.EventInputCommand:
-				console.Log("Input command received from Multibar: %s", s)
-				err = pms.CLI.Execute(s)
-				if err != nil {
-					ui.App.PostFunc(func() {
-						ui.Multibar.SetErrorText("ERROR: %s", err)
-					})
-				}
-			}
-		}
-	}()
-
-	ui.Wait()
+	go pms.Main()
+	pms.UI.Wait()
 
 	console.Log("Exiting normally.")
 }
