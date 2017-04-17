@@ -155,6 +155,8 @@ Item			Formatter::field_to_item(string f)
 	else if (f == "performer")
 		return FIELD_PERFORMER;
 	else if (f == "disc")
+		return FIELD_DISC;
+	else if (f == "comment")
 		return FIELD_COMMENT;
 
 	/* Conditionals */
