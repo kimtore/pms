@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 
 	"github.com/gdamore/tcell"
@@ -202,6 +203,13 @@ func (w *SongListWidget) SetCursor(i int) {
 
 func (w *SongListWidget) Cursor() int {
 	return w.cursor
+}
+
+func (w *SongListWidget) CursorSong() *song.Song {
+	if w.songlist.Len() == 0 {
+		return nil
+	}
+	return w.songlist.Songs[w.cursor]
 }
 
 // validateCursorVisible makes sure the cursor stays within the visible area of the viewport.

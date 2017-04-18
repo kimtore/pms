@@ -265,6 +265,14 @@ func (pms *PMS) watchMpdIdleEvents() {
 	}
 }
 
+func (pms *PMS) CurrentMpdClient() *mpd.Client {
+	err := pms.PingConnect()
+	if err == nil {
+		return pms.MpdClient
+	}
+	return nil
+}
+
 // runTicker starts a ticker that will increase the elapsed time every second.
 func (pms *PMS) runTicker() {
 	pms.ticker = make(chan time.Time, 0)
@@ -451,6 +459,7 @@ func (pms *PMS) setupCLI() {
 	pms.CLI.Register("bind", commands.NewBind(pms.Sequencer))
 	pms.CLI.Register("cursor", commands.NewCursor(pms.UI.Songlist))
 	pms.CLI.Register("inputmode", commands.NewInputMode(pms.UI.Multibar))
+	pms.CLI.Register("play", commands.NewPlay(pms.UI.Songlist, pms.CurrentMpdClient))
 	pms.CLI.Register("q", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("quit", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("redraw", commands.NewRedraw(pms.UI.App))
