@@ -451,6 +451,7 @@ func (pms *PMS) setupCLI() {
 	pms.CLI.Register("bind", commands.NewBind(pms.Sequencer))
 	pms.CLI.Register("q", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("quit", commands.NewQuit(pms.QuitSignal))
+	pms.CLI.Register("redraw", commands.NewRedraw(pms.UI.App))
 	pms.CLI.Register("se", commands.NewSet(pms.Options))
 	pms.CLI.Register("set", commands.NewSet(pms.Options))
 }
@@ -590,10 +591,9 @@ func New() *PMS {
 
 	pms.Sequencer = keys.NewSequencer()
 
+	pms.setupUI()
 	pms.setupCLI()
 	pms.readDefaultConfiguration()
-
-	pms.setupUI()
 
 	return pms
 }

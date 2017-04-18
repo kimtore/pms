@@ -149,14 +149,7 @@ func (ui *UI) Size() (int, int) {
 }
 
 func (ui *UI) HandleEvent(ev tcell.Event) bool {
-	switch ev := ev.(type) {
-
-	case *tcell.EventKey:
-		switch ev.Key() {
-		case tcell.KeyCtrlL:
-			ui.App.Refresh()
-			return true
-		}
+	switch ev.(type) {
 
 	case *EventListChanged:
 		ui.App.Update()
@@ -189,7 +182,6 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 	case *EventScroll:
 		ui.refreshPositionReadout()
 		return true
-
 	}
 
 	if ui.Layout.HandleEvent(ev) {

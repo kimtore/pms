@@ -9,4 +9,5 @@ func (o *Options) AddDefaultOptions() {
 // Defaults is the default, internal configuration file.
 const Defaults string = `
 bind <C-c> quit
+bind <C-l> redraw
 `
