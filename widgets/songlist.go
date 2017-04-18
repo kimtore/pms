@@ -170,25 +170,6 @@ func (w *SongListWidget) getBoundaries() (ymin, ymax int) {
 	return 0, w.songlist.Len() - 1
 }
 
-func (w *SongListWidget) validateCursorVisible() {
-	ymin, ymax := w.getVisibleBoundaries()
-	w.validateCursor(ymin, ymax)
-}
-
-func (w *SongListWidget) validateCursorList() {
-	ymin, ymax := w.getBoundaries()
-	w.validateCursor(ymin, ymax)
-}
-
-func (w *SongListWidget) validateCursor(ymin, ymax int) {
-	if w.cursor < ymin {
-		w.cursor = ymin
-	}
-	if w.cursor > ymax {
-		w.cursor = ymax
-	}
-}
-
 func (w *SongListWidget) setViewportSize() {
 	x, y := w.Size()
 	w.viewport.Resize(0, 0, -1, -1)
@@ -221,6 +202,25 @@ func (w *SongListWidget) SetCursor(i int) {
 
 func (w *SongListWidget) Cursor() int {
 	return w.cursor
+}
+
+func (w *SongListWidget) validateCursorVisible() {
+	ymin, ymax := w.getVisibleBoundaries()
+	w.validateCursor(ymin, ymax)
+}
+
+func (w *SongListWidget) validateCursorList() {
+	ymin, ymax := w.getBoundaries()
+	w.validateCursor(ymin, ymax)
+}
+
+func (w *SongListWidget) validateCursor(ymin, ymax int) {
+	if w.cursor < ymin {
+		w.cursor = ymin
+	}
+	if w.cursor > ymax {
+		w.cursor = ymax
+	}
 }
 
 func (w *SongListWidget) Resize() {
