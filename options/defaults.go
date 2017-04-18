@@ -12,6 +12,8 @@ bind <C-c> quit
 bind <C-l> redraw
 bind <Up> cursor up
 bind <Down> cursor down
+bind k cursor up
+bind j cursor down
 bind <PgUp> cursor pgup
 bind <PgDn> cursor pgdn
 bind <Home> cursor home
