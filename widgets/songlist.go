@@ -195,7 +195,7 @@ func (w *SongListWidget) MoveCursor(i int) {
 func (w *SongListWidget) SetCursor(i int) {
 	w.cursor = i
 	w.validateCursorList()
-	w.viewport.MakeVisible(0, i)
+	w.viewport.MakeVisible(0, w.cursor)
 	w.validateCursorVisible()
 	w.PostEventWidgetContent(w)
 }
@@ -204,16 +204,19 @@ func (w *SongListWidget) Cursor() int {
 	return w.cursor
 }
 
+// validateCursorVisible makes sure the cursor stays within the visible area of the viewport.
 func (w *SongListWidget) validateCursorVisible() {
 	ymin, ymax := w.getVisibleBoundaries()
 	w.validateCursor(ymin, ymax)
 }
 
+// validateCursorList makes sure the cursor stays within songlist boundaries.
 func (w *SongListWidget) validateCursorList() {
 	ymin, ymax := w.getBoundaries()
 	w.validateCursor(ymin, ymax)
 }
 
+// validateCursor adjusts the cursor based on minimum and maximum boundaries.
 func (w *SongListWidget) validateCursor(ymin, ymax int) {
 	if w.cursor < ymin {
 		w.cursor = ymin
