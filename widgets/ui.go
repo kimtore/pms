@@ -153,11 +153,6 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 
 	case *tcell.EventKey:
 		switch ev.Key() {
-		case tcell.KeyCtrlC:
-			fallthrough
-		case tcell.KeyCtrlD:
-			ui.App.Quit()
-			return true
 		case tcell.KeyCtrlL:
 			ui.App.Refresh()
 			return true
