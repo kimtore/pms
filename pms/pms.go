@@ -14,6 +14,7 @@ import (
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/commands"
 	"github.com/ambientsound/pms/input/keys"
+	"github.com/ambientsound/pms/input/parser"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
@@ -471,68 +472,105 @@ func (pms *PMS) setupUI() {
 	console.Log("UI initialized in %s", time.Since(timer).String())
 }
 
+func (pms *PMS) handleQuitSignal() {
+	console.Log("Received quit signal, exiting.")
+	pms.UI.Quit()
+}
+
+func (pms *PMS) handleEventLibrary() {
+	console.Log("Song library updated in MPD, assigning to UI")
+	pms.UI.App.PostFunc(func() {
+		pms.UI.Songlist.SetSongList(pms.Library)
+		pms.UI.Songlist.SetColumns(strings.Split(pms.Options.StringValue("columns"), ","))
+		pms.UI.SetDefaultSonglist(pms.Library)
+		pms.UI.App.Update()
+	})
+}
+
+func (pms *PMS) handleEventIndex() {
+	console.Log("Search index updated, assigning to UI")
+	pms.UI.App.PostFunc(func() {
+		pms.UI.SetIndex(pms.Index)
+	})
+}
+
+func (pms *PMS) handleEventPlayer() {
+	pms.UI.App.PostFunc(func() {
+		pms.UI.Playbar.SetPlayerStatus(pms.MpdStatus)
+		pms.UI.Playbar.SetSong(pms.CurrentSong)
+		pms.UI.App.Update()
+	})
+}
+
+func (pms *PMS) handleEventMessage(s string) {
+	console.Log(s)
+	pms.UI.App.PostFunc(func() {
+		pms.UI.Multibar.SetText(s)
+		pms.UI.App.Update()
+	})
+}
+
+func (pms *PMS) handleEventError(s string) {
+	console.Log(s)
+	pms.UI.App.PostFunc(func() {
+		pms.UI.Multibar.SetErrorText(s)
+		pms.UI.App.Update()
+	})
+}
+
+// KeyInput receives key input signals, checks the sequencer for key bindings,
+// and runs commands if key bindings are found.
+func (pms *PMS) KeyInput(ev parser.KeyEvent) {
+	matches := pms.Sequencer.KeyInput(ev)
+	seqString := pms.Sequencer.String()
+	statusText := seqString
+
+	input := pms.Sequencer.Match()
+	if !matches || input != nil {
+		// Reset statusbar if there is either no match or a complete match.
+		statusText = ""
+	}
+
+	pms.UI.App.PostFunc(func() {
+		pms.UI.Multibar.SetSequenceText(statusText)
+		pms.UI.App.Update()
+	})
+
+	if input == nil {
+		return
+	}
+
+	console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, input.Command)
+	go pms.Execute(input.Command)
+}
+
+func (pms *PMS) Execute(cmd string) {
+	//console.Log("Input command received from Multibar: %s", cmd)
+	err := pms.CLI.Execute(cmd)
+	if err != nil {
+		pms.EventError <- fmt.Sprintf("%s", err)
+	}
+}
+
 func (pms *PMS) Main() {
 	for {
 		select {
 		case <-pms.QuitSignal:
-			console.Log("Received quit signal, exiting.")
-			pms.UI.Quit()
+			pms.handleQuitSignal()
 		case <-pms.EventLibrary:
-			console.Log("Song library updated in MPD, assigning to UI")
-			pms.UI.App.PostFunc(func() {
-				pms.UI.Songlist.SetSongList(pms.Library)
-				pms.UI.Songlist.SetColumns(strings.Split(pms.Options.StringValue("columns"), ","))
-				pms.UI.SetDefaultSonglist(pms.Library)
-				pms.UI.App.Update()
-			})
+			pms.handleEventLibrary()
 		case <-pms.EventIndex:
-			console.Log("Search index updated, assigning to UI")
-			pms.UI.App.PostFunc(func() {
-				pms.UI.SetIndex(pms.Index)
-			})
+			pms.handleEventIndex()
 		case <-pms.EventPlayer:
-			pms.UI.App.PostFunc(func() {
-				pms.UI.Playbar.SetPlayerStatus(pms.MpdStatus)
-				pms.UI.Playbar.SetSong(pms.CurrentSong)
-				pms.UI.App.Update()
-			})
+			pms.handleEventPlayer()
 		case s := <-pms.EventMessage:
-			console.Log(s)
-			pms.UI.App.PostFunc(func() {
-				pms.UI.Multibar.SetText(s)
-				pms.UI.App.Update()
-			})
+			pms.handleEventMessage(s)
 		case s := <-pms.EventError:
-			console.Log(s)
-			pms.UI.App.PostFunc(func() {
-				pms.UI.Multibar.SetErrorText(s)
-				pms.UI.App.Update()
-			})
+			pms.handleEventError(s)
 		case ev := <-pms.UI.EventKeyInput:
-			matches := pms.Sequencer.KeyInput(ev)
-			seqString := pms.Sequencer.String()
-			text := seqString
-			in := pms.Sequencer.Match()
-			// Clear sequencer input status display if there is not a partial match.
-			if !matches || in != nil {
-				text = ""
-			}
-			pms.UI.App.PostFunc(func() {
-				pms.UI.Multibar.SetSequenceText(text)
-				pms.UI.App.Update()
-			})
-			if in != nil {
-				console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, in.Command)
-				pms.UI.EventInputCommand <- in.Command
-			}
+			pms.KeyInput(ev)
 		case s := <-pms.UI.EventInputCommand:
-			console.Log("Input command received from Multibar: %s", s)
-			err := pms.CLI.Execute(s)
-			if err != nil {
-				pms.UI.App.PostFunc(func() {
-					pms.UI.Multibar.SetErrorText("ERROR: %s", err)
-				})
-			}
+			pms.Execute(s)
 		}
 	}
 }
