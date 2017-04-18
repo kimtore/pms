@@ -112,24 +112,6 @@ func (m *MultibarWidget) handleTruncate() {
 	PostEventInputChanged(m)
 }
 
-func (m *MultibarWidget) handleRune(r rune) {
-	switch m.inputMode {
-	case MultibarModeCommand:
-		switch r {
-		case '/':
-			m.SetMode(MultibarModeSearch)
-		case ':':
-			m.SetMode(MultibarModeCommandInput)
-		default:
-			console.Log("Unhandled input rune: %s", string(r))
-		}
-	case MultibarModeCommandInput:
-		fallthrough
-	case MultibarModeSearch:
-		m.handleTextRune(r)
-	}
-}
-
 func (m *MultibarWidget) handleTextRune(r rune) {
 	m.setRunes(append(m.runes, r))
 	PostEventInputChanged(m)
@@ -150,7 +132,7 @@ func (m *MultibarWidget) handleTextInputEvent(ev tcell.Event) bool {
 	case *tcell.EventKey:
 		switch ev.Key() {
 		case tcell.KeyRune:
-			m.handleRune(ev.Rune())
+			m.handleTextRune(ev.Rune())
 			return true
 		case tcell.KeyCtrlU:
 			m.handleTruncate()
