@@ -64,6 +64,18 @@ func (w *PlaybarWidget) drawNextChar(x, y int, r rune, style tcell.Style) int {
 }
 
 func (w *PlaybarWidget) Draw() {
+	if w.song == nil || len(w.song.Tags["file"]) == 0 {
+		w.drawNotPlaying()
+	} else {
+		w.drawCurrentSong()
+	}
+}
+
+func (w *PlaybarWidget) drawNotPlaying() {
+	w.drawNext(0, 0, []rune("No current song."), w.Style("noCurrentSong"))
+}
+
+func (w *PlaybarWidget) drawCurrentSong() {
 	x, y := 0, 1
 
 	// 54% ----   00:00 ■ 00:00   Artist - Title
