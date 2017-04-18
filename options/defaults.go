@@ -10,4 +10,10 @@ func (o *Options) AddDefaultOptions() {
 const Defaults string = `
 bind <C-c> quit
 bind <C-l> redraw
+bind <Up> cursor up
+bind <Down> cursor down
+bind <PgUp> cursor pgup
+bind <PgDn> cursor pgdn
+bind <Home> cursor home
+bind <End> cursor end
 `

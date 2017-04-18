@@ -228,32 +228,7 @@ func (w *SongListWidget) Resize() {
 	w.PostEventWidgetResize(w)
 }
 
-func (w *SongListWidget) HandleEvent(ev tcell.Event) bool {
-	switch ev := ev.(type) {
-	case *tcell.EventKey:
-		switch ev.Key() {
-		case tcell.KeyUp:
-			w.MoveCursorUp(1)
-			return true
-		case tcell.KeyDown:
-			w.MoveCursorDown(1)
-			return true
-		case tcell.KeyPgUp:
-			_, y := w.Size()
-			w.MoveCursorUp(y)
-			return true
-		case tcell.KeyPgDn:
-			_, y := w.Size()
-			w.MoveCursorDown(y)
-			return true
-		case tcell.KeyHome:
-			w.SetCursor(0)
-			return true
-		case tcell.KeyEnd:
-			w.SetCursor(w.songlist.Len() - 1)
-			return true
-		}
-	}
+func (m *SongListWidget) HandleEvent(ev tcell.Event) bool {
 	return false
 }
 
@@ -272,6 +247,10 @@ func (w *SongListWidget) Name() string {
 
 func (w *SongListWidget) Columns() []column {
 	return w.columns
+}
+
+func (w *SongListWidget) Len() int {
+	return w.songlist.Len()
 }
 
 // PositionReadout returns a combination of PositionLongReadout() and PositionShortReadout().

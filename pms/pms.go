@@ -449,6 +449,7 @@ func (pms *PMS) ReIndex() {
 func (pms *PMS) setupCLI() {
 	pms.CLI = input.NewCLI()
 	pms.CLI.Register("bind", commands.NewBind(pms.Sequencer))
+	pms.CLI.Register("cursor", commands.NewCursor(pms.UI.Songlist))
 	pms.CLI.Register("q", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("quit", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("redraw", commands.NewRedraw(pms.UI.App))
