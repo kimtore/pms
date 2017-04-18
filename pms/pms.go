@@ -591,6 +591,8 @@ func New() *PMS {
 	pms.Sequencer = keys.NewSequencer()
 
 	pms.setupCLI()
+	pms.readDefaultConfiguration()
+
 	pms.setupUI()
 
 	return pms
