@@ -33,3 +33,24 @@ func TestMapParser(t *testing.T) {
 
 	assert.Equal(t, tcell.KeyF1, tokens.Sequence[8].Key)
 }
+
+func TestKeyEventRune(t *testing.T) {
+	token := parser.KeyEvent{Key: tcell.KeyRune, Rune: 'x'}
+	s := token.String()
+	assert.Equal(t, "x", s)
+}
+
+func TestKeyEventString(t *testing.T) {
+	token := parser.KeyEvent{Key: tcell.KeyF1}
+	s := token.String()
+	assert.Equal(t, "<f1>", s)
+}
+
+func TestKeyEventsString(t *testing.T) {
+	tokens := parser.KeyEvents{
+		parser.KeyEvent{Key: tcell.KeyRune, Rune: 'x'},
+		parser.KeyEvent{Key: tcell.KeyF1},
+	}
+	s := tokens.String()
+	assert.Equal(t, "x<f1>", s)
+}

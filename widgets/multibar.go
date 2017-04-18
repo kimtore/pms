@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/input/parser"
 
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
@@ -14,7 +15,8 @@ type MultibarWidget struct {
 	// text and errorText contains text set by the program.
 	runes     []rune
 	text      string
-	errorText string
+	textStyle tcell.Style
+	events    chan parser.KeyEvent
 
 	inputMode int
 	styles    StyleMap
@@ -31,19 +33,28 @@ const (
 	MultibarModeSearch
 )
 
-func NewMultibarWidget() *MultibarWidget {
+func NewMultibarWidget(events chan parser.KeyEvent) *MultibarWidget {
 	m := &MultibarWidget{}
 	m.runes = make([]rune, 0)
+	m.events = events
 	return m
 }
 
 func (m *MultibarWidget) SetText(format string, a ...interface{}) {
 	m.text = fmt.Sprintf(format, a...)
+	m.textStyle = m.Style("statusbar")
 	m.DrawStatusbar()
 }
 
 func (m *MultibarWidget) SetErrorText(format string, a ...interface{}) {
-	m.errorText = fmt.Sprintf(format, a...)
+	m.text = fmt.Sprintf(format, a...)
+	m.textStyle = m.Style("errorText")
+	m.DrawStatusbar()
+}
+
+func (m *MultibarWidget) SetSequenceText(format string, a ...interface{}) {
+	m.text = fmt.Sprintf(format, a...)
+	m.textStyle = m.Style("sequenceText")
 	m.DrawStatusbar()
 }
 
@@ -84,14 +95,8 @@ func (m *MultibarWidget) DrawStatusbar() {
 		s = "/" + m.RuneString()
 		st = m.Style("searchText")
 	default:
-		if len(m.errorText) > 0 {
-			s = m.errorText
-			st = m.Style("errorText")
-		} else {
-			s = m.text
-			st = m.Style("statusbar")
-		}
-		m.errorText = ""
+		s = m.text
+		st = m.textStyle
 		m.text = ""
 	}
 
@@ -179,7 +184,9 @@ func (m *MultibarWidget) handleCommandEvent(ev tcell.Event) bool {
 				return true
 			}
 		}
-		console.Log("Unhandled input event in command mode: %s %s", ev.Key(), string(ev.Rune()))
+		ke := parser.KeyEvent{Key: ev.Key(), Rune: ev.Rune()}
+		console.Log("Input event in command mode: %s %s", ke.Key, string(ke.Rune))
+		m.events <- ke
 	}
 	return false
 }

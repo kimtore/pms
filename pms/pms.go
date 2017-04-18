@@ -508,6 +508,23 @@ func (pms *PMS) Main() {
 				pms.UI.Multibar.SetErrorText(s)
 				pms.UI.App.Update()
 			})
+		case ev := <-pms.UI.EventKeyInput:
+			matches := pms.Sequencer.KeyInput(ev)
+			seqString := pms.Sequencer.String()
+			text := seqString
+			in := pms.Sequencer.Match()
+			// Clear sequencer input status display if there is not a partial match.
+			if !matches || in != nil {
+				text = ""
+			}
+			pms.UI.App.PostFunc(func() {
+				pms.UI.Multibar.SetSequenceText(text)
+				pms.UI.App.Update()
+			})
+			if in != nil {
+				console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, in.Command)
+				pms.UI.EventInputCommand <- in.Command
+			}
 		case s := <-pms.UI.EventInputCommand:
 			console.Log("Input command received from Multibar: %s", s)
 			err := pms.CLI.Execute(s)

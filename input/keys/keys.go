@@ -32,15 +32,22 @@ func (s *Sequencer) AddBind(seq parser.KeyEvents, command string) error {
 	return nil
 }
 
-func (s *Sequencer) KeyInput(ev parser.KeyEvent) error {
+// KeyInput feeds a keypress to the sequencer. Returns true if there is one match or more, or false if there is no match.
+func (s *Sequencer) KeyInput(ev parser.KeyEvent) bool {
 	s.input.Sequence = append(s.input.Sequence, ev)
 	if len(s.find(s.input.Sequence)) == 0 {
 		s.input = Input{}
-		return fmt.Errorf("Key sequence not bound")
+		return false
 	}
-	return nil
+	return true
 }
 
+// String returns the current input sequence as a string.
+func (s *Sequencer) String() string {
+	return s.input.Sequence.String()
+}
+
+// dupes returns true if binding the given key event sequence will conflict with any other bound sequences.
 func (s *Sequencer) dupes(seq parser.KeyEvents) bool {
 	for i := range s.binds {
 		if s.binds[i].Sequence.StartsWith(seq) || seq.StartsWith(s.binds[i].Sequence) {

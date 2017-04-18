@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/ambientsound/pms/index"
+	"github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/version"
@@ -27,6 +28,7 @@ type UI struct {
 
 	// Input events
 	EventInputCommand chan string
+	EventKeyInput     chan parser.KeyEvent
 
 	// Data resources
 	Index           *index.Index
@@ -42,13 +44,16 @@ type UI struct {
 func NewUI(opts *options.Options) *UI {
 	ui := &UI{}
 
+	ui.EventInputCommand = make(chan string, 16)
+	ui.EventKeyInput = make(chan parser.KeyEvent, 16)
+
 	ui.App = &views.Application{}
 	ui.options = opts
 
 	ui.Topbar = views.NewTextBar()
 	ui.Playbar = NewPlaybarWidget()
 	ui.Columnheaders = NewColumnheadersWidget()
-	ui.Multibar = NewMultibarWidget()
+	ui.Multibar = NewMultibarWidget(ui.EventKeyInput)
 	ui.Songlist = NewSongListWidget()
 
 	ui.Multibar.Watch(ui)
@@ -56,24 +61,25 @@ func NewUI(opts *options.Options) *UI {
 	ui.Playbar.Watch(ui)
 
 	styles := StyleMap{
-		"album":       tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"artist":      tcell.StyleDefault.Foreground(tcell.ColorYellow),
-		"commandText": tcell.StyleDefault,
-		"cursor":      tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack),
-		"date":        tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"elapsed":     tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"errorText":   tcell.StyleDefault.Background(tcell.ColorRed).Foreground(tcell.ColorWhite).Bold(true),
-		"header":      tcell.StyleDefault.Foreground(tcell.ColorGreen).Bold(true),
-		"readout":     tcell.StyleDefault,
-		"searchText":  tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
-		"statusbar":   tcell.StyleDefault,
-		"switches":    tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"time":        tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
-		"title":       tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
-		"topbar":      tcell.StyleDefault.Foreground(tcell.ColorYellow).Bold(true),
-		"track":       tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"volume":      tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"year":        tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"album":        tcell.StyleDefault.Foreground(tcell.ColorTeal),
+		"artist":       tcell.StyleDefault.Foreground(tcell.ColorYellow),
+		"commandText":  tcell.StyleDefault,
+		"cursor":       tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack),
+		"date":         tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"elapsed":      tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"errorText":    tcell.StyleDefault.Background(tcell.ColorRed).Foreground(tcell.ColorWhite).Bold(true),
+		"header":       tcell.StyleDefault.Foreground(tcell.ColorGreen).Bold(true),
+		"readout":      tcell.StyleDefault,
+		"searchText":   tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		"sequenceText": tcell.StyleDefault.Foreground(tcell.ColorTeal),
+		"statusbar":    tcell.StyleDefault,
+		"switches":     tcell.StyleDefault.Foreground(tcell.ColorTeal),
+		"time":         tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
+		"title":        tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		"topbar":       tcell.StyleDefault.Foreground(tcell.ColorYellow).Bold(true),
+		"track":        tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"volume":       tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"year":         tcell.StyleDefault.Foreground(tcell.ColorGreen),
 	}
 
 	// Styles for widgets that don't have their own class yet.
@@ -89,8 +95,6 @@ func NewUI(opts *options.Options) *UI {
 
 	ui.CreateLayout()
 	ui.App.SetRootWidget(ui)
-
-	ui.EventInputCommand = make(chan string, 0)
 
 	return ui
 }

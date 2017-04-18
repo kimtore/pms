@@ -23,6 +23,18 @@ func (a KeyEvent) Equals(b KeyEvent) bool {
 	return true
 }
 
+func (k KeyEvent) String() string {
+	if k.Key == tcell.KeyRune {
+		return string(k.Rune)
+	}
+	for i := range keyNames {
+		if k.Equals(keyNames[i]) {
+			return "<" + i + ">"
+		}
+	}
+	return "<UNKNOWN>"
+}
+
 type KeyEvents []KeyEvent
 
 func (a KeyEvents) Equals(b KeyEvents) bool {
@@ -42,6 +54,14 @@ func (a KeyEvents) StartsWith(b KeyEvents) bool {
 		}
 	}
 	return true
+}
+
+func (k KeyEvents) String() string {
+	s := make([]string, 0)
+	for i := range k {
+		s = append(s, k[i].String())
+	}
+	return strings.Join(s, "")
 }
 
 type KeySequenceToken struct {

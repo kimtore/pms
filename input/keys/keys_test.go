@@ -25,19 +25,19 @@ func TestSequencer(t *testing.T) {
 	tok.Parse([]rune("<C-a><space>"))
 	s.AddBind(tok.Sequence, "baz")
 
-	assert.Nil(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: 'a'}))
-	assert.Nil(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: 'b'}))
-	assert.Nil(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: 'c'}))
+	assert.True(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: 'a'}))
+	assert.True(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: 'b'}))
+	assert.True(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: 'c'}))
 
 	in := s.Match()
 	require.NotNil(t, in)
 	assert.Equal(t, "foobar", in.Command)
 
-	assert.NotNil(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: 'x'}))
-	assert.NotNil(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: 'y'}))
+	assert.False(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: 'x'}))
+	assert.False(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: 'y'}))
 
-	assert.Nil(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyCtrlA}))
-	assert.Nil(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: ' '}))
+	assert.True(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyCtrlA}))
+	assert.True(t, s.KeyInput(parser.KeyEvent{Key: tcell.KeyRune, Rune: ' '}))
 	in = s.Match()
 	require.NotNil(t, in)
 	assert.Equal(t, "baz", in.Command)
