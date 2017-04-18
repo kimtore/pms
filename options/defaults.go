@@ -16,4 +16,7 @@ bind <PgUp> cursor pgup
 bind <PgDn> cursor pgdn
 bind <Home> cursor home
 bind <End> cursor end
+bind : inputmode input
+bind / inputmode search
+bind <F3> inputmode search
 `

@@ -28,8 +28,8 @@ type MultibarWidget struct {
 // Different input modes are handled in different ways. Check
 // MultibarWidget.inputMode against these constants.
 const (
-	MultibarModeCommand = iota
-	MultibarModeCommandInput
+	MultibarModeNormal = iota
+	MultibarModeInput
 	MultibarModeSearch
 )
 
@@ -60,8 +60,8 @@ func (m *MultibarWidget) SetSequenceText(format string, a ...interface{}) {
 
 func (m *MultibarWidget) SetMode(mode int) error {
 	switch mode {
-	case MultibarModeCommand:
-	case MultibarModeCommandInput:
+	case MultibarModeNormal:
+	case MultibarModeInput:
 	case MultibarModeSearch:
 	default:
 		return fmt.Errorf("Mode not supported")
@@ -88,7 +88,7 @@ func (m *MultibarWidget) DrawStatusbar() {
 	var s string
 
 	switch m.inputMode {
-	case MultibarModeCommandInput:
+	case MultibarModeInput:
 		s = ":" + m.RuneString()
 		st = m.Style("commandText")
 	case MultibarModeSearch:
@@ -122,65 +122,51 @@ func (m *MultibarWidget) handleBackspace() {
 		m.setRunes(m.runes[:len(m.runes)-1])
 		PostEventInputChanged(m)
 	} else {
-		m.SetMode(MultibarModeCommand)
+		m.SetMode(MultibarModeNormal)
 	}
 }
 
 // handleTextInputEvent is called when an input event is received during any of the text input modes.
-func (m *MultibarWidget) handleTextInputEvent(ev tcell.Event) bool {
-	switch ev := ev.(type) {
-	case *tcell.EventKey:
-		switch ev.Key() {
-		case tcell.KeyRune:
-			m.handleTextRune(ev.Rune())
-			return true
-		case tcell.KeyCtrlU:
-			m.handleTruncate()
-			return true
-		case tcell.KeyEnter:
-			PostEventInputFinished(m)
-			return true
-		case tcell.KeyBS:
-			fallthrough
-		case tcell.KeyDEL:
-			m.handleBackspace()
-			return true
-		}
-		console.Log("Unhandled text input event in Multibar: %s", ev.Key())
+func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
+	switch ev.Key() {
+	case tcell.KeyRune:
+		m.handleTextRune(ev.Rune())
+		return true
+	case tcell.KeyCtrlU:
+		m.handleTruncate()
+		return true
+	case tcell.KeyEnter:
+		PostEventInputFinished(m)
+		return true
+	case tcell.KeyBS:
+		fallthrough
+	case tcell.KeyDEL:
+		m.handleBackspace()
+		return true
 	}
+	console.Log("Unhandled text input event in Multibar: %s", ev.Key())
 	return false
 }
 
-// handleCommandEvent is called when an input event is received during command mode.
-func (m *MultibarWidget) handleCommandEvent(ev tcell.Event) bool {
-	switch ev := ev.(type) {
-	case *tcell.EventKey:
-		switch ev.Key() {
-		case tcell.KeyRune:
-			switch ev.Rune() {
-			case '/':
-				m.SetMode(MultibarModeSearch)
-				return true
-			case ':':
-				m.SetMode(MultibarModeCommandInput)
-				return true
-			}
-		}
-		ke := parser.KeyEvent{Key: ev.Key(), Rune: ev.Rune()}
-		console.Log("Input event in command mode: %s %s", ke.Key, string(ke.Rune))
-		m.events <- ke
-	}
-	return false
+// handleNormalEvent is called when an input event is received during command mode.
+func (m *MultibarWidget) handleNormalEvent(ev *tcell.EventKey) bool {
+	ke := parser.KeyEvent{Key: ev.Key(), Rune: ev.Rune()}
+	//console.Log("Input event in command mode: %s %s", ke.Key, string(ke.Rune))
+	m.events <- ke
+	return true
 }
 
 func (m *MultibarWidget) HandleEvent(ev tcell.Event) bool {
-	switch m.inputMode {
-	case MultibarModeCommand:
-		return m.handleCommandEvent(ev)
-	case MultibarModeCommandInput:
-		return m.handleTextInputEvent(ev)
-	case MultibarModeSearch:
-		return m.handleTextInputEvent(ev)
+	switch ev := ev.(type) {
+	case *tcell.EventKey:
+		switch m.inputMode {
+		case MultibarModeNormal:
+			return m.handleNormalEvent(ev)
+		case MultibarModeInput:
+			return m.handleTextInputEvent(ev)
+		case MultibarModeSearch:
+			return m.handleTextInputEvent(ev)
+		}
 	}
 	return false
 }

@@ -170,13 +170,13 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 		term := ui.Multibar.RuneString()
 		mode := ui.Multibar.Mode()
 		switch mode {
-		case MultibarModeCommandInput:
+		case MultibarModeInput:
 			ui.EventInputCommand <- term
 		case MultibarModeSearch:
 			ui.runIndexSearch("")
 			ui.runIndexSearch(term)
 		}
-		ui.Multibar.SetMode(MultibarModeCommand)
+		ui.Multibar.SetMode(MultibarModeNormal)
 		return true
 
 	case *EventScroll:
