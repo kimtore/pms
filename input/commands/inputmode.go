@@ -21,7 +21,7 @@ func (cmd *InputMode) Reset() {
 }
 
 func (cmd *InputMode) Execute(t lexer.Token) error {
-	s := string(t.Runes)
+	s := t.String()
 
 	switch t.Class {
 	case lexer.TokenIdentifier:

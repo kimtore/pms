@@ -29,7 +29,7 @@ func (cmd *Cursor) Reset() {
 }
 
 func (cmd *Cursor) Execute(t lexer.Token) error {
-	s := string(t.Runes)
+	s := t.String()
 
 	if cmd.finished && t.Class != lexer.TokenEnd {
 		return fmt.Errorf("Unknown input '%s', expected END", s)

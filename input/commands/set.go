@@ -24,11 +24,13 @@ func (p *Set) Reset() {
 }
 
 func (p *Set) Execute(t lexer.Token) error {
+	s := t.String()
+
 	if t.Class == lexer.TokenEnd {
 		return nil
 	}
 	if t.Class != lexer.TokenIdentifier {
-		return fmt.Errorf("Unknown input '%s', expected identifier", string(t.Runes))
+		return fmt.Errorf("Unknown input '%s', expected identifier", s)
 	}
 	tok := parser.OptionToken{}
 	err := tok.Parse(t.Runes)

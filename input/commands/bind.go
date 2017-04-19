@@ -28,6 +28,7 @@ func (p *Bind) Reset() {
 }
 
 func (p *Bind) Execute(t lexer.Token) error {
+	s := t.String()
 
 	switch t.Class {
 	case lexer.TokenIdentifier:
@@ -38,7 +39,7 @@ func (p *Bind) Execute(t lexer.Token) error {
 				return err
 			}
 		} else {
-			p.sentence = append(p.sentence, string(t.Runes))
+			p.sentence = append(p.sentence, s)
 		}
 
 	case lexer.TokenEnd:
@@ -53,7 +54,7 @@ func (p *Bind) Execute(t lexer.Token) error {
 
 	default:
 		if t.Class != lexer.TokenIdentifier {
-			return fmt.Errorf("Unknown input '%s', expected identifier", string(t.Runes))
+			return fmt.Errorf("Unknown input '%s', expected identifier", s)
 		}
 	}
 

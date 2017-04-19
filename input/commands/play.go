@@ -31,7 +31,7 @@ func (cmd *Play) Reset() {
 func (cmd *Play) Execute(t lexer.Token) error {
 	var err error
 
-	s := string(t.Runes)
+	s := t.String()
 
 	switch t.Class {
 	case lexer.TokenIdentifier:
