@@ -12,14 +12,14 @@ import (
 
 // Play plays songs in the MPD playlist.
 type Play struct {
-	songlistWidget *widgets.SongListWidget
+	songlistWidget *widgets.SonglistWidget
 	mpdClient      func() *mpd.Client
 	song           *song.Song
 	id             int
 	pos            int
 }
 
-func NewPlay(songlistWidget *widgets.SongListWidget, mpdClient func() *mpd.Client) *Play {
+func NewPlay(songlistWidget *widgets.SonglistWidget, mpdClient func() *mpd.Client) *Play {
 	return &Play{songlistWidget: songlistWidget, mpdClient: mpdClient}
 }
 

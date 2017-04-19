@@ -17,17 +17,17 @@ const SEARCH_SCORE_THRESHOLD float64 = 0.5
 
 type Index struct {
 	bleveIndex bleve.Index
-	SongList   *songlist.SongList
+	Songlist   *songlist.Songlist
 }
 
-func New(loc string, s *songlist.SongList) (*Index, error) {
+func New(loc string, s *songlist.Songlist) (*Index, error) {
 	var err error
 	i := &Index{}
 	i.bleveIndex, err = i.open(loc)
 	if err != nil {
 		i.bleveIndex, err = i.create(loc)
 	}
-	i.SongList = s
+	i.Songlist = s
 	return i, err
 }
 
@@ -58,14 +58,14 @@ func (i *Index) Close() error {
 func (i *Index) IndexFull() {
 	var err error
 	b := i.bleveIndex.NewBatch()
-	for pos, s := range i.SongList.Songs {
+	for pos, s := range i.Songlist.Songs {
 		is := index_song.New(s)
 		err = b.Index(strconv.Itoa(pos), is)
 		if err != nil {
 			panic(err)
 		}
 		if pos%INDEX_BATCH_SIZE == 0 {
-			console.Log("Indexing songs %d/%d...", pos, i.SongList.Len())
+			console.Log("Indexing songs %d/%d...", pos, i.Songlist.Len())
 			i.bleveIndex.Batch(b)
 			b.Reset()
 		}
@@ -76,14 +76,14 @@ func (i *Index) IndexFull() {
 }
 
 // Search takes a Bleve QueryString query, matches it against the search index,
-// returns a new SongList with all matching songs.
-func (i *Index) Search(q string) (r *songlist.SongList, err error) {
+// returns a new Songlist with all matching songs.
+func (i *Index) Search(q string) (r *songlist.Songlist, err error) {
 
 	r = songlist.New()
 
 	query := bleve.NewQueryStringQuery(q)
 	search := bleve.NewSearchRequest(query)
-	search.Size = i.SongList.Len()
+	search.Size = i.Songlist.Len()
 	sr, err := i.bleveIndex.Search(search)
 
 	if err != nil {
@@ -98,7 +98,7 @@ func (i *Index) Search(q string) (r *songlist.SongList, err error) {
 		if err != nil {
 			panic(fmt.Sprintf("Error when converting index IDs to integer: %s", err))
 		}
-		song := i.SongList.Songs[id]
+		song := i.Songlist.Songs[id]
 		r.Add(song)
 		//console.Log("%.2f %s\n", hit.Score, song.Tags["file"])
 	}

@@ -34,7 +34,7 @@ type PMS struct {
 	Index            *index.Index
 	CLI              *input.CLI
 	UI               *widgets.UI
-	Library          *songlist.SongList
+	Library          *songlist.Songlist
 	Options          *options.Options
 	Sequencer        *keys.Sequencer
 
@@ -290,11 +290,11 @@ func (pms *PMS) runTicker() {
 	}
 }
 
-// Sync retrieves the MPD library and stores it as a SongList in the
+// Sync retrieves the MPD library and stores it as a Songlist in the
 // PMS.Library variable. Furthermore, the search index is opened, and if it is
 // older than the database version, a reindex task is started.
 //
-// If the SongList or Index is cached at the correct version, that part goes untouched.
+// If the Songlist or Index is cached at the correct version, that part goes untouched.
 func (pms *PMS) Sync() error {
 	if pms.MpdClient == nil {
 		return fmt.Errorf("Cannot call Sync() while not connected to MPD")
@@ -344,7 +344,7 @@ func (pms *PMS) Sync() error {
 	return nil
 }
 
-func (pms *PMS) retrieveLibrary() (*songlist.SongList, error) {
+func (pms *PMS) retrieveLibrary() (*songlist.Songlist, error) {
 	timer := time.Now()
 	list, err := pms.MpdClient.ListAllInfo("/")
 	if err != nil {
@@ -492,7 +492,7 @@ func (pms *PMS) handleQuitSignal() {
 func (pms *PMS) handleEventLibrary() {
 	console.Log("Song library updated in MPD, assigning to UI")
 	pms.UI.App.PostFunc(func() {
-		pms.UI.Songlist.SetSongList(pms.Library)
+		pms.UI.Songlist.SetSonglist(pms.Library)
 		pms.UI.Songlist.SetColumns(strings.Split(pms.Options.StringValue("columns"), ","))
 		pms.UI.SetDefaultSonglist(pms.Library)
 		pms.UI.App.Update()

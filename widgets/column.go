@@ -13,7 +13,7 @@ type column struct {
 	width      int
 }
 
-func (c *column) Set(s *songlist.SongList) {
+func (c *column) Set(s *songlist.Songlist) {
 	for _, song := range s.Songs {
 		l := len(song.Tags[c.Tag])
 		if l > 0 {

@@ -24,7 +24,7 @@ type UI struct {
 	Playbar       *PlaybarWidget
 	Columnheaders *ColumnheadersWidget
 	Multibar      *MultibarWidget
-	Songlist      *SongListWidget
+	Songlist      *SonglistWidget
 
 	// Input events
 	EventInputCommand chan string
@@ -32,7 +32,7 @@ type UI struct {
 
 	// Data resources
 	Index           *index.Index
-	defaultSongList *songlist.SongList
+	defaultSonglist *songlist.Songlist
 	options         *options.Options
 
 	// TCell
@@ -54,7 +54,7 @@ func NewUI(opts *options.Options) *UI {
 	ui.Playbar = NewPlaybarWidget()
 	ui.Columnheaders = NewColumnheadersWidget()
 	ui.Multibar = NewMultibarWidget(ui.EventKeyInput)
-	ui.Songlist = NewSongListWidget()
+	ui.Songlist = NewSonglistWidget()
 
 	ui.Multibar.Watch(ui)
 	ui.Songlist.Watch(ui)
@@ -114,8 +114,8 @@ func (ui *UI) SetIndex(i *index.Index) {
 	ui.Index = i
 }
 
-func (ui *UI) SetDefaultSonglist(s *songlist.SongList) {
-	ui.defaultSongList = s
+func (ui *UI) SetDefaultSonglist(s *songlist.Songlist) {
+	ui.defaultSonglist = s
 }
 
 func (ui *UI) Start() {
@@ -203,7 +203,7 @@ func (ui *UI) runIndexSearch(term string) {
 	}
 	if len(term) == 0 {
 		ui.Songlist.SetCursor(0)
-		ui.Songlist.SetSongList(ui.defaultSongList)
+		ui.Songlist.SetSonglist(ui.defaultSonglist)
 		ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
 		return
 	}
@@ -213,7 +213,7 @@ func (ui *UI) runIndexSearch(term string) {
 	results, err := ui.Index.Search(term)
 	if err == nil {
 		ui.Songlist.SetCursor(0)
-		ui.Songlist.SetSongList(results)
+		ui.Songlist.SetSonglist(results)
 		ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
 		return
 	}

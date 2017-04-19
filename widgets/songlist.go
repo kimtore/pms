@@ -11,8 +11,8 @@ import (
 	"github.com/gdamore/tcell/views"
 )
 
-type SongListWidget struct {
-	songlist *songlist.SongList
+type SonglistWidget struct {
+	songlist *songlist.Songlist
 	view     views.View
 	viewport views.ViewPort
 	cursor   int
@@ -36,28 +36,28 @@ func max(a, b int) int {
 	return b
 }
 
-func NewSongListWidget() (w *SongListWidget) {
-	w = &SongListWidget{}
-	w.songlist = &songlist.SongList{}
+func NewSonglistWidget() (w *SonglistWidget) {
+	w = &SonglistWidget{}
+	w.songlist = &songlist.Songlist{}
 	w.columns = make([]column, 0)
 	return
 }
 
-func (w *SongListWidget) SetSongList(s *songlist.SongList) {
-	//console.Log("setSongList(%p)", s)
+func (w *SonglistWidget) SetSonglist(s *songlist.Songlist) {
+	//console.Log("setSonglist(%p)", s)
 	w.songlist = s
 	w.setViewportSize()
 	PostEventListChanged(w)
 }
 
-func (w *SongListWidget) AutoSetColumnWidths() {
+func (w *SonglistWidget) AutoSetColumnWidths() {
 	for i := range w.columns {
 		w.columns[i].SetWidth(w.columns[i].Mid())
 	}
 	w.expandColumns()
 }
 
-func (w *SongListWidget) SetColumns(cols []string) {
+func (w *SonglistWidget) SetColumns(cols []string) {
 	ch := make(chan int, len(w.columns))
 	w.columns = make([]column, len(cols))
 
@@ -75,7 +75,7 @@ func (w *SongListWidget) SetColumns(cols []string) {
 	PostEventListChanged(w)
 }
 
-func (w *SongListWidget) expandColumns() {
+func (w *SonglistWidget) expandColumns() {
 	if len(w.columns) == 0 {
 		return
 	}
@@ -106,7 +106,7 @@ func (w *SongListWidget) expandColumns() {
 	}
 }
 
-func (w *SongListWidget) Draw() {
+func (w *SonglistWidget) Draw() {
 	if w.view == nil || w.songlist == nil {
 		return
 	}
@@ -162,16 +162,16 @@ func (w *SongListWidget) Draw() {
 	PostEventScroll(w)
 }
 
-func (w *SongListWidget) getVisibleBoundaries() (ymin, ymax int) {
+func (w *SonglistWidget) getVisibleBoundaries() (ymin, ymax int) {
 	_, ymin, _, ymax = w.viewport.GetVisible()
 	return
 }
 
-func (w *SongListWidget) getBoundaries() (ymin, ymax int) {
+func (w *SonglistWidget) getBoundaries() (ymin, ymax int) {
 	return 0, w.songlist.Len() - 1
 }
 
-func (w *SongListWidget) setViewportSize() {
+func (w *SonglistWidget) setViewportSize() {
 	x, y := w.Size()
 	w.viewport.Resize(0, 0, -1, -1)
 	w.viewport.SetContentSize(x, w.songlist.Len(), true)
@@ -181,19 +181,19 @@ func (w *SongListWidget) setViewportSize() {
 	w.PostEventWidgetContent(w)
 }
 
-func (w *SongListWidget) MoveCursorUp(i int) {
+func (w *SonglistWidget) MoveCursorUp(i int) {
 	w.MoveCursor(-i)
 }
 
-func (w *SongListWidget) MoveCursorDown(i int) {
+func (w *SonglistWidget) MoveCursorDown(i int) {
 	w.MoveCursor(i)
 }
 
-func (w *SongListWidget) MoveCursor(i int) {
+func (w *SonglistWidget) MoveCursor(i int) {
 	w.SetCursor(w.cursor + i)
 }
 
-func (w *SongListWidget) SetCursor(i int) {
+func (w *SonglistWidget) SetCursor(i int) {
 	w.cursor = i
 	w.validateCursorList()
 	w.viewport.MakeVisible(0, w.cursor)
@@ -201,11 +201,11 @@ func (w *SongListWidget) SetCursor(i int) {
 	w.PostEventWidgetContent(w)
 }
 
-func (w *SongListWidget) Cursor() int {
+func (w *SonglistWidget) Cursor() int {
 	return w.cursor
 }
 
-func (w *SongListWidget) CursorSong() *song.Song {
+func (w *SonglistWidget) CursorSong() *song.Song {
 	if w.songlist.Len() == 0 {
 		return nil
 	}
@@ -213,19 +213,19 @@ func (w *SongListWidget) CursorSong() *song.Song {
 }
 
 // validateCursorVisible makes sure the cursor stays within the visible area of the viewport.
-func (w *SongListWidget) validateCursorVisible() {
+func (w *SonglistWidget) validateCursorVisible() {
 	ymin, ymax := w.getVisibleBoundaries()
 	w.validateCursor(ymin, ymax)
 }
 
 // validateCursorList makes sure the cursor stays within songlist boundaries.
-func (w *SongListWidget) validateCursorList() {
+func (w *SonglistWidget) validateCursorList() {
 	ymin, ymax := w.getBoundaries()
 	w.validateCursor(ymin, ymax)
 }
 
 // validateCursor adjusts the cursor based on minimum and maximum boundaries.
-func (w *SongListWidget) validateCursor(ymin, ymax int) {
+func (w *SonglistWidget) validateCursor(ymin, ymax int) {
 	if w.cursor < ymin {
 		w.cursor = ymin
 	}
@@ -234,50 +234,50 @@ func (w *SongListWidget) validateCursor(ymin, ymax int) {
 	}
 }
 
-func (w *SongListWidget) Resize() {
+func (w *SonglistWidget) Resize() {
 	w.setViewportSize()
 	w.PostEventWidgetResize(w)
 }
 
-func (m *SongListWidget) HandleEvent(ev tcell.Event) bool {
+func (m *SonglistWidget) HandleEvent(ev tcell.Event) bool {
 	return false
 }
 
-func (w *SongListWidget) SetView(v views.View) {
+func (w *SonglistWidget) SetView(v views.View) {
 	w.view = v
 	w.viewport.SetView(w.view)
 }
 
-func (w *SongListWidget) Size() (int, int) {
+func (w *SonglistWidget) Size() (int, int) {
 	return w.view.Size()
 }
 
-func (w *SongListWidget) Name() string {
+func (w *SonglistWidget) Name() string {
 	return w.songlist.Name
 }
 
-func (w *SongListWidget) Columns() []column {
+func (w *SonglistWidget) Columns() []column {
 	return w.columns
 }
 
-func (w *SongListWidget) Len() int {
+func (w *SonglistWidget) Len() int {
 	return w.songlist.Len()
 }
 
 // PositionReadout returns a combination of PositionLongReadout() and PositionShortReadout().
-func (w *SongListWidget) PositionReadout() string {
+func (w *SonglistWidget) PositionReadout() string {
 	return fmt.Sprintf("%s    %s", w.PositionLongReadout(), w.PositionShortReadout())
 }
 
 // PositionLongReadout returns a formatted string containing the visible song
 // range as well as the total number of songs.
-func (w *SongListWidget) PositionLongReadout() string {
+func (w *SonglistWidget) PositionLongReadout() string {
 	ymin, ymax := w.getVisibleBoundaries()
 	return fmt.Sprintf("%d,%d-%d/%d", w.Cursor()+1, ymin+1, ymax+1, w.songlist.Len())
 }
 
 // PositionShortReadout returns a percentage indicator on how far the songlist is scrolled.
-func (w *SongListWidget) PositionShortReadout() string {
+func (w *SonglistWidget) PositionShortReadout() string {
 	ymin, ymax := w.getVisibleBoundaries()
 	if ymin == 0 && ymax+1 == w.songlist.Len() {
 		return `All`

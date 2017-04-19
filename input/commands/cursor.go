@@ -12,13 +12,13 @@ import (
 // parameters such as 'up' and 'down', and it also accepts relative positions
 // if a number is given.
 type Cursor struct {
-	songlistWidget *widgets.SongListWidget
+	songlistWidget *widgets.SonglistWidget
 	relative       int
 	absolute       int
 	finished       bool
 }
 
-func NewCursor(songlistWidget *widgets.SongListWidget) *Cursor {
+func NewCursor(songlistWidget *widgets.SonglistWidget) *Cursor {
 	return &Cursor{songlistWidget: songlistWidget}
 }
 

@@ -11,42 +11,42 @@ import (
 	"github.com/ambientsound/pms/song"
 )
 
-type SongList struct {
+type Songlist struct {
 	Name                string
 	Songs               []*song.Song
 	currentSortCriteria string
 }
 
-func New() (s *SongList) {
-	s = &SongList{}
+func New() (s *Songlist) {
+	s = &Songlist{}
 	s.Songs = make([]*song.Song, 0)
 	return
 }
 
-func (s *SongList) Add(song *song.Song) {
+func (s *Songlist) Add(song *song.Song) {
 	s.Songs = append(s.Songs, song)
 }
 
-func (s *SongList) Sort() {
+func (s *Songlist) Sort() {
 	sort.Sort(s)
 	sort.Stable(s)
 }
 
-func (s *SongList) Len() int {
+func (s *Songlist) Len() int {
 	return len(s.Songs)
 }
 
-func (s *SongList) Less(a, b int) bool {
+func (s *Songlist) Less(a, b int) bool {
 	return s.Songs[a].TagString(s.currentSortCriteria) < s.Songs[b].TagString(s.currentSortCriteria)
 }
 
-func (s *SongList) Swap(a, b int) {
+func (s *Songlist) Swap(a, b int) {
 	c := s.Songs[a]
 	s.Songs[a] = s.Songs[b]
 	s.Songs[b] = c
 }
 
-func NewFromFile(file io.Reader) (songs *SongList) {
+func NewFromFile(file io.Reader) (songs *Songlist) {
 	scanner := bufio.NewScanner(file)
 	songs = New()
 	var s *song.Song
@@ -65,7 +65,7 @@ func NewFromFile(file io.Reader) (songs *SongList) {
 	return
 }
 
-func NewFromAttrlist(attrlist []mpd.Attrs) *SongList {
+func NewFromAttrlist(attrlist []mpd.Attrs) *Songlist {
 	songs := New()
 	for _, attrs := range attrlist {
 		s := song.New()
