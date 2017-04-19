@@ -6,7 +6,7 @@ import (
 	"github.com/ambientsound/pms/song"
 )
 
-// The Song struct is a simplified representationAll fields will be indexed.
+// Song is a Bleve document representing a song.Song object.
 type Song struct {
 	Album       string
 	AlbumArtist string
@@ -16,7 +16,7 @@ type Song struct {
 	Title       string
 }
 
-// NewIndexedSongDocument generates a indexable Song document based on the Song type.
+// New generates a indexable Song document, containing some fields from the song.Song type.
 func New(s *song.Song) (is Song) {
 	is.Album = s.TagString("album")
 	is.AlbumArtist = s.TagString("albumartist")

@@ -9,6 +9,7 @@ import (
 	"github.com/fhs/gompd/mpd"
 )
 
+// Song represents a combined view of a song from both MPD and PMS' perspectives.
 type Song struct {
 	ID       int
 	Position int
