@@ -55,14 +55,18 @@ func (i *Index) Close() error {
 	return i.bleveIndex.Close()
 }
 
-func (i *Index) IndexFull() {
+// Index the entire Songlist.
+func (i *Index) IndexFull() error {
 	var err error
+
+	// All operations are batched, currently INDEX_BATCH_SIZE are committed each iteration.
 	b := i.bleveIndex.NewBatch()
+
 	for pos, s := range i.Songlist.Songs {
 		is := index_song.New(s)
 		err = b.Index(strconv.Itoa(pos), is)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		if pos%INDEX_BATCH_SIZE == 0 {
 			console.Log("Indexing songs %d/%d...", pos, i.Songlist.Len())
@@ -72,7 +76,10 @@ func (i *Index) IndexFull() {
 	}
 	console.Log("Indexing last batch...")
 	i.bleveIndex.Batch(b)
+
 	console.Log("Finished indexing.")
+
+	return nil
 }
 
 // Search takes a Bleve QueryString query, matches it against the search index,

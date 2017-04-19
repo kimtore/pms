@@ -330,7 +330,10 @@ func (pms *PMS) Sync() error {
 
 	if libraryVersion != pms.indexVersion {
 		console.Log("Sync(): index version differs from library version, reindexing...")
-		pms.ReIndex()
+		err = pms.ReIndex()
+		if err != nil {
+			return fmt.Errorf("Failed to reindex: %s", err)
+		}
 
 		err = pms.writeIndexStateFile(pms.indexVersion)
 		if err != nil {
@@ -448,7 +451,9 @@ func (pms *PMS) UpdatePlayerStatus() error {
 
 func (pms *PMS) ReIndex() {
 	timer := time.Now()
-	pms.Index.IndexFull()
+	if err := pms.Index.IndexFull(); err != nil {
+		return err
+	}
 	pms.indexVersion = pms.libraryVersion
 	pms.Message("Song library index complete, took %s", time.Since(timer).String())
 }
