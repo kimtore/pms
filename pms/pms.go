@@ -498,9 +498,8 @@ func (pms *PMS) handleQuitSignal() {
 func (pms *PMS) handleEventLibrary() {
 	console.Log("Song library updated in MPD, assigning to UI")
 	pms.UI.App.PostFunc(func() {
-		pms.UI.Songlist.SetSonglist(pms.Library)
-		pms.UI.Songlist.SetColumns(strings.Split(pms.Options.StringValue("columns"), ","))
-		pms.UI.SetDefaultSonglist(pms.Library)
+		pms.UI.AddSonglist(pms.Library)
+		pms.UI.SetSonglist(pms.Library)
 		pms.UI.App.Update()
 	})
 }

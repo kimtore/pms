@@ -107,7 +107,7 @@ func (w *SonglistWidget) expandColumns() {
 }
 
 func (w *SonglistWidget) Draw() {
-	if w.view == nil || w.songlist == nil {
+	if w.view == nil || w.songlist == nil || w.songlist.Songs == nil {
 		return
 	}
 

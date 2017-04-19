@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/ambientsound/pms/index"
@@ -31,9 +32,11 @@ type UI struct {
 	EventKeyInput     chan parser.KeyEvent
 
 	// Data resources
-	Index           *index.Index
-	defaultSonglist *songlist.Songlist
-	options         *options.Options
+	Index         *index.Index
+	options       *options.Options
+	songlists     []*songlist.Songlist
+	songlistIndex int
+	searchResult  *songlist.Songlist
 
 	// TCell
 	view views.View
@@ -46,6 +49,7 @@ func NewUI(opts *options.Options) *UI {
 
 	ui.EventInputCommand = make(chan string, 16)
 	ui.EventKeyInput = make(chan parser.KeyEvent, 16)
+	ui.songlists = make([]*songlist.Songlist, 0)
 
 	ui.App = &views.Application{}
 	ui.options = opts
@@ -114,8 +118,30 @@ func (ui *UI) SetIndex(i *index.Index) {
 	ui.Index = i
 }
 
-func (ui *UI) SetDefaultSonglist(s *songlist.Songlist) {
-	ui.defaultSonglist = s
+func (ui *UI) AddSonglist(s *songlist.Songlist) {
+	ui.songlists = append(ui.songlists, s)
+}
+
+func (ui *UI) Title() string {
+	var index string
+	if ui.songlistIndex >= 0 {
+		index = fmt.Sprintf("%d", ui.songlistIndex+1)
+	} else {
+		index = "..."
+	}
+	return fmt.Sprintf("[%s/%d] %s", index, len(ui.songlists), ui.Songlist.Name())
+}
+
+func (ui *UI) SetSonglist(s *songlist.Songlist) {
+	ui.songlistIndex = -1
+	for i, stored := range ui.songlists {
+		if stored == s {
+			ui.songlistIndex = i
+			break
+		}
+	}
+	ui.Songlist.SetSonglist(s)
+	ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
 }
 
 func (ui *UI) Start() {
@@ -153,9 +179,9 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 	switch ev.(type) {
 
 	case *EventListChanged:
-		ui.App.Update()
-		ui.Topbar.SetCenter(" "+ui.Songlist.Name()+" ", ui.Style("title"))
+		ui.Topbar.SetCenter(ui.Title(), ui.Style("title"))
 		ui.Columnheaders.SetColumns(ui.Songlist.Columns())
+		ui.App.Update()
 		return true
 
 	case *EventInputChanged:
@@ -174,8 +200,8 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 		case MultibarModeInput:
 			ui.EventInputCommand <- term
 		case MultibarModeSearch:
-			ui.runIndexSearch("")
-			ui.runIndexSearch(term)
+			ui.AddSonglist(ui.searchResult)
+			ui.SetSonglist(ui.searchResult)
 		}
 		ui.Multibar.SetMode(MultibarModeNormal)
 		return true
@@ -198,23 +224,20 @@ func (ui *UI) refreshPositionReadout() {
 }
 
 func (ui *UI) runIndexSearch(term string) {
+	var err error
+
 	if ui.Index == nil {
-		return
-	}
-	if len(term) == 0 {
-		ui.Songlist.SetCursor(0)
-		ui.Songlist.SetSonglist(ui.defaultSonglist)
-		ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
 		return
 	}
 	if len(term) == 1 {
 		return
 	}
-	results, err := ui.Index.Search(term)
+
+	ui.searchResult, err = ui.Index.Search(term)
+
 	if err == nil {
 		ui.Songlist.SetCursor(0)
-		ui.Songlist.SetSonglist(results)
-		ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
+		ui.SetSonglist(ui.searchResult)
 		return
 	}
 }
