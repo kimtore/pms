@@ -449,13 +449,14 @@ func (pms *PMS) UpdatePlayerStatus() error {
 	return nil
 }
 
-func (pms *PMS) ReIndex() {
+func (pms *PMS) ReIndex() error {
 	timer := time.Now()
 	if err := pms.Index.IndexFull(); err != nil {
 		return err
 	}
 	pms.indexVersion = pms.libraryVersion
 	pms.Message("Song library index complete, took %s", time.Since(timer).String())
+	return nil
 }
 
 // SetupCLI instantiates the different commands PMS understands, such as set; bind; etc.
