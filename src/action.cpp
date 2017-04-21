@@ -1646,7 +1646,7 @@ int		multiplay(long mode, int playmode)
 			{
 				//last track of the current playlist is part of this album
 				//get last track of the album
-				item = list->match(pattern, 0, list->size() - 1, mode | MATCH_EXACT | MATCH_REVERSE);
+				item = list->match(pattern, list->size() - 1, 0, mode | MATCH_EXACT | MATCH_REVERSE);
 				song = LISTITEMSONG(item)->song;
 				if (playlist->match(song->file, playlist->size() - 1, playlist->size() - 1, MATCH_FILE | MATCH_EXACT))
 				{
