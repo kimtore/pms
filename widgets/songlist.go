@@ -12,7 +12,7 @@ import (
 )
 
 type SonglistWidget struct {
-	songlist    *songlist.Songlist
+	songlist    songlist.Songlist
 	currentSong song.Song
 	view        views.View
 	viewport    views.ViewPort
@@ -39,12 +39,12 @@ func max(a, b int) int {
 
 func NewSonglistWidget() (w *SonglistWidget) {
 	w = &SonglistWidget{}
-	w.songlist = &songlist.Songlist{}
+	w.songlist = &songlist.BaseSonglist{}
 	w.columns = make([]column, 0)
 	return
 }
 
-func (w *SonglistWidget) SetSonglist(s *songlist.Songlist) {
+func (w *SonglistWidget) SetSonglist(s songlist.Songlist) {
 	//console.Log("setSonglist(%p)", s)
 	w.songlist = s
 	w.setViewportSize()
@@ -119,7 +119,7 @@ func (w *SonglistWidget) Draw() {
 
 	for y := ymin; y <= ymax; y++ {
 
-		s := w.songlist.Songs[y]
+		s := w.songlist.Song(y)
 
 		// Style based on song's role
 		cursor = y == w.cursor
@@ -134,9 +134,7 @@ func (w *SonglistWidget) Draw() {
 			style = w.Style("default")
 			lineStyled = false
 		}
-		if cursor {
-		} else {
-		}
+
 		x := 0
 		rightPadding := 1
 
@@ -217,10 +215,7 @@ func (w *SonglistWidget) Cursor() int {
 }
 
 func (w *SonglistWidget) CursorSong() *song.Song {
-	if w.songlist.Len() == 0 {
-		return nil
-	}
-	return w.songlist.Songs[w.cursor]
+	return w.songlist.Song(w.cursor)
 }
 
 func (w *SonglistWidget) SetCurrentSong(s *song.Song) {
@@ -232,10 +227,7 @@ func (w *SonglistWidget) SetCurrentSong(s *song.Song) {
 }
 
 func (w *SonglistWidget) IndexAtCurrentSong(i int) bool {
-	if i < 0 || i >= w.songlist.Len() {
-		return false
-	}
-	if s := w.songlist.Songs[i]; s != nil {
+	if s := w.songlist.Song(i); s != nil {
 		return s.TagString("file") == w.currentSong.TagString("file")
 	}
 	return false
@@ -282,7 +274,7 @@ func (w *SonglistWidget) Size() (int, int) {
 }
 
 func (w *SonglistWidget) Name() string {
-	return w.songlist.Name
+	return w.songlist.Name()
 }
 
 func (w *SonglistWidget) Columns() []column {

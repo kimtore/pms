@@ -34,9 +34,9 @@ type UI struct {
 	// Data resources
 	Index         *index.Index
 	options       *options.Options
-	songlists     []*songlist.Songlist
+	songlists     []songlist.Songlist
 	songlistIndex int
-	searchResult  *songlist.Songlist
+	searchResult  songlist.Songlist
 
 	// TCell
 	view views.View
@@ -49,7 +49,7 @@ func NewUI(opts *options.Options) *UI {
 
 	ui.EventInputCommand = make(chan string, 16)
 	ui.EventKeyInput = make(chan parser.KeyEvent, 16)
-	ui.songlists = make([]*songlist.Songlist, 0)
+	ui.songlists = make([]songlist.Songlist, 0)
 
 	ui.App = &views.Application{}
 	ui.options = opts
@@ -119,7 +119,7 @@ func (ui *UI) SetIndex(i *index.Index) {
 	ui.Index = i
 }
 
-func (ui *UI) AddSonglist(s *songlist.Songlist) {
+func (ui *UI) AddSonglist(s songlist.Songlist) {
 	ui.songlists = append(ui.songlists, s)
 }
 
@@ -133,7 +133,7 @@ func (ui *UI) Title() string {
 	return fmt.Sprintf("[%s/%d] %s", index, len(ui.songlists), ui.Songlist.Name())
 }
 
-func (ui *UI) SetSonglist(s *songlist.Songlist) {
+func (ui *UI) SetSonglist(s songlist.Songlist) {
 	ui.songlistIndex = -1
 	for i, stored := range ui.songlists {
 		if stored == s {

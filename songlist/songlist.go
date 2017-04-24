@@ -1,76 +1,81 @@
 package songlist
 
 import (
-	"bufio"
-	"io"
 	"sort"
-	"strings"
 
 	"github.com/fhs/gompd/mpd"
 
 	"github.com/ambientsound/pms/song"
 )
 
-type Songlist struct {
-	Name                string
-	Songs               []*song.Song
+type Songlist interface {
+	Add(*song.Song) error
+	Len() int
+	Less(int, int) bool
+	Name() string
+	SetName(string)
+	Song(int) *song.Song
+	Songs() []*song.Song
+	Swap(int, int)
+}
+
+type BaseSonglist struct {
+	name                string
+	songs               []*song.Song
 	currentSortCriteria string
 }
 
-func New() (s *Songlist) {
-	s = &Songlist{}
-	s.Songs = make([]*song.Song, 0)
+func New() (s *BaseSonglist) {
+	s = &BaseSonglist{}
+	s.songs = make([]*song.Song, 0)
 	return
 }
 
-func (s *Songlist) Add(song *song.Song) {
-	s.Songs = append(s.Songs, song)
+func (s *BaseSonglist) Add(song *song.Song) error {
+	s.songs = append(s.songs, song)
+	return nil
 }
 
-func (s *Songlist) Sort() {
+func (s *BaseSonglist) SetName(name string) {
+	s.name = name
+}
+
+func (s *BaseSonglist) Name() string {
+	return s.name
+}
+
+func (s *BaseSonglist) Song(i int) *song.Song {
+	if i < 0 || i >= s.Len() {
+		return nil
+	}
+	return s.songs[i]
+}
+
+func (s *BaseSonglist) Songs() []*song.Song {
+	return s.songs
+}
+
+func (s *BaseSonglist) Sort() {
 	sort.Sort(s)
 	sort.Stable(s)
 }
 
-func (s *Songlist) Len() int {
-	return len(s.Songs)
+func (s *BaseSonglist) Len() int {
+	return len(s.songs)
 }
 
-func (s *Songlist) Less(a, b int) bool {
-	return s.Songs[a].TagString(s.currentSortCriteria) < s.Songs[b].TagString(s.currentSortCriteria)
+func (s *BaseSonglist) Less(a, b int) bool {
+	return s.songs[a].TagString(s.currentSortCriteria) < s.songs[b].TagString(s.currentSortCriteria)
 }
 
-func (s *Songlist) Swap(a, b int) {
-	c := s.Songs[a]
-	s.Songs[a] = s.Songs[b]
-	s.Songs[b] = c
+func (s *BaseSonglist) Swap(a, b int) {
+	s.songs[a], s.songs[b] = s.songs[b], s.songs[a]
 }
 
-func NewFromFile(file io.Reader) (songs *Songlist) {
-	scanner := bufio.NewScanner(file)
-	songs = New()
-	var s *song.Song
-	for scanner.Scan() {
-		tokens := strings.SplitN(scanner.Text(), ": ", 2)
-		if tokens[0] == "file" {
-			if s != nil {
-				songs.Add(s)
-			}
-			s = song.New()
-		}
-		if s != nil {
-			s.Tags[tokens[0]] = []rune(tokens[1])
-		}
-	}
-	return
-}
-
-func NewFromAttrlist(attrlist []mpd.Attrs) *Songlist {
-	songs := New()
+func (songs *BaseSonglist) AddFromAttrlist(attrlist []mpd.Attrs) {
 	for _, attrs := range attrlist {
 		s := song.New()
 		s.SetTags(attrs)
 		songs.Add(s)
 	}
-	return songs
 }

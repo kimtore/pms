@@ -35,7 +35,8 @@ type PMS struct {
 	Index            *index.Index
 	CLI              *input.CLI
 	UI               *widgets.UI
-	Library          *songlist.Songlist
+	Queue            *songlist.Queue
+	Library          *songlist.Library
 	Options          *options.Options
 	Sequencer        *keys.Sequencer
 	mutex            sync.Mutex
@@ -46,12 +47,14 @@ type PMS struct {
 	port     string
 	password string
 
+	queueVersion   int
 	libraryVersion int
 	indexVersion   int
 
 	EventError   chan string
 	EventIndex   chan int
 	EventLibrary chan int
+	EventQueue   chan int
 	EventMessage chan string
 	EventPlayer  chan int
 	QuitSignal   chan int
@@ -163,17 +166,24 @@ func (pms *PMS) Connect() error {
 	go pms.watchMpdIdleEvents()
 	go pms.runTicker()
 
-	err = pms.UpdatePlayerStatus()
-	if err != nil {
-		goto errors
-	}
+	/*
+		err = pms.UpdatePlayerStatus()
+		if err != nil {
+			goto errors
+		}
+	*/
 
 	err = pms.UpdateCurrentSong()
 	if err != nil {
 		goto errors
 	}
 
-	err = pms.Sync()
+	err = pms.SyncQueue()
+	if err != nil {
+		goto errors
+	}
+
+	err = pms.SyncLibrary()
 	if err != nil {
 		goto errors
 	}
@@ -247,7 +257,9 @@ func (pms *PMS) watchMpdIdleEvents() {
 
 		switch subsystem {
 		case "database":
-			err = pms.Sync()
+			err = pms.SyncLibrary()
+		case "playlist":
+			err = pms.SyncQueue()
 		case "player":
 			err = pms.UpdatePlayerStatus()
 			if err != nil {
@@ -297,10 +309,11 @@ func (pms *PMS) runTicker() {
 // older than the database version, a reindex task is started.
 //
 // If the Songlist or Index is cached at the correct version, that part goes untouched.
-func (pms *PMS) Sync() error {
+func (pms *PMS) SyncLibrary() error {
 	if pms.MpdClient == nil {
 		return fmt.Errorf("Cannot call Sync() while not connected to MPD")
 	}
+
 	stats, err := pms.MpdClient.Stats()
 	if err != nil {
 		return fmt.Errorf("Error while retrieving library stats from MPD: %s", err)
@@ -318,7 +331,7 @@ func (pms *PMS) Sync() error {
 		}
 		pms.Library = library
 		pms.libraryVersion = libraryVersion
-		pms.Message("Library metadata at at version %d.", pms.libraryVersion)
+		pms.Message("Library metadata at version %d.", pms.libraryVersion)
 		pms.EventLibrary <- 1
 	}
 
@@ -349,7 +362,26 @@ func (pms *PMS) Sync() error {
 	return nil
 }
 
-func (pms *PMS) retrieveLibrary() (*songlist.Songlist, error) {
+func (pms *PMS) SyncQueue() error {
+	if err := pms.UpdatePlayerStatus(); err != nil {
+		return err
+	}
+	if pms.queueVersion == pms.MpdStatus.Playlist {
+		return nil
+	}
+	pms.Message("Retrieving queue metadata, %d songs...", pms.MpdStatus.PlaylistLength)
+	queue, err := pms.retrieveQueue()
+	if err != nil {
+		return fmt.Errorf("Error while retrieving queue from MPD: %s", err)
+	}
+	pms.Queue = queue
+	pms.queueVersion = pms.MpdStatus.Playlist
+	pms.Message("Queue at version %d.", pms.queueVersion)
+	pms.EventQueue <- 1
+	return nil
+}
+
+func (pms *PMS) retrieveLibrary() (*songlist.Library, error) {
 	timer := time.Now()
 	list, err := pms.MpdClient.ListAllInfo("/")
 	if err != nil {
@@ -357,8 +389,23 @@ func (pms *PMS) retrieveLibrary() (*songlist.Songlist, error) {
 	}
 	console.Log("ListAllInfo in %s", time.Since(timer).String())
 
-	s := songlist.NewFromAttrlist(list)
-	s.Name = "Library"
+	s := songlist.NewLibrary()
+	s.AddFromAttrlist(list)
+	s.SetName("Library")
+	return s, nil
+}
+
+func (pms *PMS) retrieveQueue() (*songlist.Queue, error) {
+	timer := time.Now()
+	list, err := pms.MpdClient.PlaylistInfo(-1, -1)
+	if err != nil {
+		return nil, err
+	}
+	console.Log("PlaylistInfo in %s", time.Since(timer).String())
+
+	s := songlist.NewQueue()
+	s.AddFromAttrlist(list)
+	s.SetName("Queue")
 	return s, nil
 }
 
@@ -441,13 +488,13 @@ func (pms *PMS) UpdatePlayerStatus() error {
 
 	pms.MpdStatus.Bitrate, _ = strconv.Atoi(attrs["bitrate"])
 	pms.MpdStatus.Playlist, _ = strconv.Atoi(attrs["playlist"])
-	pms.MpdStatus.PlaylistLength, _ = strconv.Atoi(attrs["playlistLength"])
+	pms.MpdStatus.PlaylistLength, _ = strconv.Atoi(attrs["playlistlength"])
 	pms.MpdStatus.Song, _ = strconv.Atoi(attrs["song"])
-	pms.MpdStatus.SongID, _ = strconv.Atoi(attrs["songID"])
+	pms.MpdStatus.SongID, _ = strconv.Atoi(attrs["songid"])
 	pms.MpdStatus.Volume, _ = strconv.Atoi(attrs["volume"])
 
 	pms.MpdStatus.Elapsed, _ = strconv.ParseFloat(attrs["elapsed"], 64)
-	pms.MpdStatus.MixRampDB, _ = strconv.ParseFloat(attrs["mixRampDB"], 64)
+	pms.MpdStatus.MixRampDB, _ = strconv.ParseFloat(attrs["mixrampdb"], 64)
 
 	pms.MpdStatus.Consume, _ = strconv.ParseBool(attrs["consume"])
 	pms.MpdStatus.Random, _ = strconv.ParseBool(attrs["random"])
@@ -510,6 +557,15 @@ func (pms *PMS) handleEventLibrary() {
 	pms.UI.App.PostFunc(func() {
 		pms.UI.AddSonglist(pms.Library)
 		pms.UI.SetSonglist(pms.Library)
+		pms.UI.App.Update()
+	})
+}
+
+func (pms *PMS) handleEventQueue() {
+	console.Log("FIXME: queue updated in MPD")
+	pms.UI.App.PostFunc(func() {
+		pms.UI.AddSonglist(pms.Queue)
+		pms.UI.SetSonglist(pms.Queue)
 		pms.UI.App.Update()
 	})
 }
@@ -588,6 +644,8 @@ func (pms *PMS) Main() {
 			return
 		case <-pms.EventLibrary:
 			pms.handleEventLibrary()
+		case <-pms.EventQueue:
+			pms.handleEventQueue()
 		case <-pms.EventIndex:
 			pms.handleEventIndex()
 		case <-pms.EventPlayer:
@@ -610,6 +668,7 @@ func New() *PMS {
 	pms.EventError = make(chan string, 16)
 	pms.EventIndex = make(chan int)
 	pms.EventLibrary = make(chan int)
+	pms.EventQueue = make(chan int)
 	pms.EventMessage = make(chan string, 16)
 	pms.EventPlayer = make(chan int)
 	pms.QuitSignal = make(chan int, 1)
