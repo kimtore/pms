@@ -562,9 +562,9 @@ func (pms *PMS) handleEventLibrary() {
 }
 
 func (pms *PMS) handleEventQueue() {
-	console.Log("FIXME: queue updated in MPD")
+	console.Log("Queue updated in MPD, assigning to UI")
 	pms.UI.App.PostFunc(func() {
-		pms.UI.AddSonglist(pms.Queue)
+		pms.UI.SetQueue(pms.Queue)
 		pms.UI.SetSonglist(pms.Queue)
 		pms.UI.App.Update()
 	})

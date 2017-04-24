@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/options"
@@ -121,6 +122,18 @@ func (ui *UI) SetIndex(i *index.Index) {
 
 func (ui *UI) AddSonglist(s songlist.Songlist) {
 	ui.songlists = append(ui.songlists, s)
+}
+
+func (ui *UI) SetQueue(s *songlist.Queue) {
+	for i := range ui.songlists {
+		if _, ok := ui.songlists[i].(*songlist.Queue); ok {
+			console.Log("Songlist UI: replacing queue at address %p with new queue %p", ui.songlists[i], s)
+			ui.songlists[i] = s
+			return
+		}
+	}
+	console.Log("Songlist UI: adding queue at address %p since no queue exists", s)
+	ui.AddSonglist(s)
 }
 
 func (ui *UI) Title() string {
