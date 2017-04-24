@@ -18,9 +18,9 @@ func New() *PMS {
 	pms.EventError = make(chan string, 16)
 	pms.EventIndex = make(chan int)
 	pms.EventLibrary = make(chan int)
-	pms.EventQueue = make(chan int)
 	pms.EventMessage = make(chan string, 16)
 	pms.EventPlayer = make(chan int)
+	pms.EventQueue = make(chan int)
 	pms.QuitSignal = make(chan int, 1)
 
 	pms.Options = options.New()

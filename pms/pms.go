@@ -53,9 +53,9 @@ type PMS struct {
 	EventError   chan string
 	EventIndex   chan int
 	EventLibrary chan int
-	EventQueue   chan int
 	EventMessage chan string
 	EventPlayer  chan int
+	EventQueue   chan int
 	QuitSignal   chan int
 }
 
