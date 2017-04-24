@@ -14,7 +14,7 @@ import (
 type PlaybarWidget struct {
 	status mpd.PlayerStatus
 	view   views.View
-	song   *song.Song
+	song   song.Song
 	styles StyleMap
 
 	widget
@@ -45,7 +45,11 @@ func (w *PlaybarWidget) SetPlayerStatus(s mpd.PlayerStatus) {
 }
 
 func (w *PlaybarWidget) SetSong(s *song.Song) {
-	w.song = s
+	if s != nil {
+		w.song = *s
+	} else {
+		w.song = song.Song{}
+	}
 	w.PostEventWidgetContent(w)
 }
 
@@ -64,18 +68,19 @@ func (w *PlaybarWidget) drawNextChar(x, y int, r rune, style tcell.Style) int {
 }
 
 func (w *PlaybarWidget) Draw() {
-	if w.song == nil || len(w.song.Tags["file"]) == 0 {
+	if len(w.song.Tags["file"]) == 0 {
 		w.drawNotPlaying()
 	} else {
 		w.drawCurrentSong()
 	}
+	w.drawStatus()
 }
 
 func (w *PlaybarWidget) drawNotPlaying() {
 	w.drawNext(0, 0, []rune("No current song."), w.Style("noCurrentSong"))
 }
 
-func (w *PlaybarWidget) drawCurrentSong() {
+func (w *PlaybarWidget) drawStatus() {
 	x, y := 0, 1
 
 	// 54% ----   00:00 ■ 00:00   Artist - Title
@@ -91,12 +96,10 @@ func (w *PlaybarWidget) drawCurrentSong() {
 	x = w.drawNext(x+1, y, []rune(utils.TimeString(int(w.status.Elapsed))), w.Style("elapsed"))
 	x = w.drawNextChar(x+1, y, playRunes[w.status.State], w.Style("symbol"))
 	x = w.drawNext(x+1, y, []rune(utils.TimeString(w.status.Time)), w.Style("time"))
+}
 
-	if w.song == nil {
-		return
-	}
-
-	x, y = 0, 0
+func (w *PlaybarWidget) drawCurrentSong() {
+	x, y := 0, 0
 
 	x = w.drawNext(x, y, w.song.Tags["artist"], w.Style("artist"))
 
