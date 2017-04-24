@@ -42,21 +42,36 @@ type PMS struct {
 
 	ticker chan time.Time
 
+	// MPD connection credentials
 	host     string
 	port     string
 	password string
 
+	// Local versions of MPD's queue and song library, in addition to the song library version that was indexed.
 	queueVersion   int
 	libraryVersion int
 	indexVersion   int
 
-	EventError   chan string
-	EventIndex   chan int
+	// EventError is used to display error messages in the statusbar.
+	EventError chan string
+
+	// EventIndex receives a signal when the search index has been updated.
+	EventIndex chan int
+
+	// EventIndex receives a signal when MPD's library has been updated and retrieved.
 	EventLibrary chan int
+
+	// EventMessage is used to display messages in the statusbar.
 	EventMessage chan string
-	EventPlayer  chan int
-	EventQueue   chan int
-	QuitSignal   chan int
+
+	// EventPlayer receives a signal when MPD's "player" status changes in an IDLE event.
+	EventPlayer chan int
+
+	// EventPlayer receives a signal when MPD's "playlist" status changes in an IDLE event.
+	EventQueue chan int
+
+	// EventPlayer receives a signal when PMS should quit.
+	QuitSignal chan int
 }
 
 func createDirectory(dir string) error {
@@ -512,6 +527,7 @@ func (pms *PMS) ReIndex() error {
 	}
 	pms.indexVersion = pms.libraryVersion
 	pms.Message("Song library index complete, took %s", time.Since(timer).String())
+	pms.EventIndex <- 1
 	return nil
 }
 

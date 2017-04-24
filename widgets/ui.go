@@ -146,12 +146,44 @@ func (ui *UI) SetSonglist(s songlist.Songlist) {
 	ui.songlistIndex = -1
 	for i, stored := range ui.songlists {
 		if stored == s {
-			ui.songlistIndex = i
-			break
+			ui.SetSonglistIndex(i)
+			return
 		}
 	}
-	ui.Songlist.SetSonglist(s)
-	ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
+	ui.activateSonglist(s)
+}
+
+// FIXME: move functionality into ui.Songlist
+func (ui *UI) activateSonglist(s songlist.Songlist) {
+	ui.App.PostFunc(func() {
+		ui.Songlist.SetSonglist(s)
+		ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
+	})
+}
+
+func (ui *UI) SonglistIndex() int {
+	return ui.songlistIndex
+}
+
+func (ui *UI) ValidSonglistIndex(i int) bool {
+	return i >= 0 && i < ui.SonglistsLen()
+}
+
+func (ui *UI) SetSonglistIndex(i int) error {
+	if !ui.ValidSonglistIndex(i) {
+		return fmt.Errorf("Index %d is out of bounds (try between 1 and %d)", i+1, ui.SonglistsLen())
+	}
+	ui.songlistIndex = i
+	ui.activateSonglist(ui.songlists[ui.songlistIndex])
+	return nil
+}
+
+func (ui *UI) Songlists() []songlist.Songlist {
+	return ui.songlists
+}
+
+func (ui *UI) SonglistsLen() int {
+	return len(ui.songlists)
 }
 
 func (ui *UI) Start() {
@@ -192,7 +224,7 @@ func (ui *UI) Title() string {
 	} else {
 		index = "..."
 	}
-	return fmt.Sprintf("[%s/%d] %s", index, len(ui.songlists), ui.Songlist.Name())
+	return fmt.Sprintf("[%s/%d] %s", index, ui.SonglistsLen(), ui.Songlist.Name())
 }
 
 func (ui *UI) HandleEvent(ev tcell.Event) bool {

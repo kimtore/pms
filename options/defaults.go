@@ -18,6 +18,8 @@ bind <PgUp> cursor pgup
 bind <PgDn> cursor pgdn
 bind <Home> cursor home
 bind <End> cursor end
+bind t list next
+bind T list previous
 bind : inputmode input
 bind / inputmode search
 bind <F3> inputmode search

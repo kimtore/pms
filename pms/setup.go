@@ -41,6 +41,7 @@ func (pms *PMS) setupCLI() {
 	pms.CLI.Register("bind", commands.NewBind(pms.Sequencer))
 	pms.CLI.Register("cursor", commands.NewCursor(pms.UI.Songlist))
 	pms.CLI.Register("inputmode", commands.NewInputMode(pms.UI.Multibar))
+	pms.CLI.Register("list", commands.NewList(pms.UI))
 	pms.CLI.Register("play", commands.NewPlay(pms.UI.Songlist, pms.CurrentMpdClient))
 	pms.CLI.Register("q", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("quit", commands.NewQuit(pms.QuitSignal))
