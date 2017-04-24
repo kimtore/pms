@@ -568,7 +568,7 @@ func (pms *PMS) KeyInput(ev parser.KeyEvent) {
 	}
 
 	console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, input.Command)
-	go pms.Execute(input.Command)
+	pms.UI.EventInputCommand <- input.Command
 }
 
 func (pms *PMS) Execute(cmd string) {
