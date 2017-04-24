@@ -124,15 +124,21 @@ func (ui *UI) AddSonglist(s songlist.Songlist) {
 	ui.songlists = append(ui.songlists, s)
 }
 
-func (ui *UI) SetQueue(s *songlist.Queue) {
+// ReplaceSonglist replaces an existing songlist with its new version. Checking
+// is done on a type-level, so only the queue and library will be replaced.
+func (ui *UI) ReplaceSonglist(s songlist.Songlist) {
 	for i := range ui.songlists {
-		if _, ok := ui.songlists[i].(*songlist.Queue); ok {
-			console.Log("Songlist UI: replacing queue at address %p with new queue %p", ui.songlists[i], s)
-			ui.songlists[i] = s
-			return
+		switch ui.songlists[i].(type) {
+		case *songlist.Queue:
+		case *songlist.Library:
+		default:
+			continue
 		}
+		console.Log("Songlist UI: replacing songlist of type %T at %p with new list at %p", s, ui.songlists[i], s)
+		ui.songlists[i] = s
+		return
 	}
-	console.Log("Songlist UI: adding queue at address %p since no queue exists", s)
+	console.Log("Songlist UI: adding songlist of type %T at address %p since no similar exists", s, s)
 	ui.AddSonglist(s)
 }
 
