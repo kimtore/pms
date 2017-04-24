@@ -12,11 +12,12 @@ import (
 )
 
 type SonglistWidget struct {
-	songlist *songlist.Songlist
-	view     views.View
-	viewport views.ViewPort
-	cursor   int
-	columns  []column
+	songlist    *songlist.Songlist
+	currentSong song.Song
+	view        views.View
+	viewport    views.ViewPort
+	cursor      int
+	columns     []column
 
 	widget
 	views.WidgetWatchers
@@ -113,6 +114,7 @@ func (w *SonglistWidget) Draw() {
 
 	ymin, ymax := w.getVisibleBoundaries()
 	style := w.Style("default")
+	lineStyled := false
 	cursor := false
 
 	for y := ymin; y <= ymax; y++ {
@@ -121,10 +123,19 @@ func (w *SonglistWidget) Draw() {
 
 		// Style based on song's role
 		cursor = y == w.cursor
-		if cursor {
+		switch {
+		case cursor:
 			style = w.Style("cursor")
-		} else {
+			lineStyled = true
+		case w.IndexAtCurrentSong(y):
+			style = w.Style("currentSong")
+			lineStyled = true
+		default:
 			style = w.Style("default")
+			lineStyled = false
+		}
+		if cursor {
+		} else {
 		}
 		x := 0
 		rightPadding := 1
@@ -135,7 +146,7 @@ func (w *SonglistWidget) Draw() {
 			// Convert tag to runes
 			key := w.columns[col].Tag
 			str := s.Tags[key]
-			if !cursor {
+			if !lineStyled {
 				style = w.Style(key)
 			}
 			runes := []rune(str)
@@ -210,6 +221,24 @@ func (w *SonglistWidget) CursorSong() *song.Song {
 		return nil
 	}
 	return w.songlist.Songs[w.cursor]
+}
+
+func (w *SonglistWidget) SetCurrentSong(s *song.Song) {
+	if s != nil {
+		w.currentSong = *s
+	} else {
+		w.currentSong = song.Song{}
+	}
+}
+
+func (w *SonglistWidget) IndexAtCurrentSong(i int) bool {
+	if i < 0 || i >= w.songlist.Len() {
+		return false
+	}
+	if s := w.songlist.Songs[i]; s != nil {
+		return s.TagString("file") == w.currentSong.TagString("file")
+	}
+	return false
 }
 
 // validateCursorVisible makes sure the cursor stays within the visible area of the viewport.

@@ -525,6 +525,7 @@ func (pms *PMS) handleEventPlayer() {
 	pms.UI.App.PostFunc(func() {
 		pms.UI.Playbar.SetPlayerStatus(pms.MpdStatus)
 		pms.UI.Playbar.SetSong(pms.CurrentSong())
+		pms.UI.Songlist.SetCurrentSong(pms.CurrentSong())
 		pms.UI.App.Update()
 	})
 }

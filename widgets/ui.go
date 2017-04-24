@@ -68,6 +68,7 @@ func NewUI(opts *options.Options) *UI {
 		"album":         tcell.StyleDefault.Foreground(tcell.ColorTeal),
 		"artist":        tcell.StyleDefault.Foreground(tcell.ColorYellow),
 		"commandText":   tcell.StyleDefault,
+		"currentSong":   tcell.StyleDefault.Background(tcell.ColorYellow).Foreground(tcell.ColorBlack),
 		"cursor":        tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack),
 		"date":          tcell.StyleDefault.Foreground(tcell.ColorGreen),
 		"elapsed":       tcell.StyleDefault.Foreground(tcell.ColorGreen),
