@@ -142,16 +142,6 @@ func (ui *UI) ReplaceSonglist(s songlist.Songlist) {
 	ui.AddSonglist(s)
 }
 
-func (ui *UI) Title() string {
-	var index string
-	if ui.songlistIndex >= 0 {
-		index = fmt.Sprintf("%d", ui.songlistIndex+1)
-	} else {
-		index = "..."
-	}
-	return fmt.Sprintf("[%s/%d] %s", index, len(ui.songlists), ui.Songlist.Name())
-}
-
 func (ui *UI) SetSonglist(s songlist.Songlist) {
 	ui.songlistIndex = -1
 	for i, stored := range ui.songlists {
@@ -193,6 +183,16 @@ func (ui *UI) SetView(v views.View) {
 
 func (ui *UI) Size() (int, int) {
 	return ui.view.Size()
+}
+
+func (ui *UI) Title() string {
+	var index string
+	if ui.songlistIndex >= 0 {
+		index = fmt.Sprintf("%d", ui.songlistIndex+1)
+	} else {
+		index = "..."
+	}
+	return fmt.Sprintf("[%s/%d] %s", index, len(ui.songlists), ui.Songlist.Name())
 }
 
 func (ui *UI) HandleEvent(ev tcell.Event) bool {
