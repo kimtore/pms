@@ -7,6 +7,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ambientsound/pms/console"
@@ -30,13 +31,14 @@ type PMS struct {
 	MpdStatus        pms_mpd.PlayerStatus
 	MpdClient        *mpd.Client
 	MpdClientWatcher *mpd.Watcher
-	CurrentSong      *song.Song
+	currentSong      *song.Song
 	Index            *index.Index
 	CLI              *input.CLI
 	UI               *widgets.UI
 	Library          *songlist.Songlist
 	Options          *options.Options
 	Sequencer        *keys.Sequencer
+	mutex            sync.Mutex
 
 	ticker chan time.Time
 
@@ -387,6 +389,12 @@ func (pms *PMS) openIndex() error {
 	return nil
 }
 
+func (pms *PMS) CurrentSong() *song.Song {
+	pms.mutex.Lock()
+	defer pms.mutex.Unlock()
+	return pms.currentSong
+}
+
 // UpdateCurrentSong stores a local copy of the currently playing song.
 func (pms *PMS) UpdateCurrentSong() error {
 	attrs, err := pms.MpdClient.CurrentSong()
@@ -396,8 +404,10 @@ func (pms *PMS) UpdateCurrentSong() error {
 
 	console.Log("MPD current song: %s", attrs["file"])
 
-	pms.CurrentSong = song.New()
-	pms.CurrentSong.SetTags(attrs)
+	pms.mutex.Lock()
+	pms.currentSong = song.New()
+	pms.currentSong.SetTags(attrs)
+	pms.mutex.Unlock()
 
 	pms.EventPlayer <- 0
 
@@ -514,7 +524,7 @@ func (pms *PMS) handleEventIndex() {
 func (pms *PMS) handleEventPlayer() {
 	pms.UI.App.PostFunc(func() {
 		pms.UI.Playbar.SetPlayerStatus(pms.MpdStatus)
-		pms.UI.Playbar.SetSong(pms.CurrentSong)
+		pms.UI.Playbar.SetSong(pms.CurrentSong())
 		pms.UI.App.Update()
 	})
 }
