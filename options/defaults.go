@@ -24,4 +24,5 @@ bind : inputmode input
 bind / inputmode search
 bind <F3> inputmode search
 bind <Enter> play cursor
+bind s stop
 `
