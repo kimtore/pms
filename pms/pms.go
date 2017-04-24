@@ -574,6 +574,7 @@ func (pms *PMS) Main() {
 		select {
 		case <-pms.QuitSignal:
 			pms.handleQuitSignal()
+			return
 		case <-pms.EventLibrary:
 			pms.handleEventLibrary()
 		case <-pms.EventIndex:

@@ -56,7 +56,7 @@ func main() {
 	pms.SetConnectionParams(opts.MpdHost, opts.MpdPort, opts.MpdPassword)
 	go pms.LoopConnect()
 
-	go pms.Main()
+	pms.Main()
 	pms.UI.Wait()
 
 	console.Log("Exiting normally.")
