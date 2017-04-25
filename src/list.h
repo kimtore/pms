@@ -163,7 +163,7 @@ public:
 	 *
 	 * Returns a ListItem pointer if a match was found, or NULL if no match.
 	 */
-	ListItem *			match_wrap_around(string pattern, int32_t from, long flags);
+	ListItem *			match_wrap_around(string pattern, unsigned int from, long flags);
 
 	/**
 	 * Return the absolute position of the list item visible in the top of

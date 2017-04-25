@@ -251,7 +251,7 @@ song_t		Songlist::findentry(Item field, bool reverse)
 	cmp[0] = pms->formatter->format(s, field, true);
 
 	/* Perform a match */
-	it = match(cmp[0], i, i - 1, mode | MATCH_NOT | MATCH_EXACT);
+	it = match_wrap_around(cmp[0], (unsigned int) i, mode | MATCH_NOT | MATCH_EXACT);
 	if (!it) {
 		pms->log(MSG_DEBUG, 0, "gotonextentry() fails with mode = %d\n", mode);
 		return MPD_SONG_NO_NUM;
