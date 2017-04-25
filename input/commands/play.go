@@ -57,13 +57,12 @@ func (cmd *Play) Execute(t lexer.Token) error {
 			return err
 		}
 
-		// Add song to queue only if we are not operating on the queue
 		id := cmd.song.ID
+
+		// Add song to queue only if we are not operating on the queue
 		list := cmd.songlistWidget.Songlist()
 
-		switch list.(type) {
-		case *songlist.Queue:
-		default:
+		if !songlist.IsQueue(list) {
 			id, err = client.AddID(cmd.song.TagString("file"), -1)
 			if err != nil {
 				return err

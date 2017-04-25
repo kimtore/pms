@@ -18,3 +18,12 @@ func NewLibrary() (s *Library) {
 func (s *Library) Name() string {
 	return "Library"
 }
+
+func IsLibrary(s Songlist) bool {
+	switch s.(type) {
+	case *Library:
+		return true
+	default:
+		return false
+	}
+}

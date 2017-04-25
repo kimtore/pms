@@ -231,10 +231,15 @@ func (w *SonglistWidget) SetCurrentSong(s *song.Song) {
 }
 
 func (w *SonglistWidget) IndexAtCurrentSong(i int) bool {
-	if s := w.songlist.Song(i); s != nil {
+	s := w.songlist.Song(i)
+	if s == nil {
+		return false
+	}
+	if songlist.IsQueue(w.songlist) {
+		return s.ID == w.currentSong.ID
+	} else {
 		return s.TagString("file") == w.currentSong.TagString("file")
 	}
-	return false
 }
 
 // validateCursorVisible makes sure the cursor stays within the visible area of the viewport.

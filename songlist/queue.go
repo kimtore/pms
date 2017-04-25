@@ -18,3 +18,12 @@ func NewQueue() (s *Queue) {
 func (s *Queue) Name() string {
 	return "Queue"
 }
+
+func IsQueue(s Songlist) bool {
+	switch s.(type) {
+	case *Queue:
+		return true
+	default:
+		return false
+	}
+}

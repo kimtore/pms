@@ -1,6 +1,8 @@
 package utils
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func TimeString(secs int) string {
 	if secs < 0 {
