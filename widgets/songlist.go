@@ -19,6 +19,8 @@ type list struct {
 	songlist songlist.Songlist
 	cursor   int
 	columns  columns
+	ymin     int
+	ymax     int
 }
 
 type SonglistWidget struct {
@@ -202,6 +204,9 @@ func (w *SonglistWidget) setViewportSize() {
 	w.viewport.Resize(0, 0, -1, -1)
 	w.viewport.SetContentSize(x, w.Songlist().Len(), true)
 	w.viewport.SetSize(x, min(y, w.Songlist().Len()))
+}
+
+func (w *SonglistWidget) validateViewport() {
 	w.validateCursorVisible()
 	w.AutoSetColumnWidths()
 	w.PostEventWidgetContent(w)
@@ -257,8 +262,8 @@ func (w *SonglistWidget) IndexAtCurrentSong(i int) bool {
 
 // validateCursorVisible makes sure the cursor stays within the visible area of the viewport.
 func (w *SonglistWidget) validateCursorVisible() {
-	ymin, ymax := w.getVisibleBoundaries()
-	w.validateCursor(ymin, ymax)
+	w.currentList.ymin, w.currentList.ymax = w.getVisibleBoundaries()
+	w.validateCursor(w.currentList.ymin, w.currentList.ymax)
 }
 
 // validateCursorList makes sure the cursor stays within songlist boundaries.
@@ -279,6 +284,7 @@ func (w *SonglistWidget) validateCursor(ymin, ymax int) {
 
 func (w *SonglistWidget) Resize() {
 	w.setViewportSize()
+	w.validateViewport()
 	w.PostEventWidgetResize(w)
 }
 
@@ -401,6 +407,10 @@ func (w *SonglistWidget) activateList(s *list) {
 		w.SetColumns(strings.Split(w.options.StringValue("columns"), ",")) // FIXME
 	}
 	w.setViewportSize()
+	//console.Log("Calling MakeVisible(%d), MakeVisible(%d)", w.currentList.ymax, w.currentList.ymin)
+	w.viewport.MakeVisible(0, w.currentList.ymax)
+	w.viewport.MakeVisible(0, w.currentList.ymin)
+	w.validateViewport()
 	PostEventListChanged(w)
 }
 
