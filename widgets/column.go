@@ -13,6 +13,8 @@ type column struct {
 	width      int
 }
 
+type columns []column
+
 func (c *column) Set(s songlist.Songlist) {
 	for _, song := range s.Songs() {
 		l := len(song.Tags[c.Tag])

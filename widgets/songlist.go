@@ -11,16 +11,28 @@ import (
 	"github.com/gdamore/tcell/views"
 )
 
+type list struct {
+	songlist songlist.Songlist
+	cursor   int
+	columns  columns
+}
+
 type SonglistWidget struct {
-	songlist    songlist.Songlist
+	currentList *list
+	lists       []*list
 	currentSong song.Song
 	view        views.View
 	viewport    views.ViewPort
-	cursor      int
-	columns     []column
 
 	widget
 	views.WidgetWatchers
+}
+
+func newList() *list {
+	l := &list{}
+	l.songlist = songlist.New()
+	l.columns = make(columns, 0)
+	return l
 }
 
 func min(a, b int) int {
@@ -39,41 +51,40 @@ func max(a, b int) int {
 
 func NewSonglistWidget() (w *SonglistWidget) {
 	w = &SonglistWidget{}
-	w.songlist = &songlist.BaseSonglist{}
-	w.columns = make([]column, 0)
+	w.currentList = newList()
 	return
 }
 
 func (w *SonglistWidget) SetSonglist(s songlist.Songlist) {
 	//console.Log("setSonglist(%p)", s)
-	w.songlist = s
+	w.currentList.songlist = s
 	w.setViewportSize()
 	PostEventListChanged(w)
 }
 
 func (w *SonglistWidget) Songlist() songlist.Songlist {
-	return w.songlist
+	return w.currentList.songlist
 }
 
 func (w *SonglistWidget) AutoSetColumnWidths() {
-	for i := range w.columns {
-		w.columns[i].SetWidth(w.columns[i].Mid())
+	for i := range w.currentList.columns {
+		w.currentList.columns[i].SetWidth(w.currentList.columns[i].Mid())
 	}
 	w.expandColumns()
 }
 
 func (w *SonglistWidget) SetColumns(cols []string) {
-	ch := make(chan int, len(w.columns))
-	w.columns = make([]column, len(cols))
+	ch := make(chan int, len(w.currentList.columns))
+	w.currentList.columns = make(columns, len(cols))
 
-	for i := range w.columns {
+	for i := range w.currentList.columns {
 		go func(i int) {
-			w.columns[i].Tag = cols[i]
-			w.columns[i].Set(w.songlist)
+			w.currentList.columns[i].Tag = cols[i]
+			w.currentList.columns[i].Set(w.currentList.songlist)
 			ch <- 0
 		}(i)
 	}
-	for i := 0; i < len(w.columns); i++ {
+	for i := 0; i < len(w.currentList.columns); i++ {
 		<-ch
 	}
 	w.AutoSetColumnWidths()
@@ -81,25 +92,25 @@ func (w *SonglistWidget) SetColumns(cols []string) {
 }
 
 func (w *SonglistWidget) expandColumns() {
-	if len(w.columns) == 0 {
+	if len(w.currentList.columns) == 0 {
 		return
 	}
 	_, _, xmax, _ := w.viewport.GetVisible()
 	totalWidth := 0
-	poolSize := len(w.columns)
+	poolSize := len(w.currentList.columns)
 	saturation := make([]bool, poolSize)
-	for i := range w.columns {
-		totalWidth += w.columns[i].Width()
+	for i := range w.currentList.columns {
+		totalWidth += w.currentList.columns[i].Width()
 	}
 	for {
-		for i := range w.columns {
+		for i := range w.currentList.columns {
 			if totalWidth > xmax {
 				return
 			}
 			if poolSize > 0 && saturation[i] {
 				continue
 			}
-			col := &w.columns[i]
+			col := &w.currentList.columns[i]
 			if poolSize > 0 && col.Width() > col.MaxWidth() {
 				saturation[i] = true
 				poolSize--
@@ -112,7 +123,8 @@ func (w *SonglistWidget) expandColumns() {
 }
 
 func (w *SonglistWidget) Draw() {
-	if w.view == nil || w.songlist == nil || w.songlist.Songs == nil {
+	list := w.Songlist()
+	if w.view == nil || list == nil || list.Songs == nil {
 		return
 	}
 
@@ -123,10 +135,10 @@ func (w *SonglistWidget) Draw() {
 
 	for y := ymin; y <= ymax; y++ {
 
-		s := w.songlist.Song(y)
+		s := list.Song(y)
 
 		// Style based on song's role
-		cursor = y == w.cursor
+		cursor = y == w.currentList.cursor
 		switch {
 		case cursor:
 			style = w.Style("cursor")
@@ -143,21 +155,21 @@ func (w *SonglistWidget) Draw() {
 		rightPadding := 1
 
 		// Draw each column separately
-		for col := 0; col < len(w.columns); col++ {
+		for col := 0; col < len(w.currentList.columns); col++ {
 
 			// Convert tag to runes
-			key := w.columns[col].Tag
+			key := w.currentList.columns[col].Tag
 			str := s.Tags[key]
 			if !lineStyled {
 				style = w.Style(key)
 			}
 			runes := []rune(str)
 
-			if col+1 == len(w.columns) {
+			if col+1 == len(w.currentList.columns) {
 				rightPadding = 0
 			}
-			strmin := min(len(runes), w.columns[col].Width()-rightPadding)
-			strmax := w.columns[col].Width()
+			strmin := min(len(runes), w.currentList.columns[col].Width()-rightPadding)
+			strmax := w.currentList.columns[col].Width()
 			n := 0
 			for n < strmin {
 				w.viewport.SetContent(x, y, runes[n], nil, style)
@@ -181,14 +193,14 @@ func (w *SonglistWidget) getVisibleBoundaries() (ymin, ymax int) {
 }
 
 func (w *SonglistWidget) getBoundaries() (ymin, ymax int) {
-	return 0, w.songlist.Len() - 1
+	return 0, w.Songlist().Len() - 1
 }
 
 func (w *SonglistWidget) setViewportSize() {
 	x, y := w.Size()
 	w.viewport.Resize(0, 0, -1, -1)
-	w.viewport.SetContentSize(x, w.songlist.Len(), true)
-	w.viewport.SetSize(x, min(y, w.songlist.Len()))
+	w.viewport.SetContentSize(x, w.Songlist().Len(), true)
+	w.viewport.SetSize(x, min(y, w.Songlist().Len()))
 	w.validateCursorVisible()
 	w.AutoSetColumnWidths()
 	w.PostEventWidgetContent(w)
@@ -203,23 +215,23 @@ func (w *SonglistWidget) MoveCursorDown(i int) {
 }
 
 func (w *SonglistWidget) MoveCursor(i int) {
-	w.SetCursor(w.cursor + i)
+	w.SetCursor(w.currentList.cursor + i)
 }
 
 func (w *SonglistWidget) SetCursor(i int) {
-	w.cursor = i
+	w.currentList.cursor = i
 	w.validateCursorList()
-	w.viewport.MakeVisible(0, w.cursor)
+	w.viewport.MakeVisible(0, w.currentList.cursor)
 	w.validateCursorVisible()
 	w.PostEventWidgetContent(w)
 }
 
 func (w *SonglistWidget) Cursor() int {
-	return w.cursor
+	return w.currentList.cursor
 }
 
 func (w *SonglistWidget) CursorSong() *song.Song {
-	return w.songlist.Song(w.cursor)
+	return w.Songlist().Song(w.currentList.cursor)
 }
 
 func (w *SonglistWidget) SetCurrentSong(s *song.Song) {
@@ -231,11 +243,11 @@ func (w *SonglistWidget) SetCurrentSong(s *song.Song) {
 }
 
 func (w *SonglistWidget) IndexAtCurrentSong(i int) bool {
-	s := w.songlist.Song(i)
+	s := w.Songlist().Song(i)
 	if s == nil {
 		return false
 	}
-	if songlist.IsQueue(w.songlist) {
+	if songlist.IsQueue(w.Songlist()) {
 		return s.ID == w.currentSong.ID
 	} else {
 		return s.TagString("file") == w.currentSong.TagString("file")
@@ -256,11 +268,11 @@ func (w *SonglistWidget) validateCursorList() {
 
 // validateCursor adjusts the cursor based on minimum and maximum boundaries.
 func (w *SonglistWidget) validateCursor(ymin, ymax int) {
-	if w.cursor < ymin {
-		w.cursor = ymin
+	if w.currentList.cursor < ymin {
+		w.currentList.cursor = ymin
 	}
-	if w.cursor > ymax {
-		w.cursor = ymax
+	if w.currentList.cursor > ymax {
+		w.currentList.cursor = ymax
 	}
 }
 
@@ -283,15 +295,15 @@ func (w *SonglistWidget) Size() (int, int) {
 }
 
 func (w *SonglistWidget) Name() string {
-	return w.songlist.Name()
+	return w.Songlist().Name()
 }
 
 func (w *SonglistWidget) Columns() []column {
-	return w.columns
+	return w.currentList.columns
 }
 
 func (w *SonglistWidget) Len() int {
-	return w.songlist.Len()
+	return w.Songlist().Len()
 }
 
 // PositionReadout returns a combination of PositionLongReadout() and PositionShortReadout().
@@ -303,22 +315,22 @@ func (w *SonglistWidget) PositionReadout() string {
 // range as well as the total number of songs.
 func (w *SonglistWidget) PositionLongReadout() string {
 	ymin, ymax := w.getVisibleBoundaries()
-	return fmt.Sprintf("%d,%d-%d/%d", w.Cursor()+1, ymin+1, ymax+1, w.songlist.Len())
+	return fmt.Sprintf("%d,%d-%d/%d", w.Cursor()+1, ymin+1, ymax+1, w.Songlist().Len())
 }
 
 // PositionShortReadout returns a percentage indicator on how far the songlist is scrolled.
 func (w *SonglistWidget) PositionShortReadout() string {
 	ymin, ymax := w.getVisibleBoundaries()
-	if ymin == 0 && ymax+1 == w.songlist.Len() {
+	if ymin == 0 && ymax+1 == w.Songlist().Len() {
 		return `All`
 	}
 	if ymin == 0 {
 		return `Top`
 	}
-	if ymax+1 == w.songlist.Len() {
+	if ymax+1 == w.Songlist().Len() {
 		return `Bot`
 	}
-	fraction := float64(float64(ymin) / float64(w.songlist.Len()))
+	fraction := float64(float64(ymin) / float64(w.Songlist().Len()))
 	percent := int(math.Floor(fraction * 100))
 	return fmt.Sprintf("%2d%%", percent)
 }
