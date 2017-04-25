@@ -42,6 +42,7 @@ func New() *PMS {
 // SetupCLI instantiates the different commands PMS understands, such as set; bind; etc.
 func (pms *PMS) setupCLI() {
 	pms.CLI = input.NewCLI()
+	pms.CLI.Register("add", commands.NewAdd(pms.CurrentMpdClient))
 	pms.CLI.Register("bind", commands.NewBind(pms.Sequencer))
 	pms.CLI.Register("cursor", commands.NewCursor(pms.UI.Songlist))
 	pms.CLI.Register("inputmode", commands.NewInputMode(pms.UI.Multibar))
