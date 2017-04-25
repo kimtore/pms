@@ -14,3 +14,7 @@ func NewQueue() (s *Queue) {
 	s.songs = make([]*song.Song, 0)
 	return
 }
+
+func (s *Queue) Name() string {
+	return "Queue"
+}

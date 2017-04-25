@@ -65,10 +65,10 @@ func (cmd *List) Execute(t lexer.Token) error {
 				len := cmd.ui.SonglistsLen()
 				index = (index + len) % len
 			}
-			console.Log("Setting tab to relative %d", index)
+			console.Log("Switching songlist index to relative %d, equalling absolute %d", cmd.relative, index)
 			err = cmd.ui.SetSonglistIndex(index)
 		case cmd.absolute >= 0:
-			console.Log("Setting tab to absolute %d", cmd.absolute)
+			console.Log("Switching songlist index to absolute %d", cmd.absolute)
 			err = cmd.ui.SetSonglistIndex(cmd.absolute)
 		default:
 			return fmt.Errorf("Unexpected END, expected position. Try one of: next prev <number>")

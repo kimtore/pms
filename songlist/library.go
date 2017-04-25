@@ -14,3 +14,7 @@ func NewLibrary() (s *Library) {
 	s.songs = make([]*song.Song, 0)
 	return
 }
+
+func (s *Library) Name() string {
+	return "Library"
+}

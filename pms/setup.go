@@ -9,6 +9,7 @@ import (
 	"github.com/ambientsound/pms/input/commands"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/options"
+	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/widgets"
 )
 
@@ -22,6 +23,9 @@ func New() *PMS {
 	pms.EventPlayer = make(chan int)
 	pms.EventQueue = make(chan int)
 	pms.QuitSignal = make(chan int, 1)
+
+	pms.Queue = &songlist.Queue{}
+	pms.Library = &songlist.Library{}
 
 	pms.Options = options.New()
 	pms.Options.AddDefaultOptions()
@@ -55,6 +59,9 @@ func (pms *PMS) setupUI() {
 	timer := time.Now()
 	pms.UI = widgets.NewUI(pms.Options)
 	pms.UI.Start()
+	pms.UI.AddSonglist(pms.Queue)
+	pms.UI.AddSonglist(pms.Library)
+	pms.UI.SetSonglist(pms.Queue)
 	console.Log("UI initialized in %s", time.Since(timer).String())
 }
 

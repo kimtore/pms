@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/ambientsound/pms/console"
@@ -33,11 +34,12 @@ type UI struct {
 	EventKeyInput     chan parser.KeyEvent
 
 	// Data resources
-	Index         *index.Index
-	options       *options.Options
-	songlists     []songlist.Songlist
-	songlistIndex int
-	searchResult  songlist.Songlist
+	Index           *index.Index
+	options         *options.Options
+	currentSonglist songlist.Songlist
+	songlists       []songlist.Songlist
+	songlistIndex   int
+	searchResult    songlist.Songlist
 
 	// TCell
 	view views.View
@@ -122,20 +124,24 @@ func (ui *UI) SetIndex(i *index.Index) {
 
 func (ui *UI) AddSonglist(s songlist.Songlist) {
 	ui.songlists = append(ui.songlists, s)
+	console.Log("Songlist UI: added songlist index %d of type %T at address %p", len(ui.songlists)-1, s, s)
 }
 
 // ReplaceSonglist replaces an existing songlist with its new version. Checking
 // is done on a type-level, so only the queue and library will be replaced.
 func (ui *UI) ReplaceSonglist(s songlist.Songlist) {
 	for i := range ui.songlists {
-		switch ui.songlists[i].(type) {
-		case *songlist.Queue:
-		case *songlist.Library:
-		default:
+		if reflect.TypeOf(ui.songlists[i]) != reflect.TypeOf(s) {
 			continue
 		}
 		console.Log("Songlist UI: replacing songlist of type %T at %p with new list at %p", s, ui.songlists[i], s)
+		console.Log("Songlist UI: comparing %p %p", ui.songlists[i], ui.currentSonglist)
+		active := ui.songlists[i] == ui.currentSonglist
 		ui.songlists[i] = s
+		if active {
+			console.Log("Songlist UI: replaced songlist is currently active, switching to new songlist.")
+			ui.SetSonglist(s)
+		}
 		return
 	}
 	console.Log("Songlist UI: adding songlist of type %T at address %p since no similar exists", s, s)
@@ -143,6 +149,7 @@ func (ui *UI) ReplaceSonglist(s songlist.Songlist) {
 }
 
 func (ui *UI) SetSonglist(s songlist.Songlist) {
+	console.Log("SetSonglist(%T %p)", s, s)
 	ui.songlistIndex = -1
 	for i, stored := range ui.songlists {
 		if stored == s {
@@ -155,10 +162,10 @@ func (ui *UI) SetSonglist(s songlist.Songlist) {
 
 // FIXME: move functionality into ui.Songlist
 func (ui *UI) activateSonglist(s songlist.Songlist) {
-	ui.App.PostFunc(func() {
-		ui.Songlist.SetSonglist(s)
-		ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
-	})
+	console.Log("activateSonglist(%T %p)", s, s)
+	ui.currentSonglist = s
+	ui.Songlist.SetSonglist(s)
+	ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
 }
 
 func (ui *UI) SonglistIndex() int {
@@ -170,6 +177,7 @@ func (ui *UI) ValidSonglistIndex(i int) bool {
 }
 
 func (ui *UI) SetSonglistIndex(i int) error {
+	console.Log("SetSonglistIndex(%d)", i)
 	if !ui.ValidSonglistIndex(i) {
 		return fmt.Errorf("Index %d is out of bounds (try between 1 and %d)", i+1, ui.SonglistsLen())
 	}

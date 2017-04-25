@@ -405,7 +405,6 @@ func (pms *PMS) retrieveLibrary() (*songlist.Library, error) {
 
 	s := songlist.NewLibrary()
 	s.AddFromAttrlist(list)
-	s.SetName("Library")
 	return s, nil
 }
 
@@ -419,7 +418,6 @@ func (pms *PMS) retrieveQueue() (*songlist.Queue, error) {
 
 	s := songlist.NewQueue()
 	s.AddFromAttrlist(list)
-	s.SetName("Queue")
 	return s, nil
 }
 
