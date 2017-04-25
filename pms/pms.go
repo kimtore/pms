@@ -515,6 +515,11 @@ func (pms *PMS) UpdatePlayerStatus() error {
 
 	pms.EventPlayer <- 0
 
+	// Make sure any error messages are relayed to the user
+	if len(attrs["error"]) > 0 {
+		pms.EventError <- attrs["error"]
+	}
+
 	return nil
 }
 
