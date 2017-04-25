@@ -34,12 +34,13 @@ type UI struct {
 	EventKeyInput     chan parser.KeyEvent
 
 	// Data resources
-	Index           *index.Index
-	options         *options.Options
-	currentSonglist songlist.Songlist
-	songlists       []songlist.Songlist
-	songlistIndex   int
-	searchResult    songlist.Songlist
+	Index             *index.Index
+	options           *options.Options
+	currentSonglist   songlist.Songlist
+	preSearchSonglist songlist.Songlist
+	songlists         []songlist.Songlist
+	songlistIndex     int
+	searchResult      songlist.Songlist
 
 	// TCell
 	view views.View
@@ -160,6 +161,12 @@ func (ui *UI) SetSonglist(s songlist.Songlist) {
 	ui.activateSonglist(s)
 }
 
+// SetPreSearchSonglist sets a songlist that should be reverted to in case a search result returns zero results.
+func (ui *UI) SetPreSearchSonglist(s songlist.Songlist) {
+	console.Log("SetPreSearchSonglist(%T %p)", s, s)
+	ui.preSearchSonglist = s
+}
+
 // FIXME: move functionality into ui.Songlist
 func (ui *UI) activateSonglist(s songlist.Songlist) {
 	console.Log("activateSonglist(%T %p)", s, s)
@@ -183,6 +190,7 @@ func (ui *UI) SetSonglistIndex(i int) error {
 	}
 	ui.songlistIndex = i
 	ui.activateSonglist(ui.songlists[ui.songlistIndex])
+	ui.SetPreSearchSonglist(ui.currentSonglist)
 	return nil
 }
 
@@ -310,6 +318,8 @@ func (ui *UI) runIndexSearch(term string) error {
 func (ui *UI) showSearchResult() {
 	if ui.searchResult != nil {
 		ui.SetSonglist(ui.searchResult)
+	} else if ui.preSearchSonglist != nil {
+		ui.SetSonglist(ui.preSearchSonglist)
 	} else {
 		ui.SetSonglistIndex(0)
 	}
