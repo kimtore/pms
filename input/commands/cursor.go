@@ -72,7 +72,7 @@ func (cmd *Cursor) Execute(t lexer.Token) error {
 	case lexer.TokenEnd:
 		switch {
 		case !cmd.finished:
-			return fmt.Errorf("Unexpected END, expected cursor offset. Try one of: up, down, [number]", s)
+			return fmt.Errorf("Unexpected END, expected cursor offset. Try one of: up, down, pgup, pgdn, home, end, <number>")
 		case cmd.relative != 0:
 			songlistWidget.MoveCursor(cmd.relative)
 		default:
