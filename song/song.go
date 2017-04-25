@@ -43,6 +43,10 @@ func (s *Song) SetTags(tags mpd.Attrs) {
 // AutoFill post-processes and caches song tags.
 func (s *Song) AutoFill() {
 	var err error
+
+	s.ID, _ = strconv.Atoi(s.TagString("id"))
+	s.Position, _ = strconv.Atoi(s.TagString("pos"))
+
 	s.Time, err = strconv.Atoi(s.TagString("time"))
 	if err == nil {
 		s.Tags["time"] = utils.TimeRunes(s.Time)

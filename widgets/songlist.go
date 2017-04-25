@@ -51,6 +51,10 @@ func (w *SonglistWidget) SetSonglist(s songlist.Songlist) {
 	PostEventListChanged(w)
 }
 
+func (w *SonglistWidget) Songlist() songlist.Songlist {
+	return w.songlist
+}
+
 func (w *SonglistWidget) AutoSetColumnWidths() {
 	for i := range w.columns {
 		w.columns[i].SetWidth(w.columns[i].Mid())

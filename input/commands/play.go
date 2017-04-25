@@ -5,6 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
+	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/widgets"
 
 	"github.com/fhs/gompd/mpd"
@@ -56,9 +57,17 @@ func (cmd *Play) Execute(t lexer.Token) error {
 			return err
 		}
 
-		id, err := client.AddID(cmd.song.TagString("file"), -1)
-		if err != nil {
-			return err
+		// Add song to queue only if we are not operating on the queue
+		id := cmd.song.ID
+		list := cmd.songlistWidget.Songlist()
+
+		switch list.(type) {
+		case *songlist.Queue:
+		default:
+			id, err = client.AddID(cmd.song.TagString("file"), -1)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = client.PlayID(id)
