@@ -13,14 +13,14 @@ import (
 
 // Play plays songs in the MPD playlist.
 type Play struct {
-	songlistWidget *widgets.SonglistWidget
+	songlistWidget func() *widgets.SonglistWidget
 	mpdClient      func() *mpd.Client
 	song           *song.Song
 	id             int
 	pos            int
 }
 
-func NewPlay(songlistWidget *widgets.SonglistWidget, mpdClient func() *mpd.Client) *Play {
+func NewPlay(songlistWidget func() *widgets.SonglistWidget, mpdClient func() *mpd.Client) *Play {
 	return &Play{songlistWidget: songlistWidget, mpdClient: mpdClient}
 }
 
@@ -33,12 +33,14 @@ func (cmd *Play) Execute(t lexer.Token) error {
 	var err error
 
 	s := t.String()
+	songlistWidget := cmd.songlistWidget()
 
 	switch t.Class {
 	case lexer.TokenIdentifier:
 		switch s {
 		case "cursor":
-			cmd.song = cmd.songlistWidget.CursorSong()
+
+			cmd.song = songlistWidget.CursorSong()
 			if cmd.song == nil {
 				return fmt.Errorf("Cannot play: no song under cursor")
 			}
@@ -60,7 +62,7 @@ func (cmd *Play) Execute(t lexer.Token) error {
 		id := cmd.song.ID
 
 		// Add song to queue only if we are not operating on the queue
-		list := cmd.songlistWidget.Songlist()
+		list := songlistWidget.Songlist()
 
 		if !songlist.IsQueue(list) {
 			id, err = client.AddID(cmd.song.TagString("file"), -1)

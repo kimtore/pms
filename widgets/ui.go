@@ -194,6 +194,10 @@ func (ui *UI) SetSonglistIndex(i int) error {
 	return nil
 }
 
+func (ui *UI) CurrentSonglistWidget() *SonglistWidget {
+	return ui.Songlist
+}
+
 func (ui *UI) Songlists() []songlist.Songlist {
 	return ui.songlists
 }
