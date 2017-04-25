@@ -226,13 +226,11 @@ func (ui *UI) Size() (int, int) {
 }
 
 func (ui *UI) Title() string {
-	var index string
 	if ui.songlistIndex >= 0 {
-		index = fmt.Sprintf("%d", ui.songlistIndex+1)
+		return fmt.Sprintf("[%d/%d] %s", ui.songlistIndex+1, ui.SonglistsLen(), ui.Songlist.Name())
 	} else {
-		index = "..."
+		return fmt.Sprintf("[...] %s", ui.Songlist.Name())
 	}
-	return fmt.Sprintf("[%s/%d] %s", index, ui.SonglistsLen(), ui.Songlist.Name())
 }
 
 func (ui *UI) HandleEvent(ev tcell.Event) bool {
@@ -249,7 +247,9 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 		mode := ui.Multibar.Mode()
 		switch mode {
 		case MultibarModeSearch:
-			ui.runIndexSearch(term)
+			if err := ui.runIndexSearch(term); err != nil {
+				console.Log("Error while searching: %s", err)
+			}
 		}
 		return true
 
@@ -260,8 +260,14 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 		case MultibarModeInput:
 			ui.EventInputCommand <- term
 		case MultibarModeSearch:
-			ui.AddSonglist(ui.searchResult)
-			ui.SetSonglist(ui.searchResult)
+			if ui.searchResult != nil {
+				if ui.searchResult.Len() > 0 {
+					ui.AddSonglist(ui.searchResult)
+				} else {
+					ui.searchResult = nil
+				}
+			}
+			ui.showSearchResult()
 		}
 		ui.Multibar.SetMode(MultibarModeNormal)
 		return true
@@ -283,21 +289,28 @@ func (ui *UI) refreshPositionReadout() {
 	ui.Multibar.SetRight(str, ui.Style("readout"))
 }
 
-func (ui *UI) runIndexSearch(term string) {
+func (ui *UI) runIndexSearch(term string) error {
 	var err error
 
 	if ui.Index == nil {
-		return
+		return fmt.Errorf("Search index is not operational")
 	}
 	if len(term) == 1 {
-		return
+		return nil
 	}
 
 	ui.searchResult, err = ui.Index.Search(term)
 
-	if err == nil {
-		ui.Songlist.SetCursor(0)
+	ui.Songlist.SetCursor(0)
+	ui.showSearchResult()
+
+	return err
+}
+
+func (ui *UI) showSearchResult() {
+	if ui.searchResult != nil {
 		ui.SetSonglist(ui.searchResult)
-		return
+	} else {
+		ui.SetSonglistIndex(0)
 	}
 }
