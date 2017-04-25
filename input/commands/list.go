@@ -27,6 +27,7 @@ func (cmd *List) Reset() {
 
 func (cmd *List) Execute(t lexer.Token) error {
 	var err error
+	var index int
 
 	s := t.String()
 
@@ -60,19 +61,24 @@ func (cmd *List) Execute(t lexer.Token) error {
 	case lexer.TokenEnd:
 		switch {
 		case cmd.relative != 0:
-			index := cmd.ui.SonglistIndex() + cmd.relative
+			index = cmd.ui.SonglistIndex() + cmd.relative
 			if !cmd.ui.ValidSonglistIndex(index) {
 				len := cmd.ui.SonglistsLen()
 				index = (index + len) % len
 			}
 			console.Log("Switching songlist index to relative %d, equalling absolute %d", cmd.relative, index)
-			err = cmd.ui.SetSonglistIndex(index)
+
 		case cmd.absolute >= 0:
 			console.Log("Switching songlist index to absolute %d", cmd.absolute)
-			err = cmd.ui.SetSonglistIndex(cmd.absolute)
+			index = cmd.absolute
+
 		default:
 			return fmt.Errorf("Unexpected END, expected position. Try one of: next prev <number>")
 		}
+
+		cmd.ui.App.PostFunc(func() {
+			err = cmd.ui.SetSonglistIndex(index)
+		})
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", s)
