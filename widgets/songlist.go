@@ -397,7 +397,9 @@ func (w *SonglistWidget) FallbackSonglist() songlist.Songlist {
 func (w *SonglistWidget) activateList(s *list) {
 	console.Log("activateList(%T %p)", s.songlist, s.songlist)
 	w.currentList = s
-	w.SetColumns(strings.Split(w.options.StringValue("columns"), ",")) // FIXME
+	if len(w.currentList.columns) == 0 {
+		w.SetColumns(strings.Split(w.options.StringValue("columns"), ",")) // FIXME
+	}
 	w.setViewportSize()
 	PostEventListChanged(w)
 }
