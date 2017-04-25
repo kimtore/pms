@@ -3,7 +3,11 @@ package widgets
 import (
 	"fmt"
 	"math"
+	"reflect"
+	"strings"
 
+	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 
@@ -18,19 +22,22 @@ type list struct {
 }
 
 type SonglistWidget struct {
-	currentList *list
-	lists       []*list
-	currentSong song.Song
-	view        views.View
-	viewport    views.ViewPort
+	currentListIndex int
+	currentList      *list
+	lists            []*list
+	fallbackSonglist songlist.Songlist
+	currentSong      song.Song
+	view             views.View
+	viewport         views.ViewPort
+	options          *options.Options
 
 	widget
 	views.WidgetWatchers
 }
 
-func newList() *list {
+func newList(s songlist.Songlist) *list {
 	l := &list{}
-	l.songlist = songlist.New()
+	l.songlist = s
 	l.columns = make(columns, 0)
 	return l
 }
@@ -49,17 +56,11 @@ func max(a, b int) int {
 	return b
 }
 
-func NewSonglistWidget() (w *SonglistWidget) {
+func NewSonglistWidget(o *options.Options) (w *SonglistWidget) {
 	w = &SonglistWidget{}
-	w.currentList = newList()
+	w.options = o
+	w.currentList = newList(songlist.New())
 	return
-}
-
-func (w *SonglistWidget) SetSonglist(s songlist.Songlist) {
-	//console.Log("setSonglist(%p)", s)
-	w.currentList.songlist = s
-	w.setViewportSize()
-	PostEventListChanged(w)
 }
 
 func (w *SonglistWidget) Songlist() songlist.Songlist {
@@ -306,6 +307,10 @@ func (w *SonglistWidget) Len() int {
 	return w.Songlist().Len()
 }
 
+func (w *SonglistWidget) SonglistsLen() int {
+	return len(w.lists)
+}
+
 // PositionReadout returns a combination of PositionLongReadout() and PositionShortReadout().
 func (w *SonglistWidget) PositionReadout() string {
 	return fmt.Sprintf("%s    %s", w.PositionLongReadout(), w.PositionShortReadout())
@@ -333,4 +338,85 @@ func (w *SonglistWidget) PositionShortReadout() string {
 	fraction := float64(float64(ymin) / float64(w.Songlist().Len()))
 	percent := int(math.Floor(fraction * 100))
 	return fmt.Sprintf("%2d%%", percent)
+}
+
+//
+
+func (w *SonglistWidget) AddSonglist(s songlist.Songlist) {
+	list := newList(s)
+	w.lists = append(w.lists, list)
+	console.Log("Songlist UI: added songlist index %d of type %T at address %p", len(w.lists)-1, s, s)
+}
+
+// ReplaceSonglist replaces an existing songlist with its new version. Checking
+// is done on a type-level, so only the queue and library will be replaced.
+func (w *SonglistWidget) ReplaceSonglist(s songlist.Songlist) {
+	for i := range w.lists {
+		if reflect.TypeOf(w.lists[i].songlist) != reflect.TypeOf(s) {
+			continue
+		}
+		console.Log("Songlist UI: replacing songlist of type %T at %p with new list at %p", s, w.lists[i].songlist, s)
+		console.Log("Songlist UI: comparing %p %p", w.lists[i], w.currentList)
+
+		active := w.lists[i] == w.currentList
+		w.lists[i] = newList(s)
+
+		if active {
+			console.Log("Songlist UI: replaced songlist is currently active, switching to new songlist.")
+			w.SetSonglist(s)
+		}
+		return
+	}
+
+	console.Log("Songlist UI: adding songlist of type %T at address %p since no similar exists", s, s)
+	w.AddSonglist(s)
+}
+
+func (w *SonglistWidget) SetSonglist(s songlist.Songlist) {
+	console.Log("SetSonglist(%T %p)", s, s)
+	w.currentListIndex = -1
+	for i, stored := range w.lists {
+		if stored.songlist == s {
+			w.SetSonglistIndex(i)
+			return
+		}
+	}
+	w.activateList(newList(s))
+}
+
+// SetFallbackSonglist sets a songlist that should be reverted to in case a search result returns zero results.
+func (w *SonglistWidget) SetFallbackSonglist(s songlist.Songlist) {
+	console.Log("SetFallbackSonglist(%T %p)", s, s)
+	w.fallbackSonglist = s
+}
+
+func (w *SonglistWidget) FallbackSonglist() songlist.Songlist {
+	return w.fallbackSonglist
+}
+
+func (w *SonglistWidget) activateList(s *list) {
+	console.Log("activateList(%T %p)", s.songlist, s.songlist)
+	w.currentList = s
+	w.SetColumns(strings.Split(w.options.StringValue("columns"), ",")) // FIXME
+	w.setViewportSize()
+	PostEventListChanged(w)
+}
+
+func (w *SonglistWidget) SonglistIndex() int {
+	return w.currentListIndex
+}
+
+func (w *SonglistWidget) ValidSonglistIndex(i int) bool {
+	return i >= 0 && i < w.SonglistsLen()
+}
+
+func (w *SonglistWidget) SetSonglistIndex(i int) error {
+	console.Log("SetSonglistIndex(%d)", i)
+	if !w.ValidSonglistIndex(i) {
+		return fmt.Errorf("Index %d is out of bounds (try between 1 and %d)", i+1, w.SonglistsLen())
+	}
+	w.currentListIndex = i
+	w.activateList(w.lists[w.SonglistIndex()])
+	w.SetFallbackSonglist(w.currentList.songlist)
+	return nil
 }

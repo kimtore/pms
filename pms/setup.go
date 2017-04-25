@@ -60,9 +60,9 @@ func (pms *PMS) setupUI() {
 	timer := time.Now()
 	pms.UI = widgets.NewUI(pms.Options)
 	pms.UI.Start()
-	pms.UI.AddSonglist(pms.Queue)
-	pms.UI.AddSonglist(pms.Library)
-	pms.UI.SetSonglist(pms.Queue)
+	pms.UI.Songlist.AddSonglist(pms.Queue)
+	pms.UI.Songlist.AddSonglist(pms.Library)
+	pms.UI.Songlist.SetSonglist(pms.Queue)
 	console.Log("UI initialized in %s", time.Since(timer).String())
 }
 

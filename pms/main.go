@@ -36,7 +36,7 @@ func (pms *PMS) handleQuitSignal() {
 func (pms *PMS) handleEventLibrary() {
 	console.Log("Song library updated in MPD, assigning to UI")
 	pms.UI.App.PostFunc(func() {
-		pms.UI.ReplaceSonglist(pms.Library)
+		pms.UI.Songlist.ReplaceSonglist(pms.Library)
 		pms.UI.App.Update()
 	})
 }
@@ -44,7 +44,7 @@ func (pms *PMS) handleEventLibrary() {
 func (pms *PMS) handleEventQueue() {
 	console.Log("Queue updated in MPD, assigning to UI")
 	pms.UI.App.PostFunc(func() {
-		pms.UI.ReplaceSonglist(pms.Queue)
+		pms.UI.Songlist.ReplaceSonglist(pms.Queue)
 		pms.UI.App.Update()
 	})
 }

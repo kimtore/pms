@@ -42,7 +42,7 @@ func (cmd *List) Execute(t lexer.Token) error {
 		case "home":
 			cmd.absolute = 0
 		case "end":
-			cmd.absolute = cmd.ui.SonglistsLen() - 1
+			cmd.absolute = cmd.ui.Songlist.SonglistsLen() - 1
 		default:
 			i, err := strconv.Atoi(s)
 			if err != nil {
@@ -61,9 +61,9 @@ func (cmd *List) Execute(t lexer.Token) error {
 	case lexer.TokenEnd:
 		switch {
 		case cmd.relative != 0:
-			index = cmd.ui.SonglistIndex() + cmd.relative
-			if !cmd.ui.ValidSonglistIndex(index) {
-				len := cmd.ui.SonglistsLen()
+			index = cmd.ui.Songlist.SonglistIndex() + cmd.relative
+			if !cmd.ui.Songlist.ValidSonglistIndex(index) {
+				len := cmd.ui.Songlist.SonglistsLen()
 				index = (index + len) % len
 			}
 			console.Log("Switching songlist index to relative %d, equalling absolute %d", cmd.relative, index)
@@ -77,7 +77,7 @@ func (cmd *List) Execute(t lexer.Token) error {
 		}
 
 		cmd.ui.App.PostFunc(func() {
-			err = cmd.ui.SetSonglistIndex(index)
+			err = cmd.ui.Songlist.SetSonglistIndex(index)
 		})
 
 	default:

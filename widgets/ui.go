@@ -2,8 +2,6 @@ package widgets
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/index"
@@ -34,13 +32,9 @@ type UI struct {
 	EventKeyInput     chan parser.KeyEvent
 
 	// Data resources
-	Index             *index.Index
-	options           *options.Options
-	currentSonglist   songlist.Songlist
-	preSearchSonglist songlist.Songlist
-	songlists         []songlist.Songlist
-	songlistIndex     int
-	searchResult      songlist.Songlist
+	Index        *index.Index
+	options      *options.Options
+	searchResult songlist.Songlist
 
 	// TCell
 	view views.View
@@ -53,7 +47,6 @@ func NewUI(opts *options.Options) *UI {
 
 	ui.EventInputCommand = make(chan string, 16)
 	ui.EventKeyInput = make(chan parser.KeyEvent, 16)
-	ui.songlists = make([]songlist.Songlist, 0)
 
 	ui.App = &views.Application{}
 	ui.options = opts
@@ -62,7 +55,7 @@ func NewUI(opts *options.Options) *UI {
 	ui.Playbar = NewPlaybarWidget()
 	ui.Columnheaders = NewColumnheadersWidget()
 	ui.Multibar = NewMultibarWidget(ui.EventKeyInput)
-	ui.Songlist = NewSonglistWidget()
+	ui.Songlist = NewSonglistWidget(ui.options)
 
 	ui.Multibar.Watch(ui)
 	ui.Songlist.Watch(ui)
@@ -123,87 +116,8 @@ func (ui *UI) SetIndex(i *index.Index) {
 	ui.Index = i
 }
 
-func (ui *UI) AddSonglist(s songlist.Songlist) {
-	ui.songlists = append(ui.songlists, s)
-	console.Log("Songlist UI: added songlist index %d of type %T at address %p", len(ui.songlists)-1, s, s)
-}
-
-// ReplaceSonglist replaces an existing songlist with its new version. Checking
-// is done on a type-level, so only the queue and library will be replaced.
-func (ui *UI) ReplaceSonglist(s songlist.Songlist) {
-	for i := range ui.songlists {
-		if reflect.TypeOf(ui.songlists[i]) != reflect.TypeOf(s) {
-			continue
-		}
-		console.Log("Songlist UI: replacing songlist of type %T at %p with new list at %p", s, ui.songlists[i], s)
-		console.Log("Songlist UI: comparing %p %p", ui.songlists[i], ui.currentSonglist)
-		active := ui.songlists[i] == ui.currentSonglist
-		ui.songlists[i] = s
-		if active {
-			console.Log("Songlist UI: replaced songlist is currently active, switching to new songlist.")
-			ui.SetSonglist(s)
-		}
-		return
-	}
-	console.Log("Songlist UI: adding songlist of type %T at address %p since no similar exists", s, s)
-	ui.AddSonglist(s)
-}
-
-func (ui *UI) SetSonglist(s songlist.Songlist) {
-	console.Log("SetSonglist(%T %p)", s, s)
-	ui.songlistIndex = -1
-	for i, stored := range ui.songlists {
-		if stored == s {
-			ui.SetSonglistIndex(i)
-			return
-		}
-	}
-	ui.activateSonglist(s)
-}
-
-// SetPreSearchSonglist sets a songlist that should be reverted to in case a search result returns zero results.
-func (ui *UI) SetPreSearchSonglist(s songlist.Songlist) {
-	console.Log("SetPreSearchSonglist(%T %p)", s, s)
-	ui.preSearchSonglist = s
-}
-
-// FIXME: move functionality into ui.Songlist
-func (ui *UI) activateSonglist(s songlist.Songlist) {
-	console.Log("activateSonglist(%T %p)", s, s)
-	ui.currentSonglist = s
-	ui.Songlist.SetSonglist(s)
-	ui.Songlist.SetColumns(strings.Split(ui.options.StringValue("columns"), ","))
-}
-
-func (ui *UI) SonglistIndex() int {
-	return ui.songlistIndex
-}
-
-func (ui *UI) ValidSonglistIndex(i int) bool {
-	return i >= 0 && i < ui.SonglistsLen()
-}
-
-func (ui *UI) SetSonglistIndex(i int) error {
-	console.Log("SetSonglistIndex(%d)", i)
-	if !ui.ValidSonglistIndex(i) {
-		return fmt.Errorf("Index %d is out of bounds (try between 1 and %d)", i+1, ui.SonglistsLen())
-	}
-	ui.songlistIndex = i
-	ui.activateSonglist(ui.songlists[ui.songlistIndex])
-	ui.SetPreSearchSonglist(ui.currentSonglist)
-	return nil
-}
-
 func (ui *UI) CurrentSonglistWidget() *SonglistWidget {
 	return ui.Songlist
-}
-
-func (ui *UI) Songlists() []songlist.Songlist {
-	return ui.songlists
-}
-
-func (ui *UI) SonglistsLen() int {
-	return len(ui.songlists)
 }
 
 func (ui *UI) Start() {
@@ -238,8 +152,8 @@ func (ui *UI) Size() (int, int) {
 }
 
 func (ui *UI) Title() string {
-	if ui.songlistIndex >= 0 {
-		return fmt.Sprintf("[%d/%d] %s", ui.songlistIndex+1, ui.SonglistsLen(), ui.Songlist.Name())
+	if ui.Songlist.SonglistIndex() >= 0 {
+		return fmt.Sprintf("[%d/%d] %s", ui.Songlist.SonglistIndex()+1, ui.Songlist.SonglistsLen(), ui.Songlist.Name())
 	} else {
 		return fmt.Sprintf("[...] %s", ui.Songlist.Name())
 	}
@@ -274,7 +188,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 		case MultibarModeSearch:
 			if ui.searchResult != nil {
 				if ui.searchResult.Len() > 0 {
-					ui.AddSonglist(ui.searchResult)
+					ui.Songlist.AddSonglist(ui.searchResult)
 				} else {
 					ui.searchResult = nil
 				}
@@ -321,10 +235,10 @@ func (ui *UI) runIndexSearch(term string) error {
 
 func (ui *UI) showSearchResult() {
 	if ui.searchResult != nil {
-		ui.SetSonglist(ui.searchResult)
-	} else if ui.preSearchSonglist != nil {
-		ui.SetSonglist(ui.preSearchSonglist)
+		ui.Songlist.SetSonglist(ui.searchResult)
+	} else if ui.Songlist.FallbackSonglist() != nil {
+		ui.Songlist.SetSonglist(ui.Songlist.FallbackSonglist())
 	} else {
-		ui.SetSonglistIndex(0)
+		ui.Songlist.SetSonglistIndex(0)
 	}
 }
