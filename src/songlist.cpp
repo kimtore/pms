@@ -263,7 +263,7 @@ song_t		Songlist::findentry(Item field, bool reverse)
 	if (reverse)
 	{
 		cmp[0] = pms->formatter->format(s, field, true);
-		it = match(cmp[0], i, i - 1, mode | MATCH_NOT | MATCH_EXACT);
+		it = match_wrap_around(cmp[0], i, mode | MATCH_NOT | MATCH_EXACT);
 		if (it && it == last()) {
 			i = 0;
 		}
