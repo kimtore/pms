@@ -365,7 +365,7 @@ func (w *SonglistWidget) ReplaceSonglist(s songlist.Songlist) {
 		console.Log("Songlist UI: comparing %p %p", w.lists[i], w.currentList)
 
 		active := w.lists[i] == w.currentList
-		w.lists[i] = newList(s)
+		w.lists[i].songlist = s
 
 		if active {
 			console.Log("Songlist UI: replaced songlist is currently active, switching to new songlist.")
