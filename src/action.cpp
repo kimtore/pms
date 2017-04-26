@@ -317,6 +317,7 @@ long		Interface::show_info()
 	pms->log(MSG_CONSOLE, STOK, "albumartist\t = %s\n", song->albumartist.c_str());
 	pms->log(MSG_CONSOLE, STOK, "albumartistsort\t = %s\n", song->albumartistsort.c_str());
 	pms->log(MSG_CONSOLE, STOK, "date\t\t = %s\n", song->date.c_str());
+	pms->log(MSG_CONSOLE, STOK, "originaldate\t = %s\n", song->originaldate.c_str());
 	pms->log(MSG_CONSOLE, STOK, "year\t\t = %s\n", song->year.c_str());
 	pms->log(MSG_CONSOLE, STOK, "artistsort\t = %s\n", song->artistsort.c_str());
 	pms->log(MSG_CONSOLE, STOK, "title\t\t = %s\n", song->title.c_str());

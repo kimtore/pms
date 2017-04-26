@@ -23,15 +23,15 @@ bind ? help
 bind f filter
 bind F clear-filters
 
-set columns=artist year album discshort trackshort title length
-set sort=track disc album date albumartistsort
+set columns=artist originalyear year album discshort trackshort title length
+set sort=track disc album date originaldate albumartistsort
 set nonextafteraction
 
 set scrolloff=4
 
 set libraryroot=/home/bjn/media/music/
 
-set topbar=%ifcursong%%time_elapsed% %playstate% %time% (%progresspercentage%%%)%endif%\t%ifcursong%%artist%%endif%\tVol: %volume%%%  Mode: %muteshort%%consumeshort%%repeatshort%%randomshort%%singleshort%\n%listsize%\t%ifcursong%%album% (%year%)%endif%\tQ: %livequeuesize%\n\t%ifcursong%==> %title% <==%endif%
+set topbar=%ifcursong%%time_elapsed% %playstate% %time% (%progresspercentage%%%)%endif%\t%ifcursong%%artist%%endif%\tVol: %volume%%%  Mode: %muteshort%%consumeshort%%repeatshort%%randomshort%%singleshort%\n%listsize%\t%ifcursong%%album% (%originalyear% -> %year%)%endif%\tQ: %livequeuesize%\n\t%ifcursong%==> %title% <==%endif%
 
 set xtermtitle=%playstate%%ifcursong% %artist% – %title%%endif%
 
@@ -41,10 +41,14 @@ colour cursor black brightgrey
 colour selection white green
 colour topbar.fields.artist brown
 colour topbar.fields.title white
-colour topbar.fields.year green
 colour topbar.fields.date green
-colour fields.year green
+colour topbar.fields.originaldate green
+colour topbar.fields.year green
+colour topbar.fields.originalyear green
 colour fields.date green
+colour fields.originaldate green
+colour fields.year green
+colour fields.originalyear green
 colour topbar.time_elapsed brightmagenta
 
 set mouse

@@ -138,8 +138,12 @@ Item			Formatter::field_to_item(string f)
 		return FIELD_ALBUM;
 	else if (f == "date")
 		return FIELD_DATE;
+	else if (f == "originaldate")
+		return FIELD_ORIGINALDATE;
 	else if (f == "year")
 		return FIELD_YEAR;
+	else if (f == "originalyear")
+		return FIELD_ORIGINALYEAR;
 	else if (f == "track")
 		return FIELD_TRACK;
 	else if (f == "trackshort")
@@ -477,9 +481,27 @@ string			Formatter::format(Song * song, Item keyword, unsigned int & printlen, c
 				retstr = "----";
 			break;
 
+		case FIELD_ORIGINALDATE:
+			if (!song) return retstr;
+			retstr = song->originaldate;
+			if (clean) break;
+
+			if (!retstr.size())
+				retstr = "----";
+			break;
+
 		case FIELD_YEAR:
 			if (!song) return retstr;
 			retstr = song->year;
+			if (clean) break;
+
+			if (!retstr.size())
+				retstr = "----";
+			break;
+
+		case FIELD_ORIGINALYEAR:
+			if (!song) return retstr;
+			retstr = song->originalyear;
 			if (clean) break;
 
 			if (!retstr.size())
@@ -829,8 +851,16 @@ color *			Formatter::getcolor(Item i, colortable_fields * f)
 			c = f->date;
 			break;
 
+		case FIELD_ORIGINALDATE:
+			c = f->originaldate;
+			break;
+
 		case FIELD_YEAR:
 			c = f->year;
+			break;
+
+		case FIELD_ORIGINALYEAR:
+			c = f->originalyear;
 			break;
 
 		case FIELD_TRACK:
@@ -1025,8 +1055,16 @@ long			Formatter::item_to_match(Item i)
 			l = MATCH_DATE;
 			break;
 
+		case FIELD_ORIGINALDATE:
+			l = MATCH_ORIGINALDATE;
+			break;
+
 		case FIELD_YEAR:
 			l = MATCH_YEAR;
+			break;
+
+		case FIELD_ORIGINALYEAR:
+			l = MATCH_ORIGINALYEAR;
 			break;
 
 		case FIELD_GENRE:

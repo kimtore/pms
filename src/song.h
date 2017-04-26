@@ -77,7 +77,9 @@ public:
 	string		track;
 	string		name;
 	string		date;
+	string		originaldate;
 	string		year;
+	string		originalyear;
 
 	string		genre;
 	string		composer;

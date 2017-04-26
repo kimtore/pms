@@ -621,8 +621,14 @@ Songlist::set_column_size()
 			case FIELD_DATE:
 				ui = s->date.size();
 				break;
+			case FIELD_ORIGINALDATE:
+				ui = s->originaldate.size();
+				break;
 			case FIELD_YEAR:
 				ui = s->year.size();
+				break;
+			case FIELD_ORIGINALYEAR:
+				ui = s->originalyear.size();
 				break;
 			case FIELD_NAME:
 				ui = s->name.size();
@@ -1017,6 +1023,21 @@ bool	sort_compare_date(ListItem * a_, ListItem * b_)
 	else 						return a->date < b->date;
 }
 
+bool	sort_compare_originaldate(ListItem * a_, ListItem * b_)
+{
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
+	if (a == NULL && b == NULL)			return true;
+	else if (a == NULL && b != NULL)		return true;
+	else if (a != NULL && b == NULL)		return false;
+	else if (a->originaldate.length() && b->originaldate.length())
+							return a->originaldate < b->originaldate;
+	// Fall back to date where necessary
+	else if (a->originaldate.length())		return a->originaldate < b->date;
+	else if (b->originaldate.length())		return a->date < b->originaldate;
+	else						return a->date < b->date;
+}
+
 bool	sort_compare_year(ListItem * a_, ListItem * b_)
 {
 	Song * a = LISTITEMSONG(a_)->song;
@@ -1025,6 +1046,21 @@ bool	sort_compare_year(ListItem * a_, ListItem * b_)
 	else if (a == NULL && b != NULL)		return true;
 	else if (a != NULL && b == NULL)		return false;
 	else 						return a->year < b->year;
+}
+
+bool	sort_compare_originalyear(ListItem * a_, ListItem * b_)
+{
+	Song * a = LISTITEMSONG(a_)->song;
+	Song * b = LISTITEMSONG(b_)->song;
+	if (a == NULL && b == NULL)			return true;
+	else if (a == NULL && b != NULL)		return true;
+	else if (a != NULL && b == NULL)		return false;
+	else if (a->originalyear.length() && b->originalyear.length())
+							return a->originalyear < b->originalyear;
+	// Fall back to year where necessary
+	else if (a->originalyear.length())		return a->originalyear < b->year;
+	else if (b->originalyear.length())		return a->year < b->originalyear;
+	else						return a->year < b->year;
 }
 
 bool	sort_compare_genre(ListItem * a_, ListItem * b_)

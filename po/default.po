@@ -278,8 +278,16 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
+#: src/pms.cpp:747
+msgid "Original date"
+msgstr ""
+
 #: src/pms.cpp:440
 msgid "Year"
+msgstr ""
+
+#: src/pms.cpp:749
+msgid "Orig"
 msgstr ""
 
 #: src/pms.cpp:441

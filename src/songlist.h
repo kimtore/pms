@@ -58,24 +58,26 @@ enum
 	MATCH_ALBUM		= 1 << 8,
 	MATCH_TRACKSHORT	= 1 << 9,
 	MATCH_DATE		= 1 << 10,
-	MATCH_TIME		= 1 << 11,
-	MATCH_GENRE		= 1 << 12,
-	MATCH_COMPOSER		= 1 << 13,
-	MATCH_PERFORMER		= 1 << 14,
-	MATCH_DISCSHORT		= 1 << 15,
-	MATCH_COMMENT		= 1 << 16,
-	MATCH_YEAR		= 1 << 17,
+	MATCH_ORIGINALDATE	= 1 << 11,
+	MATCH_TIME		= 1 << 12,
+	MATCH_GENRE		= 1 << 13,
+	MATCH_COMPOSER		= 1 << 14,
+	MATCH_PERFORMER		= 1 << 15,
+	MATCH_DISCSHORT		= 1 << 16,
+	MATCH_COMMENT		= 1 << 17,
+	MATCH_YEAR		= 1 << 18,
+	MATCH_ORIGINALYEAR	= 1 << 19,
 
-	MATCH_ALL		= (1 << 18) - 1,
+	MATCH_ALL		= (1 << 20) - 1,
 
-	MATCH_NOT		= 1 << 18,
-	MATCH_EXACT		= 1 << 19,
-	MATCH_REVERSE		= 1 << 20,
-	MATCH_ALMOST		= 1 << 21,
-	MATCH_LT		= 1 << 22,
-	MATCH_LTE		= 1 << 23,
-	MATCH_GT		= 1 << 24,
-	MATCH_GTE		= 1 << 25
+	MATCH_NOT		= 1 << 20,
+	MATCH_EXACT		= 1 << 21,
+	MATCH_REVERSE		= 1 << 22,
+	MATCH_ALMOST		= 1 << 23,
+	MATCH_LT		= 1 << 24,
+	MATCH_LTE		= 1 << 25,
+	MATCH_GT		= 1 << 26,
+	MATCH_GTE		= 1 << 27
 };
 
 struct Selection
@@ -240,7 +242,9 @@ bool		sort_compare_track(ListItem * a_, ListItem * b_);
 bool		sort_compare_length(ListItem * a_, ListItem * b_);
 bool		sort_compare_name(ListItem * a_, ListItem * b_);
 bool		sort_compare_date(ListItem * a_, ListItem * b_);
+bool		sort_compare_originaldate(ListItem * a_, ListItem * b_);
 bool		sort_compare_year(ListItem * a_, ListItem * b_);
+bool		sort_compare_originalyear(ListItem * a_, ListItem * b_);
 bool		sort_compare_genre(ListItem * a_, ListItem * b_);
 bool		sort_compare_composer(ListItem * a_, ListItem * b_);
 bool		sort_compare_performer(ListItem * a_, ListItem * b_);
