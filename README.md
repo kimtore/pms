@@ -2,7 +2,7 @@
 
 Practical Music Search is an interactive console-based client for Music Player Daemon, or MPD. It has a command line interface much like Vim, and features lightning-fast searches, sorting, custom colors, configurable layouts, and the ability to set all keyboard shortcuts.
 
-This is an experimental branch of PMS, re-implemented in Go. Much of the old functionality is missing, but the UI is usable for basic tasks. and the connection to MPD seems stable enough. The full-text search is very fast, and definitely worth a try.
+This is an experimental branch of PMS, re-implemented in Go. Much of the old functionality is missing (see [Roadmap](#Roadmap)), but the UI is usable for basic tasks. and the connection to MPD seems stable enough. The full-text search is very fast, and definitely worth a try.
 
 
 ## Running
@@ -51,6 +51,21 @@ EOF
 PMS will honor the `MPD_HOST` and `MPD_PORT` variables.
 
 See `pms --help` for configuration options. Configuration files are not implemented yet, but the configuration can be changed while running the program.
+
+
+## Roadmap
+
+The current goal of the Go implementation is to implement most of the features found in the 0.42 branch.
+
+This functionality is not implemented yet:
+
+* Basic player controls (~~play~~, ~~add~~, pause, ~~stop~~, next, prev, consume, repeat, single, random).
+* Automatic add to queue when queue is nearing end.
+* Customizable topbar.
+* Tab completion.
+* Reading configuration files.
+* Multiple selection, copy, and paste.
+* ...and probably more.
 
 
 ## Contributing
