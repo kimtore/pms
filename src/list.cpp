@@ -492,7 +492,7 @@ List::selection_rend()
 }
 
 ListItem *
-List::match(string pattern, unsigned int from, unsigned int to, long flags)
+List::match(string pattern, unsigned int from, unsigned int to, long flags, unsigned int * match_index)
 {
 	ListItem * it;
 	unsigned int i;
@@ -513,6 +513,7 @@ List::match(string pattern, unsigned int from, unsigned int to, long flags)
 		assert(it);
 
 		if (it->match(pattern, flags)) {
+			if (match_index != NULL) *match_index = i;
 			return it;
 		}
 
@@ -534,7 +535,7 @@ List::match(string pattern, unsigned int from, unsigned int to, long flags)
 }
 
 ListItem *
-List::match_wrap_around(string pattern, unsigned int from, long flags)
+List::match_wrap_around(string pattern, unsigned int from, long flags, unsigned int * match_index)
 {
 	unsigned int to;
 
@@ -550,5 +551,5 @@ List::match_wrap_around(string pattern, unsigned int from, long flags)
 		to = (from == 0 ? size() : from) - 1;
 	}
 
-	return match(pattern, from, to, flags);
+	return match(pattern, from, to, flags, match_index);
 }
