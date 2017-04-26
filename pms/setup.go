@@ -53,6 +53,7 @@ func (pms *PMS) setupCLI() {
 	pms.CLI.Register("redraw", commands.NewRedraw(pms.UI.App))
 	pms.CLI.Register("se", commands.NewSet(pms.Options))
 	pms.CLI.Register("set", commands.NewSet(pms.Options))
+	pms.CLI.Register("sort", commands.NewSort(pms.UI.CurrentSonglistWidget, pms.Options))
 	pms.CLI.Register("stop", commands.NewStop(pms.CurrentMpdClient))
 }
 

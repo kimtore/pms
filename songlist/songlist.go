@@ -1,10 +1,13 @@
 package songlist
 
 import (
+	"fmt"
 	"sort"
+	"time"
 
 	"github.com/fhs/gompd/mpd"
 
+	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/song"
 )
 
@@ -16,6 +19,7 @@ type Songlist interface {
 	SetName(string)
 	Song(int) *song.Song
 	Songs() []*song.Song
+	Sort([]string) error
 	Swap(int, int)
 }
 
@@ -55,9 +59,29 @@ func (s *BaseSonglist) Songs() []*song.Song {
 	return s.songs
 }
 
-func (s *BaseSonglist) Sort() {
+func (s *BaseSonglist) Sort(fields []string) error {
+	if len(fields) == 0 {
+		return fmt.Errorf("Cannot sort without sort criteria")
+	}
+	s.sortBy(fields[0])
+	for _, field := range fields[1:] {
+		s.stableSortBy(field)
+	}
+	return nil
+}
+
+func (s *BaseSonglist) sortBy(field string) {
+	s.currentSortCriteria = field
+	timer := time.Now()
 	sort.Sort(s)
+	console.Log("Sorted '%s' by '%s' in %s", s.Name(), field, time.Since(timer).String())
+}
+
+func (s *BaseSonglist) stableSortBy(field string) {
+	s.currentSortCriteria = field
+	timer := time.Now()
 	sort.Stable(s)
+	console.Log("Stable sorted '%s' by '%s' in %s", s.Name(), field, time.Since(timer).String())
 }
 
 func (s *BaseSonglist) Len() int {
