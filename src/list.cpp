@@ -492,10 +492,10 @@ List::selection_rend()
 }
 
 ListItem *
-List::match(string pattern, unsigned int from, unsigned int to, long flags)
+List::match(string pattern, unsigned int from, unsigned int to, long flags, unsigned int * match_index)
 {
 	ListItem * it;
-	int i;
+	unsigned int i;
 
 	if (!size()) {
 		return NULL;
@@ -508,17 +508,12 @@ List::match(string pattern, unsigned int from, unsigned int to, long flags)
 
 	while (true)
 	{
-		if (i < 0) {
-			i = size() - 1;
-		} else if (i >= size()) {
-			i = 0;
-		}
-
 		it = item(i);
 
 		assert(it);
 
 		if (it->match(pattern, flags)) {
+			if (match_index != NULL) *match_index = i;
 			return it;
 		}
 
@@ -526,38 +521,35 @@ List::match(string pattern, unsigned int from, unsigned int to, long flags)
 			break;
 		}
 
-		i += (flags & MATCH_REVERSE ? -1 : 1);
+		/* Next i, and wrap around ends of list */
+		if (flags & MATCH_REVERSE) {
+			if (i == 0) i = size();
+			i--;
+		} else {
+			i++;
+			if (i >= size()) i = 0;
+		}
 	}
 
 	return NULL;
 }
 
 ListItem *
-List::match_wrap_around(string pattern, int32_t from, long flags)
+List::match_wrap_around(string pattern, unsigned int from, long flags, unsigned int * match_index)
 {
-	int32_t to;
+	unsigned int to;
 
 	if (!size()) {
 		return NULL;
 	}
 
-	if (!(flags & MATCH_REVERSE)) {
-		if (from >= size()) {
-			from = 0;
-		}
-		to = from - 1;
-		if (to < 0) {
-			to = size() - 1;
-		}
+	assert(from < size());
+
+	if (flags & MATCH_REVERSE) {
+		to = (from + 1) % size();
 	} else {
-		if (from < 0) {
-			from = size() - 1;
-		}
-		to = from + 1;
-		if (to >= size()) {
-			to = 0;
-		}
+		to = (from == 0 ? size() : from) - 1;
 	}
 
-	return match(pattern, from, to, flags);
+	return match(pattern, from, to, flags, match_index);
 }

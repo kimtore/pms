@@ -234,6 +234,7 @@ song_t		Songlist::findentry(Item field, bool reverse)
 //	string		where;
 	string		cmp[2];
 	bool		tmp;
+	unsigned int	match_index;
 
 	if (field == LITERALPERCENT || field == EINVALID) return i;
 
@@ -251,22 +252,21 @@ song_t		Songlist::findentry(Item field, bool reverse)
 	cmp[0] = pms->formatter->format(s, field, true);
 
 	/* Perform a match */
-	it = match(cmp[0], i, i - 1, mode | MATCH_NOT | MATCH_EXACT);
+	it = match_wrap_around(cmp[0], (unsigned int) i, mode | MATCH_NOT | MATCH_EXACT, &match_index);
 	if (!it) {
 		pms->log(MSG_DEBUG, 0, "gotonextentry() fails with mode = %d\n", mode);
 		return MPD_SONG_NO_NUM;
 	}
 
 	s = LISTITEMSONG(it)->song;
+	i = match_index;
 
 	/* Reverse match must match first entry, not last */
 	if (reverse)
 	{
 		cmp[0] = pms->formatter->format(s, field, true);
-		it = match(cmp[0], i, i - 1, mode | MATCH_NOT | MATCH_EXACT);
-		if (it && it == last()) {
-			i = 0;
-		}
+		it = match_wrap_around(cmp[0], match_index, mode | MATCH_NOT | MATCH_EXACT, &match_index);
+		i = (match_index + 1) % size();
 	}
 
 	return i;
