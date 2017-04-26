@@ -1,8 +1,8 @@
 # Practical Music Search
 
-~~Practical Music Search is a ncurses-based client for MPD. It has a command line interface much like Vim, and supports custom colors, layouts, and key bindings. PMS aims to be accessible and highly configurable.~~
+Practical Music Search is an interactive console-based client for Music Player Daemon, or MPD. It has a command line interface much like Vim, and features lightning-fast searches, sorting, custom colors, configurable layouts, and the ability to set all keyboard shortcuts.
 
-This is an experimental branch of PMS, re-implemented in Go. Much is missing yet, but the UI is usable and the connection to MPD seems stable enough. The full-text search is very fast, and definitely worth a try.
+This is an experimental branch of PMS, re-implemented in Go. Much of the old functionality is missing, but the UI is usable for basic tasks. and the connection to MPD seems stable enough. The full-text search is very fast, and definitely worth a try.
 
 
 ## Running
@@ -50,7 +50,7 @@ EOF
 
 PMS will honor the `MPD_HOST` and `MPD_PORT` variables.
 
-Also see `pms --help` for configuration options.
+See `pms --help` for configuration options. Configuration files are not implemented yet, but the configuration can be changed while running the program.
 
 
 ## Contributing
@@ -62,7 +62,7 @@ IRC channel `#pms` on Freenode for open discussion.
 
 ## Authors
 
-Copyright (c) 2006-2017 Kim Tore Jensen <kimtjen@gmail.com>.
+Copyright (c) 2006-2017 Kim Tore Jensen <<kimtjen@gmail.com>>.
 
 * Kim Tore Jensen <<kimtjen@gmail.com>>
 * Bart Nagel <<bart@tremby.net>>
