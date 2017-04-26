@@ -89,7 +89,7 @@ func (s *BaseSonglist) Len() int {
 }
 
 func (s *BaseSonglist) Less(a, b int) bool {
-	return s.songs[a].TagString(s.currentSortCriteria) < s.songs[b].TagString(s.currentSortCriteria)
+	return s.songs[a].SortTags[s.currentSortCriteria] < s.songs[b].SortTags[s.currentSortCriteria]
 }
 
 func (s *BaseSonglist) Swap(a, b int) {

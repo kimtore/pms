@@ -1,6 +1,7 @@
 package song
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -15,15 +16,19 @@ type Song struct {
 	Position int
 	Time     int
 	Tags     Taglist
+	SortTags StringTaglist
 }
 
 type Tag []rune
 
 type Taglist map[string]Tag
 
+type StringTaglist map[string]string
+
 func New() (s *Song) {
 	s = &Song{}
 	s.Tags = make(Taglist)
+	s.SortTags = make(StringTaglist)
 	return
 }
 
@@ -38,6 +43,7 @@ func (s *Song) SetTags(tags mpd.Attrs) {
 		s.Tags[lowKey] = []rune(tags[key])
 	}
 	s.AutoFill()
+	s.FillSortTags()
 }
 
 // AutoFill post-processes and caches song tags.
@@ -56,4 +62,28 @@ func (s *Song) AutoFill() {
 	if len(s.Tags["date"]) >= 4 {
 		s.Tags["year"] = s.Tags["date"][:4]
 	}
+}
+
+// FillSortTags post-processes tags, and saves them as strings for sorting purposes later on.
+func (s *Song) FillSortTags() {
+	for i := range s.Tags {
+		s.SortTags[i] = s.TagString(i)
+	}
+
+	if t, ok := s.SortTags["track"]; ok {
+		s.SortTags["track"] = trackSort(t)
+	}
+}
+
+func trackSort(s string) string {
+	tracks := strings.Split(s, "/")
+	if len(tracks) == 0 {
+		return s
+	}
+	trackNum, err := strconv.Atoi(tracks[0])
+	if err != nil {
+		return s
+	}
+	// Assume no release has more than 999 tracks.
+	return fmt.Sprintf("%03d", trackNum)
 }
