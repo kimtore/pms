@@ -5,6 +5,7 @@ import (
 	"math"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/options"
@@ -77,6 +78,8 @@ func (w *SonglistWidget) AutoSetColumnWidths() {
 }
 
 func (w *SonglistWidget) SetColumns(cols []string) {
+	timer := time.Now()
+
 	ch := make(chan int, len(w.currentList.columns))
 	w.currentList.columns = make(columns, len(cols))
 
@@ -91,6 +94,9 @@ func (w *SonglistWidget) SetColumns(cols []string) {
 		<-ch
 	}
 	w.AutoSetColumnWidths()
+
+	console.Log("Calculated column widths in %s", time.Since(timer).String())
+
 	PostEventListChanged(w)
 }
 
@@ -439,9 +445,9 @@ func (w *SonglistWidget) FallbackSonglist() songlist.Songlist {
 func (w *SonglistWidget) activateList(s *list) {
 	console.Log("activateList(%T %p)", s.songlist, s.songlist)
 	w.currentList = s
-	if len(w.currentList.columns) == 0 {
-		w.SetColumns(strings.Split(w.options.StringValue("columns"), ",")) // FIXME
-	}
+	//if len(w.currentList.columns) == 0 {
+	w.SetColumns(strings.Split(w.options.StringValue("columns"), ",")) // FIXME
+	//}
 	w.setViewportSize()
 	//console.Log("Calling MakeVisible(%d), MakeVisible(%d)", w.currentList.ymax, w.currentList.ymin)
 	w.viewport.MakeVisible(0, w.currentList.ymax)
