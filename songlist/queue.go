@@ -1,6 +1,8 @@
 package songlist
 
 import (
+	"fmt"
+
 	"github.com/ambientsound/pms/song"
 )
 
@@ -17,6 +19,38 @@ func NewQueue() (s *Queue) {
 
 func (s *Queue) Name() string {
 	return "Queue"
+}
+
+// Merge incorporates songs from another songlist, replacing songs that has the same position.
+func (q *Queue) Merge(s Songlist) (*Queue, error) {
+	newQueue := NewQueue()
+
+	oldSongs := q.Songs()
+	for i := range oldSongs {
+		song := *oldSongs[i]
+		newQueue.Add(&song)
+	}
+
+	newSongs := s.Songs()
+	for i := range newSongs {
+		song := newSongs[i]
+		switch {
+		case song.Position < 0:
+			return nil, fmt.Errorf("Song number %d does not have a position", i)
+		case song.Position == newQueue.Len():
+			if err := newQueue.Add(song); err != nil {
+				return nil, fmt.Errorf("Cannot add song %d to queue: %s", i, err)
+			}
+		case song.Position > newQueue.Len():
+			return nil, fmt.Errorf("Song number %d has position greater than list length, there are parts missing", i)
+		default:
+			if err := newQueue.Replace(song.Position, song); err != nil {
+				return nil, fmt.Errorf("Cannot replace song %d: %s", i, err)
+			}
+		}
+	}
+
+	return newQueue, nil
 }
 
 func IsQueue(s Songlist) bool {

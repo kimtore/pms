@@ -383,14 +383,22 @@ func (pms *PMS) SyncQueue() error {
 	if pms.queueVersion == pms.MpdStatus.Playlist {
 		return nil
 	}
-	pms.Message("Retrieving queue metadata, %d songs...", pms.MpdStatus.PlaylistLength)
-	queue, err := pms.retrieveQueue()
+	console.Log("Retrieving changed songs in queue...")
+	queueChanges, err := pms.retrieveQueue()
 	if err != nil {
 		return fmt.Errorf("Error while retrieving queue from MPD: %s", err)
 	}
-	pms.Queue = queue
+	console.Log("Total of %d changed songs in queue.", queueChanges.Len())
+	newQueue, err := pms.Queue.Merge(queueChanges)
+	if err != nil {
+		return fmt.Errorf("Error while merging queue changes: %s", err)
+	}
+	if err := newQueue.Truncate(pms.MpdStatus.PlaylistLength); err != nil {
+		return fmt.Errorf("Error while truncating queue: %s", err)
+	}
+	pms.Queue = newQueue
 	pms.queueVersion = pms.MpdStatus.Playlist
-	pms.Message("Queue at version %d.", pms.queueVersion)
+	console.Log("Queue at version %d.", pms.queueVersion)
 	pms.EventQueue <- 1
 	return nil
 }
@@ -410,11 +418,11 @@ func (pms *PMS) retrieveLibrary() (*songlist.Library, error) {
 
 func (pms *PMS) retrieveQueue() (*songlist.Queue, error) {
 	timer := time.Now()
-	list, err := pms.MpdClient.PlaylistInfo(-1, -1)
+	list, err := pms.MpdClient.PlChanges(pms.queueVersion, -1, -1)
 	if err != nil {
 		return nil, err
 	}
-	console.Log("PlaylistInfo in %s", time.Since(timer).String())
+	console.Log("PlChanges in %s", time.Since(timer).String())
 
 	s := songlist.NewQueue()
 	s.AddFromAttrlist(list)

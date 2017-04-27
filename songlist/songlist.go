@@ -16,11 +16,13 @@ type Songlist interface {
 	Len() int
 	Less(int, int) bool
 	Name() string
+	Replace(int, *song.Song) error
 	SetName(string)
 	Song(int) *song.Song
 	Songs() []*song.Song
 	Sort([]string) error
 	Swap(int, int)
+	Truncate(int) error
 }
 
 type BaseSonglist struct {
@@ -37,6 +39,22 @@ func New() (s *BaseSonglist) {
 
 func (s *BaseSonglist) Add(song *song.Song) error {
 	s.songs = append(s.songs, song)
+	return nil
+}
+
+func (s *BaseSonglist) Replace(index int, song *song.Song) error {
+	if index < 0 || index >= s.Len() {
+		return fmt.Errorf("Out of bounds")
+	}
+	s.songs[index] = song
+	return nil
+}
+
+func (s *BaseSonglist) Truncate(length int) error {
+	if length < 0 || length > s.Len() {
+		return fmt.Errorf("Out of bounds")
+	}
+	s.songs = s.songs[:length]
 	return nil
 }
 
