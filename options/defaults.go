@@ -34,4 +34,6 @@ bind <Space> pause
 bind s stop
 bind h previous
 bind l next
+bind + volume +2
+bind - volume -2
 `
