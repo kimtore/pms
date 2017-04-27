@@ -59,7 +59,7 @@ The current goal of the Go implementation is to implement most of the features f
 
 This functionality is not implemented yet:
 
-* Basic player controls (~~play~~, ~~add~~, ~~pause~~, ~~stop~~, ~~next~~, ~~prev~~, consume, repeat, single, random).
+* Basic player controls (~~play~~, ~~add~~, ~~pause~~, ~~stop~~, ~~next~~, ~~prev~~, volume, consume, repeat, single, random).
 * Automatic add to queue when queue is nearing end.
 * Customizable topbar.
 * Tab completion.
