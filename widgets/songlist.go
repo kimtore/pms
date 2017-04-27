@@ -456,8 +456,11 @@ func (w *SonglistWidget) activateList(s *list) {
 	PostEventListChanged(w)
 }
 
-func (w *SonglistWidget) SonglistIndex() int {
-	return w.currentListIndex
+func (w *SonglistWidget) SonglistIndex() (int, error) {
+	if !w.ValidSonglistIndex(w.currentListIndex) {
+		return 0, fmt.Errorf("Songlist index is out of range")
+	}
+	return w.currentListIndex, nil
 }
 
 func (w *SonglistWidget) ValidSonglistIndex(i int) bool {
@@ -470,7 +473,7 @@ func (w *SonglistWidget) SetSonglistIndex(i int) error {
 		return fmt.Errorf("Index %d is out of bounds (try between 1 and %d)", i+1, w.SonglistsLen())
 	}
 	w.currentListIndex = i
-	w.activateList(w.lists[w.SonglistIndex()])
+	w.activateList(w.lists[w.currentListIndex])
 	w.SetFallbackSonglist(w.currentList.songlist)
 	return nil
 }

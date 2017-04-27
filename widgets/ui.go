@@ -154,8 +154,9 @@ func (ui *UI) Size() (int, int) {
 }
 
 func (ui *UI) Title() string {
-	if ui.Songlist.SonglistIndex() >= 0 {
-		return fmt.Sprintf("[%d/%d] %s", ui.Songlist.SonglistIndex()+1, ui.Songlist.SonglistsLen(), ui.Songlist.Name())
+	index, err := ui.Songlist.SonglistIndex()
+	if err == nil {
+		return fmt.Sprintf("[%d/%d] %s", index+1, ui.Songlist.SonglistsLen(), ui.Songlist.Name())
 	} else {
 		return fmt.Sprintf("[...] %s", ui.Songlist.Name())
 	}

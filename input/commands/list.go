@@ -79,7 +79,11 @@ func (cmd *List) Execute(t lexer.Token) error {
 			index = cmd.ui.Songlist.SonglistsLen() - 1
 
 		case cmd.relative != 0:
-			index = cmd.ui.Songlist.SonglistIndex() + cmd.relative
+			index, err = cmd.ui.Songlist.SonglistIndex()
+			if err != nil {
+				index = 0
+			}
+			index += cmd.relative
 			if !cmd.ui.Songlist.ValidSonglistIndex(index) {
 				len := cmd.ui.Songlist.SonglistsLen()
 				index = (index + len) % len
