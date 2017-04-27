@@ -33,6 +33,10 @@ func (s *Queue) Sort(fields []string) error {
 	return fmt.Errorf("Sorting the queue is not implemented yet.")
 }
 
+func (s *Queue) Remove(index int) error {
+	return fmt.Errorf("Removing from the queue is not implemented yet.")
+}
+
 // Merge incorporates songs from another songlist, replacing songs that has the same position.
 func (q *Queue) Merge(s Songlist) (*Queue, error) {
 	newQueue := NewQueue()

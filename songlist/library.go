@@ -33,6 +33,10 @@ func (s *Library) Sort(fields []string) error {
 	return fmt.Errorf("The song library is read-only. Please make a copy if you want to sort.")
 }
 
+func (s *Library) Remove(index int) error {
+	return fmt.Errorf("The song library is read-only.")
+}
+
 func IsLibrary(s Songlist) bool {
 	switch s.(type) {
 	case *Library:

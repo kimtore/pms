@@ -55,6 +55,7 @@ func (pms *PMS) setupCLI() {
 	pms.CLI.Register("q", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("quit", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("redraw", commands.NewRedraw(pms.UI.App))
+	pms.CLI.Register("remove", commands.NewRemove(pms.UI.CurrentSonglistWidget))
 	pms.CLI.Register("se", commands.NewSet(pms.Options, pms.EventMessage))
 	pms.CLI.Register("set", commands.NewSet(pms.Options, pms.EventMessage))
 	pms.CLI.Register("sort", commands.NewSort(pms.UI.CurrentSonglistWidget, pms.Options))

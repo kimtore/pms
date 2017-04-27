@@ -3,6 +3,7 @@ package songlist
 import (
 	"fmt"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/ambientsound/gompd/mpd"
@@ -18,7 +19,9 @@ type Songlist interface {
 	Len() int
 	Less(int, int) bool
 	Locate(*song.Song) (int, error)
+	Lock()
 	Name() string
+	Remove(int) error
 	Replace(int, *song.Song) error
 	SetName(string) error
 	Song(int) *song.Song
@@ -26,12 +29,14 @@ type Songlist interface {
 	Sort([]string) error
 	Swap(int, int)
 	Truncate(int) error
+	Unlock()
 }
 
 type BaseSonglist struct {
 	name                string
 	songs               []*song.Song
 	currentSortCriteria string
+	mutex               sync.Mutex
 }
 
 func New() (s *BaseSonglist) {
@@ -41,8 +46,34 @@ func New() (s *BaseSonglist) {
 }
 
 func (s *BaseSonglist) Add(song *song.Song) error {
+	s.Lock()
+	defer s.Unlock()
 	s.songs = append(s.songs, song)
 	return nil
+}
+
+func (s *BaseSonglist) Remove(index int) error {
+	if !s.inRange(index) {
+		return fmt.Errorf("List index out of range")
+	}
+
+	s.Lock()
+	defer s.Unlock()
+
+	if index+1 == s.Len() {
+		s.songs = s.songs[:index]
+	} else {
+		s.songs = append(s.songs[:index], s.songs[index+1:]...)
+	}
+	return nil
+}
+
+func (s *BaseSonglist) Lock() {
+	s.mutex.Lock()
+}
+
+func (s *BaseSonglist) Unlock() {
+	s.mutex.Unlock()
 }
 
 func (s *BaseSonglist) Clear() error {
@@ -51,9 +82,11 @@ func (s *BaseSonglist) Clear() error {
 }
 
 func (s *BaseSonglist) Replace(index int, song *song.Song) error {
-	if index < 0 || index >= s.Len() {
+	if !s.inRange(index) {
 		return fmt.Errorf("Out of bounds")
 	}
+	s.Lock()
+	defer s.Unlock()
 	s.songs[index] = song
 	return nil
 }
@@ -77,6 +110,8 @@ func (s *BaseSonglist) Truncate(length int) error {
 	if length < 0 || length > s.Len() {
 		return fmt.Errorf("Out of bounds")
 	}
+	s.Lock()
+	defer s.Unlock()
 	s.songs = s.songs[:length]
 	return nil
 }
@@ -105,7 +140,7 @@ func (s *BaseSonglist) Name() string {
 }
 
 func (s *BaseSonglist) Song(i int) *song.Song {
-	if i < 0 || i >= s.Len() {
+	if !s.inRange(i) {
 		return nil
 	}
 	return s.songs[i]
@@ -119,6 +154,8 @@ func (s *BaseSonglist) Sort(fields []string) error {
 	if len(fields) == 0 {
 		return fmt.Errorf("Cannot sort without sort criteria")
 	}
+	s.Lock()
+	defer s.Unlock()
 	s.sortBy(fields[0])
 	for _, field := range fields[1:] {
 		s.stableSortBy(field)
@@ -142,6 +179,10 @@ func (s *BaseSonglist) stableSortBy(field string) {
 
 func (s *BaseSonglist) Len() int {
 	return len(s.songs)
+}
+
+func (s *BaseSonglist) inRange(index int) bool {
+	return index >= 0 && index < s.Len()
 }
 
 func (s *BaseSonglist) Less(a, b int) bool {

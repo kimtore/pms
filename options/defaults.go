@@ -33,6 +33,8 @@ bind : inputmode input
 bind / inputmode search
 bind <F3> inputmode search
 bind a add
+bind <Delete> remove
+bind x remove
 bind <Enter> play cursor
 bind <Space> pause
 bind s stop

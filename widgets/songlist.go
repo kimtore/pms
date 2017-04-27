@@ -160,9 +160,12 @@ func (w *SonglistWidget) drawOneTagLine(x, y, xmax int, s *song.Song, tag string
 
 func (w *SonglistWidget) Draw() {
 	list := w.Songlist()
-	if w.view == nil || list == nil || list.Songs == nil {
+	if w.view == nil || list == nil || list.Songs() == nil {
 		return
 	}
+
+	list.Lock()
+	defer list.Unlock()
 
 	_, ymin, xmax, ymax := w.viewport.GetVisible()
 	xmax += 1
