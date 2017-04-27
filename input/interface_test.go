@@ -7,6 +7,7 @@ import (
 	"github.com/ambientsound/pms/input/commands"
 	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestCLISet tests that input.CLI registers a handler under the
@@ -21,7 +22,9 @@ func TestCLISet(t *testing.T) {
 
 	iface.Register("set", commands.NewSet(opts, messages))
 
-	opts.Add(options.NewStringOption("foo", "this string must die"))
+	opts.Add(options.NewStringOption("foo"))
+	err = opts.Get("foo").Set("this string must die")
+	require.Nil(t, err)
 
 	err = iface.Execute("set foo=something")
 	assert.Nil(t, err)

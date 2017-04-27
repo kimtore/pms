@@ -4,18 +4,13 @@ import (
 	"testing"
 
 	"github.com/ambientsound/pms/options"
+	"github.com/stretchr/testify/require"
 )
 
-func TestOptions(t *testing.T) {
-	opts := options.New()
-	opts.Add(options.NewStringOption("foo", "bar"))
-	if opts.StringValue("foo") != "bar" {
-		t.Fatalf("String value was not correctly added to options!")
-	}
-}
-
 func TestStringOption(t *testing.T) {
-	opt := options.NewStringOption("foo", "bar")
+	opt := options.NewStringOption("foo")
+	err := opt.Set("bar")
+	require.Nil(t, err)
 	if opt.Key() != "foo" {
 		t.Fatalf("String option key is incorrect!")
 	}
@@ -31,7 +26,9 @@ func TestStringOption(t *testing.T) {
 }
 
 func TestIntOption(t *testing.T) {
-	opt := options.NewIntOption("foo", 3984)
+	opt := options.NewIntOption("foo")
+	err := opt.Set("3984")
+	require.Nil(t, err)
 	if opt.Key() != "foo" {
 		t.Fatalf("Int option key is incorrect!")
 	}
@@ -47,7 +44,9 @@ func TestIntOption(t *testing.T) {
 }
 
 func TestBoolOption(t *testing.T) {
-	opt := options.NewBoolOption("foo", true)
+	opt := options.NewBoolOption("foo")
+	err := opt.Set("true")
+	require.Nil(t, err)
 	if opt.Key() != "foo" {
 		t.Fatalf("Bool option key is incorrect!")
 	}

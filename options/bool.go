@@ -7,8 +7,8 @@ type BoolOption struct {
 	value bool
 }
 
-func NewBoolOption(key string, value bool) *BoolOption {
-	return &BoolOption{key: key, value: value}
+func NewBoolOption(key string) *BoolOption {
+	return &BoolOption{key: key}
 }
 
 func (o *BoolOption) Set(value string) error {

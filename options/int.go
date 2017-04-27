@@ -10,8 +10,8 @@ type IntOption struct {
 	value int
 }
 
-func NewIntOption(key string, value int) *IntOption {
-	return &IntOption{key: key, value: value}
+func NewIntOption(key string) *IntOption {
+	return &IntOption{key: key}
 }
 
 func (o *IntOption) Set(value string) error {

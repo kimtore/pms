@@ -7,13 +7,8 @@ type StringOption struct {
 	value string
 }
 
-func NewStringOption(key string, value string) *StringOption {
-	o := &StringOption{key: key}
-	err := o.Set(value)
-	if err != nil {
-		panic(err)
-	}
-	return o
+func NewStringOption(key string) *StringOption {
+	return &StringOption{key: key}
 }
 
 func (o *StringOption) Set(value string) error {

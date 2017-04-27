@@ -19,10 +19,15 @@ func TestSet(t *testing.T) {
 	opts := options.New()
 	messages := make(chan string, 1024)
 
-	opts.Add(options.NewStringOption("foo", "this string must die"))
-	opts.Add(options.NewIntOption("intopt", 4))
-	opts.Add(options.NewBoolOption("bar", true))
-	opts.Add(options.NewBoolOption("baz", false))
+	opts.Add(options.NewStringOption("foo"))
+	opts.Add(options.NewIntOption("intopt"))
+	opts.Add(options.NewBoolOption("bar"))
+	opts.Add(options.NewBoolOption("baz"))
+
+	opts.Get("foo").Set("this string must die")
+	opts.Get("intopt").Set("4")
+	opts.Get("bar").Set("true")
+	opts.Get("baz").Set("false")
 
 	input_string := "foo=bar intopt=3 nobar invbaz"
 	cmd := commands.NewSet(opts, messages)

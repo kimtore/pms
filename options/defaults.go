@@ -3,12 +3,15 @@ package options
 // AddDefaultOptions adds internal options that can be set by the user through
 // the command-line interface.
 func (o *Options) AddDefaultOptions() {
-	o.Add(NewStringOption("columns", "artist,track,title,album,year,time"))
-	o.Add(NewStringOption("sort", "file,track,disc,album,year,albumartistsort"))
+	o.Add(NewStringOption("columns"))
+	o.Add(NewStringOption("sort"))
 }
 
 // Defaults is the default, internal configuration file.
 const Defaults string = `
+set columns=artist,track,title,album,year,time
+set sort=file,track,disc,album,year,albumartistsort
+
 bind <C-c> quit
 bind <C-l> redraw
 bind <C-s> sort
