@@ -13,6 +13,8 @@ import (
 
 type Songlist interface {
 	Add(*song.Song) error
+	Clear() error
+	Duplicate(Songlist) error
 	Len() int
 	Less(int, int) bool
 	Name() string
@@ -33,7 +35,7 @@ type BaseSonglist struct {
 
 func New() (s *BaseSonglist) {
 	s = &BaseSonglist{}
-	s.songs = make([]*song.Song, 0)
+	s.Clear()
 	return
 }
 
@@ -42,11 +44,31 @@ func (s *BaseSonglist) Add(song *song.Song) error {
 	return nil
 }
 
+func (s *BaseSonglist) Clear() error {
+	s.songs = make([]*song.Song, 0)
+	return nil
+}
+
 func (s *BaseSonglist) Replace(index int, song *song.Song) error {
 	if index < 0 || index >= s.Len() {
 		return fmt.Errorf("Out of bounds")
 	}
 	s.songs[index] = song
+	return nil
+}
+
+// Duplicate makes a copy of the current songlist, and places it in dest.
+func (s *BaseSonglist) Duplicate(dest Songlist) error {
+	if err := dest.Clear(); err != nil {
+		return err
+	}
+	oldSongs := s.Songs()
+	for i := range oldSongs {
+		song := *oldSongs[i]
+		if err := dest.Add(&song); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

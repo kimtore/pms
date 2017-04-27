@@ -6,14 +6,16 @@ import (
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/widgets"
 )
 
-// List navigates songlists.
+// List navigates and manipulates songlists.
 type List struct {
-	ui       *widgets.UI
-	relative int
-	absolute int
+	ui        *widgets.UI
+	relative  int
+	absolute  int
+	duplicate bool
 }
 
 func NewList(ui *widgets.UI) *List {
@@ -21,6 +23,7 @@ func NewList(ui *widgets.UI) *List {
 }
 
 func (cmd *List) Reset() {
+	cmd.duplicate = false
 	cmd.relative = 0
 	cmd.absolute = -1
 }
@@ -35,6 +38,8 @@ func (cmd *List) Execute(t lexer.Token) error {
 
 	case lexer.TokenIdentifier:
 		switch s {
+		case "duplicate":
+			cmd.duplicate = true
 		case "up", "prev", "previous":
 			cmd.relative = -1
 		case "down", "next":
@@ -60,6 +65,19 @@ func (cmd *List) Execute(t lexer.Token) error {
 
 	case lexer.TokenEnd:
 		switch {
+		case cmd.duplicate:
+			console.Log("Duplicating current songlist.")
+			orig := cmd.ui.Songlist.Songlist()
+			list := songlist.New()
+			err = orig.Duplicate(list)
+			if err != nil {
+				return fmt.Errorf("Error during songlist duplication: %s", err)
+			}
+			name := fmt.Sprintf("%s (copy)", orig.Name())
+			list.SetName(name)
+			cmd.ui.Songlist.AddSonglist(list)
+			index = cmd.ui.Songlist.SonglistsLen() - 1
+
 		case cmd.relative != 0:
 			index = cmd.ui.Songlist.SonglistIndex() + cmd.relative
 			if !cmd.ui.Songlist.ValidSonglistIndex(index) {

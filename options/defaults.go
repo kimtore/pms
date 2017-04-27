@@ -22,6 +22,7 @@ bind <Home> cursor home
 bind <End> cursor end
 bind t list next
 bind T list previous
+bind <C-d> list duplicate
 bind : inputmode input
 bind / inputmode search
 bind <F3> inputmode search
