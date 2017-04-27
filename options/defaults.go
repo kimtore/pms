@@ -4,7 +4,7 @@ package options
 // the command-line interface.
 func (o *Options) AddDefaultOptions() {
 	o.Add(NewStringOption("columns", "artist,track,title,album,year,time"))
-	o.Add(NewStringOption("sort", "file,track,disc,album,year,albumartist"))
+	o.Add(NewStringOption("sort", "file,track,disc,album,year,albumartistsort"))
 }
 
 // Defaults is the default, internal configuration file.

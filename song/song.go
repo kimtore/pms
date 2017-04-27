@@ -67,11 +67,23 @@ func (s *Song) AutoFill() {
 // FillSortTags post-processes tags, and saves them as strings for sorting purposes later on.
 func (s *Song) FillSortTags() {
 	for i := range s.Tags {
-		s.SortTags[i] = s.TagString(i)
+		s.SortTags[i] = strings.ToLower(s.TagString(i))
 	}
 
 	if t, ok := s.SortTags["track"]; ok {
 		s.SortTags["track"] = trackSort(t)
+	}
+
+	if _, ok := s.SortTags["artistsort"]; !ok {
+		s.SortTags["artistsort"] = s.SortTags["artist"]
+	}
+
+	if _, ok := s.SortTags["albumartist"]; !ok {
+		s.SortTags["albumartist"] = s.SortTags["artist"]
+	}
+
+	if _, ok := s.SortTags["albumartistsort"]; !ok {
+		s.SortTags["albumartistsort"] = s.SortTags["albumartist"]
 	}
 }
 
