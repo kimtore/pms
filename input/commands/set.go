@@ -10,12 +10,14 @@ import (
 
 // Set manipulates a Options table by parsing input tokens from the "set" command.
 type Set struct {
-	opts *options.Options
+	opts     *options.Options
+	messages chan string
 }
 
-func NewSet(opts *options.Options) *Set {
+func NewSet(opts *options.Options, messages chan string) *Set {
 	p := &Set{}
 	p.opts = opts
+	p.messages = messages
 	p.Reset()
 	return p
 }
@@ -45,30 +47,39 @@ func (p *Set) Execute(t lexer.Token) error {
 	}
 
 	if tok.Query {
-		return nil // FIXME: statusbar feedback
+		goto msg
 	}
 
 	switch opt := opt.(type) {
+
 	case *options.BoolOption:
-		if !tok.Bool {
-			return fmt.Errorf("Attempting to give parameters to a boolean option (try 'set (no|inv)?%s')", tok.Key)
-		}
-		if tok.Invert {
+		switch {
+		case !tok.Bool:
+			return fmt.Errorf("Attempting to give parameters to a boolean option (try 'set no%s' or 'set inv%s')", tok.Key, tok.Key)
+		case tok.Invert:
 			opt.SetBool(!opt.BoolValue())
-			return nil
-		}
-		if tok.Negate {
+			p.message(opt)
+		case tok.Negate:
 			opt.SetBool(false)
-			return nil
+		default:
+			opt.SetBool(true)
 		}
-		opt.SetBool(true)
-		return nil
+
 	default:
 		if !tok.Bool {
-			return opt.Set(tok.Value)
+			if err := opt.Set(tok.Value); err != nil {
+				return err
+			}
+			break
 		}
 		return fmt.Errorf("Attempting to execute a boolean operation on a non-boolean option")
 	}
 
+msg:
+	p.message(opt)
 	return nil
+}
+
+func (cmd *Set) message(opt options.Option) {
+	cmd.messages <- opt.String()
 }

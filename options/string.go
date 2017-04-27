@@ -1,5 +1,7 @@
 package options
 
+import "fmt"
+
 type StringOption struct {
 	key   string
 	value string
@@ -31,6 +33,6 @@ func (o *StringOption) Value() interface{} {
 	return o.value
 }
 
-func (o *StringOption) Text() string {
-	return o.value
+func (o *StringOption) String() string {
+	return fmt.Sprintf("%s=%s", o.key, o.value)
 }

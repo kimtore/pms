@@ -10,7 +10,7 @@ type Options struct {
 
 type Option interface {
 	Key() string
-	Text() string
+	String() string
 	Value() interface{}
 	Set(value string) error
 }

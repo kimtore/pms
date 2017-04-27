@@ -17,6 +17,7 @@ func TestSet(t *testing.T) {
 	var token lexer.Token
 
 	opts := options.New()
+	messages := make(chan string, 1024)
 
 	opts.Add(options.NewStringOption("foo", "this string must die"))
 	opts.Add(options.NewIntOption("intopt", 4))
@@ -24,7 +25,7 @@ func TestSet(t *testing.T) {
 	opts.Add(options.NewBoolOption("baz", false))
 
 	input_string := "foo=bar intopt=3 nobar invbaz"
-	cmd := commands.NewSet(opts)
+	cmd := commands.NewSet(opts, messages)
 
 	pos := 0
 	npos := 0

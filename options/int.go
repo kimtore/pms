@@ -1,6 +1,9 @@
 package options
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 type IntOption struct {
 	key   string
@@ -29,6 +32,6 @@ func (o *IntOption) Value() interface{} {
 	return o.value
 }
 
-func (o *IntOption) Text() string {
-	return string(o.value)
+func (o *IntOption) String() string {
+	return fmt.Sprintf("%s=%d", o.key, o.value)
 }

@@ -17,8 +17,9 @@ func TestCLISet(t *testing.T) {
 
 	opts := options.New()
 	iface := input.NewCLI()
+	messages := make(chan string, 1024)
 
-	iface.Register("set", commands.NewSet(opts))
+	iface.Register("set", commands.NewSet(opts, messages))
 
 	opts.Add(options.NewStringOption("foo", "this string must die"))
 

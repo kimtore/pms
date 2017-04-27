@@ -33,7 +33,7 @@ func (o *BoolOption) Value() interface{} {
 	return o.value
 }
 
-func (o *BoolOption) Text() string {
+func (o *BoolOption) String() string {
 	t := o.Key()
 	if !o.value {
 		t = "no" + t
