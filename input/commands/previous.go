@@ -8,8 +8,7 @@ import (
 	"github.com/ambientsound/gompd/mpd"
 )
 
-// Previous toggles MPD play/paused state. If the player is stopped, Previous will
-// attempt to start playback through the 'play' command instead.
+// Previous switches to the previous song in MPD's queue.
 type Previous struct {
 	mpdClient func() *mpd.Client
 }
