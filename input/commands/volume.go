@@ -12,11 +12,13 @@ import (
 
 // Volume adjusts MPD's volume.
 type Volume struct {
-	mpdClient func() *mpd.Client
-	mpdStatus func() pms_mpd.PlayerStatus
-	sign      int
-	volume    int
-	finished  bool
+	mpdClient     func() *mpd.Client
+	mpdStatus     func() pms_mpd.PlayerStatus
+	sign          int
+	volume        int
+	finished      bool
+	mute          bool
+	preMuteVolume int
 }
 
 func NewVolume(mpdClient func() *mpd.Client, mpdStatus func() pms_mpd.PlayerStatus) *Volume {
@@ -27,6 +29,8 @@ func (cmd *Volume) Reset() {
 	cmd.sign = 0
 	cmd.volume = 0
 	cmd.finished = false
+	cmd.mute = false
+	// DO NOT reset preMuteVolume
 }
 
 func (cmd *Volume) Execute(t lexer.Token) error {
@@ -40,11 +44,15 @@ func (cmd *Volume) Execute(t lexer.Token) error {
 			return fmt.Errorf("Unexpected '%s', expected END", s)
 		}
 
-		switch s[0] {
-		case '+':
+		switch {
+		case s == "mute":
+			cmd.mute = true
+			cmd.finished = true
+			return nil
+		case s[0] == '+':
 			cmd.sign = 1
 			s = s[1:]
-		case '-':
+		case s[0] == '-':
 			cmd.sign = -1
 			s = s[1:]
 		}
@@ -67,7 +75,13 @@ func (cmd *Volume) Execute(t lexer.Token) error {
 		}
 		status := cmd.mpdStatus()
 
-		if cmd.sign != 0 {
+		switch {
+		case cmd.mute && status.Volume == 0:
+			cmd.volume = cmd.preMuteVolume
+		case cmd.mute && status.Volume > 0:
+			cmd.preMuteVolume = status.Volume
+			cmd.volume = 0
+		case cmd.sign != 0:
 			cmd.volume *= cmd.sign
 			cmd.volume = status.Volume + cmd.volume
 		}
