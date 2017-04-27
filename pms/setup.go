@@ -50,6 +50,8 @@ func (pms *PMS) setupCLI() {
 	pms.CLI.Register("next", commands.NewNext(pms.CurrentMpdClient))
 	pms.CLI.Register("pause", commands.NewPause(pms.CurrentMpdClient))
 	pms.CLI.Register("play", commands.NewPlay(pms.UI.CurrentSonglistWidget, pms.CurrentMpdClient))
+	pms.CLI.Register("prev", commands.NewPrevious(pms.CurrentMpdClient))
+	pms.CLI.Register("previous", commands.NewPrevious(pms.CurrentMpdClient))
 	pms.CLI.Register("q", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("quit", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("redraw", commands.NewRedraw(pms.UI.App))
