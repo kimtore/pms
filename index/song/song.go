@@ -18,11 +18,11 @@ type Song struct {
 
 // New generates a indexable Song document, containing some fields from the song.Song type.
 func New(s *song.Song) (is Song) {
-	is.Album = s.TagString("album")
-	is.AlbumArtist = s.TagString("albumartist")
-	is.Artist = s.TagString("artist")
-	is.File = s.TagString("file")
-	is.Genre = s.TagString("genre")
-	is.Title = s.TagString("title")
+	is.Album = s.StringTags["album"]
+	is.AlbumArtist = s.StringTags["albumartist"]
+	is.Artist = s.StringTags["artist"]
+	is.File = s.StringTags["file"]
+	is.Genre = s.StringTags["genre"]
+	is.Title = s.StringTags["title"]
 	return
 }

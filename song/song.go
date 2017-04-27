@@ -12,11 +12,12 @@ import (
 
 // Song represents a combined view of a song from both MPD and PMS' perspectives.
 type Song struct {
-	ID       int
-	Position int
-	Time     int
-	Tags     Taglist
-	SortTags StringTaglist
+	ID         int
+	Position   int
+	Time       int
+	Tags       Taglist
+	StringTags StringTaglist
+	SortTags   StringTaglist
 }
 
 type Tag []rune
@@ -28,12 +29,9 @@ type StringTaglist map[string]string
 func New() (s *Song) {
 	s = &Song{}
 	s.Tags = make(Taglist)
+	s.StringTags = make(StringTaglist)
 	s.SortTags = make(StringTaglist)
 	return
-}
-
-func (s *Song) TagString(key string) string {
-	return string(s.Tags[key])
 }
 
 func (s *Song) SetTags(tags mpd.Attrs) {
@@ -41,6 +39,7 @@ func (s *Song) SetTags(tags mpd.Attrs) {
 	for key := range tags {
 		lowKey := strings.ToLower(key)
 		s.Tags[lowKey] = []rune(tags[key])
+		s.StringTags[lowKey] = tags[key]
 	}
 	s.AutoFill()
 	s.FillSortTags()
@@ -50,10 +49,10 @@ func (s *Song) SetTags(tags mpd.Attrs) {
 func (s *Song) AutoFill() {
 	var err error
 
-	s.ID, _ = strconv.Atoi(s.TagString("id"))
-	s.Position, _ = strconv.Atoi(s.TagString("pos"))
+	s.ID, _ = strconv.Atoi(s.StringTags["id"])
+	s.Position, _ = strconv.Atoi(s.StringTags["pos"])
 
-	s.Time, err = strconv.Atoi(s.TagString("time"))
+	s.Time, err = strconv.Atoi(s.StringTags["time"])
 	if err == nil {
 		s.Tags["time"] = utils.TimeRunes(s.Time)
 	} else {
@@ -67,7 +66,7 @@ func (s *Song) AutoFill() {
 // FillSortTags post-processes tags, and saves them as strings for sorting purposes later on.
 func (s *Song) FillSortTags() {
 	for i := range s.Tags {
-		s.SortTags[i] = strings.ToLower(s.TagString(i))
+		s.SortTags[i] = strings.ToLower(s.StringTags[i])
 	}
 
 	if t, ok := s.SortTags["track"]; ok {

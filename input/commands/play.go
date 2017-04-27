@@ -65,7 +65,7 @@ func (cmd *Play) Execute(t lexer.Token) error {
 		list := songlistWidget.Songlist()
 
 		if !songlist.IsQueue(list) {
-			id, err = client.AddID(cmd.song.TagString("file"), -1)
+			id, err = client.AddID(cmd.song.StringTags["file"], -1)
 			if err != nil {
 				return err
 			}

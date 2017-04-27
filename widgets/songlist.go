@@ -298,7 +298,7 @@ func (w *SonglistWidget) IndexAtCurrentSong(i int) bool {
 	if songlist.IsQueue(w.Songlist()) {
 		return s.ID == w.currentSong.ID
 	} else {
-		return s.TagString("file") == w.currentSong.TagString("file")
+		return s.StringTags["file"] == w.currentSong.StringTags["file"]
 	}
 }
 

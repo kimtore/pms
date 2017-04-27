@@ -43,7 +43,7 @@ func (cmd *Add) Execute(t lexer.Token) error {
 			return fmt.Errorf("Cannot play: not connected to MPD")
 		}
 
-		err = client.Add(cmd.song.TagString("file"))
+		err = client.Add(cmd.song.StringTags["file"])
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))
