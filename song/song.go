@@ -7,7 +7,7 @@ import (
 
 	"github.com/ambientsound/pms/utils"
 
-	"github.com/fhs/gompd/mpd"
+	"github.com/ambientsound/gompd/mpd"
 )
 
 // Song represents a combined view of a song from both MPD and PMS' perspectives.

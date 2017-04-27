@@ -8,7 +8,7 @@ import (
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/widgets"
 
-	"github.com/fhs/gompd/mpd"
+	"github.com/ambientsound/gompd/mpd"
 )
 
 // Play plays songs in the MPD playlist.

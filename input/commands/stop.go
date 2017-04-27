@@ -5,7 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/input/lexer"
 
-	"github.com/fhs/gompd/mpd"
+	"github.com/ambientsound/gompd/mpd"
 )
 
 // Stop plays songs in the MPD playlist.

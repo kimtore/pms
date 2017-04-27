@@ -6,7 +6,7 @@ import (
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
 
-	"github.com/fhs/gompd/mpd"
+	"github.com/ambientsound/gompd/mpd"
 )
 
 // Add adds songs to MPD's queue.

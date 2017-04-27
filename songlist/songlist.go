@@ -5,7 +5,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/fhs/gompd/mpd"
+	"github.com/ambientsound/gompd/mpd"
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/song"

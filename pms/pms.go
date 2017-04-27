@@ -22,7 +22,7 @@ import (
 	"github.com/ambientsound/pms/widgets"
 	"github.com/ambientsound/pms/xdg"
 
-	"github.com/fhs/gompd/mpd"
+	"github.com/ambientsound/gompd/mpd"
 )
 
 // PMS is a kitchen sink of different objects, glued together as a singleton class.
