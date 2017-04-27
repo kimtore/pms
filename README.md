@@ -12,9 +12,9 @@ You are assumed to have a working [Go development environment](https://golang.or
 Install the dependencies:
 
 ```
-go get github.com/blevesearch/bleve  # Bleve search index
-go get github.com/fhs/gompd/mpd      # MPD client library
-go get github.com/jessevdk/go-flags  # POSIX-style command-line flags
+go get github.com/ambientsound/gompd  # MPD client library
+go get github.com/blevesearch/bleve   # Bleve search index
+go get github.com/jessevdk/go-flags   # POSIX-style command-line flags
 ```
 
 Then install PMS itself. Assuming that you have `$GOPATH/bin` in your path,
