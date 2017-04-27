@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/widgets"
 )
 
@@ -13,18 +14,21 @@ import (
 // if a number is given.
 type Cursor struct {
 	songlistWidget func() *widgets.SonglistWidget
+	currentSong    func() *song.Song
 	relative       int
 	absolute       int
+	current        bool
 	finished       bool
 }
 
-func NewCursor(songlistWidget func() *widgets.SonglistWidget) *Cursor {
-	return &Cursor{songlistWidget: songlistWidget}
+func NewCursor(songlistWidget func() *widgets.SonglistWidget, currentSong func() *song.Song) *Cursor {
+	return &Cursor{songlistWidget: songlistWidget, currentSong: currentSong}
 }
 
 func (cmd *Cursor) Reset() {
 	cmd.relative = 0
 	cmd.absolute = 0
+	cmd.current = false
 	cmd.finished = false
 }
 
@@ -60,6 +64,8 @@ func (cmd *Cursor) Execute(t lexer.Token) error {
 			cmd.absolute = 0
 		case "end":
 			cmd.absolute = songlistWidget.Len() - 1
+		case "current":
+			cmd.current = true
 		default:
 			i, err := strconv.Atoi(s)
 			if err != nil {
@@ -73,8 +79,21 @@ func (cmd *Cursor) Execute(t lexer.Token) error {
 		switch {
 		case !cmd.finished:
 			return fmt.Errorf("Unexpected END, expected cursor offset. Try one of: up, down, pgup, pgdn, home, end, <number>")
+
+		case cmd.current:
+			currentSong := cmd.currentSong()
+			if currentSong == nil {
+				return fmt.Errorf("No song is currently playing.")
+			}
+			index, err := songlistWidget.Songlist().Locate(currentSong)
+			if err != nil {
+				return fmt.Errorf("Can't find currently playing song in this songlist.")
+			}
+			songlistWidget.SetCursor(index)
+
 		case cmd.relative != 0:
 			songlistWidget.MoveCursor(cmd.relative)
+
 		default:
 			songlistWidget.SetCursor(cmd.absolute)
 		}

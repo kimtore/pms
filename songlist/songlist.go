@@ -17,6 +17,7 @@ type Songlist interface {
 	Duplicate(Songlist) error
 	Len() int
 	Less(int, int) bool
+	Locate(*song.Song) (int, error)
 	Name() string
 	Replace(int, *song.Song) error
 	SetName(string) error
@@ -78,6 +79,20 @@ func (s *BaseSonglist) Truncate(length int) error {
 	}
 	s.songs = s.songs[:length]
 	return nil
+}
+
+func (s *BaseSonglist) Locate(match *song.Song) (int, error) {
+	for i, test := range s.songs {
+		hasId := match.ID != -1 && test.ID != -1
+		switch {
+		case hasId && match.ID == test.ID:
+		case match.StringTags["file"] == test.StringTags["file"]:
+		default:
+			continue
+		}
+		return i, nil
+	}
+	return 0, fmt.Errorf("Cannot find song in songlist %s", s.Name())
 }
 
 func (s *BaseSonglist) SetName(name string) error {

@@ -23,6 +23,9 @@ bind <PgUp> cursor pgup
 bind <PgDn> cursor pgdn
 bind <Home> cursor home
 bind <End> cursor end
+bind gg cursor home
+bind gc cursor current
+bind G cursor end
 bind t list next
 bind T list previous
 bind <C-d> list duplicate

@@ -44,7 +44,7 @@ func (pms *PMS) setupCLI() {
 	pms.CLI = input.NewCLI()
 	pms.CLI.Register("add", commands.NewAdd(pms.CurrentMpdClient))
 	pms.CLI.Register("bind", commands.NewBind(pms.Sequencer))
-	pms.CLI.Register("cursor", commands.NewCursor(pms.UI.CurrentSonglistWidget))
+	pms.CLI.Register("cursor", commands.NewCursor(pms.UI.CurrentSonglistWidget, pms.CurrentSong))
 	pms.CLI.Register("inputmode", commands.NewInputMode(pms.UI.Multibar))
 	pms.CLI.Register("list", commands.NewList(pms.UI))
 	pms.CLI.Register("next", commands.NewNext(pms.CurrentMpdClient))
