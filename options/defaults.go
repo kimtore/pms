@@ -32,6 +32,7 @@ bind <C-d> list duplicate
 bind : inputmode input
 bind / inputmode search
 bind <F3> inputmode search
+bind a add
 bind <Enter> play cursor
 bind <Space> pause
 bind s stop

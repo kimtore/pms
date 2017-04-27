@@ -5,18 +5,20 @@ import (
 
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
+	"github.com/ambientsound/pms/widgets"
 
 	"github.com/ambientsound/gompd/mpd"
 )
 
 // Add adds songs to MPD's queue.
 type Add struct {
-	mpdClient func() *mpd.Client
-	song      *song.Song
+	songlistWidget func() *widgets.SonglistWidget
+	mpdClient      func() *mpd.Client
+	song           *song.Song
 }
 
-func NewAdd(mpdClient func() *mpd.Client) *Add {
-	return &Add{mpdClient: mpdClient}
+func NewAdd(songlistWidget func() *widgets.SonglistWidget, mpdClient func() *mpd.Client) *Add {
+	return &Add{songlistWidget: songlistWidget, mpdClient: mpdClient}
 }
 
 func (cmd *Add) Reset() {
@@ -34,8 +36,15 @@ func (cmd *Add) Execute(t lexer.Token) error {
 		cmd.song.Tags["file"] = []rune(t.String())
 
 	case lexer.TokenEnd:
+		cursor := false
+		songlistWidget := cmd.songlistWidget()
+
 		if len(cmd.song.Tags["file"]) == 0 {
-			return fmt.Errorf("Unexpected END; expected path to add")
+			cmd.song = songlistWidget.CursorSong()
+			if cmd.song == nil {
+				return fmt.Errorf("No song under cursor, cannot add without any parameters.")
+			}
+			cursor = true
 		}
 
 		client := cmd.mpdClient()
@@ -44,6 +53,10 @@ func (cmd *Add) Execute(t lexer.Token) error {
 		}
 
 		err = client.Add(cmd.song.StringTags["file"])
+
+		if cursor && err == nil {
+			songlistWidget.MoveCursor(1)
+		}
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))
