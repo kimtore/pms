@@ -13,10 +13,11 @@ import (
 // attempt to start playback through the 'play' command instead.
 type Pause struct {
 	mpdClient func() *mpd.Client
+	mpdStatus func() pms_mpd.PlayerStatus
 }
 
-func NewPause(mpdClient func() *mpd.Client) *Pause {
-	return &Pause{mpdClient: mpdClient}
+func NewPause(mpdClient func() *mpd.Client, mpdStatus func() pms_mpd.PlayerStatus) *Pause {
+	return &Pause{mpdClient: mpdClient, mpdStatus: mpdStatus}
 }
 
 func (cmd *Pause) Reset() {
@@ -29,11 +30,8 @@ func (cmd *Pause) Execute(t lexer.Token) error {
 		if client == nil {
 			return fmt.Errorf("Unable to toggle pause: cannot communicate with MPD")
 		}
-		attrs, err := client.Status()
-		if err != nil {
-			return fmt.Errorf("Unable to toggle pause: cannot get current player state")
-		}
-		switch attrs["state"] {
+		status := cmd.mpdStatus()
+		switch status.State {
 		case pms_mpd.StatePause:
 			return client.Pause(false)
 		case pms_mpd.StatePlay:
