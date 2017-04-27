@@ -21,6 +21,18 @@ func (s *Queue) Name() string {
 	return "Queue"
 }
 
+func (s *Queue) SetName(name string) error {
+	return fmt.Errorf("The queue name cannot be changed.")
+}
+
+func (s *Queue) Clear() error {
+	return fmt.Errorf("Clearing the queue is not implemented yet.")
+}
+
+func (s *Queue) Sort(fields []string) error {
+	return fmt.Errorf("Sorting the queue is not implemented yet.")
+}
+
 // Merge incorporates songs from another songlist, replacing songs that has the same position.
 func (q *Queue) Merge(s Songlist) (*Queue, error) {
 	newQueue := NewQueue()

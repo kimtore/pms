@@ -19,7 +19,7 @@ type Songlist interface {
 	Less(int, int) bool
 	Name() string
 	Replace(int, *song.Song) error
-	SetName(string)
+	SetName(string) error
 	Song(int) *song.Song
 	Songs() []*song.Song
 	Sort([]string) error
@@ -80,8 +80,9 @@ func (s *BaseSonglist) Truncate(length int) error {
 	return nil
 }
 
-func (s *BaseSonglist) SetName(name string) {
+func (s *BaseSonglist) SetName(name string) error {
 	s.name = name
+	return nil
 }
 
 func (s *BaseSonglist) Name() string {
