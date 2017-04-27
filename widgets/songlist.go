@@ -125,13 +125,41 @@ func (w *SonglistWidget) expandColumns() {
 	}
 }
 
+func (w *SonglistWidget) drawNext(x, y, strmin, strmax int, runes []rune, style tcell.Style) int {
+	strmin = min(len(runes), strmin)
+	n := 0
+	for n < strmin {
+		w.viewport.SetContent(x, y, runes[n], nil, style)
+		n++
+		x++
+	}
+	for n < strmax {
+		w.viewport.SetContent(x, y, ' ', nil, style)
+		n++
+		x++
+	}
+	return x
+}
+
+func (w *SonglistWidget) drawOneTagLine(x, y, xmax int, s *song.Song, tag string, defaultStyle string, style tcell.Style, lineStyled bool) int {
+	if !lineStyled {
+		style = w.Style(defaultStyle)
+	}
+
+	runes := s.Tags[tag]
+	strmin := len(runes)
+
+	return w.drawNext(x, y, strmin, xmax+1, runes, style)
+}
+
 func (w *SonglistWidget) Draw() {
 	list := w.Songlist()
 	if w.view == nil || list == nil || list.Songs == nil {
 		return
 	}
 
-	ymin, ymax := w.getVisibleBoundaries()
+	_, ymin, xmax, ymax := w.viewport.GetVisible()
+	xmax += 1
 	style := w.Style("default")
 	lineStyled := false
 	cursor := false
@@ -157,33 +185,36 @@ func (w *SonglistWidget) Draw() {
 		x := 0
 		rightPadding := 1
 
+		// If all essential tags are missing, draw only the filename
+		if !s.HasOneOfTags("artist", "album", "title") {
+			w.drawOneTagLine(x, y, xmax+1, s, `file`, `allTagsMissing`, style, lineStyled)
+			continue
+		}
+
+		// If most essential tags are missing, but the title is present, draw only the title.
+		if !s.HasOneOfTags("artist", "album") {
+			w.drawOneTagLine(x, y, xmax+1, s, `title`, `mostTagsMissing`, style, lineStyled)
+			continue
+		}
+
 		// Draw each column separately
 		for col := 0; col < len(w.currentList.columns); col++ {
 
 			// Convert tag to runes
 			key := w.currentList.columns[col].Tag
-			str := s.Tags[key]
+			runes := s.Tags[key]
 			if !lineStyled {
 				style = w.Style(key)
 			}
-			runes := []rune(str)
 
 			if col+1 == len(w.currentList.columns) {
 				rightPadding = 0
 			}
-			strmin := min(len(runes), w.currentList.columns[col].Width()-rightPadding)
+
 			strmax := w.currentList.columns[col].Width()
-			n := 0
-			for n < strmin {
-				w.viewport.SetContent(x, y, runes[n], nil, style)
-				n++
-				x++
-			}
-			for n < strmax {
-				w.viewport.SetContent(x, y, ' ', nil, style)
-				n++
-				x++
-			}
+			strmin := strmax - rightPadding
+
+			x = w.drawNext(x, y, strmin, strmax, runes, style)
 		}
 	}
 	w.PostEventWidgetContent(w)
@@ -193,6 +224,11 @@ func (w *SonglistWidget) Draw() {
 func (w *SonglistWidget) getVisibleBoundaries() (ymin, ymax int) {
 	_, ymin, _, ymax = w.viewport.GetVisible()
 	return
+}
+
+func (w *SonglistWidget) Width() int {
+	_, _, xmax, _ := w.viewport.GetVisible()
+	return xmax
 }
 
 func (w *SonglistWidget) getBoundaries() (ymin, ymax int) {

@@ -87,6 +87,16 @@ func (s *Song) FillSortTags() {
 	}
 }
 
+// HasOneOfTags returns true if the song contains at least one of the tags mentioned.
+func (s *Song) HasOneOfTags(tags ...string) bool {
+	for _, tag := range tags {
+		if _, ok := s.Tags[tag]; ok {
+			return true
+		}
+	}
+	return false
+}
+
 func trackSort(s string) string {
 	tracks := strings.Split(s, "/")
 	if len(tracks) == 0 {
