@@ -14,6 +14,8 @@ func (pms *PMS) Main() {
 			pms.handleEventQueue()
 		case <-pms.EventIndex:
 			pms.handleEventIndex()
+		case <-pms.EventList:
+			pms.handleEventList()
 		case <-pms.EventPlayer:
 			pms.handleEventPlayer()
 		case s := <-pms.EventMessage:
@@ -53,6 +55,13 @@ func (pms *PMS) handleEventIndex() {
 	console.Log("Search index updated, assigning to UI")
 	pms.UI.App.PostFunc(func() {
 		pms.UI.SetIndex(pms.Index)
+	})
+}
+
+func (pms *PMS) handleEventList() {
+	console.Log("Songlist changed, notifying UI")
+	pms.UI.App.PostFunc(func() {
+		pms.UI.Songlist.ListChanged()
 	})
 }
 

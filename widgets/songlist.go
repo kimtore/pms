@@ -176,6 +176,11 @@ func (w *SonglistWidget) Draw() {
 	for y := ymin; y <= ymax; y++ {
 
 		s := list.Song(y)
+		if s == nil {
+			// Sometimes happens under race conditions; just abort drawing
+			console.Log("Attempting to draw nil song, aborting draw due to possible race condition.")
+			return
+		}
 
 		// Style based on song's role
 		cursor = y == w.currentList.cursor
@@ -246,7 +251,6 @@ func (w *SonglistWidget) getBoundaries() (ymin, ymax int) {
 
 func (w *SonglistWidget) setViewportSize() {
 	x, y := w.Size()
-	w.viewport.Resize(0, 0, -1, -1)
 	w.viewport.SetContentSize(x, w.Songlist().Len(), true)
 	w.viewport.SetSize(x, min(y, w.Songlist().Len()))
 }
@@ -328,6 +332,7 @@ func (w *SonglistWidget) validateCursor(ymin, ymax int) {
 }
 
 func (w *SonglistWidget) Resize() {
+	w.viewport.Resize(0, 0, -1, -1)
 	w.setViewportSize()
 	w.validateViewport()
 	w.PostEventWidgetResize(w)
@@ -448,11 +453,14 @@ func (w *SonglistWidget) FallbackSonglist() songlist.Songlist {
 func (w *SonglistWidget) activateList(s *list) {
 	console.Log("activateList(%T %p)", s.songlist, s.songlist)
 	w.currentList = s
+	w.ListChanged()
+}
+
+func (w *SonglistWidget) ListChanged() {
 	//if len(w.currentList.columns) == 0 {
 	w.SetColumns(strings.Split(w.options.StringValue("columns"), ",")) // FIXME
 	//}
 	w.setViewportSize()
-	//console.Log("Calling MakeVisible(%d), MakeVisible(%d)", w.currentList.ymax, w.currentList.ymin)
 	w.viewport.MakeVisible(0, w.currentList.ymax)
 	w.viewport.MakeVisible(0, w.currentList.ymin)
 	w.validateViewport()

@@ -18,6 +18,7 @@ func New() *PMS {
 
 	pms.EventError = make(chan string, 1024)
 	pms.EventIndex = make(chan int)
+	pms.EventList = make(chan int, 1024)
 	pms.EventLibrary = make(chan int)
 	pms.EventMessage = make(chan string, 1024)
 	pms.EventPlayer = make(chan int)
@@ -55,7 +56,7 @@ func (pms *PMS) setupCLI() {
 	pms.CLI.Register("q", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("quit", commands.NewQuit(pms.QuitSignal))
 	pms.CLI.Register("redraw", commands.NewRedraw(pms.UI.App))
-	pms.CLI.Register("remove", commands.NewRemove(pms.UI.CurrentSonglistWidget))
+	pms.CLI.Register("remove", commands.NewRemove(pms.UI.CurrentSonglistWidget, pms.EventList))
 	pms.CLI.Register("se", commands.NewSet(pms.Options, pms.EventMessage))
 	pms.CLI.Register("set", commands.NewSet(pms.Options, pms.EventMessage))
 	pms.CLI.Register("sort", commands.NewSort(pms.UI.CurrentSonglistWidget, pms.Options))

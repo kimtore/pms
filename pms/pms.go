@@ -58,6 +58,9 @@ type PMS struct {
 	// EventIndex receives a signal when the search index has been updated.
 	EventIndex chan int
 
+	// EventList receives a signal when current songlist has been changed.
+	EventList chan int
+
 	// EventIndex receives a signal when MPD's library has been updated and retrieved.
 	EventLibrary chan int
 

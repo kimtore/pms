@@ -10,10 +10,14 @@ import (
 // Remove removes songs from songlists.
 type Remove struct {
 	songlistWidget func() *widgets.SonglistWidget
+	listChanged    chan int
 }
 
-func NewRemove(songlistWidget func() *widgets.SonglistWidget) *Remove {
-	return &Remove{songlistWidget: songlistWidget}
+func NewRemove(songlistWidget func() *widgets.SonglistWidget, listChanged chan int) *Remove {
+	return &Remove{
+		songlistWidget: songlistWidget,
+		listChanged:    listChanged,
+	}
 }
 
 func (cmd *Remove) Reset() {
@@ -33,6 +37,7 @@ func (cmd *Remove) Execute(t lexer.Token) error {
 
 		index := songlistWidget.Cursor()
 		err = list.Remove(index)
+		cmd.listChanged <- 0
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))
