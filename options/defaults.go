@@ -28,4 +28,6 @@ bind <F3> inputmode search
 bind <Enter> play cursor
 bind <Space> pause
 bind s stop
+bind h previous
+bind l next
 `
