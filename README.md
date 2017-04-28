@@ -70,9 +70,11 @@ This functionality is not implemented yet:
 
 ## Contributing
 
-There are many bugs and much of expected functionality is missing. You're welcome to contribute code, just send a merge request on Github.
+There are probably many bugs, and much expected functionality is missing. You're welcome to report any bugs or feature requests by using the Github issue tracker. Code contributions are more than welcome, please submit a merge request on Github.
 
-IRC channel `#pms` on Freenode for open discussion.
+For general discussion about the project, or to contact the project devs, you can use the IRC channel `#pms` on Freenode.
+
+This project adheres to the [Contributor Covenant Code of Conduct][code_of_conduct.md]. By participating, you are expected to uphold this code.
 
 
 ## Authors
