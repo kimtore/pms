@@ -55,12 +55,13 @@ func (s *BaseSonglist) Add(song *song.Song) error {
 
 func (s *BaseSonglist) Remove(index int) error {
 	if !s.inRange(index) {
-		return fmt.Errorf("List index out of range")
+		return fmt.Errorf("Out of bounds")
 	}
 
 	s.Lock()
 	defer s.Unlock()
 
+	console.Log("Removing song number %d from songlist '%s'", index, s.Name())
 	if index+1 == s.Len() {
 		s.songs = s.songs[:index]
 	} else {

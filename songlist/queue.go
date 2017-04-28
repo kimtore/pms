@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/gompd/mpd"
+	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/song"
 )
 
@@ -41,7 +42,16 @@ func (s *Queue) Sort(fields []string) error {
 }
 
 func (s *Queue) Remove(index int) error {
-	return fmt.Errorf("Removing from the queue is not implemented yet.")
+	song := s.Song(index)
+	if song == nil {
+		return fmt.Errorf("Out of bounds")
+	}
+	client := s.mpdClient()
+	if client == nil {
+		return fmt.Errorf("Cannot communicate with MPD")
+	}
+	console.Log("Telling MPD to delete queue song ID %d", song.ID)
+	return client.DeleteID(song.ID)
 }
 
 // Merge incorporates songs from another songlist, replacing songs that has the same position.

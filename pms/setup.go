@@ -25,8 +25,8 @@ func New() *PMS {
 	pms.EventQueue = make(chan int)
 	pms.QuitSignal = make(chan int, 1)
 
-	pms.Queue = &songlist.Queue{}
-	pms.Library = &songlist.Library{}
+	pms.Queue = songlist.NewQueue(pms.CurrentMpdClient)
+	pms.Library = songlist.NewLibrary()
 
 	pms.Options = options.New()
 	pms.Options.AddDefaultOptions()
