@@ -396,12 +396,23 @@ func (w *SonglistWidget) PositionShortReadout() string {
 	return fmt.Sprintf("%2d%%", percent)
 }
 
-//
-
 func (w *SonglistWidget) AddSonglist(s songlist.Songlist) {
 	list := newList(s)
 	w.lists = append(w.lists, list)
 	console.Log("Songlist UI: added songlist index %d of type %T at address %p", len(w.lists)-1, s, s)
+}
+
+func (w *SonglistWidget) RemoveSonglist(index int) error {
+	if err := w.ValidateSonglistIndex(index); err != nil {
+		return err
+	}
+	if index+1 == w.SonglistsLen() {
+		w.lists = w.lists[:index]
+	} else {
+		w.lists = append(w.lists[:index], w.lists[index+1:]...)
+	}
+	console.Log("Songlist UI: removed songlist index %d", index)
+	return nil
 }
 
 // ReplaceSonglist replaces an existing songlist with its new version. Checking
@@ -478,10 +489,17 @@ func (w *SonglistWidget) ValidSonglistIndex(i int) bool {
 	return i >= 0 && i < w.SonglistsLen()
 }
 
-func (w *SonglistWidget) SetSonglistIndex(i int) error {
-	console.Log("SetSonglistIndex(%d)", i)
+func (w *SonglistWidget) ValidateSonglistIndex(i int) error {
 	if !w.ValidSonglistIndex(i) {
 		return fmt.Errorf("Index %d is out of bounds (try between 1 and %d)", i+1, w.SonglistsLen())
+	}
+	return nil
+}
+
+func (w *SonglistWidget) SetSonglistIndex(i int) error {
+	console.Log("SetSonglistIndex(%d)", i)
+	if err := w.ValidateSonglistIndex(i); err != nil {
+		return err
 	}
 	w.currentListIndex = i
 	w.activateList(w.lists[w.currentListIndex])

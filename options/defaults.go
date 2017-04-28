@@ -29,6 +29,7 @@ bind G cursor end
 bind t list next
 bind T list previous
 bind <C-d> list duplicate
+bind <C-g> list remove
 bind : inputmode input
 bind / inputmode search
 bind <F3> inputmode search

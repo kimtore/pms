@@ -26,7 +26,11 @@ func (s *Library) SetName(name string) error {
 }
 
 func (s *Library) Clear() error {
-	return fmt.Errorf("The song library is cannot be cleared because it is read-only. For a more effective method, try 'rm -rf'")
+	return fmt.Errorf("The song library cannot be cleared because it is read-only.")
+}
+
+func (s *Library) Delete() error {
+	return fmt.Errorf("The song library cannot be deleted using PMS. Try 'rm -rf' in your favorite shell.")
 }
 
 func (s *Library) Sort(fields []string) error {

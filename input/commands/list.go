@@ -16,6 +16,7 @@ type List struct {
 	relative  int
 	absolute  int
 	duplicate bool
+	remove    bool
 }
 
 func NewList(ui *widgets.UI) *List {
@@ -24,6 +25,7 @@ func NewList(ui *widgets.UI) *List {
 
 func (cmd *List) Reset() {
 	cmd.duplicate = false
+	cmd.remove = false
 	cmd.relative = 0
 	cmd.absolute = -1
 }
@@ -40,6 +42,8 @@ func (cmd *List) Execute(t lexer.Token) error {
 		switch s {
 		case "duplicate":
 			cmd.duplicate = true
+		case "remove":
+			cmd.remove = true
 		case "up", "prev", "previous":
 			cmd.relative = -1
 		case "down", "next":
@@ -77,6 +81,41 @@ func (cmd *List) Execute(t lexer.Token) error {
 			list.SetName(name)
 			cmd.ui.Songlist.AddSonglist(list)
 			index = cmd.ui.Songlist.SonglistsLen() - 1
+
+		case cmd.remove:
+			list := cmd.ui.Songlist.Songlist()
+			console.Log("Removing current songlist '%s'.", list.Name())
+
+			err = list.Delete()
+			if err != nil {
+				return fmt.Errorf("Cannot remove songlist: %s", err)
+			}
+
+			index, err = cmd.ui.Songlist.SonglistIndex()
+
+			// If we got an error here, it means that the current songlist is
+			// not in the list of songlists. In this case, we can reset to the
+			// fallback songlist.
+			if err != nil {
+				fallback := cmd.ui.Songlist.FallbackSonglist()
+				if fallback == nil {
+					return fmt.Errorf("No songlists left.")
+				}
+				console.Log("Songlist was not found in the list of songlists. Activating fallback songlist '%s'.", fallback.Name())
+				cmd.ui.App.PostFunc(func() {
+					cmd.ui.Songlist.SetSonglist(fallback)
+				})
+				return nil
+			} else {
+				cmd.ui.Songlist.RemoveSonglist(index)
+			}
+
+			// If removing the last songlist, we need to decrease the songlist index by one.
+			if index == cmd.ui.Songlist.SonglistsLen() {
+				index--
+			}
+
+			console.Log("Removed songlist, now activating songlist no. %d", index)
 
 		case cmd.relative != 0:
 			index, err = cmd.ui.Songlist.SonglistIndex()

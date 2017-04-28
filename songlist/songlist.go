@@ -15,6 +15,7 @@ import (
 type Songlist interface {
 	Add(*song.Song) error
 	Clear() error
+	Delete() error
 	Duplicate(Songlist) error
 	Len() int
 	Less(int, int) bool
@@ -78,6 +79,12 @@ func (s *BaseSonglist) Unlock() {
 
 func (s *BaseSonglist) Clear() error {
 	s.songs = make([]*song.Song, 0)
+	return nil
+}
+
+// Delete deletes a songlist. This is a placeholder function that should be
+// overridden by other classes that need to trigger an action on the MPD side.
+func (s *BaseSonglist) Delete() error {
 	return nil
 }
 

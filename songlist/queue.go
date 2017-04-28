@@ -29,6 +29,10 @@ func (s *Queue) Clear() error {
 	return fmt.Errorf("Clearing the queue is not implemented yet.")
 }
 
+func (s *Queue) Delete() error {
+	return fmt.Errorf("The queue cannot be removed.")
+}
+
 func (s *Queue) Sort(fields []string) error {
 	return fmt.Errorf("Sorting the queue is not implemented yet.")
 }
