@@ -74,7 +74,7 @@ There are probably many bugs, and much expected functionality is missing. You're
 
 For general discussion about the project, or to contact the project devs, you can use the IRC channel `#pms` on Freenode.
 
-This project adheres to the [Contributor Covenant Code of Conduct][code_of_conduct.md]. By participating, you are expected to uphold this code.
+This project adheres to the [Contributor Covenant Code of Conduct](code_of_conduct.md). By participating, you are expected to uphold this code.
 
 
 ## Authors
