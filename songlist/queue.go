@@ -3,16 +3,19 @@ package songlist
 import (
 	"fmt"
 
+	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/song"
 )
 
 // Queue is a Songlist which represents the MPD play queue.
 type Queue struct {
 	BaseSonglist
+	mpdClient func() *mpd.Client
 }
 
-func NewQueue() (s *Queue) {
+func NewQueue(mpdClient func() *mpd.Client) (s *Queue) {
 	s = &Queue{}
+	s.mpdClient = mpdClient
 	s.songs = make([]*song.Song, 0)
 	return
 }
@@ -43,7 +46,7 @@ func (s *Queue) Remove(index int) error {
 
 // Merge incorporates songs from another songlist, replacing songs that has the same position.
 func (q *Queue) Merge(s Songlist) (*Queue, error) {
-	newQueue := NewQueue()
+	newQueue := NewQueue(q.mpdClient)
 
 	oldSongs := q.Songs()
 	for i := range oldSongs {

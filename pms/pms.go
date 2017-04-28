@@ -432,7 +432,7 @@ func (pms *PMS) retrieveQueue() (*songlist.Queue, error) {
 	}
 	console.Log("PlChanges in %s", time.Since(timer).String())
 
-	s := songlist.NewQueue()
+	s := songlist.NewQueue(pms.CurrentMpdClient)
 	s.AddFromAttrlist(list)
 	return s, nil
 }
