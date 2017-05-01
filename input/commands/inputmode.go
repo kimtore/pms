@@ -28,6 +28,13 @@ func (cmd *InputMode) Execute(t lexer.Token) error {
 		switch s {
 		case "normal":
 			cmd.mode = widgets.MultibarModeNormal
+		case "visual":
+			switch cmd.mode {
+			case widgets.MultibarModeVisual:
+				cmd.mode = widgets.MultibarModeNormal
+			default:
+				cmd.mode = widgets.MultibarModeVisual
+			}
 		case "input":
 			cmd.mode = widgets.MultibarModeInput
 		case "search":

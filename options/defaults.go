@@ -32,6 +32,8 @@ bind <C-d> list duplicate
 bind <C-g> list remove
 bind : inputmode input
 bind / inputmode search
+bind v inputmode visual
+bind V inputmode visual
 bind <F3> inputmode search
 bind a add
 bind <Delete> remove

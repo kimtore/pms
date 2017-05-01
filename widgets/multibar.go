@@ -29,6 +29,7 @@ type MultibarWidget struct {
 // MultibarWidget.inputMode against these constants.
 const (
 	MultibarModeNormal = iota
+	MultibarModeVisual
 	MultibarModeInput
 	MultibarModeSearch
 )
@@ -61,6 +62,7 @@ func (m *MultibarWidget) SetSequenceText(format string, a ...interface{}) {
 func (m *MultibarWidget) SetMode(mode int) error {
 	switch mode {
 	case MultibarModeNormal:
+	case MultibarModeVisual:
 	case MultibarModeInput:
 	case MultibarModeSearch:
 	default:
@@ -94,6 +96,9 @@ func (m *MultibarWidget) DrawStatusbar() {
 	case MultibarModeSearch:
 		s = "/" + m.RuneString()
 		st = m.Style("searchText")
+	case MultibarModeVisual:
+		s = "-- VISUAL --"
+		st = m.Style("visualText")
 	default:
 		s = m.text
 		st = m.textStyle
@@ -160,6 +165,9 @@ func (m *MultibarWidget) HandleEvent(ev tcell.Event) bool {
 	switch ev := ev.(type) {
 	case *tcell.EventKey:
 		switch m.inputMode {
+		case MultibarModeVisual:
+			// Visual mode should have the same key bindings and behavior as normal mode.
+			fallthrough
 		case MultibarModeNormal:
 			return m.handleNormalEvent(ev)
 		case MultibarModeInput:

@@ -64,7 +64,6 @@ func NewUI(opts *options.Options) *UI {
 	styles := StyleMap{
 		"album":           tcell.StyleDefault.Foreground(tcell.ColorTeal),
 		"allTagsMissing":  tcell.StyleDefault.Foreground(tcell.ColorRed),
-		"mostTagsMissing": tcell.StyleDefault.Foreground(tcell.ColorRed),
 		"artist":          tcell.StyleDefault.Foreground(tcell.ColorYellow),
 		"commandText":     tcell.StyleDefault,
 		"currentSong":     tcell.StyleDefault.Background(tcell.ColorYellow).Foreground(tcell.ColorBlack),
@@ -73,6 +72,7 @@ func NewUI(opts *options.Options) *UI {
 		"elapsed":         tcell.StyleDefault.Foreground(tcell.ColorGreen),
 		"errorText":       tcell.StyleDefault.Background(tcell.ColorRed).Foreground(tcell.ColorWhite).Bold(true),
 		"header":          tcell.StyleDefault.Foreground(tcell.ColorGreen).Bold(true),
+		"mostTagsMissing": tcell.StyleDefault.Foreground(tcell.ColorRed),
 		"noCurrentSong":   tcell.StyleDefault.Foreground(tcell.ColorRed),
 		"readout":         tcell.StyleDefault,
 		"searchText":      tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
@@ -83,6 +83,7 @@ func NewUI(opts *options.Options) *UI {
 		"title":           tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
 		"topbar":          tcell.StyleDefault.Foreground(tcell.ColorYellow).Bold(true),
 		"track":           tcell.StyleDefault.Foreground(tcell.ColorGreen),
+		"visualText":      tcell.StyleDefault.Foreground(tcell.ColorTeal),
 		"volume":          tcell.StyleDefault.Foreground(tcell.ColorGreen),
 		"year":            tcell.StyleDefault.Foreground(tcell.ColorGreen),
 	}
