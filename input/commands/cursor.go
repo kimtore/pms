@@ -3,7 +3,9 @@ package commands
 import (
 	"fmt"
 	"strconv"
+	"time"
 
+	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/widgets"
@@ -85,7 +87,9 @@ func (cmd *Cursor) Execute(t lexer.Token) error {
 			if currentSong == nil {
 				return fmt.Errorf("No song is currently playing.")
 			}
+			timer := time.Now()
 			index, err := songlistWidget.Songlist().Locate(currentSong)
+			console.Log("Locate() in %s", time.Since(timer).String())
 			if err != nil {
 				return fmt.Errorf("Can't find currently playing song in this songlist.")
 			}
