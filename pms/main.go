@@ -27,6 +27,11 @@ func (pms *PMS) Main() {
 		case s := <-pms.UI.EventInputCommand:
 			pms.Execute(s)
 		}
+
+		// Draw missing parts after every iteration
+		pms.UI.App.PostFunc(func() {
+			pms.UI.App.Update()
+		})
 	}
 }
 
@@ -39,7 +44,6 @@ func (pms *PMS) handleEventLibrary() {
 	console.Log("Song library updated in MPD, assigning to UI")
 	pms.UI.App.PostFunc(func() {
 		pms.UI.Songlist.ReplaceSonglist(pms.Library)
-		pms.UI.App.Update()
 	})
 }
 
@@ -47,7 +51,6 @@ func (pms *PMS) handleEventQueue() {
 	console.Log("Queue updated in MPD, assigning to UI")
 	pms.UI.App.PostFunc(func() {
 		pms.UI.Songlist.ReplaceSonglist(pms.Queue)
-		pms.UI.App.Update()
 	})
 }
 
@@ -70,7 +73,6 @@ func (pms *PMS) handleEventPlayer() {
 		pms.UI.Playbar.SetPlayerStatus(pms.CurrentPlayerStatus())
 		pms.UI.Playbar.SetSong(pms.CurrentSong())
 		pms.UI.Songlist.SetCurrentSong(pms.CurrentSong())
-		pms.UI.App.Update()
 	})
 }
 
@@ -78,7 +80,6 @@ func (pms *PMS) handleEventMessage(s string) {
 	console.Log(s)
 	pms.UI.App.PostFunc(func() {
 		pms.UI.Multibar.SetText(s)
-		pms.UI.App.Update()
 	})
 }
 
@@ -86,6 +87,5 @@ func (pms *PMS) handleEventError(s string) {
 	console.Log(s)
 	pms.UI.App.PostFunc(func() {
 		pms.UI.Multibar.SetErrorText(s)
-		pms.UI.App.Update()
 	})
 }
