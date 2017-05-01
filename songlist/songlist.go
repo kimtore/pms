@@ -17,6 +17,7 @@ type Songlist interface {
 	Clear() error
 	Delete() error
 	Duplicate(Songlist) error
+	InRange(int) bool
 	Len() int
 	Less(int, int) bool
 	Locate(*song.Song) (int, error)
@@ -54,7 +55,7 @@ func (s *BaseSonglist) Add(song *song.Song) error {
 }
 
 func (s *BaseSonglist) Remove(index int) error {
-	if !s.inRange(index) {
+	if !s.InRange(index) {
 		return fmt.Errorf("Out of bounds")
 	}
 
@@ -90,7 +91,7 @@ func (s *BaseSonglist) Delete() error {
 }
 
 func (s *BaseSonglist) Replace(index int, song *song.Song) error {
-	if !s.inRange(index) {
+	if !s.InRange(index) {
 		return fmt.Errorf("Out of bounds")
 	}
 	s.Lock()
@@ -148,7 +149,7 @@ func (s *BaseSonglist) Name() string {
 }
 
 func (s *BaseSonglist) Song(i int) *song.Song {
-	if !s.inRange(i) {
+	if !s.InRange(i) {
 		return nil
 	}
 	return s.songs[i]
@@ -189,7 +190,8 @@ func (s *BaseSonglist) Len() int {
 	return len(s.songs)
 }
 
-func (s *BaseSonglist) inRange(index int) bool {
+// InRange returns true if the provided index is within songlist range, false otherwise.
+func (s *BaseSonglist) InRange(index int) bool {
 	return index >= 0 && index < s.Len()
 }
 

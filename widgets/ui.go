@@ -76,6 +76,7 @@ func NewUI(opts *options.Options) *UI {
 		"noCurrentSong":   tcell.StyleDefault.Foreground(tcell.ColorRed),
 		"readout":         tcell.StyleDefault,
 		"searchText":      tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
+		"selection":       tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite).Bold(true),
 		"sequenceText":    tcell.StyleDefault.Foreground(tcell.ColorTeal),
 		"statusbar":       tcell.StyleDefault,
 		"switches":        tcell.StyleDefault.Foreground(tcell.ColorTeal),
@@ -164,12 +165,27 @@ func (ui *UI) Title() string {
 }
 
 func (ui *UI) HandleEvent(ev tcell.Event) bool {
-	switch ev.(type) {
+	switch ev := ev.(type) {
 
 	case *EventListChanged:
 		ui.Topbar.SetCenter(ui.Title(), ui.Style("title"))
 		ui.Columnheaders.SetColumns(ui.Songlist.Columns())
 		ui.App.Update()
+		return true
+
+	case *EventModeSync:
+		console.Log("EventModeChanged %d", ev.InputMode)
+		switch {
+		case ev.InputMode != ui.Multibar.Mode():
+			console.Log("Resetting multibar mode based on songlist change")
+			ui.Multibar.SetMode(ev.InputMode)
+		case ev.InputMode == MultibarModeVisual && !ui.Songlist.HasVisualSelection():
+			console.Log("Enabling visual selection based on multibar setting")
+			ui.Songlist.EnableVisualSelection()
+		case ev.InputMode != MultibarModeVisual && ui.Songlist.HasVisualSelection():
+			console.Log("Disabling visual selection based on multibar setting")
+			ui.Songlist.DisableVisualSelection()
+		}
 		return true
 
 	case *EventInputChanged:

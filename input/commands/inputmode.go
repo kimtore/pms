@@ -29,7 +29,7 @@ func (cmd *InputMode) Execute(t lexer.Token) error {
 		case "normal":
 			cmd.mode = widgets.MultibarModeNormal
 		case "visual":
-			switch cmd.mode {
+			switch cmd.multibarWidget.Mode() {
 			case widgets.MultibarModeVisual:
 				cmd.mode = widgets.MultibarModeNormal
 			default:
@@ -39,6 +39,8 @@ func (cmd *InputMode) Execute(t lexer.Token) error {
 			cmd.mode = widgets.MultibarModeInput
 		case "search":
 			cmd.mode = widgets.MultibarModeSearch
+		default:
+			cmd.mode = cmd.multibarWidget.Mode()
 		}
 	case lexer.TokenEnd:
 		cmd.multibarWidget.SetMode(cmd.mode)

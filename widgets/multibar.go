@@ -71,6 +71,7 @@ func (m *MultibarWidget) SetMode(mode int) error {
 	console.Log("Switching input mode from %d to %d", m.inputMode, mode)
 	m.inputMode = mode
 	m.setRunes([]rune{})
+	PostEventModeSync(m, m.inputMode)
 	PostEventInputChanged(m)
 	return nil
 }
