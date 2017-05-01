@@ -9,20 +9,18 @@ This is an experimental branch of PMS, re-implemented in Go. Much of the old fun
 
 You are assumed to have a working [Go development environment](https://golang.org/doc/install).
 
-Install the dependencies:
+To install the application and dependencies:
 
 ```
-go get github.com/ambientsound/gompd/mpd    # MPD client library
-go get github.com/blevesearch/bleve         # Bleve search index
-go get github.com/gdamore/tcell             # Terminal library
-go get github.com/jessevdk/go-flags         # POSIX-style command-line flags
+git clone https://github.com/ambientsound/pms $GOPATH/src/github.com/ambientsound/pms
+cd $GOPATH/src/github.com/ambientsound/pms
+make
 ```
 
-Then install PMS itself. Assuming that you have `$GOPATH/bin` in your path,
+Then, to run PMS, assuming you have $GOBIN in your path;
 
 ```
-go get github.com/ambientsound/pms
-pms 2>/tmp/pms.log  # or /dev/null
+pms 2>/tmp/pms.debug.log  # or /dev/null
 ```
 
 

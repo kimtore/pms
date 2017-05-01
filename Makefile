@@ -1,8 +1,10 @@
 VERSION := $(shell git describe --always --long --dirty)
 
-.PHONY: all test
+.PHONY: all install test get-deps
 
-all:
+all: get-deps test install
+
+install:
 	go install -ldflags="-X main.buildVersion=${VERSION}"
 
 test:
@@ -13,3 +15,4 @@ get-deps:
 	go get github.com/blevesearch/bleve
 	go get github.com/gdamore/tcell
 	go get github.com/jessevdk/go-flags
+	go get github.com/stretchr/testify
