@@ -1,0 +1,11 @@
+# vi: se ts=2 sw=2 sts=2 et:
+
+language: go
+
+go:
+- 1.8
+- 1.7
+
+script: make test
+
+install: make get-deps
