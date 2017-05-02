@@ -79,6 +79,28 @@ func (s *Queue) Remove(index int) error {
 	return client.DeleteID(song.ID)
 }
 
+// RemoveIndices removes a selection of songs from MPD's queue.
+func (s *Queue) RemoveIndices(indices []int) error {
+	client := s.mpdClient()
+	if client == nil {
+		return fmt.Errorf("Cannot communicate with MPD")
+	}
+	commandList := client.BeginCommandList()
+	if commandList == nil {
+		return fmt.Errorf("Cannot begin command list")
+	}
+
+	//sort.Sort(sort.Reverse(sort.IntSlice(indices)))
+	for _, i := range indices {
+		song := s.Song(i)
+		if song != nil {
+			commandList.DeleteID(song.ID)
+		}
+	}
+
+	return commandList.End()
+}
+
 // Merge incorporates songs from another songlist, replacing songs that has the same position.
 func (q *Queue) Merge(s Songlist) (*Queue, error) {
 	newQueue := NewQueue(q.mpdClient)

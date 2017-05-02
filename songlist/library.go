@@ -41,6 +41,10 @@ func (s *Library) Remove(index int) error {
 	return fmt.Errorf("The song library is read-only.")
 }
 
+func (s *Library) RemoveIndices(indices []int) error {
+	return fmt.Errorf("The song library is read-only.")
+}
+
 func IsLibrary(s Songlist) bool {
 	switch s.(type) {
 	case *Library:

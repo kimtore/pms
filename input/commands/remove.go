@@ -30,13 +30,18 @@ func (cmd *Remove) Execute(t lexer.Token) error {
 	case lexer.TokenEnd:
 		songlistWidget := cmd.songlistWidget()
 		list := songlistWidget.Songlist()
+		selection := songlistWidget.List().SelectionIndices()
 
-		if songlistWidget.CursorSong() == nil {
+		if len(selection) == 0 {
 			return fmt.Errorf("No song selected, cannot remove without any parameters.")
 		}
 
-		index := songlistWidget.Cursor()
-		err = list.Remove(index)
+		err = list.RemoveIndices(selection)
+		if err == nil {
+			songlistWidget.ClearSelection()
+			songlistWidget.MoveCursor(-1*len(selection) + 1)
+		}
+
 		cmd.listChanged <- 0
 
 	default:

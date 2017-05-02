@@ -25,6 +25,7 @@ type Songlist interface {
 	Lock()
 	Name() string
 	Remove(int) error
+	RemoveIndices([]int) error
 	Replace(int, *song.Song) error
 	SetName(string) error
 	Song(int) *song.Song
@@ -83,6 +84,19 @@ func (s *BaseSonglist) Remove(index int) error {
 		s.songs = s.songs[:index]
 	} else {
 		s.songs = append(s.songs[:index], s.songs[index+1:]...)
+	}
+	return nil
+}
+
+// RemoveIndices removes a selection of songs from the songlist, having the
+// index defined by the int slice parameter.
+func (s *BaseSonglist) RemoveIndices(indices []int) error {
+	// Ensure that indices are removed in reverse order
+	sort.Sort(sort.Reverse(sort.IntSlice(indices)))
+	for _, i := range indices {
+		if err := s.Remove(i); err != nil {
+			return err
+		}
 	}
 	return nil
 }
