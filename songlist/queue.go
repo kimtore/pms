@@ -25,6 +25,31 @@ func (s *Queue) Name() string {
 	return "Queue"
 }
 
+// Add adds a song to MPD's queue.
+func (s *Queue) Add(song *song.Song) error {
+	client := s.mpdClient()
+	if client == nil {
+		return fmt.Errorf("Cannot communicate with MPD")
+	}
+	return client.Add(song.StringTags["file"])
+}
+
+func (s *Queue) AddList(songlist Songlist) error {
+	client := s.mpdClient()
+	if client == nil {
+		return fmt.Errorf("Cannot communicate with MPD")
+	}
+	commandList := client.BeginCommandList()
+	if commandList == nil {
+		return fmt.Errorf("Cannot begin command list")
+	}
+	songs := songlist.Songs()
+	for _, song := range songs {
+		commandList.Add(song.StringTags["file"])
+	}
+	return commandList.End()
+}
+
 func (s *Queue) SetName(name string) error {
 	return fmt.Errorf("The queue name cannot be changed.")
 }
@@ -71,9 +96,7 @@ func (q *Queue) Merge(s Songlist) (*Queue, error) {
 		case song.Position < 0:
 			return nil, fmt.Errorf("Song number %d does not have a position", i)
 		case song.Position == newQueue.Len():
-			if err := newQueue.add(song); err != nil {
-				return nil, fmt.Errorf("Cannot add song %d to queue: %s", i, err)
-			}
+			newQueue.add(song)
 		case song.Position > newQueue.Len():
 			return nil, fmt.Errorf("Song number %d has position greater than list length, there are parts missing", i)
 		default:

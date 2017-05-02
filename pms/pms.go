@@ -304,6 +304,11 @@ func (pms *PMS) CurrentMpdClient() *mpd.Client {
 	return nil
 }
 
+// CurrentQueue returns the queue songlist.
+func (pms *PMS) CurrentQueue() *songlist.Queue {
+	return pms.Queue
+}
+
 // CurrentPlayerStatus returns a copy of the current MPD player status as seen by PMS.
 func (pms *PMS) CurrentPlayerStatus() pms_mpd.PlayerStatus {
 	return pms.mpdStatus

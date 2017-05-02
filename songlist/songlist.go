@@ -14,6 +14,7 @@ import (
 
 type Songlist interface {
 	Add(*song.Song) error
+	AddList(Songlist) error
 	Clear() error
 	Delete() error
 	Duplicate(Songlist) error
@@ -56,6 +57,17 @@ func (s *BaseSonglist) Add(song *song.Song) error {
 // add internally adds a song to the songlist, without any side effects.
 func (s *BaseSonglist) add(song *song.Song) {
 	s.songs = append(s.songs, song)
+}
+
+// AddList appends a songlist to this songlist.
+func (s *BaseSonglist) AddList(songlist Songlist) error {
+	songs := songlist.Songs()
+	for _, song := range songs {
+		if err := s.Add(song); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *BaseSonglist) Remove(index int) error {

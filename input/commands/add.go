@@ -3,24 +3,23 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/widgets"
-
-	"github.com/ambientsound/gompd/mpd"
 )
 
 // Add adds songs to MPD's queue.
 type Add struct {
 	songlistWidget func() *widgets.SonglistWidget
-	mpdClient      func() *mpd.Client
+	queue          func() *songlist.Queue
 	song           *song.Song
 	songlist       songlist.Songlist
 }
 
-func NewAdd(songlistWidget func() *widgets.SonglistWidget, mpdClient func() *mpd.Client) *Add {
-	return &Add{songlistWidget: songlistWidget, mpdClient: mpdClient}
+func NewAdd(songlistWidget func() *widgets.SonglistWidget, queue func() *songlist.Queue) *Add {
+	return &Add{songlistWidget: songlistWidget, queue: queue}
 }
 
 func (cmd *Add) Reset() {
@@ -37,15 +36,13 @@ func (cmd *Add) Execute(t lexer.Token) error {
 			return fmt.Errorf("Cannot add multiple paths on the same command line.")
 		}
 		cmd.song = song.New()
-		cmd.song.Tags["file"] = []rune(t.String())
+		cmd.song.SetTags(mpd.Attrs{
+			"file": t.String(),
+		})
 
 	case lexer.TokenEnd:
 		songlistWidget := cmd.songlistWidget()
-
-		client := cmd.mpdClient()
-		if client == nil {
-			return fmt.Errorf("Cannot play: not connected to MPD")
-		}
+		queue := cmd.queue()
 
 		switch {
 		case cmd.song == nil:
@@ -53,15 +50,7 @@ func (cmd *Add) Execute(t lexer.Token) error {
 			if selection.Len() == 0 {
 				return fmt.Errorf("No selection, cannot add without any parameters.")
 			}
-			commandList := client.BeginCommandList()
-			if commandList == nil {
-				return fmt.Errorf("MPD error: cannot begin command list")
-			}
-			songs := selection.Songs()
-			for _, song := range songs {
-				commandList.Add(song.StringTags["file"])
-			}
-			err = commandList.End()
+			err := queue.AddList(selection)
 			if err != nil {
 				break
 			}
@@ -70,7 +59,7 @@ func (cmd *Add) Execute(t lexer.Token) error {
 				songlistWidget.MoveCursor(1)
 			}
 		default:
-			err = client.Add(cmd.song.StringTags["file"])
+			err = queue.Add(cmd.song)
 		}
 
 	default:
