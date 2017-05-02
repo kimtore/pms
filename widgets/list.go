@@ -115,6 +115,18 @@ func (w *list) SetSelected(i int, selected bool) {
 	}
 }
 
+// CommitVisualSelection converts the visual selection to manual selection.
+func (w *list) CommitVisualSelection() {
+	if !w.HasVisualSelection() {
+		return
+	}
+	for key := w.visualSelection[0]; key <= w.visualSelection[1]; key++ {
+		selected := w.Selected(key)
+		w.SetSelected(key, selected)
+	}
+}
+
+// ClearSelection removes all selection.
 func (w *list) ClearSelection() {
 	w.selection = make(map[int]struct{}, 0)
 	w.visualSelection = [3]int{-1, -1, -1}

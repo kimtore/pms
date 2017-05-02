@@ -27,6 +27,7 @@ func (cmd *Select) Execute(t lexer.Token) error {
 
 	s := t.String()
 	songlistWidget := cmd.songlistWidget()
+	list := songlistWidget.List()
 
 	switch t.Class {
 
@@ -46,9 +47,18 @@ func (cmd *Select) Execute(t lexer.Token) error {
 		if !cmd.finished {
 			return fmt.Errorf("Unexpected END, expected identifier")
 		}
-		index := songlistWidget.Cursor()
-		selected := songlistWidget.List().Selected(index)
-		songlistWidget.List().SetSelected(index, !selected)
+
+		switch {
+		case list.HasVisualSelection():
+			list.CommitVisualSelection()
+			songlistWidget.DisableVisualSelection()
+
+		default:
+			index := songlistWidget.Cursor()
+			selected := songlistWidget.List().Selected(index)
+			songlistWidget.List().SetSelected(index, !selected)
+		}
+
 		songlistWidget.MoveCursor(1)
 
 	default:
