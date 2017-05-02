@@ -12,14 +12,19 @@ import (
 
 // Add adds songs to MPD's queue.
 type Add struct {
+	messages       chan string
 	songlistWidget func() *widgets.SonglistWidget
 	queue          func() *songlist.Queue
 	song           *song.Song
 	songlist       songlist.Songlist
 }
 
-func NewAdd(songlistWidget func() *widgets.SonglistWidget, queue func() *songlist.Queue) *Add {
-	return &Add{songlistWidget: songlistWidget, queue: queue}
+func NewAdd(messages chan string, songlistWidget func() *widgets.SonglistWidget, queue func() *songlist.Queue) *Add {
+	return &Add{
+		messages:       messages,
+		songlistWidget: songlistWidget,
+		queue:          queue,
+	}
 }
 
 func (cmd *Add) Reset() {
@@ -57,9 +62,20 @@ func (cmd *Add) Execute(t lexer.Token) error {
 			if err == nil {
 				songlistWidget.ClearSelection()
 				songlistWidget.MoveCursor(1)
+				len := selection.Len()
+				if len == 1 {
+					song := selection.Songs()[0]
+					cmd.messages <- fmt.Sprintf("Added to queue: %s", song.StringTags["file"])
+				} else {
+					cmd.messages <- fmt.Sprintf("Added %d songs to queue.", len)
+				}
 			}
+
 		default:
 			err = queue.Add(cmd.song)
+			if err == nil {
+				cmd.messages <- fmt.Sprintf("Added to queue: %s", cmd.song.StringTags["file"])
+			}
 		}
 
 	default:
