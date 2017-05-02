@@ -61,7 +61,7 @@ func (q *Queue) Merge(s Songlist) (*Queue, error) {
 	oldSongs := q.Songs()
 	for i := range oldSongs {
 		song := *oldSongs[i]
-		newQueue.Add(&song)
+		newQueue.add(&song)
 	}
 
 	newSongs := s.Songs()
@@ -71,7 +71,7 @@ func (q *Queue) Merge(s Songlist) (*Queue, error) {
 		case song.Position < 0:
 			return nil, fmt.Errorf("Song number %d does not have a position", i)
 		case song.Position == newQueue.Len():
-			if err := newQueue.Add(song); err != nil {
+			if err := newQueue.add(song); err != nil {
 				return nil, fmt.Errorf("Cannot add song %d to queue: %s", i, err)
 			}
 		case song.Position > newQueue.Len():

@@ -47,11 +47,15 @@ func New() (s *BaseSonglist) {
 	return
 }
 
+// Add adds a song to the songlist.
 func (s *BaseSonglist) Add(song *song.Song) error {
-	s.Lock()
-	defer s.Unlock()
-	s.songs = append(s.songs, song)
+	s.add(song)
 	return nil
+}
+
+// add internally adds a song to the songlist, without any side effects.
+func (s *BaseSonglist) add(song *song.Song) {
+	s.songs = append(s.songs, song)
 }
 
 func (s *BaseSonglist) Remove(index int) error {
@@ -207,6 +211,6 @@ func (songs *BaseSonglist) AddFromAttrlist(attrlist []mpd.Attrs) {
 	for _, attrs := range attrlist {
 		s := song.New()
 		s.SetTags(attrs)
-		songs.Add(s)
+		songs.add(s)
 	}
 }
