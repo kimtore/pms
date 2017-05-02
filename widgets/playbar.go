@@ -28,6 +28,13 @@ var playRunes = map[string]rune{
 	mpd.StateUnknown: '\u2bd1',
 }
 
+var playStrings = map[string]string{
+	mpd.StatePlay:    "|>",
+	mpd.StatePause:   "||",
+	mpd.StateStop:    "[]",
+	mpd.StateUnknown: "??",
+}
+
 func StatusRune(r rune, val bool) rune {
 	if val {
 		return r
@@ -94,7 +101,7 @@ func (w *PlaybarWidget) drawStatus() {
 	x = w.drawNextChar(x+0, y, StatusRune('r', w.status.Repeat), w.Style("switches"))
 
 	x = w.drawNext(x+1, y, []rune(utils.TimeString(int(w.status.Elapsed))), w.Style("elapsed"))
-	x = w.drawNextChar(x+1, y, playRunes[w.status.State], w.Style("symbol"))
+	x = w.drawNext(x+1, y, []rune(playStrings[w.status.State]), w.Style("symbol"))
 	x = w.drawNext(x+1, y, []rune(utils.TimeString(w.status.Time)), w.Style("time"))
 }
 
