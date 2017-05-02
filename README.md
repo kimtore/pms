@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.org/ambientsound/pms.svg?branch=go)](https://travis-ci.org/ambientsound/pms)
 
-Practical Music Search is an interactive console-based client for Music Player Daemon, or MPD. It has a command line interface much like Vim, and features lightning-fast searches, sorting, custom colors, configurable layouts, and the ability to set all keyboard shortcuts.
+Practical Music Search is an interactive console-based client for Music Player Daemon, or MPD. It has a command line interface much like Vim, and features lightning-fast searches, sorting, custom colors, configurable layouts, visual selection, and the ability to bind keyboard shortcuts.
 
-This is an experimental branch of PMS, re-implemented in Go. Much of the old functionality is missing (see [Roadmap](#roadmap)), but the UI is usable for basic tasks. and the connection to MPD seems stable enough. The full-text search is very fast, and definitely worth a try.
+This is an experimental branch of PMS, re-implemented in Go. Much of the old functionality is missing (see [Roadmap](#roadmap)), but it is usable for basic tasks and a little more. The full-text search is very fast; consider giving it a try!
 
 
 ## Running
@@ -63,9 +63,11 @@ This functionality is not implemented yet:
 * Basic player controls (~~play~~, ~~add~~, ~~pause~~, ~~stop~~, ~~next~~, ~~prev~~, ~~volume~~, consume, repeat, single, random).
 * Automatic add to queue when queue is nearing end.
 * Customizable topbar.
+* Customizable colors.
 * Tab completion.
 * Reading configuration files.
-* Multiple selection, copy, and paste.
+* ~~Multiple selection~~, copy, and paste.
+* Remote playlist management.
 * ...and probably more.
 
 
