@@ -9,7 +9,7 @@ This is an experimental branch of PMS, re-implemented in Go. Much of the old fun
 
 ## Running
 
-You are assumed to have a working [Go development environment](https://golang.org/doc/install).
+You are assumed to have a working [Go development environment](https://golang.org/doc/install). PMS requires Go >= 1.8.
 
 To install the application and dependencies:
 
