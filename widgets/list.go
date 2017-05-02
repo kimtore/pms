@@ -30,36 +30,36 @@ func (w *list) CursorSong() *song.Song {
 	return w.songlist.Song(w.cursor)
 }
 
-// Selected returns true if the given song index is selected, either through
-// visual selection or manual selection.
-func (w *list) Selected(i int) bool {
+// ManuallySelected returns true if the given song index is selected through manual selection.
+func (w *list) ManuallySelected(i int) bool {
 	_, ok := w.selection[i]
-	if !ok {
-		return w.visualSelection[0] <= i && i <= w.visualSelection[1]
-	}
 	return ok
 }
 
-// VisualSelectionIndices returns a slice of ints holding all the indices of
-// the current visual selection.
-func (w *list) VisualSelectionIndices() []int {
-	selection := make([]int, 0, w.songlist.Len())
-	if !w.HasVisualSelection() {
-		return selection
-	}
-	for key := w.visualSelection[0]; key <= w.visualSelection[1]; key++ {
-		selection = append(selection, key)
-	}
-	return selection
+// VisuallySelected returns true if the given song index is selected through visual selection.
+func (w *list) VisuallySelected(i int) bool {
+	return w.visualSelection[0] <= i && i <= w.visualSelection[1]
+}
+
+// Selected returns true if the given song index is selected, either through
+// visual selection or manual selection. If the song is doubly selected, the
+// selection is inversed.
+func (w *list) Selected(i int) bool {
+	a := w.ManuallySelected(i)
+	b := w.VisuallySelected(i)
+	return (a || b) && a != b
 }
 
 // SelectionIndices returns a slice of ints holding the position of each
 // element in the current selection. If no elements are selected, the cursor
 // position is returned.
 func (w *list) SelectionIndices() []int {
-	selection := w.VisualSelectionIndices()
-	for key := range w.selection {
-		selection = append(selection, key)
+	selection := make([]int, 0, w.songlist.Len())
+	max := w.songlist.Len()
+	for i := 0; i < max; i++ {
+		if w.Selected(i) {
+			selection = append(selection, i)
+		}
 	}
 	if len(selection) == 0 && w.songlist.Len() > 0 {
 		selection = append(selection, w.cursor)
