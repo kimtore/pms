@@ -55,7 +55,7 @@ func (cmd *Add) Execute(t lexer.Token) error {
 				break
 			}
 			if err == nil {
-				songlistWidget.DisableVisualSelection()
+				songlistWidget.ClearSelection()
 				songlistWidget.MoveCursor(1)
 			}
 		default:

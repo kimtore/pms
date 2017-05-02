@@ -51,16 +51,16 @@ func NewSonglistWidget(o *options.Options) (w *SonglistWidget) {
 	return
 }
 
-func (w *SonglistWidget) list() *list {
+func (w *SonglistWidget) List() *list {
 	return w.currentList
 }
 
 func (w *SonglistWidget) Songlist() songlist.Songlist {
-	return w.list().songlist
+	return w.List().songlist
 }
 
 func (w *SonglistWidget) AutoSetColumnWidths() {
-	currentList := w.list()
+	currentList := w.List()
 	for i := range currentList.columns {
 		currentList.columns[i].SetWidth(currentList.columns[i].Mid())
 	}
@@ -70,7 +70,7 @@ func (w *SonglistWidget) AutoSetColumnWidths() {
 func (w *SonglistWidget) SetColumns(cols []string) {
 	timer := time.Now()
 
-	currentList := w.list()
+	currentList := w.List()
 	ch := make(chan int, len(currentList.columns))
 	currentList.columns = make(columns, len(cols))
 
@@ -92,7 +92,7 @@ func (w *SonglistWidget) SetColumns(cols []string) {
 }
 
 func (w *SonglistWidget) expandColumns() {
-	currentList := w.list()
+	currentList := w.List()
 
 	if len(currentList.columns) == 0 {
 		return
@@ -162,7 +162,7 @@ func (w *SonglistWidget) Draw() {
 	defer list.Unlock()
 
 	_, ymin, xmax, ymax := w.viewport.GetVisible()
-	currentList := w.list()
+	currentList := w.List()
 	xmax += 1
 	style := w.Style("default")
 	cursor := false
@@ -265,11 +265,11 @@ func (w *SonglistWidget) MoveCursorDown(i int) {
 }
 
 func (w *SonglistWidget) MoveCursor(i int) {
-	w.SetCursor(w.list().cursor + i)
+	w.SetCursor(w.List().cursor + i)
 }
 
 func (w *SonglistWidget) SetCursor(i int) {
-	currentList := w.list()
+	currentList := w.List()
 	currentList.cursor = i
 	w.validateCursorList()
 	w.expandVisualSelection()
@@ -279,11 +279,11 @@ func (w *SonglistWidget) SetCursor(i int) {
 }
 
 func (w *SonglistWidget) Cursor() int {
-	return w.list().cursor
+	return w.List().cursor
 }
 
 func (w *SonglistWidget) CursorSong() *song.Song {
-	return w.list().CursorSong()
+	return w.List().CursorSong()
 }
 
 func (w *SonglistWidget) SetCurrentSong(s *song.Song) {
@@ -308,7 +308,7 @@ func (w *SonglistWidget) IndexAtCurrentSong(i int) bool {
 
 // validateCursorVisible makes sure the cursor stays within the visible area of the viewport.
 func (w *SonglistWidget) validateCursorVisible() {
-	currentList := w.list()
+	currentList := w.List()
 	currentList.ymin, currentList.ymax = w.getVisibleBoundaries()
 	w.validateCursor(currentList.ymin, currentList.ymax)
 }
@@ -321,7 +321,7 @@ func (w *SonglistWidget) validateCursorList() {
 
 // validateCursor adjusts the cursor based on minimum and maximum boundaries.
 func (w *SonglistWidget) validateCursor(ymin, ymax int) {
-	currentList := w.list()
+	currentList := w.List()
 	if currentList.cursor < ymin {
 		currentList.cursor = ymin
 	}
@@ -355,7 +355,7 @@ func (w *SonglistWidget) Name() string {
 }
 
 func (w *SonglistWidget) Columns() []column {
-	return w.list().columns
+	return w.List().columns
 }
 
 // Len returns the number of songs in the current songlist.
@@ -419,7 +419,7 @@ func (w *SonglistWidget) RemoveSonglist(index int) error {
 // ReplaceSonglist replaces an existing songlist with its new version. Checking
 // is done on a type-level, so only the queue and library will be replaced.
 func (w *SonglistWidget) ReplaceSonglist(s songlist.Songlist) {
-	currentList := w.list()
+	currentList := w.List()
 
 	for i := range w.lists {
 		if reflect.TypeOf(w.lists[i].songlist) != reflect.TypeOf(s) {
@@ -475,7 +475,7 @@ func (w *SonglistWidget) ListChanged() {
 	w.SetColumns(strings.Split(w.options.StringValue("columns"), ",")) // FIXME
 	//}
 	w.setViewportSize()
-	currentList := w.list()
+	currentList := w.List()
 	w.viewport.MakeVisible(0, currentList.ymax)
 	w.viewport.MakeVisible(0, currentList.ymin)
 	w.validateViewport()
@@ -507,13 +507,13 @@ func (w *SonglistWidget) SetSonglistIndex(i int) error {
 	}
 	w.currentListIndex = i
 	w.activateList(w.lists[w.currentListIndex])
-	w.SetFallbackSonglist(w.list().songlist)
+	w.SetFallbackSonglist(w.List().songlist)
 	return nil
 }
 
 // Selection returns the current selection as a songlist.Songlist.
 func (w *SonglistWidget) Selection() songlist.Songlist {
-	list := w.list()
+	list := w.List()
 	indices := list.SelectionIndices()
 	source := w.Songlist()
 	dest := songlist.New()
@@ -530,7 +530,7 @@ func (w *SonglistWidget) Selection() songlist.Songlist {
 // EnableVisualSelection sets start and stop of the visual selection to the
 // cursor position.
 func (w *SonglistWidget) EnableVisualSelection() {
-	list := w.list()
+	list := w.List()
 	w.SetVisualSelection(list.cursor, list.cursor, list.cursor)
 }
 
@@ -539,10 +539,16 @@ func (w *SonglistWidget) DisableVisualSelection() {
 	w.SetVisualSelection(-1, -1, -1)
 }
 
+// ClearSelection clears the selection.
+func (w *SonglistWidget) ClearSelection() {
+	w.List().ClearSelection()
+	PostEventModeSync(w, MultibarModeNormal)
+}
+
 // SetVisualSelection sets the range of the visual selection. Use negative
 // integers to un-select all visually selected songs.
 func (w *SonglistWidget) SetVisualSelection(ymin, ymax, ystart int) {
-	list := w.list()
+	list := w.List()
 	list.SetVisualSelection(ymin, ymax, ystart)
 	if list.HasVisualSelection() {
 		PostEventModeSync(w, MultibarModeVisual)
@@ -553,13 +559,13 @@ func (w *SonglistWidget) SetVisualSelection(ymin, ymax, ystart int) {
 
 // HasVisualSelection returns true if the songlist is in visual selection mode.
 func (w *SonglistWidget) HasVisualSelection() bool {
-	return w.list().HasVisualSelection()
+	return w.List().HasVisualSelection()
 }
 
 // expandVisualSelection sets the visual selection boundaries from where it
 // started to the current cursor position.
 func (w *SonglistWidget) expandVisualSelection() {
-	list := w.list()
+	list := w.List()
 	if !list.HasVisualSelection() {
 		return
 	}

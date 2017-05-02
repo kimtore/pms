@@ -35,6 +35,7 @@ bind / inputmode search
 bind v inputmode visual
 bind V inputmode visual
 bind <F3> inputmode search
+bind m select toggle
 bind a add
 bind <Delete> remove
 bind x remove
@@ -45,5 +46,5 @@ bind h previous
 bind l next
 bind + volume +2
 bind - volume -2
-bind m volume mute
+bind M volume mute
 `

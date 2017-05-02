@@ -21,8 +21,7 @@ func newList(s songlist.Songlist) *list {
 	l := &list{}
 	l.songlist = s
 	l.columns = make(columns, 0)
-	l.selection = make(map[int]struct{}, 0)
-	l.visualSelection = [3]int{-1, -1, -1}
+	l.ClearSelection()
 	return l
 }
 
@@ -100,4 +99,23 @@ func (w *list) SetVisualSelection(ymin, ymax, ystart int) {
 // HasVisualSelection returns true if the songlist is in visual selection mode.
 func (w *list) HasVisualSelection() bool {
 	return w.visualSelection[0] >= 0 && w.visualSelection[1] >= 0
+}
+
+// SetSelection sets the selected status of a single song.
+func (w *list) SetSelected(i int, selected bool) {
+	var x struct{}
+	_, ok := w.selection[i]
+	if ok == selected {
+		return
+	}
+	if selected {
+		w.selection[i] = x
+	} else {
+		delete(w.selection, i)
+	}
+}
+
+func (w *list) ClearSelection() {
+	w.selection = make(map[int]struct{}, 0)
+	w.visualSelection = [3]int{-1, -1, -1}
 }

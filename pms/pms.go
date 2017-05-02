@@ -577,12 +577,12 @@ func (pms *PMS) KeyInput(ev parser.KeyEvent) {
 		return
 	}
 
-	console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, input.Command)
+	//console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, input.Command)
 	pms.UI.EventInputCommand <- input.Command
 }
 
 func (pms *PMS) Execute(cmd string) {
-	//console.Log("Input command received from Multibar: %s", cmd)
+	console.Log("Execute command: '%s'", cmd)
 	err := pms.CLI.Execute(cmd)
 	if err != nil {
 		pms.EventError <- fmt.Sprintf("%s", err)
