@@ -65,7 +65,7 @@ func (w *list) SelectionIndices() []int {
 	if len(selection) == 0 && w.songlist.Len() > 0 {
 		selection = append(selection, w.cursor)
 	}
-	sort.Slice(selection, func(i, j int) bool { return i < j })
+	sort.Slice(selection, func(i, j int) bool { return selection[i] < selection[j] })
 	return selection
 }
 
