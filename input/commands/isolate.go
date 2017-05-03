@@ -10,7 +10,7 @@ import (
 	"github.com/ambientsound/pms/widgets"
 )
 
-// Isolate adds songs to MPD's queue.
+// Isolate searches for songs that have similar tags as the selection.
 type Isolate struct {
 	messages       chan string
 	songlistWidget func() *widgets.SonglistWidget

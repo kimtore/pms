@@ -63,6 +63,7 @@ func (pms *PMS) setupCLI() {
 	pms.CLI.Register("set", commands.NewSet(pms.Options, pms.EventMessage))
 	pms.CLI.Register("sort", commands.NewSort(pms.UI.CurrentSonglistWidget, pms.Options))
 	pms.CLI.Register("stop", commands.NewStop(pms.CurrentMpdClient))
+	pms.CLI.Register("style", commands.NewStyle(pms.UI.Styles))
 	pms.CLI.Register("volume", commands.NewVolume(pms.CurrentMpdClient, pms.CurrentPlayerStatus))
 }
 

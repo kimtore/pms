@@ -185,7 +185,7 @@ func (w *SonglistWidget) Draw() {
 		case w.IndexAtCurrentSong(y):
 			style = w.Style("currentSong")
 		case currentList.Selected(y):
-			style = w.Style("selected")
+			style = w.Style("selection")
 		default:
 			style = w.Style("default")
 			lineStyled = false

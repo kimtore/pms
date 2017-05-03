@@ -26,6 +26,7 @@ type UI struct {
 	Columnheaders *ColumnheadersWidget
 	Multibar      *MultibarWidget
 	Songlist      *SonglistWidget
+	Styles        StyleMap
 
 	// Input events
 	EventInputCommand chan string
@@ -61,44 +62,18 @@ func NewUI(opts *options.Options) *UI {
 	ui.Songlist.Watch(ui)
 	ui.Playbar.Watch(ui)
 
-	styles := StyleMap{
-		"album":           tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"allTagsMissing":  tcell.StyleDefault.Foreground(tcell.ColorRed),
-		"artist":          tcell.StyleDefault.Foreground(tcell.ColorYellow),
-		"commandText":     tcell.StyleDefault,
-		"currentSong":     tcell.StyleDefault.Background(tcell.ColorYellow).Foreground(tcell.ColorBlack),
-		"cursor":          tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack),
-		"date":            tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"elapsed":         tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"errorText":       tcell.StyleDefault.Background(tcell.ColorRed).Foreground(tcell.ColorWhite).Bold(true),
-		"header":          tcell.StyleDefault.Foreground(tcell.ColorGreen).Bold(true),
-		"mostTagsMissing": tcell.StyleDefault.Foreground(tcell.ColorRed),
-		"noCurrentSong":   tcell.StyleDefault.Foreground(tcell.ColorRed),
-		"readout":         tcell.StyleDefault,
-		"searchText":      tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
-		"selection":       tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorWhite).Bold(true),
-		"sequenceText":    tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"statusbar":       tcell.StyleDefault,
-		"switches":        tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"time":            tcell.StyleDefault.Foreground(tcell.ColorDarkMagenta),
-		"title":           tcell.StyleDefault.Foreground(tcell.ColorWhite).Bold(true),
-		"topbar":          tcell.StyleDefault.Foreground(tcell.ColorYellow).Bold(true),
-		"track":           tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"visualText":      tcell.StyleDefault.Foreground(tcell.ColorTeal),
-		"volume":          tcell.StyleDefault.Foreground(tcell.ColorGreen),
-		"year":            tcell.StyleDefault.Foreground(tcell.ColorGreen),
-	}
+	// Set styles
+	ui.Styles = make(StyleMap)
+	ui.SetStyleMap(ui.Styles)
+	ui.Columnheaders.SetStyleMap(ui.Styles)
+	ui.Playbar.SetStyleMap(ui.Styles)
+	ui.Songlist.SetStyleMap(ui.Styles)
+	ui.Multibar.SetStyleMap(ui.Styles)
 
 	// Styles for widgets that don't have their own class yet.
-	ui.SetStyleMap(styles)
 	ui.Topbar.SetStyle(ui.Style("topbar"))
 	ui.Topbar.SetLeft(version.ShortName(), ui.Style("topbar"))
 	ui.Topbar.SetRight(version.Version(), ui.Style("topbar"))
-
-	ui.Columnheaders.SetStyleMap(styles)
-	ui.Playbar.SetStyleMap(styles)
-	ui.Songlist.SetStyleMap(styles)
-	ui.Multibar.SetStyleMap(styles)
 
 	ui.CreateLayout()
 	ui.App.SetRootWidget(ui)
