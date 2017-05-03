@@ -82,19 +82,27 @@ func (i *Index) IndexFull() error {
 	return nil
 }
 
-// Search takes a Bleve QueryString query, matches it against the search index,
-// returns a new Songlist with all matching songs.
+// Search takes a natural language query string, matches it against the search
+// index, and returns a new Songlist with all matching songs.
 func (i *Index) Search(q string) (r songlist.Songlist, err error) {
-
-	r = songlist.New()
-
 	query := bleve.NewQueryStringQuery(q)
 	search := bleve.NewSearchRequest(query)
-	search.Size = i.Songlist.Len()
-	sr, err := i.bleveIndex.Search(search)
+
+	r, _, err = i.Query(search)
+	r.SetName(q)
+
+	return
+}
+
+// Query takes a Bleve search query and returns a songlist with all matching songs.
+func (i *Index) Query(query *bleve.SearchRequest) (songlist.Songlist, *bleve.SearchResult, error) {
+	r := songlist.New()
+	query.Size = i.Songlist.Len()
+
+	sr, err := i.bleveIndex.Search(query)
 
 	if err != nil {
-		return
+		return r, nil, err
 	}
 
 	for _, hit := range sr.Hits {
@@ -110,9 +118,7 @@ func (i *Index) Search(q string) (r songlist.Songlist, err error) {
 		//console.Log("%.2f %s\n", hit.Score, song.Tags["file"])
 	}
 
-	console.Log("Query '%s' returned %d results over threshold of %.2f (total %d results) in %s", q, r.Len(), SEARCH_SCORE_THRESHOLD, sr.Total, sr.Took)
+	console.Log("Query '%s' returned %d results over threshold of %.2f (total %d results) in %s", query, r.Len(), SEARCH_SCORE_THRESHOLD, sr.Total, sr.Took)
 
-	r.SetName(q)
-
-	return
+	return r, sr, nil
 }
