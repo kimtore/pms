@@ -1,11 +1,11 @@
 package index
 
 import (
+	"github.com/ambientsound/pms/index/filters/unicodestrip"
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/analysis/analyzer/custom"
 	"github.com/blevesearch/bleve/analysis/token/edgengram"
 	"github.com/blevesearch/bleve/analysis/token/lowercase"
-	"github.com/blevesearch/bleve/analysis/token/unicodenorm"
 	"github.com/blevesearch/bleve/analysis/tokenizer/whitespace"
 	"github.com/blevesearch/bleve/mapping"
 )
@@ -26,10 +26,9 @@ func buildIndexMapping() (mapping.IndexMapping, error) {
 		return nil, err
 	}
 
-	err = indexMapping.AddCustomTokenFilter("unicodeNormalizer",
+	err = indexMapping.AddCustomTokenFilter("unicodeStripper",
 		map[string]interface{}{
-			"form": unicodenorm.NFKD,
-			"type": unicodenorm.Name,
+			"type": unicodestrip.Name,
 		})
 	if err != nil {
 		return nil, err
@@ -41,7 +40,7 @@ func buildIndexMapping() (mapping.IndexMapping, error) {
 			"char_filters": []interface{}{},
 			"tokenizer":    whitespace.Name,
 			"token_filters": []interface{}{
-				`unicodeNormalizer`,
+				`unicodeStripper`,
 				lowercase.Name,
 				`songEdgeNgram`,
 			},
