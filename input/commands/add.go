@@ -55,20 +55,18 @@ func (cmd *Add) Execute(t lexer.Token) error {
 			if selection.Len() == 0 {
 				return fmt.Errorf("No selection, cannot add without any parameters.")
 			}
-			err := queue.AddList(selection)
+			err = queue.AddList(selection)
 			if err != nil {
 				break
 			}
-			if err == nil {
-				songlistWidget.ClearSelection()
-				songlistWidget.MoveCursor(1)
-				len := selection.Len()
-				if len == 1 {
-					song := selection.Songs()[0]
-					cmd.messages <- fmt.Sprintf("Added to queue: %s", song.StringTags["file"])
-				} else {
-					cmd.messages <- fmt.Sprintf("Added %d songs to queue.", len)
-				}
+			songlistWidget.ClearSelection()
+			songlistWidget.MoveCursor(1)
+			len := selection.Len()
+			if len == 1 {
+				song := selection.Songs()[0]
+				cmd.messages <- fmt.Sprintf("Added to queue: %s", song.StringTags["file"])
+			} else {
+				cmd.messages <- fmt.Sprintf("Added %d songs to queue.", len)
 			}
 
 		default:
