@@ -247,7 +247,6 @@ func (ui *UI) runIndexSearch(term string) error {
 
 	ui.searchResult, err = ui.Index.Search(term)
 
-	ui.Songlist.SetCursor(0)
 	ui.showSearchResult()
 
 	return err
