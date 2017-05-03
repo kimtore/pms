@@ -160,7 +160,7 @@ func (s *BaseSonglist) Locate(match *song.Song) (int, error) {
 		return 0, fmt.Errorf("Attempt to locate nil song")
 	}
 	for i, test := range s.songs {
-		hasId := match.ID != -1 && test.ID != -1
+		hasId := !(match.NullID() || test.NullID())
 		switch {
 		case hasId && match.ID == test.ID:
 		case match.StringTags["file"] == test.StringTags["file"]:
@@ -169,7 +169,7 @@ func (s *BaseSonglist) Locate(match *song.Song) (int, error) {
 		}
 		return i, nil
 	}
-	return 0, fmt.Errorf("Cannot find song in songlist %s", s.Name())
+	return 0, fmt.Errorf("Cannot find song in songlist '%s'", s.Name())
 }
 
 func (s *BaseSonglist) SetName(name string) error {

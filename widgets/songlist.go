@@ -291,6 +291,7 @@ func (w *SonglistWidget) CursorToSong(s *song.Song) error {
 	if err != nil {
 		return err
 	}
+	//console.Log("Located %s at position %d, id %d", s.StringTags["file"], index, s.ID)
 	w.SetCursor(index)
 	return nil
 }

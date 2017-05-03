@@ -26,6 +26,9 @@ type Taglist map[string]Tag
 
 type StringTaglist map[string]string
 
+const NullID int = -1
+const NullPosition int = -1
+
 func New() (s *Song) {
 	s = &Song{}
 	s.Tags = make(Taglist)
@@ -45,12 +48,28 @@ func (s *Song) SetTags(tags mpd.Attrs) {
 	s.FillSortTags()
 }
 
+// NullID returns true if the song's ID is not present.
+func (s *Song) NullID() bool {
+	return s.ID == NullID
+}
+
+// NullPosition returns true if the song's osition is not present.
+func (s *Song) NullPosition() bool {
+	return s.Position == NullPosition
+}
+
 // AutoFill post-processes and caches song tags.
 func (s *Song) AutoFill() {
 	var err error
 
-	s.ID, _ = strconv.Atoi(s.StringTags["id"])
-	s.Position, _ = strconv.Atoi(s.StringTags["pos"])
+	s.ID, err = strconv.Atoi(s.StringTags["id"])
+	if err != nil {
+		s.ID = NullID
+	}
+	s.Position, err = strconv.Atoi(s.StringTags["pos"])
+	if err != nil {
+		s.Position = NullPosition
+	}
 
 	s.Time, err = strconv.Atoi(s.StringTags["time"])
 	if err == nil {
