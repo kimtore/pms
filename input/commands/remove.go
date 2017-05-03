@@ -36,10 +36,11 @@ func (cmd *Remove) Execute(t lexer.Token) error {
 			return fmt.Errorf("No song selected, cannot remove without any parameters.")
 		}
 
+		index := selection[0]
 		err = list.RemoveIndices(selection)
 		if err == nil {
 			songlistWidget.ClearSelection()
-			songlistWidget.MoveCursor(-1*len(selection) + 1)
+			songlistWidget.SetCursor(index)
 		}
 
 		cmd.listChanged <- 0
