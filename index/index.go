@@ -1,6 +1,8 @@
 package index
 
 import (
+	"strings"
+
 	"github.com/ambientsound/pms/console"
 	index_song "github.com/ambientsound/pms/index/song"
 	"github.com/ambientsound/pms/songlist"
@@ -84,22 +86,65 @@ func (i *Index) IndexFull() error {
 
 // Search takes a natural language query string, matches it against the search
 // index, and returns a new Songlist with all matching songs.
-func (i *Index) Search(q string) (r songlist.Songlist, err error) {
+func (i *Index) Search(q string) (songlist.Songlist, error) {
 	query := bleve.NewQueryStringQuery(q)
-	search := bleve.NewSearchRequest(query)
+	request := bleve.NewSearchRequest(query)
 
-	r, _, err = i.Query(search)
+	r, _, err := i.Query(request)
 	r.SetName(q)
 
-	return
+	return r, err
 }
 
-// Query takes a Bleve search query and returns a songlist with all matching songs.
-func (i *Index) Query(query *bleve.SearchRequest) (songlist.Songlist, *bleve.SearchResult, error) {
-	r := songlist.New()
-	query.Size = i.Songlist.Len()
+// Isolate takes a songlist and a set of tag keys, and matches the tag values
+// of the songlist against the search index.
+func (i *Index) Isolate(list songlist.Songlist, tags []string) (songlist.Songlist, error) {
+	terms := make(map[string]struct{})
+	query := bleve.NewBooleanQuery()
+	songs := list.Songs()
 
-	sr, err := i.bleveIndex.Search(query)
+	// Create a cartesian join for song values and tag list.
+	for _, song := range songs {
+		subQuery := bleve.NewConjunctionQuery()
+
+		for _, tag := range tags {
+
+			// Ignore empty values
+			tagValue := song.StringTags[tag]
+			if len(tagValue) == 0 {
+				continue
+			}
+
+			// Name generation
+			terms[tagValue] = struct{}{}
+
+			field := strings.Title(tag)
+			query := bleve.NewMatchPhraseQuery(tagValue)
+			query.SetField(field)
+			subQuery.AddQuery(query)
+		}
+		query.AddShould(subQuery)
+	}
+
+	request := bleve.NewSearchRequest(query)
+	r, _, err := i.Query(request)
+
+	names := make([]string, 0)
+	for k, _ := range terms {
+		names = append(names, k)
+	}
+	name := strings.Join(names, ", ")
+	r.SetName(name)
+
+	return r, err
+}
+
+// Query takes a Bleve search request and returns a songlist with all matching songs.
+func (i *Index) Query(request *bleve.SearchRequest) (songlist.Songlist, *bleve.SearchResult, error) {
+	r := songlist.New()
+	request.Size = i.Songlist.Len()
+
+	sr, err := i.bleveIndex.Search(request)
 
 	if err != nil {
 		return r, nil, err
@@ -118,7 +163,7 @@ func (i *Index) Query(query *bleve.SearchRequest) (songlist.Songlist, *bleve.Sea
 		//console.Log("%.2f %s\n", hit.Score, song.Tags["file"])
 	}
 
-	console.Log("Query '%s' returned %d results over threshold of %.2f (total %d results) in %s", query, r.Len(), SEARCH_SCORE_THRESHOLD, sr.Total, sr.Took)
+	console.Log("Query '%s' returned %d results over threshold of %.2f (total %d results) in %s", request, r.Len(), SEARCH_SCORE_THRESHOLD, sr.Total, sr.Took)
 
 	return r, sr, nil
 }

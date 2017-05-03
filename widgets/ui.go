@@ -241,9 +241,6 @@ func (ui *UI) runIndexSearch(term string) error {
 	if ui.Index == nil {
 		return fmt.Errorf("Search index is not operational")
 	}
-	if len(term) == 1 {
-		return nil
-	}
 
 	ui.searchResult, err = ui.Index.Search(term)
 

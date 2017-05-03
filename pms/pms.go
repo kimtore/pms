@@ -296,6 +296,7 @@ func (pms *PMS) watchMpdIdleEvents() {
 	}
 }
 
+// CurrentMpdClient ensures there is a valid MPD connection, and returns the MPD client object.
 func (pms *PMS) CurrentMpdClient() *mpd.Client {
 	err := pms.PingConnect()
 	if err == nil {
@@ -312,6 +313,11 @@ func (pms *PMS) CurrentQueue() *songlist.Queue {
 // CurrentPlayerStatus returns a copy of the current MPD player status as seen by PMS.
 func (pms *PMS) CurrentPlayerStatus() pms_mpd.PlayerStatus {
 	return pms.mpdStatus
+}
+
+// CurrentIndex returns the Bleve search index.
+func (pms *PMS) CurrentIndex() *index.Index {
+	return pms.Index
 }
 
 // runTicker starts a ticker that will increase the elapsed time every second.

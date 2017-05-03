@@ -30,6 +30,8 @@ bind t list next
 bind T list previous
 bind <C-d> list duplicate
 bind <C-g> list remove
+bind <C-j> isolate artist
+bind <C-t> isolate albumartist,album
 bind : inputmode input
 bind / inputmode search
 bind v inputmode visual
