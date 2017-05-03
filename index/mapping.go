@@ -5,6 +5,7 @@ import (
 	"github.com/blevesearch/bleve/analysis/analyzer/custom"
 	"github.com/blevesearch/bleve/analysis/token/edgengram"
 	"github.com/blevesearch/bleve/analysis/token/lowercase"
+	"github.com/blevesearch/bleve/analysis/token/unicodenorm"
 	"github.com/blevesearch/bleve/analysis/tokenizer/whitespace"
 	"github.com/blevesearch/bleve/mapping"
 )
@@ -25,12 +26,22 @@ func buildIndexMapping() (mapping.IndexMapping, error) {
 		return nil, err
 	}
 
+	err = indexMapping.AddCustomTokenFilter("unicodeNormalizer",
+		map[string]interface{}{
+			"form": unicodenorm.NFKD,
+			"type": unicodenorm.Name,
+		})
+	if err != nil {
+		return nil, err
+	}
+
 	err = indexMapping.AddCustomAnalyzer("songAnalyzer",
 		map[string]interface{}{
 			"type":         custom.Name,
 			"char_filters": []interface{}{},
 			"tokenizer":    whitespace.Name,
 			"token_filters": []interface{}{
+				`unicodeNormalizer`,
 				lowercase.Name,
 				`songEdgeNgram`,
 			},
