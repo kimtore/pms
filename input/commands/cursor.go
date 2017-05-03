@@ -3,9 +3,7 @@ package commands
 import (
 	"fmt"
 	"strconv"
-	"time"
 
-	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/widgets"
@@ -35,6 +33,8 @@ func (cmd *Cursor) Reset() {
 }
 
 func (cmd *Cursor) Execute(t lexer.Token) error {
+	var err error
+
 	s := t.String()
 	songlistWidget := cmd.songlistWidget()
 
@@ -87,13 +87,7 @@ func (cmd *Cursor) Execute(t lexer.Token) error {
 			if currentSong == nil {
 				return fmt.Errorf("No song is currently playing.")
 			}
-			timer := time.Now()
-			index, err := songlistWidget.Songlist().Locate(currentSong)
-			console.Log("Locate() in %s", time.Since(timer).String())
-			if err != nil {
-				return fmt.Errorf("Can't find currently playing song in this songlist.")
-			}
-			songlistWidget.SetCursor(index)
+			err = songlistWidget.CursorToSong(currentSong)
 
 		case cmd.relative != 0:
 			songlistWidget.MoveCursor(cmd.relative)
@@ -106,5 +100,5 @@ func (cmd *Cursor) Execute(t lexer.Token) error {
 		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 
-	return nil
+	return err
 }

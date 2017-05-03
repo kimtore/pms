@@ -156,6 +156,9 @@ func (s *BaseSonglist) Truncate(length int) error {
 }
 
 func (s *BaseSonglist) Locate(match *song.Song) (int, error) {
+	if match == nil {
+		return 0, fmt.Errorf("Attempt to locate nil song")
+	}
 	for i, test := range s.songs {
 		hasId := match.ID != -1 && test.ID != -1
 		switch {

@@ -43,7 +43,9 @@ func (cmd *Sort) Execute(t lexer.Token) error {
 		cmd.finished = true
 
 	case lexer.TokenEnd:
+		song := songlistWidget.CursorSong()
 		err = songlistWidget.Songlist().Sort(cmd.fields)
+		songlistWidget.CursorToSong(song)
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", s)

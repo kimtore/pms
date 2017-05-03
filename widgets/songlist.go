@@ -286,6 +286,15 @@ func (w *SonglistWidget) CursorSong() *song.Song {
 	return w.List().CursorSong()
 }
 
+func (w *SonglistWidget) CursorToSong(s *song.Song) error {
+	index, err := w.Songlist().Locate(s)
+	if err != nil {
+		return err
+	}
+	w.SetCursor(index)
+	return nil
+}
+
 func (w *SonglistWidget) SetCurrentSong(s *song.Song) {
 	if s != nil {
 		w.currentSong = *s
