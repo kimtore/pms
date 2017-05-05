@@ -18,6 +18,7 @@ type StyleMap map[string]tcell.Style
 
 type UI struct {
 	// UI elements
+	Screen tcell.Screen
 	App    *views.Application
 	Layout *views.BoxLayout
 
@@ -44,7 +45,14 @@ type UI struct {
 }
 
 func NewUI(opts *options.Options) *UI {
+	var err error
+
 	ui := &UI{}
+
+	ui.Screen, err = tcell.NewScreen()
+	if err != nil {
+		return nil
+	}
 
 	ui.EventInputCommand = make(chan string, 16)
 	ui.EventKeyInput = make(chan parser.KeyEvent, 16)
@@ -76,6 +84,7 @@ func NewUI(opts *options.Options) *UI {
 	ui.Topbar.SetRight(version.Version(), ui.Style("topbar"))
 
 	ui.CreateLayout()
+	ui.App.SetScreen(ui.Screen)
 	ui.App.SetRootWidget(ui)
 
 	return ui
@@ -139,6 +148,16 @@ func (ui *UI) Title() string {
 	}
 }
 
+func (ui *UI) UpdateCursor() {
+	switch ui.Multibar.Mode() {
+	case MultibarModeInput, MultibarModeSearch:
+		_, ymax := ui.Screen.Size()
+		ui.Screen.ShowCursor(ui.Multibar.RuneLen()+1, ymax-1)
+	default:
+		ui.Screen.HideCursor()
+	}
+}
+
 func (ui *UI) HandleEvent(ev tcell.Event) bool {
 	switch ev := ev.(type) {
 
@@ -161,6 +180,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 			console.Log("Disabling visual selection based on multibar setting")
 			ui.Songlist.DisableVisualSelection()
 		}
+		ui.UpdateCursor()
 		return true
 
 	case *EventInputChanged:
@@ -172,6 +192,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 				console.Log("Error while searching: %s", err)
 			}
 		}
+		ui.UpdateCursor()
 		return true
 
 	case *EventInputFinished:

@@ -113,6 +113,10 @@ func (m *MultibarWidget) RuneString() string {
 	return string(m.runes)
 }
 
+func (m *MultibarWidget) RuneLen() int {
+	return len(m.runes)
+}
+
 func (m *MultibarWidget) handleTruncate() {
 	m.setRunes(make([]rune, 0))
 	PostEventInputChanged(m)
