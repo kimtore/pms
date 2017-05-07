@@ -16,6 +16,7 @@ var buildVersion = "undefined"
 
 type cliOptions struct {
 	Version     bool   `short:"v" long:"version" description:"Print program version"`
+	Debug       string `short:"d" long:"debug" description:"Write debugging info to file"`
 	MpdHost     string `long:"host" description:"MPD host (MPD_HOST environment variable)" default:"localhost"`
 	MpdPort     string `long:"port" description:"MPD port (MPD_PORT environment variable)" default:"6600"`
 	MpdPassword string `long:"password" description:"MPD password"`
@@ -35,6 +36,14 @@ func main() {
 		trailing := strings.Join(remainder, " ")
 		fmt.Printf("error: trailing characters: %s\n", trailing)
 		os.Exit(1)
+	}
+
+	if len(opts.Debug) > 0 {
+		err := console.Open(opts.Debug)
+		if err != nil {
+			fmt.Printf("Error while opening log file: %s", err)
+			os.Exit(1)
+		}
 	}
 
 	if opts.Version {

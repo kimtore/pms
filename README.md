@@ -11,18 +11,19 @@ This is an experimental branch of PMS, re-implemented in Go. Much of the old fun
 
 You are assumed to have a working [Go development environment](https://golang.org/doc/install). PMS requires Go >= 1.8.
 
-To install the application and dependencies:
+To install the application and dependencies, and run PMS, assuming you have $GOBIN in your path:
 
 ```
 git clone https://github.com/ambientsound/pms $GOPATH/src/github.com/ambientsound/pms
 cd $GOPATH/src/github.com/ambientsound/pms
 make
+pms
 ```
 
-Then, to run PMS, assuming you have $GOBIN in your path;
+If PMS crashes, it's very helpful with debugging information. This can be obtained using the debug log:
 
 ```
-pms 2>/tmp/pms.debug.log  # or /dev/null
+pms --debug /tmp/pms.log
 ```
 
 
@@ -63,7 +64,7 @@ This functionality is not implemented yet:
 * Basic player controls (~~play~~, ~~add~~, ~~pause~~, ~~stop~~, ~~next~~, ~~prev~~, ~~volume~~, consume, repeat, single, random).
 * Automatic add to queue when queue is nearing end.
 * Customizable topbar.
-* Customizable colors.
+* ~~Customizable colors~~.
 * Tab completion.
 * Reading configuration files.
 * ~~Multiple selection~~, copy, and paste.
