@@ -3,7 +3,7 @@ package commands_test
 import (
 	"testing"
 
-	"github.com/ambientsound/pms/input/commands"
+	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"

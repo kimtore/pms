@@ -3,7 +3,7 @@ package input
 import (
 	"fmt"
 
-	"github.com/ambientsound/pms/input/commands"
+	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/input/lexer"
 )
 

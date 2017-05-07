@@ -4,9 +4,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input"
-	"github.com/ambientsound/pms/input/commands"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/options"

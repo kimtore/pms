@@ -3,8 +3,8 @@ package input_test
 import (
 	"testing"
 
+	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/input"
-	"github.com/ambientsound/pms/input/commands"
 	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
