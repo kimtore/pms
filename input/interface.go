@@ -11,14 +11,14 @@ type commandMap map[string]commands.Command
 
 // CLI reads user input, tokenizes it, and dispatches the tokens to their respective commands.
 type CLI struct {
-	handlers    commandMap
-	baseCommand commands.Base
+	handlers commandMap
+	baseAPI  commands.API
 }
 
-func NewCLI(baseCommand commands.Base) *CLI {
+func NewCLI(baseAPI commands.API) *CLI {
 	return &CLI{
-		baseCommand: baseCommand,
-		handlers:    make(commandMap, 0),
+		baseAPI:  baseAPI,
+		handlers: make(commandMap, 0),
 	}
 }
 
@@ -74,10 +74,10 @@ func (i *CLI) Register(verb string, cmd commands.Command) error {
 	return nil
 }
 
-func (i *CLI) Registerf(verb string, ctor func(commands.Base) commands.Command) error {
+func (i *CLI) Registerf(verb string, ctor func(commands.API) commands.Command) error {
 	if _, ok := i.handlers[verb]; ok {
 		return fmt.Errorf("Handler with verb '%s' already exists", verb)
 	}
-	i.handlers[verb] = ctor(i.baseCommand)
+	i.handlers[verb] = ctor(i.baseAPI)
 	return nil
 }

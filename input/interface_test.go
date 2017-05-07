@@ -18,7 +18,7 @@ func TestCLISet(t *testing.T) {
 	var err error
 
 	opts := options.New()
-	iface := input.NewCLI(commands.Base{})
+	iface := input.NewCLI(nil)
 	messages := make(chan message.Message, 1024)
 
 	iface.Register("set", commands.NewSet(opts, messages))

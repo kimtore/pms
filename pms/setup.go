@@ -42,21 +42,21 @@ func New() *PMS {
 
 // setupCLI instantiates the different commands PMS understands, such as set; bind; etc.
 func (pms *PMS) setupCLI() {
-	resources := commands.Base{
-		CurrentIndex:        pms.CurrentIndex,
-		CurrentPlayerStatus: pms.CurrentPlayerStatus,
-		CurrentQueue:        pms.CurrentQueue,
-		CurrentSong:         pms.CurrentSong,
-		SonglistWidget:      pms.UI.CurrentSonglistWidget,
-		EventList:           pms.EventList,
-		EventMessage:        pms.EventMessage,
-		MpdClient:           pms.CurrentMpdClient,
-		Multibar:            pms.UI.Multibar,
-		Options:             pms.Options,
-		QuitSignal:          pms.QuitSignal,
-		Styles:              pms.UI.Styles,
-		Ui:                  pms.UI,
-	}
+	resources := commands.BaseAPI(
+		pms.EventList,
+		pms.EventMessage,
+		pms.CurrentIndex,
+		pms.CurrentMpdClient,
+		pms.UI.Multibar,
+		pms.Options,
+		pms.CurrentPlayerStatus,
+		pms.CurrentQueue,
+		pms.QuitSignal,
+		pms.CurrentSong,
+		pms.UI.CurrentSonglistWidget,
+		pms.UI.Styles,
+		pms.UI,
+	)
 
 	pms.CLI = input.NewCLI(resources)
 	pms.CLI.Registerf("add", commands.NewAdd)

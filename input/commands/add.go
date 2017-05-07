@@ -12,14 +12,14 @@ import (
 
 // Add adds songs to MPD's queue.
 type Add struct {
-	Base
+	api      API
 	song     *song.Song
 	songlist songlist.Songlist
 }
 
-func NewAdd(b Base) Command {
+func NewAdd(b API) Command {
 	return &Add{
-		Base: b,
+		api: b,
 	}
 }
 
@@ -42,8 +42,8 @@ func (cmd *Add) Execute(t lexer.Token) error {
 		})
 
 	case lexer.TokenEnd:
-		songlistWidget := cmd.SonglistWidget()
-		queue := cmd.CurrentQueue()
+		songlistWidget := cmd.api.SonglistWidget()
+		queue := cmd.api.Queue()
 
 		switch {
 		case cmd.song == nil:
@@ -60,15 +60,15 @@ func (cmd *Add) Execute(t lexer.Token) error {
 			len := selection.Len()
 			if len == 1 {
 				song := selection.Songs()[0]
-				cmd.EventMessage <- message.Format("Added to queue: %s", song.StringTags["file"])
+				cmd.api.Message(message.Format("Added to queue: %s", song.StringTags["file"]))
 			} else {
-				cmd.EventMessage <- message.Format("Added %d songs to queue.", len)
+				cmd.api.Message(message.Format("Added %d songs to queue.", len))
 			}
 
 		default:
 			err = queue.Add(cmd.song)
 			if err == nil {
-				cmd.EventMessage <- message.Format("Added to queue: %s", cmd.song.StringTags["file"])
+				cmd.api.Message(message.Format("Added to queue: %s", cmd.song.StringTags["file"]))
 			}
 		}
 
