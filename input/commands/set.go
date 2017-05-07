@@ -11,19 +11,13 @@ import (
 
 // Set manipulates a Options table by parsing input tokens from the "set" command.
 type Set struct {
-	opts     *options.Options
-	messages chan message.Message
+	api API
 }
 
-func NewSet(opts *options.Options, messages chan message.Message) *Set {
-	p := &Set{}
-	p.opts = opts
-	p.messages = messages
-	p.Reset()
-	return p
-}
-
-func (p *Set) Reset() {
+func NewSet(api API) Command {
+	return &Set{
+		api: api,
+	}
 }
 
 func (p *Set) Execute(t lexer.Token) error {
@@ -41,7 +35,7 @@ func (p *Set) Execute(t lexer.Token) error {
 		return err
 	}
 
-	opt := p.opts.Get(tok.Key)
+	opt := p.api.Options().Get(tok.Key)
 
 	if opt == nil {
 		return fmt.Errorf("No such option: %s", tok.Key)
@@ -82,5 +76,5 @@ msg:
 }
 
 func (cmd *Set) message(opt options.Option) {
-	cmd.messages <- message.Format(opt.String())
+	cmd.api.Message(message.Format(opt.String()))
 }

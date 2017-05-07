@@ -4,26 +4,23 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/pms/input/lexer"
-
-	"github.com/ambientsound/gompd/mpd"
 )
 
-// Stop plays songs in the MPD playlist.
+// Stop stops song playback in MPD.
 type Stop struct {
-	mpdClient func() *mpd.Client
+	api API
 }
 
-func NewStop(mpdClient func() *mpd.Client) *Stop {
-	return &Stop{mpdClient: mpdClient}
-}
-
-func (cmd *Stop) Reset() {
+func NewStop(api API) Command {
+	return &Stop{
+		api: api,
+	}
 }
 
 func (cmd *Stop) Execute(t lexer.Token) error {
 	switch t.Class {
 	case lexer.TokenEnd:
-		if client := cmd.mpdClient(); client != nil {
+		if client := cmd.api.MpdClient(); client != nil {
 			return client.Stop()
 		}
 		return fmt.Errorf("Unable to stop: cannot communicate with MPD")

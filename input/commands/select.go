@@ -4,29 +4,26 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/widgets"
 )
 
 // Select manipulates song selection within a songlist.
 type Select struct {
-	songlistWidget func() *widgets.SonglistWidget
-	toggle         bool
-	finished       bool
+	api      API
+	toggle   bool
+	finished bool
 }
 
-func NewSelect(songlistWidget func() *widgets.SonglistWidget) *Select {
-	return &Select{songlistWidget: songlistWidget}
-}
-
-func (cmd *Select) Reset() {
-	cmd.finished = false
+func NewSelect(api API) Command {
+	return &Select{
+		api: api,
+	}
 }
 
 func (cmd *Select) Execute(t lexer.Token) error {
 	var err error
 
 	s := t.String()
-	songlistWidget := cmd.songlistWidget()
+	songlistWidget := cmd.api.SonglistWidget()
 	list := songlistWidget.List()
 
 	switch t.Class {

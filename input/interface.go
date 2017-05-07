@@ -7,7 +7,9 @@ import (
 	"github.com/ambientsound/pms/input/lexer"
 )
 
-type commandMap map[string]commands.Command
+type commandCtor func(commands.API) commands.Command
+
+type commandMap map[string]commandCtor
 
 // CLI reads user input, tokenizes it, and dispatches the tokens to their respective commands.
 type CLI struct {
@@ -27,7 +29,6 @@ func (i *CLI) Execute(line string) error {
 	var token lexer.Token
 	var cmd commands.Command
 	var err error
-	var ok bool
 
 	for {
 		token, nextPos = lexer.NextToken(line[pos:])
@@ -38,8 +39,8 @@ func (i *CLI) Execute(line string) error {
 			key := token.String()
 			switch token.Class {
 			case lexer.TokenIdentifier:
-				if cmd, ok = i.handlers[key]; ok {
-					cmd.Reset()
+				if ctor, ok := i.handlers[key]; ok {
+					cmd = ctor(i.baseAPI)
 					continue
 				}
 				return fmt.Errorf("Not a command: %s", key)
@@ -66,18 +67,10 @@ func (i *CLI) Execute(line string) error {
 	return nil
 }
 
-func (i *CLI) Register(verb string, cmd commands.Command) error {
+func (i *CLI) Register(verb string, ctor commandCtor) error {
 	if _, ok := i.handlers[verb]; ok {
 		return fmt.Errorf("Handler with verb '%s' already exists", verb)
 	}
-	i.handlers[verb] = cmd
-	return nil
-}
-
-func (i *CLI) Registerf(verb string, ctor func(commands.API) commands.Command) error {
-	if _, ok := i.handlers[verb]; ok {
-		return fmt.Errorf("Handler with verb '%s' already exists", verb)
-	}
-	i.handlers[verb] = ctor(i.baseAPI)
+	i.handlers[verb] = ctor
 	return nil
 }

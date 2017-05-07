@@ -4,26 +4,23 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/pms/input/lexer"
-
-	"github.com/ambientsound/gompd/mpd"
 )
 
 // Next switches to the next song in MPD's queue.
 type Next struct {
-	mpdClient func() *mpd.Client
+	api API
 }
 
-func NewNext(mpdClient func() *mpd.Client) *Next {
-	return &Next{mpdClient: mpdClient}
-}
-
-func (cmd *Next) Reset() {
+func NewNext(api API) Command {
+	return &Next{
+		api: api,
+	}
 }
 
 func (cmd *Next) Execute(t lexer.Token) error {
 	switch t.Class {
 	case lexer.TokenEnd:
-		client := cmd.mpdClient()
+		client := cmd.api.MpdClient()
 		if client == nil {
 			return fmt.Errorf("Unable to play next song: cannot communicate with MPD")
 		}

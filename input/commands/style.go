@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/widgets"
 	"github.com/gdamore/tcell"
 )
 
 // Style manipulates the style table, allowing to set colors and attributes for UI elements.
 type Style struct {
-	styleMap   widgets.StyleMap
+	api API
+
 	styleKey   string
 	styleValue tcell.Style
 	styled     bool
@@ -24,24 +24,10 @@ type Style struct {
 	underline  bool
 }
 
-func NewStyle(styleMap widgets.StyleMap) *Style {
+func NewStyle(api API) Command {
 	return &Style{
-		styleMap: styleMap,
+		api: api,
 	}
-}
-
-func (cmd *Style) Reset() {
-	cmd.styleKey = ""
-	cmd.styleValue = tcell.StyleDefault
-	cmd.styled = false
-
-	cmd.background = false
-	cmd.blink = false
-	cmd.bold = false
-	cmd.dim = false
-	cmd.foreground = false
-	cmd.reverse = false
-	cmd.underline = false
 }
 
 func (cmd *Style) Execute(t lexer.Token) error {
@@ -91,7 +77,8 @@ func (cmd *Style) Execute(t lexer.Token) error {
 		if !cmd.styled {
 			return fmt.Errorf("Unexpected END, expected style attribute")
 		}
-		cmd.styleMap[cmd.styleKey] = cmd.styleValue
+		styleMap := cmd.api.Styles()
+		styleMap[cmd.styleKey] = cmd.styleValue
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", s)

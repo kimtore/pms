@@ -9,19 +9,19 @@ import (
 
 // InputMode changes the Multibar's input mode.
 type InputMode struct {
-	multibarWidget *widgets.MultibarWidget
-	mode           int
+	api  API
+	mode int
 }
 
-func NewInputMode(multibarWidget *widgets.MultibarWidget) *InputMode {
-	return &InputMode{multibarWidget: multibarWidget}
-}
-
-func (cmd *InputMode) Reset() {
+func NewInputMode(api API) Command {
+	return &InputMode{
+		api: api,
+	}
 }
 
 func (cmd *InputMode) Execute(t lexer.Token) error {
 	s := t.String()
+	multibar := cmd.api.Multibar()
 
 	switch t.Class {
 	case lexer.TokenIdentifier:
@@ -29,7 +29,7 @@ func (cmd *InputMode) Execute(t lexer.Token) error {
 		case "normal":
 			cmd.mode = widgets.MultibarModeNormal
 		case "visual":
-			switch cmd.multibarWidget.Mode() {
+			switch multibar.Mode() {
 			case widgets.MultibarModeVisual:
 				cmd.mode = widgets.MultibarModeNormal
 			default:
@@ -40,10 +40,10 @@ func (cmd *InputMode) Execute(t lexer.Token) error {
 		case "search":
 			cmd.mode = widgets.MultibarModeSearch
 		default:
-			cmd.mode = cmd.multibarWidget.Mode()
+			cmd.mode = multibar.Mode()
 		}
 	case lexer.TokenEnd:
-		cmd.multibarWidget.SetMode(cmd.mode)
+		multibar.SetMode(cmd.mode)
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))

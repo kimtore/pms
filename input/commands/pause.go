@@ -5,32 +5,29 @@ import (
 
 	"github.com/ambientsound/pms/input/lexer"
 
-	"github.com/ambientsound/gompd/mpd"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 )
 
 // Pause toggles MPD play/paused state. If the player is stopped, Pause will
 // attempt to start playback through the 'play' command instead.
 type Pause struct {
-	mpdClient func() *mpd.Client
-	mpdStatus func() pms_mpd.PlayerStatus
+	api API
 }
 
-func NewPause(mpdClient func() *mpd.Client, mpdStatus func() pms_mpd.PlayerStatus) *Pause {
-	return &Pause{mpdClient: mpdClient, mpdStatus: mpdStatus}
-}
-
-func (cmd *Pause) Reset() {
+func NewPause(api API) Command {
+	return &Pause{
+		api: api,
+	}
 }
 
 func (cmd *Pause) Execute(t lexer.Token) error {
 	switch t.Class {
 	case lexer.TokenEnd:
-		client := cmd.mpdClient()
+		client := cmd.api.MpdClient()
 		if client == nil {
 			return fmt.Errorf("Unable to toggle pause: cannot communicate with MPD")
 		}
-		status := cmd.mpdStatus()
+		status := cmd.api.PlayerStatus()
 		switch status.State {
 		case pms_mpd.StatePause:
 			return client.Pause(false)

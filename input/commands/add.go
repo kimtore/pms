@@ -17,9 +17,9 @@ type Add struct {
 	songlist songlist.Songlist
 }
 
-func NewAdd(b API) Command {
+func NewAdd(api API) Command {
 	return &Add{
-		api: b,
+		api: api,
 	}
 }
 

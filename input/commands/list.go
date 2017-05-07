@@ -7,27 +7,22 @@ import (
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/songlist"
-	"github.com/ambientsound/pms/widgets"
 )
 
 // List navigates and manipulates songlists.
 type List struct {
-	ui        *widgets.UI
+	api       API
 	relative  int
 	absolute  int
 	duplicate bool
 	remove    bool
 }
 
-func NewList(ui *widgets.UI) *List {
-	return &List{ui: ui}
-}
-
-func (cmd *List) Reset() {
-	cmd.duplicate = false
-	cmd.remove = false
-	cmd.relative = 0
-	cmd.absolute = -1
+func NewList(api API) Command {
+	return &List{
+		api:      api,
+		absolute: -1,
+	}
 }
 
 func (cmd *List) Execute(t lexer.Token) error {
@@ -35,6 +30,7 @@ func (cmd *List) Execute(t lexer.Token) error {
 	var index int
 
 	s := t.String()
+	ui := cmd.api.UI()
 
 	switch t.Class {
 
@@ -51,7 +47,7 @@ func (cmd *List) Execute(t lexer.Token) error {
 		case "home":
 			cmd.absolute = 0
 		case "end":
-			cmd.absolute = cmd.ui.Songlist.SonglistsLen() - 1
+			cmd.absolute = ui.Songlist.SonglistsLen() - 1
 		default:
 			i, err := strconv.Atoi(s)
 			if err != nil {
@@ -71,7 +67,7 @@ func (cmd *List) Execute(t lexer.Token) error {
 		switch {
 		case cmd.duplicate:
 			console.Log("Duplicating current songlist.")
-			orig := cmd.ui.Songlist.Songlist()
+			orig := ui.Songlist.Songlist()
 			list := songlist.New()
 			err = orig.Duplicate(list)
 			if err != nil {
@@ -79,11 +75,11 @@ func (cmd *List) Execute(t lexer.Token) error {
 			}
 			name := fmt.Sprintf("%s (copy)", orig.Name())
 			list.SetName(name)
-			cmd.ui.Songlist.AddSonglist(list)
-			index = cmd.ui.Songlist.SonglistsLen() - 1
+			ui.Songlist.AddSonglist(list)
+			index = ui.Songlist.SonglistsLen() - 1
 
 		case cmd.remove:
-			list := cmd.ui.Songlist.Songlist()
+			list := ui.Songlist.Songlist()
 			console.Log("Removing current songlist '%s'.", list.Name())
 
 			err = list.Delete()
@@ -91,40 +87,40 @@ func (cmd *List) Execute(t lexer.Token) error {
 				return fmt.Errorf("Cannot remove songlist: %s", err)
 			}
 
-			index, err = cmd.ui.Songlist.SonglistIndex()
+			index, err = ui.Songlist.SonglistIndex()
 
 			// If we got an error here, it means that the current songlist is
 			// not in the list of songlists. In this case, we can reset to the
 			// fallback songlist.
 			if err != nil {
-				fallback := cmd.ui.Songlist.FallbackSonglist()
+				fallback := ui.Songlist.FallbackSonglist()
 				if fallback == nil {
 					return fmt.Errorf("No songlists left.")
 				}
 				console.Log("Songlist was not found in the list of songlists. Activating fallback songlist '%s'.", fallback.Name())
-				cmd.ui.App.PostFunc(func() {
-					cmd.ui.Songlist.SetSonglist(fallback)
+				ui.App.PostFunc(func() {
+					ui.Songlist.SetSonglist(fallback)
 				})
 				return nil
 			} else {
-				cmd.ui.Songlist.RemoveSonglist(index)
+				ui.Songlist.RemoveSonglist(index)
 			}
 
 			// If removing the last songlist, we need to decrease the songlist index by one.
-			if index == cmd.ui.Songlist.SonglistsLen() {
+			if index == ui.Songlist.SonglistsLen() {
 				index--
 			}
 
 			console.Log("Removed songlist, now activating songlist no. %d", index)
 
 		case cmd.relative != 0:
-			index, err = cmd.ui.Songlist.SonglistIndex()
+			index, err = ui.Songlist.SonglistIndex()
 			if err != nil {
 				index = 0
 			}
 			index += cmd.relative
-			if !cmd.ui.Songlist.ValidSonglistIndex(index) {
-				len := cmd.ui.Songlist.SonglistsLen()
+			if !ui.Songlist.ValidSonglistIndex(index) {
+				len := ui.Songlist.SonglistsLen()
 				index = (index + len) % len
 			}
 			console.Log("Switching songlist index to relative %d, equalling absolute %d", cmd.relative, index)
@@ -137,8 +133,8 @@ func (cmd *List) Execute(t lexer.Token) error {
 			return fmt.Errorf("Unexpected END, expected position. Try one of: next prev <number>")
 		}
 
-		cmd.ui.App.PostFunc(func() {
-			err = cmd.ui.Songlist.SetSonglistIndex(index)
+		ui.App.PostFunc(func() {
+			err = ui.Songlist.SetSonglistIndex(index)
 		})
 
 	default:

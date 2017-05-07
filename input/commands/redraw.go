@@ -4,26 +4,25 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/gdamore/tcell/views"
 )
 
 // Quit exits the program.
 type Redraw struct {
-	app *views.Application
+	api API
 }
 
-func NewRedraw(app *views.Application) *Redraw {
-	return &Redraw{app: app}
-}
-
-func (cmd *Redraw) Reset() {
+func NewRedraw(api API) Command {
+	return &Redraw{
+		api: api,
+	}
 }
 
 func (cmd *Redraw) Execute(t lexer.Token) error {
+	ui := cmd.api.UI()
 	switch t.Class {
 	case lexer.TokenEnd:
-		cmd.app.PostFunc(func() {
-			cmd.app.Refresh()
+		ui.App.PostFunc(func() {
+			ui.Refresh()
 		})
 		return nil
 	default:

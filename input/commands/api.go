@@ -3,6 +3,7 @@ package commands
 import (
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/index"
+	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/message"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/options"
@@ -16,6 +17,9 @@ import (
 type API interface {
 	// Index returns the current Bleve search index, or nil if the search index is not available.
 	Index() *index.Index
+
+	// ListChanged notifies the UI that the current songlist has changed.
+	ListChanged()
 
 	// Message sends a message to the user through the statusbar.
 	Message(message.Message)
@@ -35,8 +39,11 @@ type API interface {
 	// Queue returns MPD's song queue.
 	Queue() *songlist.Queue
 
-	// QuitSignal can be sent to in order to shut down PMS.
-	QuitSignal() chan int
+	// Quit shuts down PMS.
+	Quit()
+
+	// Sequencer returns a pointer to the key sequencer that receives key events.
+	Sequencer() *keys.Sequencer
 
 	// Song returns the currently playing song, or nil if no song is loaded.
 	// Note that the song might be stopped, and the play/pause/stop status should
@@ -63,6 +70,7 @@ type baseAPI struct {
 	playerStatus   func() pms_mpd.PlayerStatus
 	queue          func() *songlist.Queue
 	quitSignal     chan int
+	sequencer      *keys.Sequencer
 	song           func() *song.Song
 	songlistWidget func() *widgets.SonglistWidget
 	styles         widgets.StyleMap
@@ -79,6 +87,7 @@ func BaseAPI(
 	playerStatus func() pms_mpd.PlayerStatus,
 	queue func() *songlist.Queue,
 	quitSignal chan int,
+	sequencer *keys.Sequencer,
 	song func() *song.Song,
 	songlistWidget func() *widgets.SonglistWidget,
 	styles widgets.StyleMap,
@@ -95,6 +104,7 @@ func BaseAPI(
 		playerStatus:   playerStatus,
 		queue:          queue,
 		quitSignal:     quitSignal,
+		sequencer:      sequencer,
 		song:           song,
 		songlistWidget: songlistWidget,
 		styles:         styles,
@@ -104,6 +114,10 @@ func BaseAPI(
 
 func (b *baseAPI) Index() *index.Index {
 	return b.index()
+}
+
+func (b *baseAPI) ListChanged() {
+	b.eventList <- 0
 }
 
 func (b *baseAPI) Message(msg message.Message) {
@@ -130,8 +144,12 @@ func (b *baseAPI) Queue() *songlist.Queue {
 	return b.queue()
 }
 
-func (b *baseAPI) QuitSignal() chan int {
-	return b.quitSignal
+func (b *baseAPI) Quit() {
+	b.quitSignal <- 0
+}
+
+func (b *baseAPI) Sequencer() *keys.Sequencer {
+	return b.sequencer
 }
 
 func (b *baseAPI) Song() *song.Song {

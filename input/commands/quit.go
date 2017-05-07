@@ -8,20 +8,19 @@ import (
 
 // Quit exits the program.
 type Quit struct {
-	signal chan int
+	api API
 }
 
-func NewQuit(signal chan int) *Quit {
-	return &Quit{signal: signal}
-}
-
-func (cmd *Quit) Reset() {
+func NewQuit(api API) Command {
+	return &Quit{
+		api: api,
+	}
 }
 
 func (cmd *Quit) Execute(t lexer.Token) error {
 	switch t.Class {
 	case lexer.TokenEnd:
-		cmd.signal <- 0
+		cmd.api.Quit()
 		return nil
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))

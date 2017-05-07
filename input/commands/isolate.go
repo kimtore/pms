@@ -4,38 +4,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/message"
-	"github.com/ambientsound/pms/options"
-	"github.com/ambientsound/pms/widgets"
 )
 
 // Isolate searches for songs that have similar tags as the selection.
 type Isolate struct {
-	messages       chan message.Message
-	songlistWidget func() *widgets.SonglistWidget
-	index          func() *index.Index
-	options        *options.Options
-	tags           []string
+	api  API
+	tags []string
 }
 
-func NewIsolate(
-	messages chan message.Message,
-	songlistWidget func() *widgets.SonglistWidget,
-	index func() *index.Index,
-	options *options.Options) *Isolate {
-
+func NewIsolate(api API) Command {
 	return &Isolate{
-		messages:       messages,
-		songlistWidget: songlistWidget,
-		index:          index,
-		options:        options,
+		api:  api,
+		tags: make([]string, 0),
 	}
-}
-
-func (cmd *Isolate) Reset() {
-	cmd.tags = make([]string, 0)
 }
 
 func (cmd *Isolate) Execute(t lexer.Token) error {
@@ -55,12 +37,12 @@ func (cmd *Isolate) Execute(t lexer.Token) error {
 			return fmt.Errorf("Unexpected END, expected comma-separated tags to isolate by.")
 		}
 
-		index := cmd.index()
+		index := cmd.api.Index()
 		if index == nil {
 			return fmt.Errorf("Search index is not operational.")
 		}
 
-		songlistWidget := cmd.songlistWidget()
+		songlistWidget := cmd.api.SonglistWidget()
 		selection := songlistWidget.Selection()
 		song := songlistWidget.CursorSong()
 
@@ -77,7 +59,7 @@ func (cmd *Isolate) Execute(t lexer.Token) error {
 			return fmt.Errorf("No results found when isolating by '%s'.", strings.Join(cmd.tags, ","))
 		}
 
-		sort := cmd.options.StringValue("sort")
+		sort := cmd.api.Options().StringValue("sort")
 		fields := strings.Split(sort, ",")
 		err = result.Sort(fields)
 

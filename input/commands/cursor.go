@@ -5,38 +5,30 @@ import (
 	"strconv"
 
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/song"
-	"github.com/ambientsound/pms/widgets"
 )
 
 // Cursor moves the cursor in a songlist widget. It can take human-readable
 // parameters such as 'up' and 'down', and it also accepts relative positions
 // if a number is given.
 type Cursor struct {
-	songlistWidget func() *widgets.SonglistWidget
-	currentSong    func() *song.Song
-	relative       int
-	absolute       int
-	current        bool
-	finished       bool
+	api      API
+	relative int
+	absolute int
+	current  bool
+	finished bool
 }
 
-func NewCursor(songlistWidget func() *widgets.SonglistWidget, currentSong func() *song.Song) *Cursor {
-	return &Cursor{songlistWidget: songlistWidget, currentSong: currentSong}
-}
-
-func (cmd *Cursor) Reset() {
-	cmd.relative = 0
-	cmd.absolute = 0
-	cmd.current = false
-	cmd.finished = false
+func NewCursor(api API) Command {
+	return &Cursor{
+		api: api,
+	}
 }
 
 func (cmd *Cursor) Execute(t lexer.Token) error {
 	var err error
 
 	s := t.String()
-	songlistWidget := cmd.songlistWidget()
+	songlistWidget := cmd.api.SonglistWidget()
 
 	if cmd.finished && t.Class != lexer.TokenEnd {
 		return fmt.Errorf("Unknown input '%s', expected END", s)
@@ -83,7 +75,7 @@ func (cmd *Cursor) Execute(t lexer.Token) error {
 			return fmt.Errorf("Unexpected END, expected cursor offset. Try one of: up, down, pgup, pgdn, home, end, <number>")
 
 		case cmd.current:
-			currentSong := cmd.currentSong()
+			currentSong := cmd.api.Song()
 			if currentSong == nil {
 				return fmt.Errorf("No song is currently playing.")
 			}

@@ -6,34 +6,28 @@ import (
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
-	"github.com/ambientsound/pms/widgets"
-
-	"github.com/ambientsound/gompd/mpd"
 )
 
 // Play plays songs in the MPD playlist.
 type Play struct {
-	songlistWidget func() *widgets.SonglistWidget
-	mpdClient      func() *mpd.Client
-	song           *song.Song
-	id             int
-	pos            int
+	api  API
+	song *song.Song
+	id   int
+	pos  int
 }
 
-func NewPlay(songlistWidget func() *widgets.SonglistWidget, mpdClient func() *mpd.Client) *Play {
-	return &Play{songlistWidget: songlistWidget, mpdClient: mpdClient}
-}
-
-func (cmd *Play) Reset() {
-	cmd.song = nil
-	cmd.pos = -1
+func NewPlay(api API) Command {
+	return &Play{
+		api: api,
+		pos: -1,
+	}
 }
 
 func (cmd *Play) Execute(t lexer.Token) error {
 	var err error
 
 	s := t.String()
-	songlistWidget := cmd.songlistWidget()
+	songlistWidget := cmd.api.SonglistWidget()
 
 	switch t.Class {
 	case lexer.TokenIdentifier:
@@ -49,7 +43,7 @@ func (cmd *Play) Execute(t lexer.Token) error {
 		}
 
 	case lexer.TokenEnd:
-		client := cmd.mpdClient()
+		client := cmd.api.MpdClient()
 		if client == nil {
 			return fmt.Errorf("Cannot play: not connected to MPD")
 		}

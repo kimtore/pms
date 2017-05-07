@@ -4,23 +4,17 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/widgets"
 )
 
 // Remove removes songs from songlists.
 type Remove struct {
-	songlistWidget func() *widgets.SonglistWidget
-	listChanged    chan int
+	api API
 }
 
-func NewRemove(songlistWidget func() *widgets.SonglistWidget, listChanged chan int) *Remove {
+func NewRemove(api API) Command {
 	return &Remove{
-		songlistWidget: songlistWidget,
-		listChanged:    listChanged,
+		api: api,
 	}
-}
-
-func (cmd *Remove) Reset() {
 }
 
 func (cmd *Remove) Execute(t lexer.Token) error {
@@ -28,7 +22,7 @@ func (cmd *Remove) Execute(t lexer.Token) error {
 
 	switch t.Class {
 	case lexer.TokenEnd:
-		songlistWidget := cmd.songlistWidget()
+		songlistWidget := cmd.api.SonglistWidget()
 		list := songlistWidget.Songlist()
 		selection := songlistWidget.List().SelectionIndices()
 
@@ -43,7 +37,7 @@ func (cmd *Remove) Execute(t lexer.Token) error {
 			songlistWidget.SetCursor(index)
 		}
 
-		cmd.listChanged <- 0
+		cmd.api.ListChanged()
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))

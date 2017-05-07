@@ -52,6 +52,7 @@ func (pms *PMS) setupCLI() {
 		pms.CurrentPlayerStatus,
 		pms.CurrentQueue,
 		pms.QuitSignal,
+		pms.Sequencer,
 		pms.CurrentSong,
 		pms.UI.CurrentSonglistWidget,
 		pms.UI.Styles,
@@ -59,28 +60,28 @@ func (pms *PMS) setupCLI() {
 	)
 
 	pms.CLI = input.NewCLI(resources)
-	pms.CLI.Registerf("add", commands.NewAdd)
-	pms.CLI.Register("bind", commands.NewBind(pms.Sequencer))
-	pms.CLI.Register("cursor", commands.NewCursor(pms.UI.CurrentSonglistWidget, pms.CurrentSong))
-	pms.CLI.Register("inputmode", commands.NewInputMode(pms.UI.Multibar))
-	pms.CLI.Register("isolate", commands.NewIsolate(pms.EventMessage, pms.UI.CurrentSonglistWidget, pms.CurrentIndex, pms.Options))
-	pms.CLI.Register("list", commands.NewList(pms.UI))
-	pms.CLI.Register("next", commands.NewNext(pms.CurrentMpdClient))
-	pms.CLI.Register("pause", commands.NewPause(pms.CurrentMpdClient, pms.CurrentPlayerStatus))
-	pms.CLI.Register("play", commands.NewPlay(pms.UI.CurrentSonglistWidget, pms.CurrentMpdClient))
-	pms.CLI.Register("prev", commands.NewPrevious(pms.CurrentMpdClient))
-	pms.CLI.Register("previous", commands.NewPrevious(pms.CurrentMpdClient))
-	pms.CLI.Register("q", commands.NewQuit(pms.QuitSignal))
-	pms.CLI.Register("quit", commands.NewQuit(pms.QuitSignal))
-	pms.CLI.Register("redraw", commands.NewRedraw(pms.UI.App))
-	pms.CLI.Register("remove", commands.NewRemove(pms.UI.CurrentSonglistWidget, pms.EventList))
-	pms.CLI.Register("se", commands.NewSet(pms.Options, pms.EventMessage))
-	pms.CLI.Register("select", commands.NewSelect(pms.UI.CurrentSonglistWidget))
-	pms.CLI.Register("set", commands.NewSet(pms.Options, pms.EventMessage))
-	pms.CLI.Register("sort", commands.NewSort(pms.UI.CurrentSonglistWidget, pms.Options))
-	pms.CLI.Register("stop", commands.NewStop(pms.CurrentMpdClient))
-	pms.CLI.Register("style", commands.NewStyle(pms.UI.Styles))
-	pms.CLI.Register("volume", commands.NewVolume(pms.CurrentMpdClient, pms.CurrentPlayerStatus))
+	pms.CLI.Register("add", commands.NewAdd)
+	pms.CLI.Register("bind", commands.NewBind)
+	pms.CLI.Register("cursor", commands.NewCursor)
+	pms.CLI.Register("inputmode", commands.NewInputMode)
+	pms.CLI.Register("isolate", commands.NewIsolate)
+	pms.CLI.Register("list", commands.NewList)
+	pms.CLI.Register("next", commands.NewNext)
+	pms.CLI.Register("pause", commands.NewPause)
+	pms.CLI.Register("play", commands.NewPlay)
+	pms.CLI.Register("prev", commands.NewPrevious)
+	pms.CLI.Register("previous", commands.NewPrevious)
+	pms.CLI.Register("q", commands.NewQuit)
+	pms.CLI.Register("quit", commands.NewQuit)
+	pms.CLI.Register("redraw", commands.NewRedraw)
+	pms.CLI.Register("remove", commands.NewRemove)
+	pms.CLI.Register("se", commands.NewSet)
+	pms.CLI.Register("select", commands.NewSelect)
+	pms.CLI.Register("set", commands.NewSet)
+	pms.CLI.Register("sort", commands.NewSort)
+	pms.CLI.Register("stop", commands.NewStop)
+	pms.CLI.Register("style", commands.NewStyle)
+	pms.CLI.Register("volume", commands.NewVolume)
 }
 
 func (pms *PMS) setupUI() {

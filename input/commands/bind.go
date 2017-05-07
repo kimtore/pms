@@ -4,52 +4,47 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/input/parser"
 )
 
 // Bind maps a key sequence to the execution of a command.
 type Bind struct {
-	sentence  []string
-	token     *parser.KeySequenceToken
-	sequencer *keys.Sequencer
+	api      API
+	sentence []string
+	token    *parser.KeySequenceToken
 }
 
-func NewBind(s *keys.Sequencer) *Bind {
-	p := &Bind{sequencer: s}
-	p.Reset()
-	return p
+func NewBind(api API) Command {
+	return &Bind{
+		api:      api,
+		sentence: make([]string, 0),
+	}
 }
 
-func (p *Bind) Reset() {
-	p.token = nil
-	p.sentence = make([]string, 0)
-}
-
-func (p *Bind) Execute(t lexer.Token) error {
+func (cmd *Bind) Execute(t lexer.Token) error {
 	s := t.String()
 
 	switch t.Class {
 	case lexer.TokenIdentifier:
-		if p.token == nil {
-			p.token = &parser.KeySequenceToken{}
-			err := p.token.Parse(t.Runes)
+		if cmd.token == nil {
+			cmd.token = &parser.KeySequenceToken{}
+			err := cmd.token.Parse(t.Runes)
 			if err != nil {
 				return err
 			}
 		} else {
-			p.sentence = append(p.sentence, s)
+			cmd.sentence = append(cmd.sentence, s)
 		}
 
 	case lexer.TokenEnd:
 		switch {
-		case p.token == nil:
+		case cmd.token == nil:
 			return fmt.Errorf("Unexpected END, expected key sequence")
-		case len(p.sentence) == 0:
+		case len(cmd.sentence) == 0:
 			return fmt.Errorf("Unexpected END, expected verb")
 		default:
-			return p.bind()
+			return cmd.bind()
 		}
 
 	default:
@@ -61,7 +56,8 @@ func (p *Bind) Execute(t lexer.Token) error {
 	return nil
 }
 
-func (p *Bind) bind() error {
-	sentence := strings.Join(p.sentence, " ")
-	return p.sequencer.AddBind(p.token.Sequence, sentence)
+func (cmd *Bind) bind() error {
+	sentence := strings.Join(cmd.sentence, " ")
+	sequencer := cmd.api.Sequencer()
+	return sequencer.AddBind(cmd.token.Sequence, sentence)
 }
