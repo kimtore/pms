@@ -5,6 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/commands"
+	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,7 +19,7 @@ func TestCLISet(t *testing.T) {
 
 	opts := options.New()
 	iface := input.NewCLI()
-	messages := make(chan string, 1024)
+	messages := make(chan message.Message, 1024)
 
 	iface.Register("set", commands.NewSet(opts, messages))
 

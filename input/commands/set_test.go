@@ -5,6 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/input/commands"
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,7 +18,7 @@ func TestSet(t *testing.T) {
 	var token lexer.Token
 
 	opts := options.New()
-	messages := make(chan string, 1024)
+	messages := make(chan message.Message, 1024)
 
 	opts.Add(options.NewStringOption("foo"))
 	opts.Add(options.NewIntOption("intopt"))
