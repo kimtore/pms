@@ -5,6 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/parser"
+	"github.com/ambientsound/pms/message"
 
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
@@ -14,7 +15,7 @@ type MultibarWidget struct {
 	// runes contain user input, while
 	// text and errorText contains text set by the program.
 	runes     []rune
-	text      string
+	msg       message.Message
 	textStyle tcell.Style
 	events    chan parser.KeyEvent
 
@@ -41,21 +42,18 @@ func NewMultibarWidget(events chan parser.KeyEvent) *MultibarWidget {
 	return m
 }
 
-func (m *MultibarWidget) SetText(format string, a ...interface{}) {
-	m.text = fmt.Sprintf(format, a...)
-	m.textStyle = m.Style("statusbar")
-	m.DrawStatusbar()
-}
-
-func (m *MultibarWidget) SetErrorText(format string, a ...interface{}) {
-	m.text = fmt.Sprintf(format, a...)
-	m.textStyle = m.Style("errorText")
-	m.DrawStatusbar()
-}
-
-func (m *MultibarWidget) SetSequenceText(format string, a ...interface{}) {
-	m.text = fmt.Sprintf(format, a...)
-	m.textStyle = m.Style("sequenceText")
+func (m *MultibarWidget) SetMessage(msg message.Message) {
+	switch {
+	case msg.Type == message.SequenceText:
+		m.textStyle = m.Style("sequenceText")
+	case msg.Severity == message.Info:
+		m.textStyle = m.Style("statusbar")
+	case msg.Severity == message.Error:
+		m.textStyle = m.Style("errorText")
+	default:
+		return
+	}
+	m.msg = msg
 	m.DrawStatusbar()
 }
 
@@ -101,9 +99,8 @@ func (m *MultibarWidget) DrawStatusbar() {
 		s = "-- VISUAL --"
 		st = m.Style("visualText")
 	default:
-		s = m.text
+		s = m.msg.Text
 		st = m.textStyle
-		m.text = ""
 	}
 
 	m.SetLeft(s, st)

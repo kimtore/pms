@@ -6,13 +6,14 @@ import (
 
 	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/widgets"
 )
 
 // Isolate searches for songs that have similar tags as the selection.
 type Isolate struct {
-	messages       chan string
+	messages       chan message.Message
 	songlistWidget func() *widgets.SonglistWidget
 	index          func() *index.Index
 	options        *options.Options
@@ -20,7 +21,7 @@ type Isolate struct {
 }
 
 func NewIsolate(
-	messages chan string,
+	messages chan message.Message,
 	songlistWidget func() *widgets.SonglistWidget,
 	index func() *index.Index,
 	options *options.Options) *Isolate {

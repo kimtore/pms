@@ -8,6 +8,7 @@ import (
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/commands"
 	"github.com/ambientsound/pms/input/keys"
+	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/widgets"
@@ -16,11 +17,10 @@ import (
 func New() *PMS {
 	pms := &PMS{}
 
-	pms.EventError = make(chan string, 1024)
 	pms.EventIndex = make(chan int)
-	pms.EventList = make(chan int, 1024)
 	pms.EventLibrary = make(chan int)
-	pms.EventMessage = make(chan string, 1024)
+	pms.EventList = make(chan int, 1024)
+	pms.EventMessage = make(chan message.Message, 1024)
 	pms.EventPlayer = make(chan int)
 	pms.EventQueue = make(chan int)
 	pms.QuitSignal = make(chan int, 1)

@@ -5,16 +5,17 @@ import (
 
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/input/parser"
+	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/options"
 )
 
 // Set manipulates a Options table by parsing input tokens from the "set" command.
 type Set struct {
 	opts     *options.Options
-	messages chan string
+	messages chan message.Message
 }
 
-func NewSet(opts *options.Options, messages chan string) *Set {
+func NewSet(opts *options.Options, messages chan message.Message) *Set {
 	p := &Set{}
 	p.opts = opts
 	p.messages = messages
@@ -81,5 +82,5 @@ msg:
 }
 
 func (cmd *Set) message(opt options.Option) {
-	cmd.messages <- opt.String()
+	cmd.messages <- message.Format(opt.String())
 }

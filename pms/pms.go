@@ -15,6 +15,7 @@ import (
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/input/parser"
+	"github.com/ambientsound/pms/message"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
@@ -52,9 +53,6 @@ type PMS struct {
 	libraryVersion int
 	indexVersion   int
 
-	// EventError is used to display error messages in the statusbar.
-	EventError chan string
-
 	// EventIndex receives a signal when the search index has been updated.
 	EventIndex chan int
 
@@ -64,8 +62,8 @@ type PMS struct {
 	// EventIndex receives a signal when MPD's library has been updated and retrieved.
 	EventLibrary chan int
 
-	// EventMessage is used to display messages in the statusbar.
-	EventMessage chan string
+	// EventMessage is used to display text in the statusbar.
+	EventMessage chan message.Message
 
 	// EventPlayer receives a signal when MPD's "player" status changes in an IDLE event.
 	EventPlayer chan int
@@ -130,13 +128,11 @@ func (pms *PMS) readIndexStateFile() (int, error) {
 }
 
 func (pms *PMS) Message(format string, a ...interface{}) {
-	s := fmt.Sprintf(format, a...)
-	pms.EventMessage <- s
+	pms.EventMessage <- message.Format(format, a...)
 }
 
 func (pms *PMS) Error(format string, a ...interface{}) {
-	s := fmt.Sprintf(format, a...)
-	pms.EventError <- s
+	pms.EventMessage <- message.Errorf(format, a...)
 }
 
 func (pms *PMS) SetConnectionParams(host, port, password string) {
@@ -544,7 +540,7 @@ func (pms *PMS) UpdatePlayerStatus() error {
 
 	// Make sure any error messages are relayed to the user
 	if len(attrs["error"]) > 0 {
-		pms.EventError <- attrs["error"]
+		pms.Error(attrs["error"])
 	}
 
 	return nil
@@ -574,10 +570,7 @@ func (pms *PMS) KeyInput(ev parser.KeyEvent) {
 		statusText = ""
 	}
 
-	pms.UI.App.PostFunc(func() {
-		pms.UI.Multibar.SetSequenceText(statusText)
-		pms.UI.App.Update()
-	})
+	pms.EventMessage <- message.Sequencef(statusText)
 
 	if input == nil {
 		return
@@ -591,6 +584,6 @@ func (pms *PMS) Execute(cmd string) {
 	console.Log("Execute command: '%s'", cmd)
 	err := pms.CLI.Execute(cmd)
 	if err != nil {
-		pms.EventError <- fmt.Sprintf("%s", err)
+		pms.Error("%s", err)
 	}
 }

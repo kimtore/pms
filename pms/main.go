@@ -1,6 +1,9 @@
 package pms
 
-import "github.com/ambientsound/pms/console"
+import (
+	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/message"
+)
 
 func (pms *PMS) Main() {
 	for {
@@ -18,10 +21,8 @@ func (pms *PMS) Main() {
 			pms.handleEventList()
 		case <-pms.EventPlayer:
 			pms.handleEventPlayer()
-		case s := <-pms.EventMessage:
-			pms.handleEventMessage(s)
-		case s := <-pms.EventError:
-			pms.handleEventError(s)
+		case msg := <-pms.EventMessage:
+			pms.handleEventMessage(msg)
 		case ev := <-pms.UI.EventKeyInput:
 			pms.KeyInput(ev)
 		case s := <-pms.UI.EventInputCommand:
@@ -76,16 +77,9 @@ func (pms *PMS) handleEventPlayer() {
 	})
 }
 
-func (pms *PMS) handleEventMessage(s string) {
-	console.Log(s)
+func (pms *PMS) handleEventMessage(msg message.Message) {
+	message.Log(msg)
 	pms.UI.App.PostFunc(func() {
-		pms.UI.Multibar.SetText(s)
-	})
-}
-
-func (pms *PMS) handleEventError(s string) {
-	console.Log(s)
-	pms.UI.App.PostFunc(func() {
-		pms.UI.Multibar.SetErrorText(s)
+		pms.UI.Multibar.SetMessage(msg)
 	})
 }
