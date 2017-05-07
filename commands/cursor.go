@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
@@ -13,11 +15,13 @@ import (
 // parameters such as 'up' and 'down', and it also accepts relative positions
 // if a number is given.
 type Cursor struct {
-	api      API
-	relative int
-	absolute int
-	current  bool
-	finished bool
+	api             API
+	relative        int
+	absolute        int
+	current         bool
+	finished        bool
+	nextOfDirection int
+	nextOfTags      []string
 }
 
 func NewCursor(api API) Command {
@@ -63,25 +67,34 @@ func (cmd *Cursor) Execute(t lexer.Token) error {
 		case "current":
 			cmd.current = true
 		case "random":
-			len := songlistWidget.Len()
-			if len > 0 {
-				seed := time.Now().UnixNano()
-				r := rand.New(rand.NewSource(seed))
-				cmd.absolute = r.Int() % songlistWidget.Len()
-			}
+			cmd.absolute = cmd.random()
+		case "next-of":
+			cmd.nextOfDirection = 1
+			return nil
+		case "prev-of":
+			cmd.nextOfDirection = -1
+			return nil
 		default:
-			i, err := strconv.Atoi(s)
-			if err != nil {
-				return fmt.Errorf("Cannot move cursor: input '%s' is not recognized, and is not a number", s)
+			switch cmd.nextOfDirection {
+			case 1, -1:
+				err = cmd.setNextOfTags(s)
+				if err == nil {
+					cmd.absolute = cmd.runNextOf()
+				}
+			default:
+				i, err := strconv.Atoi(s)
+				if err != nil {
+					return fmt.Errorf("Cannot move cursor: input '%s' is not recognized, and is not a number", s)
+				}
+				cmd.relative = i
 			}
-			cmd.relative = i
 		}
 		cmd.finished = true
 
 	case lexer.TokenEnd:
 		switch {
 		case !cmd.finished:
-			return fmt.Errorf("Unexpected END, expected cursor offset. Try one of: up, down, pgup, pgdn, home, end, <number>")
+			return fmt.Errorf("Unexpected END, expected cursor offset.")
 
 		case cmd.current:
 			currentSong := cmd.api.Song()
@@ -102,4 +115,56 @@ func (cmd *Cursor) Execute(t lexer.Token) error {
 	}
 
 	return err
+}
+
+func (cmd *Cursor) random() int {
+	len := cmd.api.SonglistWidget().Len()
+	if len == 0 {
+		return cmd.absolute
+	}
+	seed := time.Now().UnixNano()
+	r := rand.New(rand.NewSource(seed))
+	return r.Int() % len
+}
+
+func (cmd *Cursor) setNextOfTags(taglist string) error {
+	if len(cmd.nextOfTags) != 0 {
+		return fmt.Errorf("Unexpected tags, expected END")
+	}
+	cmd.nextOfTags = strings.Split(strings.ToLower(taglist), ",")
+	return nil
+}
+
+func (cmd *Cursor) runNextOf() int {
+	songlistWidget := cmd.api.SonglistWidget()
+	list := songlistWidget.Songlist()
+	len := songlistWidget.Len()
+
+	offset := func(i int) int {
+		if cmd.nextOfDirection > 0 || i == 0 {
+			return 0
+		}
+		return 1
+	}
+
+	index := songlistWidget.Cursor()
+	index -= offset(index)
+	check := list.Song(index)
+
+	for ; index < len && index >= 0; index += cmd.nextOfDirection {
+		song := list.Song(index)
+		if song == nil {
+			console.Log("NextOf: empty song, break")
+			break
+		}
+		for _, tag := range cmd.nextOfTags {
+			if check.StringTags[tag] != song.StringTags[tag] {
+				console.Log("NextOf: tag '%s' on source '%s' differs from destination '%s', breaking", tag, check.StringTags[tag], song.StringTags[tag])
+				return index + offset(index)
+			}
+		}
+	}
+
+	console.Log("NextOf: fallthrough")
+	return index + offset(index)
 }

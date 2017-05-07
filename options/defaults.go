@@ -55,6 +55,8 @@ bind <End> cursor end
 bind G cursor end
 bind gc cursor current
 bind R cursor random
+bind b cursor prev-of album
+bind e cursor next-of album
 
 # Keyboard bindings: input mode
 bind : inputmode input
