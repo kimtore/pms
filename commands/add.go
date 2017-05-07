@@ -23,11 +23,6 @@ func NewAdd(api API) Command {
 	}
 }
 
-func (cmd *Add) Reset() {
-	cmd.song = nil
-	cmd.songlist = nil
-}
-
 func (cmd *Add) Execute(t lexer.Token) error {
 	var err error
 
