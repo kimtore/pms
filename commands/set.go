@@ -5,7 +5,6 @@ import (
 
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/input/parser"
-	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/options"
 )
 
@@ -53,7 +52,7 @@ func (p *Set) Execute(t lexer.Token) error {
 			return fmt.Errorf("Attempting to give parameters to a boolean option (try 'set no%s' or 'set inv%s')", tok.Key, tok.Key)
 		case tok.Invert:
 			opt.SetBool(!opt.BoolValue())
-			p.message(opt)
+			p.api.Message(opt.String())
 		case tok.Negate:
 			opt.SetBool(false)
 		default:
@@ -71,10 +70,6 @@ func (p *Set) Execute(t lexer.Token) error {
 	}
 
 msg:
-	p.message(opt)
+	p.api.Message(opt.String())
 	return nil
-}
-
-func (cmd *Set) message(opt options.Option) {
-	cmd.api.Message(message.Format(opt.String()))
 }

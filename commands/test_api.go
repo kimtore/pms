@@ -32,8 +32,8 @@ func (api *testAPI) ListChanged() {
 	// FIXME
 }
 
-func (api *testAPI) Message(msg message.Message) {
-	api.messages <- msg
+func (api *testAPI) Message(fmt string, a ...interface{}) {
+	api.messages <- message.Format(fmt, a...)
 }
 
 func (api *testAPI) MpdClient() *mpd.Client {

@@ -5,7 +5,6 @@ import (
 
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 )
@@ -55,15 +54,15 @@ func (cmd *Add) Execute(t lexer.Token) error {
 			len := selection.Len()
 			if len == 1 {
 				song := selection.Songs()[0]
-				cmd.api.Message(message.Format("Added to queue: %s", song.StringTags["file"]))
+				cmd.api.Message("Added to queue: %s", song.StringTags["file"])
 			} else {
-				cmd.api.Message(message.Format("Added %d songs to queue.", len))
+				cmd.api.Message("Added %d songs to queue.", len)
 			}
 
 		default:
 			err = queue.Add(cmd.song)
 			if err == nil {
-				cmd.api.Message(message.Format("Added to queue: %s", cmd.song.StringTags["file"]))
+				cmd.api.Message("Added to queue: %s", cmd.song.StringTags["file"])
 			}
 		}
 

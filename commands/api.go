@@ -22,7 +22,7 @@ type API interface {
 	ListChanged()
 
 	// Message sends a message to the user through the statusbar.
-	Message(message.Message)
+	Message(string, ...interface{})
 
 	// MpdClient returns the current MPD client, which is confirmed to be alive. If the MPD connection is not working, nil is returned.
 	MpdClient() *mpd.Client
@@ -120,8 +120,8 @@ func (api *baseAPI) ListChanged() {
 	api.eventList <- 0
 }
 
-func (api *baseAPI) Message(msg message.Message) {
-	api.eventMessage <- msg
+func (api *baseAPI) Message(fmt string, a ...interface{}) {
+	api.eventMessage <- message.Format(fmt, a...)
 }
 
 func (api *baseAPI) MpdClient() *mpd.Client {
