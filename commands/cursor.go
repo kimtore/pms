@@ -2,7 +2,9 @@ package commands
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
+	"time"
 
 	"github.com/ambientsound/pms/input/lexer"
 )
@@ -60,6 +62,13 @@ func (cmd *Cursor) Execute(t lexer.Token) error {
 			cmd.absolute = songlistWidget.Len() - 1
 		case "current":
 			cmd.current = true
+		case "random":
+			len := songlistWidget.Len()
+			if len > 0 {
+				seed := time.Now().UnixNano()
+				r := rand.New(rand.NewSource(seed))
+				cmd.absolute = r.Int() % songlistWidget.Len()
+			}
 		default:
 			i, err := strconv.Atoi(s)
 			if err != nil {

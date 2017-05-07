@@ -54,6 +54,7 @@ bind gg cursor home
 bind <End> cursor end
 bind G cursor end
 bind gc cursor current
+bind R cursor random
 
 # Keyboard bindings: input mode
 bind : inputmode input
