@@ -8,23 +8,18 @@ import (
 	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
-	"github.com/ambientsound/pms/widgets"
 )
 
 // Add adds songs to MPD's queue.
 type Add struct {
-	messages       chan message.Message
-	songlistWidget func() *widgets.SonglistWidget
-	queue          func() *songlist.Queue
-	song           *song.Song
-	songlist       songlist.Songlist
+	Base
+	song     *song.Song
+	songlist songlist.Songlist
 }
 
-func NewAdd(messages chan message.Message, songlistWidget func() *widgets.SonglistWidget, queue func() *songlist.Queue) *Add {
+func NewAdd(b Base) Command {
 	return &Add{
-		messages:       messages,
-		songlistWidget: songlistWidget,
-		queue:          queue,
+		Base: b,
 	}
 }
 
@@ -47,8 +42,8 @@ func (cmd *Add) Execute(t lexer.Token) error {
 		})
 
 	case lexer.TokenEnd:
-		songlistWidget := cmd.songlistWidget()
-		queue := cmd.queue()
+		songlistWidget := cmd.SonglistWidget()
+		queue := cmd.CurrentQueue()
 
 		switch {
 		case cmd.song == nil:
@@ -65,15 +60,15 @@ func (cmd *Add) Execute(t lexer.Token) error {
 			len := selection.Len()
 			if len == 1 {
 				song := selection.Songs()[0]
-				cmd.messages <- message.Format("Added to queue: %s", song.StringTags["file"])
+				cmd.EventMessage <- message.Format("Added to queue: %s", song.StringTags["file"])
 			} else {
-				cmd.messages <- message.Format("Added %d songs to queue.", len)
+				cmd.EventMessage <- message.Format("Added %d songs to queue.", len)
 			}
 
 		default:
 			err = queue.Add(cmd.song)
 			if err == nil {
-				cmd.messages <- message.Format("Added to queue: %s", cmd.song.StringTags["file"])
+				cmd.EventMessage <- message.Format("Added to queue: %s", cmd.song.StringTags["file"])
 			}
 		}
 

@@ -100,6 +100,10 @@ func (ui *UI) CreateLayout() {
 	ui.Layout.SetView(ui.view)
 }
 
+func (ui *UI) Refresh() {
+	ui.App.Refresh()
+}
+
 func (ui *UI) SetIndex(i *index.Index) {
 	ui.Index = i
 }
