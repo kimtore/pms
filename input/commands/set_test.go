@@ -5,7 +5,6 @@ import (
 
 	"github.com/ambientsound/pms/input/commands"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,8 +16,8 @@ func TestSet(t *testing.T) {
 	var err error
 	var token lexer.Token
 
-	opts := options.New()
-	messages := make(chan message.Message, 1024)
+	api := commands.NewTestAPI()
+	opts := api.Options()
 
 	opts.Add(options.NewStringOption("foo"))
 	opts.Add(options.NewIntOption("intopt"))
@@ -31,7 +30,7 @@ func TestSet(t *testing.T) {
 	opts.Get("baz").Set("false")
 
 	input_string := "foo=bar intopt=3 nobar invbaz"
-	cmd := commands.NewSet(opts, messages)
+	cmd := commands.NewSet(api)
 
 	pos := 0
 	npos := 0

@@ -5,7 +5,6 @@ import (
 
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/commands"
-	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,11 +16,11 @@ import (
 func TestCLISet(t *testing.T) {
 	var err error
 
-	opts := options.New()
-	iface := input.NewCLI(nil)
-	messages := make(chan message.Message, 1024)
+	api := commands.NewTestAPI()
+	opts := api.Options()
+	iface := input.NewCLI(api)
 
-	iface.Register("set", commands.NewSet(opts, messages))
+	iface.Register("set", commands.NewSet)
 
 	opts.Add(options.NewStringOption("foo"))
 	err = opts.Get("foo").Set("this string must die")

@@ -112,58 +112,58 @@ func BaseAPI(
 	}
 }
 
-func (b *baseAPI) Index() *index.Index {
-	return b.index()
+func (api *baseAPI) Index() *index.Index {
+	return api.index()
 }
 
-func (b *baseAPI) ListChanged() {
-	b.eventList <- 0
+func (api *baseAPI) ListChanged() {
+	api.eventList <- 0
 }
 
-func (b *baseAPI) Message(msg message.Message) {
-	b.eventMessage <- msg
+func (api *baseAPI) Message(msg message.Message) {
+	api.eventMessage <- msg
 }
 
-func (b *baseAPI) MpdClient() *mpd.Client {
-	return b.mpdClient()
+func (api *baseAPI) MpdClient() *mpd.Client {
+	return api.mpdClient()
 }
 
-func (b *baseAPI) Multibar() *widgets.MultibarWidget {
-	return b.multibar
+func (api *baseAPI) Multibar() *widgets.MultibarWidget {
+	return api.multibar
 }
 
-func (b *baseAPI) Options() *options.Options {
-	return b.options
+func (api *baseAPI) Options() *options.Options {
+	return api.options
 }
 
-func (b *baseAPI) PlayerStatus() pms_mpd.PlayerStatus {
-	return b.playerStatus()
+func (api *baseAPI) PlayerStatus() pms_mpd.PlayerStatus {
+	return api.playerStatus()
 }
 
-func (b *baseAPI) Queue() *songlist.Queue {
-	return b.queue()
+func (api *baseAPI) Queue() *songlist.Queue {
+	return api.queue()
 }
 
-func (b *baseAPI) Quit() {
-	b.quitSignal <- 0
+func (api *baseAPI) Quit() {
+	api.quitSignal <- 0
 }
 
-func (b *baseAPI) Sequencer() *keys.Sequencer {
-	return b.sequencer
+func (api *baseAPI) Sequencer() *keys.Sequencer {
+	return api.sequencer
 }
 
-func (b *baseAPI) Song() *song.Song {
-	return b.song()
+func (api *baseAPI) Song() *song.Song {
+	return api.song()
 }
 
-func (b *baseAPI) SonglistWidget() *widgets.SonglistWidget {
-	return b.songlistWidget()
+func (api *baseAPI) SonglistWidget() *widgets.SonglistWidget {
+	return api.songlistWidget()
 }
 
-func (b *baseAPI) Styles() widgets.StyleMap {
-	return b.styles
+func (api *baseAPI) Styles() widgets.StyleMap {
+	return api.styles
 }
 
-func (b *baseAPI) UI() *widgets.UI {
-	return b.ui
+func (api *baseAPI) UI() *widgets.UI {
+	return api.ui
 }
