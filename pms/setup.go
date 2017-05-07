@@ -71,6 +71,7 @@ func (pms *PMS) setupCLI() {
 	pms.CLI.Register("play", commands.NewPlay)
 	pms.CLI.Register("prev", commands.NewPrevious)
 	pms.CLI.Register("previous", commands.NewPrevious)
+	pms.CLI.Register("print", commands.NewPrint)
 	pms.CLI.Register("q", commands.NewQuit)
 	pms.CLI.Register("quit", commands.NewQuit)
 	pms.CLI.Register("redraw", commands.NewRedraw)

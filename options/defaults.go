@@ -76,6 +76,7 @@ bind M volume mute
 bind <C-c> quit
 bind <C-l> redraw
 bind <C-s> sort
+bind i print file
 bind t list next
 bind T list previous
 bind <C-d> list duplicate
