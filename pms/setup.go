@@ -55,7 +55,7 @@ func (pms *PMS) setupCLI() {
 		pms.Sequencer,
 		pms.CurrentSong,
 		pms.UI.CurrentSonglistWidget,
-		pms.UI.Styles,
+		pms.UI.Stylesheet,
 		pms.UI,
 	)
 

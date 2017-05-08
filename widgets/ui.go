@@ -8,13 +8,11 @@ import (
 	"github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
-	"github.com/ambientsound/pms/version"
+	"github.com/ambientsound/pms/style"
 
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
 )
-
-type StyleMap map[string]tcell.Style
 
 type UI struct {
 	// UI elements
@@ -22,12 +20,12 @@ type UI struct {
 	App    *views.Application
 	Layout *views.BoxLayout
 
-	Topbar        *views.TextBar
+	Topbar        *Topbar
 	Playbar       *PlaybarWidget
 	Columnheaders *ColumnheadersWidget
 	Multibar      *MultibarWidget
 	Songlist      *SonglistWidget
-	Styles        StyleMap
+	Stylesheet    style.Stylesheet
 
 	// Input events
 	EventInputCommand chan string
@@ -40,7 +38,7 @@ type UI struct {
 
 	// TCell
 	view views.View
-	widget
+	style.Styled
 	views.WidgetWatchers
 }
 
@@ -60,7 +58,7 @@ func NewUI(opts *options.Options) *UI {
 	ui.App = &views.Application{}
 	ui.options = opts
 
-	ui.Topbar = views.NewTextBar()
+	ui.Topbar = NewTopbar(1, 1)
 	ui.Playbar = NewPlaybarWidget()
 	ui.Columnheaders = NewColumnheadersWidget()
 	ui.Multibar = NewMultibarWidget(ui.EventKeyInput)
@@ -71,17 +69,16 @@ func NewUI(opts *options.Options) *UI {
 	ui.Playbar.Watch(ui)
 
 	// Set styles
-	ui.Styles = make(StyleMap)
-	ui.SetStyleMap(ui.Styles)
-	ui.Columnheaders.SetStyleMap(ui.Styles)
-	ui.Playbar.SetStyleMap(ui.Styles)
-	ui.Songlist.SetStyleMap(ui.Styles)
-	ui.Multibar.SetStyleMap(ui.Styles)
+	ui.Stylesheet = make(style.Stylesheet)
+	ui.SetStylesheet(ui.Stylesheet)
+	ui.Topbar.SetStylesheet(ui.Stylesheet)
+	ui.Columnheaders.SetStylesheet(ui.Stylesheet)
+	ui.Playbar.SetStylesheet(ui.Stylesheet)
+	ui.Songlist.SetStylesheet(ui.Stylesheet)
+	ui.Multibar.SetStylesheet(ui.Stylesheet)
 
-	// Styles for widgets that don't have their own class yet.
-	ui.Topbar.SetStyle(ui.Style("topbar"))
-	ui.Topbar.SetLeft(version.ShortName(), ui.Style("topbar"))
-	ui.Topbar.SetRight(version.Version(), ui.Style("topbar"))
+	// FIXME
+	ui.Topbar.Setup()
 
 	ui.CreateLayout()
 	ui.App.SetScreen(ui.Screen)
@@ -166,7 +163,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 	switch ev := ev.(type) {
 
 	case *EventListChanged:
-		ui.Topbar.SetCenter(ui.Title(), ui.Style("title"))
+		//ui.Topbar.SetCenter(ui.Title(), ui.Style("title"))
 		ui.Columnheaders.SetColumns(ui.Songlist.Columns())
 		ui.App.Update()
 		return true

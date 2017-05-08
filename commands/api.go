@@ -9,6 +9,7 @@ import (
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/widgets"
 )
 
@@ -54,7 +55,7 @@ type API interface {
 	SonglistWidget() *widgets.SonglistWidget
 
 	// Styles returns the current stylesheet.
-	Styles() widgets.StyleMap
+	Styles() style.Stylesheet
 
 	// UI returns the global UI object.
 	UI() *widgets.UI
@@ -73,7 +74,7 @@ type baseAPI struct {
 	sequencer      *keys.Sequencer
 	song           func() *song.Song
 	songlistWidget func() *widgets.SonglistWidget
-	styles         widgets.StyleMap
+	styles         style.Stylesheet
 	ui             *widgets.UI
 }
 
@@ -90,7 +91,7 @@ func BaseAPI(
 	sequencer *keys.Sequencer,
 	song func() *song.Song,
 	songlistWidget func() *widgets.SonglistWidget,
-	styles widgets.StyleMap,
+	styles style.Stylesheet,
 	ui *widgets.UI,
 
 ) API {
@@ -160,7 +161,7 @@ func (api *baseAPI) SonglistWidget() *widgets.SonglistWidget {
 	return api.songlistWidget()
 }
 
-func (api *baseAPI) Styles() widgets.StyleMap {
+func (api *baseAPI) Styles() style.Stylesheet {
 	return api.styles
 }
 

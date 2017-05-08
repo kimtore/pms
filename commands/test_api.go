@@ -9,6 +9,7 @@ import (
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/widgets"
 )
 
@@ -72,7 +73,7 @@ func (api *testAPI) SonglistWidget() *widgets.SonglistWidget {
 	return nil // FIXME
 }
 
-func (api *testAPI) Styles() widgets.StyleMap {
+func (api *testAPI) Styles() style.Stylesheet {
 	return nil // FIXME
 }
 

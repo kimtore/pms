@@ -6,6 +6,7 @@ import (
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/message"
+	"github.com/ambientsound/pms/style"
 
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
@@ -20,10 +21,9 @@ type MultibarWidget struct {
 	events    chan parser.KeyEvent
 
 	inputMode int
-	styles    StyleMap
 
 	views.TextBar
-	widget
+	style.Styled
 }
 
 // Different input modes are handled in different ways. Check

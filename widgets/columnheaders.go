@@ -3,6 +3,7 @@ package widgets
 import (
 	"strings"
 
+	"github.com/ambientsound/pms/style"
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
 )
@@ -11,7 +12,7 @@ type ColumnheadersWidget struct {
 	columns []column
 	view    views.View
 
-	widget
+	style.Styled
 	views.WidgetWatchers
 }
 

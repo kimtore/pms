@@ -36,9 +36,11 @@ style readout default
 style searchText white bold
 style selection white blue
 style sequenceText teal
+style shortName blue bold
 style statusbar default
 style switches teal
-style topbar yellow bold
+style topbar blue bold
+style version blue bold
 style visualText teal
 style volume green
 

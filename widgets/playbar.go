@@ -5,6 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/song"
+	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/utils"
 
 	"github.com/gdamore/tcell"
@@ -15,9 +16,8 @@ type PlaybarWidget struct {
 	status mpd.PlayerStatus
 	view   views.View
 	song   song.Song
-	styles StyleMap
 
-	widget
+	style.Styled
 	views.WidgetWatchers
 }
 

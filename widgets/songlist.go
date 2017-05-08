@@ -11,6 +11,7 @@ import (
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/style"
 
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
@@ -26,7 +27,7 @@ type SonglistWidget struct {
 	viewport         views.ViewPort
 	options          *options.Options
 
-	widget
+	style.Styled
 	views.WidgetWatchers
 }
 
