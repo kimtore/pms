@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.org/ambientsound/pms.svg?branch=go)](https://travis-ci.org/ambientsound/pms)
 
-Practical Music Search is an interactive console-based client for Music Player Daemon, or MPD. It has a command line interface much like Vim, and features lightning-fast searches, sorting, custom colors, configurable layouts, visual selection, and the ability to bind keyboard shortcuts.
+Practical Music Search is an interactive console-based client for the [Music Player Daemon](https://www.musicpd.org/), written in Go. The interface is similar to Vim, and features lightning fast full-text searches, sorting, custom colors, configurable layouts, visual selection, keyboard shortcuts, and much more.
 
-This is an experimental branch of PMS, re-implemented in Go. Much of the old functionality is missing (see [Roadmap](#roadmap)), but it is usable for basic tasks and a little more. The full-text search is very fast; consider giving it a try!
+This software was previously written in C++. The master branch now contains a rewrite, currently implemented in Go. This branch is still somewhat experimental, and much of the old functionality is missing (see [Roadmap](#roadmap)), but it is under rapid development, and is usable for basic tasks and a little more. The full-text search is very fast; consider giving it a try!
 
 
 ## Running
@@ -53,6 +53,8 @@ EOF
 PMS will honor the `MPD_HOST` and `MPD_PORT` variables.
 
 See `pms --help` for configuration options. Configuration files are not implemented yet, but the configuration can be changed while running the program.
+
+The default configuration can be found in [options/defaults.go](options/defaults.go).
 
 
 ## Roadmap
