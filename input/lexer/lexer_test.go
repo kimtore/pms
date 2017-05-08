@@ -26,6 +26,36 @@ var lexerTests = []struct {
 			{class: lexer.TokenEnd, str: ""},
 		},
 	},
+	{
+		"$variables are {nice }}, ar{}en't $they?",
+		[]result{
+			{class: lexer.TokenVariable, str: "$"},
+			{class: lexer.TokenIdentifier, str: "variables"},
+			{class: lexer.TokenIdentifier, str: "are"},
+			{class: lexer.TokenOpen, str: "{"},
+			{class: lexer.TokenIdentifier, str: "nice"},
+			{class: lexer.TokenClose, str: "}"},
+			{class: lexer.TokenClose, str: "}"},
+			{class: lexer.TokenIdentifier, str: ","},
+			{class: lexer.TokenIdentifier, str: "ar"},
+			{class: lexer.TokenOpen, str: "{"},
+			{class: lexer.TokenClose, str: "}"},
+			{class: lexer.TokenIdentifier, str: "en't"},
+			{class: lexer.TokenVariable, str: "$"},
+			{class: lexer.TokenIdentifier, str: "they?"},
+			{class: lexer.TokenEnd, str: ""},
+		},
+	},
+	{
+		"$1$2",
+		[]result{
+			{class: lexer.TokenVariable, str: "$"},
+			{class: lexer.TokenIdentifier, str: "1"},
+			{class: lexer.TokenVariable, str: "$"},
+			{class: lexer.TokenIdentifier, str: "2"},
+			{class: lexer.TokenEnd, str: ""},
+		},
+	},
 }
 
 // TestLexer tests the lexer.NextToken() function, checking that it correctly
