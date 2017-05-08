@@ -16,13 +16,17 @@ var lexerTests = []struct {
 	expected []result
 }{
 	{
-		"we  shall\t test white\"space and $quoting\" # and comments",
+		"we  shall\t te|st white\"space and $quoting\"; and # comments",
 		[]result{
 			{class: lexer.TokenIdentifier, str: "we"},
 			{class: lexer.TokenIdentifier, str: "shall"},
-			{class: lexer.TokenIdentifier, str: "test"},
+			{class: lexer.TokenIdentifier, str: "te"},
+			{class: lexer.TokenSeparator, str: "|"},
+			{class: lexer.TokenIdentifier, str: "st"},
 			{class: lexer.TokenIdentifier, str: "whitespace and $quoting"},
-			{class: lexer.TokenComment, str: "# and comments"},
+			{class: lexer.TokenStop, str: ";"},
+			{class: lexer.TokenIdentifier, str: "and"},
+			{class: lexer.TokenComment, str: "# comments"},
 			{class: lexer.TokenEnd, str: ""},
 		},
 	},

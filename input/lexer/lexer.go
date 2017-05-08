@@ -18,13 +18,15 @@ func NewToken() Token {
 
 const (
 	TokenEnd = iota
-	TokenWhitespace
-	TokenQuote
-	TokenIdentifier
-	TokenComment
-	TokenVariable
-	TokenOpen
 	TokenClose
+	TokenComment
+	TokenIdentifier
+	TokenOpen
+	TokenQuote
+	TokenSeparator
+	TokenStop
+	TokenVariable
+	TokenWhitespace
 )
 
 // runeClass returns the token class of an input character.
@@ -35,6 +37,10 @@ func runeClass(r rune) int {
 	switch r {
 	case '"':
 		return TokenQuote
+	case ';':
+		return TokenStop
+	case '|':
+		return TokenSeparator
 	case '$':
 		return TokenVariable
 	case '{':
