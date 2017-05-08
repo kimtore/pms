@@ -19,6 +19,7 @@ func NewToken() Token {
 const (
 	TokenEnd = iota
 	TokenWhitespace
+	TokenQuote
 	TokenIdentifier
 	TokenComment
 	TokenVariable
@@ -32,6 +33,8 @@ func runeClass(r rune) int {
 		return TokenWhitespace
 	}
 	switch r {
+	case '"':
+		return TokenQuote
 	case '$':
 		return TokenVariable
 	case '{':
@@ -51,12 +54,21 @@ func runeClass(r rune) int {
 func NextToken(input string) (t Token, pos int) {
 	t = NewToken()
 
+	quoted := false
+
 	for _, r := range input {
 		firstChar := len(t.Runes) == 0
 		runeLen := utf8.RuneLen(r)
 		class := runeClass(r)
 
-		if t.Class == TokenComment {
+		if class == TokenQuote {
+			t.Class = TokenIdentifier
+			pos += runeLen
+			quoted = !quoted
+			continue
+		}
+
+		if quoted || t.Class == TokenComment {
 			t.Runes = append(t.Runes, r)
 			pos += runeLen
 			continue

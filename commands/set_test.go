@@ -29,7 +29,7 @@ func TestSet(t *testing.T) {
 	opts.Get("bar").Set("true")
 	opts.Get("baz").Set("false")
 
-	input_string := "foo=bar intopt=3 nobar invbaz"
+	input_string := "foo=\"strings $are {}cool\" intopt=3 nobar invbaz"
 	cmd := commands.NewSet(api)
 
 	pos := 0
@@ -47,7 +47,7 @@ func TestSet(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, "bar", opts.Value("foo"))
+	assert.Equal(t, "strings $are {}cool", opts.Value("foo"))
 	assert.Equal(t, 3, opts.Value("intopt"))
 	assert.Equal(t, false, opts.Value("bar"))
 	assert.Equal(t, true, opts.Value("baz"))

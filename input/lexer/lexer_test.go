@@ -16,13 +16,13 @@ var lexerTests = []struct {
 	expected []result
 }{
 	{
-		"the  quick <brown>\t \tfoxee # adds a comment",
+		"we  shall\t test white\"space and $quoting\" # and comments",
 		[]result{
-			{class: lexer.TokenIdentifier, str: "the"},
-			{class: lexer.TokenIdentifier, str: "quick"},
-			{class: lexer.TokenIdentifier, str: "<brown>"},
-			{class: lexer.TokenIdentifier, str: "foxee"},
-			{class: lexer.TokenComment, str: "# adds a comment"},
+			{class: lexer.TokenIdentifier, str: "we"},
+			{class: lexer.TokenIdentifier, str: "shall"},
+			{class: lexer.TokenIdentifier, str: "test"},
+			{class: lexer.TokenIdentifier, str: "whitespace and $quoting"},
+			{class: lexer.TokenComment, str: "# and comments"},
 			{class: lexer.TokenEnd, str: ""},
 		},
 	},
@@ -47,12 +47,13 @@ var lexerTests = []struct {
 		},
 	},
 	{
-		"$1$2",
+		"$1$2 \"unter minated",
 		[]result{
 			{class: lexer.TokenVariable, str: "$"},
 			{class: lexer.TokenIdentifier, str: "1"},
 			{class: lexer.TokenVariable, str: "$"},
 			{class: lexer.TokenIdentifier, str: "2"},
+			{class: lexer.TokenIdentifier, str: "unter minated"},
 			{class: lexer.TokenEnd, str: ""},
 		},
 	},
@@ -85,11 +86,11 @@ func TestLexer(t *testing.T) {
 			t.Logf("Token %d: pos=%d, runes='%s', input='%s'", i, pos, str, test.input)
 
 			if token.Class != check.class {
-				t.Fatalf("Token class for token %d is wrong; expected %d but got %d", i+1, check.class, token.Class)
+				t.Fatalf("Token class for token %d is wrong; expected %d but got %d", i, check.class, token.Class)
 			}
 
 			if check.str != str {
-				t.Fatalf("String check against token %d failed; expected '%s' but got '%s'", i+1,
+				t.Fatalf("String check against token %d failed; expected '%s' but got '%s'", i,
 					check.str,
 					str,
 				)
