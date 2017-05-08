@@ -5,6 +5,11 @@ interface much like Vim, and supports custom colors, layouts, and key bindings.
 PMS aims to be accessible and highly configurable.
 
 
+## Deprecation warning
+
+**The 0.42.x branch is based on the same code as PMS 0.42, the latest official release from May 2010. This branch has been discontinued, and work is being focused on the Go version in the master branch. You are welcome to contribute to the legacy code, but please note that no new releases will be made from this branch.**
+
+
 ## Compiling
 
 PMS is a client for the [Music Player Daemon](http://musicpd.org). You need to 
