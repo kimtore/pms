@@ -139,3 +139,42 @@ func TestPieces(t *testing.T) {
 		}
 	}
 }
+
+var rowTests = []struct {
+	input   string
+	success bool
+	pieces  int
+}{
+	// Valid forms
+	{`plain`, true, 1},
+	{`plain|  two  |more`, true, 3},
+	{`${complex |  form}|and |more||||whitespace `, true, 7},
+	{`||a`, true, 3},
+	{`b||`, true, 2},
+	{`||`, true, 2},
+
+	// Invalid form
+	{`token|plus|${invalid`, false, 0},
+}
+
+func TestRows(t *testing.T) {
+	for n, test := range rowTests {
+
+		reader := strings.NewReader(test.input)
+		parser := topbar.NewParser(reader)
+
+		row, err := parser.ParseRow()
+
+		t.Logf("### Test %d: '%s'", n+1, test.input)
+
+		if test.success {
+			assert.Nil(t, err, "Expected success in topbar parser when parsing '%s'", test.input)
+		} else {
+			assert.NotNil(t, err, "Expected error in topbar parser when parsing '%s'", test.input)
+		}
+
+		if row != nil {
+			assert.Equal(t, test.pieces, len(row.Pieces))
+		}
+	}
+}

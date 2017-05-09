@@ -160,6 +160,31 @@ func (p *Parser) ParsePiece() (*PieceStatement, error) {
 	}
 }
 
+// ParsePiece parses a row statement.
+func (p *Parser) ParseRow() (*RowStatement, error) {
+	stmt := &RowStatement{}
+
+	for {
+		tok, _ := p.scan()
+
+		// A row is succeeded only by a new row.
+		switch tok {
+		case lexer.TokenSeparator:
+			break
+		case lexer.TokenStop, lexer.TokenEnd:
+			return stmt, nil
+		}
+
+		p.unscan()
+		piece, err := p.ParsePiece()
+		if err != nil {
+			return nil, err
+		}
+
+		stmt.Pieces = append(stmt.Pieces, piece)
+	}
+}
+
 // scan returns the next token from the underlying scanner.
 // If a token has been unscanned then read that instead.
 func (p *Parser) scan() (tok int, lit string) {
