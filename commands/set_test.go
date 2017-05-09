@@ -1,6 +1,7 @@
 package commands_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/ambientsound/pms/api"
@@ -15,7 +16,6 @@ import (
 // struct with parsed values.
 func TestSet(t *testing.T) {
 	var err error
-	var token lexer.Token
 
 	a := api.NewTestAPI()
 	opts := a.Options()
@@ -30,20 +30,20 @@ func TestSet(t *testing.T) {
 	opts.Get("bar").Set("true")
 	opts.Get("baz").Set("false")
 
-	input_string := "foo=\"strings $are {}cool\" intopt=3 nobar invbaz"
+	line := `foo="strings $are {}cool" intopt=3 nobar invbaz`
 	cmd := commands.NewSet(a)
 
-	pos := 0
-	npos := 0
+	reader := strings.NewReader(line)
+	scanner := lexer.NewScanner(reader)
 
 	for {
-		token, npos = lexer.NextToken(input_string[pos:])
-		pos += npos
-		err = cmd.Execute(token)
-		if err != nil {
-			t.Fatalf("Error while parsing input %s: %s", string(token.Runes), err)
-		}
-		if token.Class == lexer.TokenEnd {
+		class, token := scanner.Scan()
+
+		err = cmd.Execute(class, token)
+
+		assert.Nil(t, err, "Error while parsing input '%s' of class %d: %s", token, class, err)
+
+		if class == lexer.TokenEnd {
 			break
 		}
 	}

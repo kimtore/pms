@@ -23,17 +23,17 @@ func NewAdd(api api.API) Command {
 	}
 }
 
-func (cmd *Add) Execute(t lexer.Token) error {
+func (cmd *Add) Execute(class int, s string) error {
 	var err error
 
-	switch t.Class {
+	switch class {
 	case lexer.TokenIdentifier:
 		if cmd.song != nil {
 			return fmt.Errorf("Cannot add multiple paths on the same command line.")
 		}
 		cmd.song = song.New()
 		cmd.song.SetTags(mpd.Attrs{
-			"file": t.String(),
+			"file": s,
 		})
 
 	case lexer.TokenEnd:
@@ -68,7 +68,7 @@ func (cmd *Add) Execute(t lexer.Token) error {
 		}
 
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))
+		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 
 	return err

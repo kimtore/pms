@@ -2,6 +2,7 @@ package topbar
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
@@ -25,7 +26,6 @@ type Fragment interface {
 type Piece struct {
 	align     int
 	fragments []Fragment
-	padding   int
 	view      views.View
 	width     int
 	style.Styled
@@ -46,7 +46,6 @@ var fragments = map[string]func(api.API) Fragment{
 
 func NewPiece() *Piece {
 	return &Piece{
-		padding:   1,
 		fragments: make([]Fragment, 0),
 	}
 }
@@ -126,7 +125,6 @@ func Parse(a api.API, input string) (Matrix, error) {
 	piece := NewPiece()
 	matrix := NewMatrix(0, 0)
 	row := make([]*Piece, 0)
-	pos := 0
 	x := 0
 
 	variable := false
@@ -144,16 +142,17 @@ func Parse(a api.API, input string) (Matrix, error) {
 		x = 0
 	}
 
-	for {
-		t, npos := lexer.NextToken(input[pos:])
-		pos += npos
-		s := t.String()
+	reader := strings.NewReader(input)
+	scanner := lexer.NewScanner(reader)
 
-		if variable && t.Class != lexer.TokenIdentifier {
+	for {
+		class, s := scanner.Scan()
+
+		if variable && class != lexer.TokenIdentifier {
 			return nil, fmt.Errorf("Unexpected '%s', expected identifier")
 		}
 
-		switch t.Class {
+		switch class {
 		case lexer.TokenEnd:
 			goto end
 		case lexer.TokenIdentifier:
@@ -161,13 +160,15 @@ func Parse(a api.API, input string) (Matrix, error) {
 				// FIXME: look up correct fragment
 				ctor, ok := fragments[s]
 				if !ok {
-					return nil, fmt.Errorf("Unrecognized variable '$%s'", s)
+					return nil, fmt.Errorf("Unrecognized variable '${%s}'", s)
 				}
 				piece.AddFragment(ctor(a))
 				variable = false
 			} else {
 				piece.AddFragment(NewText(s))
 			}
+		case lexer.TokenWhitespace:
+			piece.AddFragment(NewText(s))
 		case lexer.TokenSeparator:
 			addPiece()
 		case lexer.TokenStop:
@@ -192,7 +193,7 @@ func (p *Piece) Draw(x, y, width int) {
 	//console.Log("Align %d says draw at xorig=%d, xalign=%d, width=%d, textwidth=%d", p.align, x, p.alignX(x, width), width, p.Width())
 	x = p.alignX(x, width)
 	for _, fragment := range p.fragments {
-		x = fragment.Draw(x, y) + p.padding
+		x = fragment.Draw(x, y)
 	}
 }
 
@@ -209,16 +210,7 @@ func (p *Piece) Width() int {
 	for _, fragment := range p.fragments {
 		width += fragment.Width()
 	}
-	width += p.padWidth()
 	return width
-}
-
-// padWidth returns the total whitespace length between fragments.
-func (p *Piece) padWidth() int {
-	if len(p.fragments) == 0 {
-		return 0
-	}
-	return p.padding * (len(p.fragments) - 1)
 }
 
 func (p *Piece) SetView(v views.View) {

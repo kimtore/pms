@@ -18,15 +18,15 @@ func NewRedraw(api api.API) Command {
 	}
 }
 
-func (cmd *Redraw) Execute(t lexer.Token) error {
+func (cmd *Redraw) Execute(class int, s string) error {
 	ui := cmd.api.UI()
-	switch t.Class {
+	switch class {
 	case lexer.TokenEnd:
 		ui.PostFunc(func() {
 			ui.Refresh()
 		})
 		return nil
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))
+		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 }

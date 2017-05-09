@@ -1,107 +1,109 @@
 package lexer_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/stretchr/testify/assert"
 )
 
+type result struct {
+	class int
+	str   string
+}
+
 var lexerTests = []struct {
 	input    string
 	expected []result
 }{
 	{
-		"we  shall\t te|st white\"space and $quoting\"; and # comments",
+		`a normal sentence`,
 		[]result{
-			{class: lexer.TokenIdentifier, str: "we"},
-			{class: lexer.TokenIdentifier, str: "shall"},
-			{class: lexer.TokenIdentifier, str: "te"},
-			{class: lexer.TokenSeparator, str: "|"},
-			{class: lexer.TokenIdentifier, str: "st"},
-			{class: lexer.TokenIdentifier, str: "whitespace and $quoting"},
-			{class: lexer.TokenStop, str: ";"},
-			{class: lexer.TokenIdentifier, str: "and"},
-			{class: lexer.TokenComment, str: "# comments"},
-			{class: lexer.TokenEnd, str: ""},
+			{class: lexer.TokenIdentifier, str: `a`},
+			{class: lexer.TokenWhitespace, str: ` `},
+			{class: lexer.TokenIdentifier, str: `normal`},
+			{class: lexer.TokenWhitespace, str: ` `},
+			{class: lexer.TokenIdentifier, str: `sentence`},
+			{class: lexer.TokenEnd, str: ``},
 		},
 	},
 	{
-		"$variables are {nice }}, ar{}en't $they?",
+		`some "quoted text" here`,
 		[]result{
-			{class: lexer.TokenVariable, str: "$"},
-			{class: lexer.TokenIdentifier, str: "variables"},
-			{class: lexer.TokenIdentifier, str: "are"},
-			{class: lexer.TokenOpen, str: "{"},
-			{class: lexer.TokenIdentifier, str: "nice"},
-			{class: lexer.TokenClose, str: "}"},
-			{class: lexer.TokenClose, str: "}"},
-			{class: lexer.TokenIdentifier, str: ","},
-			{class: lexer.TokenIdentifier, str: "ar"},
-			{class: lexer.TokenOpen, str: "{"},
-			{class: lexer.TokenClose, str: "}"},
-			{class: lexer.TokenIdentifier, str: "en't"},
-			{class: lexer.TokenVariable, str: "$"},
-			{class: lexer.TokenIdentifier, str: "they?"},
-			{class: lexer.TokenEnd, str: ""},
+			{class: lexer.TokenIdentifier, str: `some`},
+			{class: lexer.TokenWhitespace, str: ` `},
+			{class: lexer.TokenIdentifier, str: `quoted text`},
+			{class: lexer.TokenWhitespace, str: ` `},
+			{class: lexer.TokenIdentifier, str: `here`},
+			{class: lexer.TokenEnd, str: ``},
 		},
 	},
 	{
-		"$1$2 \"unter minated",
+		`;|${}# comment ;|;`,
 		[]result{
-			{class: lexer.TokenVariable, str: "$"},
-			{class: lexer.TokenIdentifier, str: "1"},
-			{class: lexer.TokenVariable, str: "$"},
-			{class: lexer.TokenIdentifier, str: "2"},
-			{class: lexer.TokenIdentifier, str: "unter minated"},
-			{class: lexer.TokenEnd, str: ""},
+			{class: lexer.TokenStop, str: `;`},
+			{class: lexer.TokenSeparator, str: `|`},
+			{class: lexer.TokenVariable, str: `$`},
+			{class: lexer.TokenOpen, str: `{`},
+			{class: lexer.TokenClose, str: `}`},
+			{class: lexer.TokenComment, str: `# comment ;|;`},
+			{class: lexer.TokenEnd, str: ``},
 		},
 	},
-	/*
-		{
-			`$"quoted variable" ok`,
-			[]result{
-				{class: lexer.TokenVariable, str: "$"},
-				{class: lexer.TokenIdentifier, str: "quoted variable"},
-				{class: lexer.TokenIdentifier, str: "ok"},
-				{class: lexer.TokenEnd, str: ""},
-			},
+	{
+		`$"quoted variable" ok`,
+		[]result{
+			{class: lexer.TokenVariable, str: `$`},
+			{class: lexer.TokenIdentifier, str: `quoted variable`},
+			{class: lexer.TokenWhitespace, str: ` `},
+			{class: lexer.TokenIdentifier, str: `ok`},
+			{class: lexer.TokenEnd, str: ``},
 		},
-	*/
+	},
+	{
+		`\v\e\ \r\y "quo\"\\ted $pecial" \$pec\|al`,
+		[]result{
+			{class: lexer.TokenIdentifier, str: `ve ry`},
+			{class: lexer.TokenWhitespace, str: ` `},
+			{class: lexer.TokenIdentifier, str: `quo"\ted $pecial`},
+			{class: lexer.TokenWhitespace, str: ` `},
+			{class: lexer.TokenIdentifier, str: `$pec|al`},
+			{class: lexer.TokenEnd, str: ``},
+		},
+	},
 }
 
-// TestLexer tests the lexer.NextToken() function, checking that it correctly
-// splits up input lines into Token structs.
 func TestLexer(t *testing.T) {
-	var token lexer.Token
 
-	for _, test := range lexerTests {
+	for n, test := range lexerTests {
 
-		i := 0
-		pos := 0
+		index := 0
+		reader := strings.NewReader(test.input)
+		scanner := lexer.NewScanner(reader)
+
+		t.Logf("### Test %d: '%s'", n+1, test.input)
 
 		for {
+			class, str := scanner.Scan()
 
-			if i == len(test.expected) {
-				if token.Class == lexer.TokenEnd {
+			if index == len(test.expected) {
+				if class == lexer.TokenEnd {
 					break
 				}
 				t.Fatalf("Tokenizer generated too many tokens!")
 			}
 
-			check := test.expected[i]
-			token, npos := lexer.NextToken(test.input[pos:])
-			pos += npos
-			str := token.String()
+			t.Logf("Token %d: class='%d', literal='%s'", index, class, str)
 
-			t.Logf("Token %d: pos=%d, runes='%s', input='%s'", i, pos, str, test.input)
+			check := test.expected[index]
 
-			assert.Equal(t, token.Class, check.class,
-				"Token class for token %d is wrong; expected %d but got %d", i, check.class, token.Class)
+			assert.Equal(t, check.class, class,
+				"Token class for token %d is wrong; expected %d but got %d", index, check.class, class)
 			assert.Equal(t, check.str, str,
-				"String check against token %d failed; expected '%s' but got '%s'", i, check.str, str)
+				"String check against token %d failed; expected '%s' but got '%s'", index, check.str, str)
 
-			i++
+			index++
 		}
 	}
 }

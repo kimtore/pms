@@ -24,13 +24,12 @@ func NewPlay(api api.API) Command {
 	}
 }
 
-func (cmd *Play) Execute(t lexer.Token) error {
+func (cmd *Play) Execute(class int, s string) error {
 	var err error
 
-	s := t.String()
 	songlistWidget := cmd.api.SonglistWidget()
 
-	switch t.Class {
+	switch class {
 	case lexer.TokenIdentifier:
 		switch s {
 		case "cursor":
@@ -70,7 +69,7 @@ func (cmd *Play) Execute(t lexer.Token) error {
 		return err
 
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))
+		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 
 	return nil

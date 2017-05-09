@@ -21,12 +21,11 @@ func NewPrint(api api.API) Command {
 	}
 }
 
-func (cmd *Print) Execute(t lexer.Token) error {
+func (cmd *Print) Execute(class int, s string) error {
 	var err error
 
-	s := t.String()
 
-	switch t.Class {
+	switch class {
 	case lexer.TokenIdentifier:
 		if len(cmd.tags) > 0 {
 			return fmt.Errorf("Unexpected '%s', expected END")
@@ -65,7 +64,7 @@ func (cmd *Print) Execute(t lexer.Token) error {
 		songlistWidget.ClearSelection()
 
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))
+		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 
 	return err

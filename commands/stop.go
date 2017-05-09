@@ -18,15 +18,15 @@ func NewStop(api api.API) Command {
 	}
 }
 
-func (cmd *Stop) Execute(t lexer.Token) error {
-	switch t.Class {
+func (cmd *Stop) Execute(class int, s string) error {
+	switch class {
 	case lexer.TokenEnd:
 		if client := cmd.api.MpdClient(); client != nil {
 			return client.Stop()
 		}
 		return fmt.Errorf("Unable to stop: cannot communicate with MPD")
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", t.String())
+		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 
 	return nil

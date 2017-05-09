@@ -2,6 +2,7 @@ package input
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/commands"
@@ -26,41 +27,49 @@ func NewCLI(baseAPI api.API) *CLI {
 }
 
 func (i *CLI) Execute(line string) error {
-	var pos, nextPos int
-	var token lexer.Token
 	var cmd commands.Command
 	var err error
 
+	reader := strings.NewReader(line)
+	scanner := lexer.NewScanner(reader)
+
 	for {
-		token, nextPos = lexer.NextToken(line[pos:])
-		pos += nextPos
+		class, token := scanner.Scan()
 
 		// First identifier; try to find a command handler
 		if cmd == nil {
-			key := token.String()
-			switch token.Class {
+			switch class {
 			case lexer.TokenIdentifier:
-				if ctor, ok := i.handlers[key]; ok {
+				if ctor, ok := i.handlers[token]; ok {
 					cmd = ctor(i.baseAPI)
 					continue
 				}
-				return fmt.Errorf("Not a command: %s", key)
+				return fmt.Errorf("Not a command: %s", token)
 			case lexer.TokenComment:
 				continue
 			case lexer.TokenEnd:
 				return nil
+			case lexer.TokenStop:
+				cmd = nil
+				continue
+			case lexer.TokenWhitespace:
+				continue
 			default:
-				return fmt.Errorf("Unexpected '%s', expected identifier", key)
+				return fmt.Errorf("Unexpected '%s', expected identifier", token)
 			}
 		}
 
-		err = cmd.Execute(token)
+		if class == lexer.TokenWhitespace {
+			continue
+		}
+
+		err = cmd.Execute(class, token)
 
 		if err != nil {
 			return err
 		}
 
-		if token.Class == lexer.TokenEnd {
+		if class == lexer.TokenEnd {
 			break
 		}
 	}

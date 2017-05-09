@@ -20,11 +20,10 @@ func NewInputMode(api api.API) Command {
 	}
 }
 
-func (cmd *InputMode) Execute(t lexer.Token) error {
-	s := t.String()
+func (cmd *InputMode) Execute(class int, s string) error {
 	multibar := cmd.api.Multibar()
 
-	switch t.Class {
+	switch class {
 	case lexer.TokenIdentifier:
 		switch s {
 		case "normal":
@@ -47,7 +46,7 @@ func (cmd *InputMode) Execute(t lexer.Token) error {
 		multibar.SetMode(cmd.mode)
 
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))
+		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 
 	return nil

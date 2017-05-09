@@ -23,13 +23,12 @@ func NewSort(api api.API) Command {
 	}
 }
 
-func (cmd *Sort) Execute(t lexer.Token) error {
+func (cmd *Sort) Execute(class int, s string) error {
 	var err error
 
-	s := t.String()
 	songlistWidget := cmd.api.SonglistWidget()
 
-	switch t.Class {
+	switch class {
 
 	case lexer.TokenIdentifier:
 		if cmd.finished {

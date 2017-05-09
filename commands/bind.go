@@ -23,14 +23,13 @@ func NewBind(api api.API) Command {
 	}
 }
 
-func (cmd *Bind) Execute(t lexer.Token) error {
-	s := t.String()
+func (cmd *Bind) Execute(class int, s string) error {
 
-	switch t.Class {
+	switch class {
 	case lexer.TokenIdentifier:
 		if cmd.token == nil {
 			cmd.token = &parser.KeySequenceToken{}
-			err := cmd.token.Parse(t.Runes)
+			err := cmd.token.Parse([]rune(s))
 			if err != nil {
 				return err
 			}
@@ -49,7 +48,7 @@ func (cmd *Bind) Execute(t lexer.Token) error {
 		}
 
 	default:
-		if t.Class != lexer.TokenIdentifier {
+		if class != lexer.TokenIdentifier {
 			return fmt.Errorf("Unknown input '%s', expected identifier", s)
 		}
 	}

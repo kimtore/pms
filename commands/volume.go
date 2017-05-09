@@ -25,12 +25,11 @@ func NewVolume(api api.API) Command {
 	}
 }
 
-func (cmd *Volume) Execute(t lexer.Token) error {
+func (cmd *Volume) Execute(class int, s string) error {
 	var err error
 
-	switch t.Class {
+	switch class {
 	case lexer.TokenIdentifier:
-		s := t.String()
 
 		if cmd.finished {
 			return fmt.Errorf("Unexpected '%s', expected END", s)
@@ -81,7 +80,7 @@ func (cmd *Volume) Execute(t lexer.Token) error {
 		return client.SetVolume(cmd.volume)
 
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", t.String())
+		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 
 	return nil

@@ -18,8 +18,8 @@ func NewPrevious(api api.API) Command {
 	}
 }
 
-func (cmd *Previous) Execute(t lexer.Token) error {
-	switch t.Class {
+func (cmd *Previous) Execute(class int, s string) error {
+	switch class {
 	case lexer.TokenEnd:
 		client := cmd.api.MpdClient()
 		if client == nil {
@@ -28,7 +28,7 @@ func (cmd *Previous) Execute(t lexer.Token) error {
 		return client.Previous()
 
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", t.String())
+		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 
 	return nil

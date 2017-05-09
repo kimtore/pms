@@ -31,12 +31,11 @@ func NewStyle(api api.API) Command {
 	}
 }
 
-func (cmd *Style) Execute(t lexer.Token) error {
+func (cmd *Style) Execute(class int, s string) error {
 	var err error
 
-	s := t.String()
 
-	switch t.Class {
+	switch class {
 
 	case lexer.TokenIdentifier:
 		if len(cmd.styleKey) == 0 {

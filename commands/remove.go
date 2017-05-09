@@ -18,10 +18,10 @@ func NewRemove(api api.API) Command {
 	}
 }
 
-func (cmd *Remove) Execute(t lexer.Token) error {
+func (cmd *Remove) Execute(class int, s string) error {
 	var err error
 
-	switch t.Class {
+	switch class {
 	case lexer.TokenEnd:
 		songlistWidget := cmd.api.SonglistWidget()
 		list := songlistWidget.Songlist()
@@ -41,7 +41,7 @@ func (cmd *Remove) Execute(t lexer.Token) error {
 		cmd.api.ListChanged()
 
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))
+		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 
 	return err

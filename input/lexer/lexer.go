@@ -1,73 +1,211 @@
 package lexer
 
 import (
-	"unicode/utf8"
+	"bufio"
+	"bytes"
+	"io"
+	"unicode"
 )
 
-type Token struct {
-	Class int
-	Runes []rune
+const (
+	TokenEnd = iota
+	TokenClose
+	TokenComment
+	TokenEqual
+	TokenEscape
+	TokenIdentifier
+	TokenOpen
+	TokenQuote
+	TokenSeparator
+	TokenStop
+	TokenVariable
+	TokenWhitespace
+)
+
+// runeClass returns the token class of an input character.
+func runeClass(r rune) int {
+	if unicode.IsSpace(r) {
+		return TokenWhitespace
+	}
+	switch r {
+	case eof:
+		return TokenEnd
+	case '"':
+		return TokenQuote
+	case ';':
+		return TokenStop
+	case '|':
+		return TokenSeparator
+	case '$':
+		return TokenVariable
+	case '{':
+		return TokenOpen
+	case '}':
+		return TokenClose
+	case '#':
+		return TokenComment
+	case '=':
+		return TokenEqual
+	case '\\':
+		return TokenEscape
+	default:
+		return TokenIdentifier
+	}
 }
 
-func NewToken() Token {
-	t := Token{}
-	t.Runes = make([]rune, 0)
-	return t
+// Scanner represents a lexical scanner.
+type Scanner struct {
+	r *bufio.Reader
 }
 
-// Tokenize is a lexer for the input language. It extracts the next token out
-// of a sentence, and returns the token itself, in addition to the next position
-// in the string that should be parsed.
-func NextToken(input string) (t Token, pos int) {
-	t = NewToken()
+// NewScanner returns a new instance of Scanner.
+func NewScanner(r io.Reader) *Scanner {
+	return &Scanner{r: bufio.NewReader(r)}
+}
 
-	quoted := false
+// Scan returns the next token and literal value.
+func (s *Scanner) Scan() (class int, lit string) {
+	ch := s.read()
+	class = runeClass(ch)
 
-	for _, r := range input {
-		firstChar := len(t.Runes) == 0
-		runeLen := utf8.RuneLen(r)
-		class := runeClass(r)
-
-		if class == TokenQuote {
-			t.Class = TokenIdentifier
-			pos += runeLen
-			quoted = !quoted
-			continue
-		}
-
-		if quoted || t.Class == TokenComment {
-			t.Runes = append(t.Runes, r)
-			pos += runeLen
-			continue
-		}
-
-		if class == TokenWhitespace {
-			pos += runeLen
-			if len(t.Runes) > 0 {
-				return
-			}
-			continue
-		}
-
-		if firstChar {
-			t.Class = class
-			t.Runes = append(t.Runes, r)
-			pos += runeLen
-			continue
-		}
-
-		if class == TokenIdentifier && t.Class == class {
-			t.Runes = append(t.Runes, r)
-			pos += runeLen
-			continue
-		}
-
-		break
+	switch class {
+	case TokenQuote:
+		class = TokenIdentifier
+		lit = s.scanQuoted()
+	case TokenWhitespace:
+		s.unread()
+		lit = s.scanWhitespace()
+	case TokenComment:
+		s.unread()
+		lit = s.scanComment()
+	case TokenIdentifier:
+		s.unread()
+		lit = s.scanIdentifier()
+	case TokenEscape:
+		class = TokenIdentifier
+		lit = s.scanIdentifier()
+	case TokenClose, TokenOpen, TokenSeparator, TokenStop, TokenVariable, TokenEqual:
+		lit = string(ch)
+	case TokenEnd:
 	}
 
 	return
 }
 
-func (t *Token) String() string {
-	return string(t.Runes)
+// scanWhitespace consumes the current rune and all contiguous whitespace.
+func (s *Scanner) scanWhitespace() string {
+	var buf bytes.Buffer
+	buf.WriteRune(s.read())
+
+OUTER:
+	for {
+		ch := s.read()
+		class := runeClass(ch)
+
+		switch class {
+		case TokenWhitespace:
+			buf.WriteRune(ch)
+		case TokenEnd:
+			break OUTER
+		default:
+			s.unread()
+			break OUTER
+		}
+	}
+
+	return buf.String()
 }
+
+func (s *Scanner) scanQuoted() string {
+	var buf bytes.Buffer
+	escape := false
+
+OUTER:
+	for {
+		ch := s.read()
+		class := runeClass(ch)
+
+		switch {
+		case class == TokenEscape && !escape:
+			escape = true
+			continue
+		case class == TokenQuote && !escape:
+			break OUTER
+		case class == TokenEnd:
+			break OUTER
+		default:
+			buf.WriteRune(ch)
+		}
+
+		escape = false
+	}
+
+	return buf.String()
+}
+
+func (s *Scanner) scanComment() string {
+	var buf bytes.Buffer
+	buf.WriteRune(s.read())
+
+OUTER:
+	for {
+		ch := s.read()
+		class := runeClass(ch)
+
+		switch class {
+		case TokenEnd:
+			break OUTER
+		default:
+			buf.WriteRune(ch)
+		}
+	}
+
+	return buf.String()
+}
+
+func (s *Scanner) scanIdentifier() string {
+	var buf bytes.Buffer
+	buf.WriteRune(s.read())
+	escape := false
+
+OUTER:
+	for {
+		ch := s.read()
+		class := runeClass(ch)
+
+		switch {
+		case class == TokenEscape && !escape:
+			escape = true
+			continue
+		case class == TokenQuote && !escape:
+			break OUTER
+		case class == TokenEnd:
+			break OUTER
+		case escape || class == TokenIdentifier:
+			buf.WriteRune(ch)
+		default:
+			s.unread()
+			break OUTER
+		}
+
+		escape = false
+	}
+
+	return buf.String()
+}
+
+// read reads the next rune from the buffered reader.
+// Returns the rune(0) if an error occurs (or io.EOF is returned).
+func (s *Scanner) read() rune {
+	ch, _, err := s.r.ReadRune()
+	if err != nil {
+		return eof
+	}
+	return ch
+}
+
+// unread places the previously read rune back on the reader.
+func (s *Scanner) unread() { _ = s.r.UnreadRune() }
+
+// eof represents a marker rune for the end of the reader.
+var eof = rune(0)

@@ -31,17 +31,16 @@ func NewCursor(api api.API) Command {
 	}
 }
 
-func (cmd *Cursor) Execute(t lexer.Token) error {
+func (cmd *Cursor) Execute(class int, s string) error {
 	var err error
 
-	s := t.String()
 	songlistWidget := cmd.api.SonglistWidget()
 
-	if cmd.finished && t.Class != lexer.TokenEnd {
+	if cmd.finished && class != lexer.TokenEnd {
 		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 
-	switch t.Class {
+	switch class {
 
 	case lexer.TokenIdentifier:
 		switch s {

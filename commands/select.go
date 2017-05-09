@@ -20,14 +20,13 @@ func NewSelect(api api.API) Command {
 	}
 }
 
-func (cmd *Select) Execute(t lexer.Token) error {
+func (cmd *Select) Execute(class int, s string) error {
 	var err error
 
-	s := t.String()
 	songlistWidget := cmd.api.SonglistWidget()
 	list := songlistWidget.List()
 
-	switch t.Class {
+	switch class {
 
 	case lexer.TokenIdentifier:
 		if cmd.finished {

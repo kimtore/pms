@@ -18,12 +18,12 @@ func NewQuit(api api.API) Command {
 	}
 }
 
-func (cmd *Quit) Execute(t lexer.Token) error {
-	switch t.Class {
+func (cmd *Quit) Execute(class int, s string) error {
+	switch class {
 	case lexer.TokenEnd:
 		cmd.api.Quit()
 		return nil
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", string(t.Runes))
+		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 }

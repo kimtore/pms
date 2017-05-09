@@ -26,15 +26,14 @@ func NewList(api api.API) Command {
 	}
 }
 
-func (cmd *List) Execute(t lexer.Token) error {
+func (cmd *List) Execute(class int, s string) error {
 	var err error
 	var index int
 
-	s := t.String()
 	ui := cmd.api.UI()
 	songlistWidget := cmd.api.SonglistWidget()
 
-	switch t.Class {
+	switch class {
 
 	case lexer.TokenIdentifier:
 		switch s {
