@@ -27,6 +27,7 @@ style year green
 
 # Topbar styles
 style shortName bold
+style tagMissing red
 style topbar default
 style version gray
 
