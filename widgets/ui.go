@@ -3,6 +3,7 @@ package widgets
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input/parser"
@@ -102,7 +103,7 @@ func (ui *UI) SetIndex(i *index.Index) {
 	ui.Index = i
 }
 
-func (ui *UI) CurrentSonglistWidget() *SonglistWidget {
+func (ui *UI) CurrentSonglistWidget() api.SonglistWidget {
 	return ui.Songlist
 }
 
@@ -154,6 +155,10 @@ func (ui *UI) UpdateCursor() {
 	default:
 		ui.Screen.HideCursor()
 	}
+}
+
+func (ui *UI) PostFunc(f func()) {
+	ui.App.PostFunc(f)
 }
 
 func (ui *UI) HandleEvent(ev tcell.Event) bool {

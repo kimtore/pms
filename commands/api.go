@@ -2,6 +2,7 @@ package commands
 
 import (
 	"github.com/ambientsound/gompd/mpd"
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/message"
@@ -10,7 +11,6 @@ import (
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
-	"github.com/ambientsound/pms/widgets"
 )
 
 // API defines a set of commands that should be available to commands run
@@ -32,7 +32,7 @@ type API interface {
 	MpdClient() *mpd.Client
 
 	// Multibar returns the Multibar widget.
-	Multibar() *widgets.MultibarWidget
+	Multibar() api.MultibarWidget
 
 	// Options returns PMS' global options.
 	Options() *options.Options
@@ -55,13 +55,13 @@ type API interface {
 	Song() *song.Song
 
 	// SonglistWidget returns the songlist widget.
-	SonglistWidget() *widgets.SonglistWidget
+	SonglistWidget() api.SonglistWidget
 
 	// Styles returns the current stylesheet.
 	Styles() style.Stylesheet
 
 	// UI returns the global UI object.
-	UI() *widgets.UI
+	UI() api.UI
 }
 
 type baseAPI struct {
@@ -70,16 +70,16 @@ type baseAPI struct {
 	eventOption    chan string
 	index          func() *index.Index
 	mpdClient      func() *mpd.Client
-	multibar       *widgets.MultibarWidget
+	multibar       api.MultibarWidget
 	options        *options.Options
 	playerStatus   func() pms_mpd.PlayerStatus
 	queue          func() *songlist.Queue
 	quitSignal     chan int
 	sequencer      *keys.Sequencer
 	song           func() *song.Song
-	songlistWidget func() *widgets.SonglistWidget
+	songlistWidget func() api.SonglistWidget
 	styles         style.Stylesheet
-	ui             *widgets.UI
+	ui             api.UI
 }
 
 func BaseAPI(
@@ -88,16 +88,16 @@ func BaseAPI(
 	eventOption chan string,
 	index func() *index.Index,
 	mpdClient func() *mpd.Client,
-	multibar *widgets.MultibarWidget,
+	multibar api.MultibarWidget,
 	options *options.Options,
 	playerStatus func() pms_mpd.PlayerStatus,
 	queue func() *songlist.Queue,
 	quitSignal chan int,
 	sequencer *keys.Sequencer,
 	song func() *song.Song,
-	songlistWidget func() *widgets.SonglistWidget,
+	songlistWidget func() api.SonglistWidget,
 	styles style.Stylesheet,
-	ui *widgets.UI,
+	ui api.UI,
 
 ) API {
 	return &baseAPI{
@@ -135,7 +135,7 @@ func (api *baseAPI) MpdClient() *mpd.Client {
 	return api.mpdClient()
 }
 
-func (api *baseAPI) Multibar() *widgets.MultibarWidget {
+func (api *baseAPI) Multibar() api.MultibarWidget {
 	return api.multibar
 }
 
@@ -167,7 +167,7 @@ func (api *baseAPI) Song() *song.Song {
 	return api.song()
 }
 
-func (api *baseAPI) SonglistWidget() *widgets.SonglistWidget {
+func (api *baseAPI) SonglistWidget() api.SonglistWidget {
 	return api.songlistWidget()
 }
 
@@ -175,6 +175,6 @@ func (api *baseAPI) Styles() style.Stylesheet {
 	return api.styles
 }
 
-func (api *baseAPI) UI() *widgets.UI {
+func (api *baseAPI) UI() api.UI {
 	return api.ui
 }

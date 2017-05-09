@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
@@ -20,8 +21,8 @@ import (
 
 type SonglistWidget struct {
 	currentListIndex int
-	currentList      *list
-	lists            []*list
+	currentList      *list.List
+	lists            []*list.List
 	fallbackSonglist songlist.Songlist
 	currentSong      song.Song
 	view             views.View
@@ -35,22 +36,22 @@ type SonglistWidget struct {
 func NewSonglistWidget(o *options.Options) (w *SonglistWidget) {
 	w = &SonglistWidget{}
 	w.options = o
-	w.currentList = newList(songlist.New())
+	w.currentList = list.New(songlist.New())
 	return
 }
 
-func (w *SonglistWidget) List() *list {
+func (w *SonglistWidget) List() *list.List {
 	return w.currentList
 }
 
 func (w *SonglistWidget) Songlist() songlist.Songlist {
-	return w.List().songlist
+	return w.List().Songlist
 }
 
 func (w *SonglistWidget) AutoSetColumnWidths() {
 	currentList := w.List()
-	for i := range currentList.columns {
-		currentList.columns[i].SetWidth(currentList.columns[i].Mid())
+	for i := range currentList.Columns {
+		currentList.Columns[i].SetWidth(currentList.Columns[i].Mid())
 	}
 	w.expandColumns()
 }
@@ -59,17 +60,17 @@ func (w *SonglistWidget) SetColumns(cols []string) {
 	timer := time.Now()
 
 	currentList := w.List()
-	ch := make(chan int, len(currentList.columns))
-	currentList.columns = make(columns, len(cols))
+	ch := make(chan int, len(currentList.Columns))
+	currentList.Columns = make(list.Columns, len(cols))
 
-	for i := range currentList.columns {
+	for i := range currentList.Columns {
 		go func(i int) {
-			currentList.columns[i].Tag = cols[i]
-			currentList.columns[i].Set(currentList.songlist)
+			currentList.Columns[i].Tag = cols[i]
+			currentList.Columns[i].Set(currentList.Songlist)
 			ch <- 0
 		}(i)
 	}
-	for i := 0; i < len(currentList.columns); i++ {
+	for i := 0; i < len(currentList.Columns); i++ {
 		<-ch
 	}
 	w.AutoSetColumnWidths()
@@ -82,26 +83,26 @@ func (w *SonglistWidget) SetColumns(cols []string) {
 func (w *SonglistWidget) expandColumns() {
 	currentList := w.List()
 
-	if len(currentList.columns) == 0 {
+	if len(currentList.Columns) == 0 {
 		return
 	}
 
 	_, _, xmax, _ := w.viewport.GetVisible()
 	totalWidth := 0
-	poolSize := len(currentList.columns)
+	poolSize := len(currentList.Columns)
 	saturation := make([]bool, poolSize)
-	for i := range currentList.columns {
-		totalWidth += currentList.columns[i].Width()
+	for i := range currentList.Columns {
+		totalWidth += currentList.Columns[i].Width()
 	}
 	for {
-		for i := range currentList.columns {
+		for i := range currentList.Columns {
 			if totalWidth > xmax {
 				return
 			}
 			if poolSize > 0 && saturation[i] {
 				continue
 			}
-			col := &currentList.columns[i]
+			col := &currentList.Columns[i]
 			if poolSize > 0 && col.Width() > col.MaxWidth() {
 				saturation[i] = true
 				poolSize--
@@ -166,7 +167,7 @@ func (w *SonglistWidget) Draw() {
 		}
 
 		// Style based on song's role
-		cursor = y == currentList.cursor
+		cursor = y == currentList.Cursor
 		switch {
 		case cursor:
 			style = w.Style("cursor")
@@ -195,20 +196,20 @@ func (w *SonglistWidget) Draw() {
 		}
 
 		// Draw each column separately
-		for col := 0; col < len(currentList.columns); col++ {
+		for col := 0; col < len(currentList.Columns); col++ {
 
 			// Convert tag to runes
-			key := currentList.columns[col].Tag
+			key := currentList.Columns[col].Tag
 			runes := s.Tags[key]
 			if !lineStyled {
 				style = w.Style(key)
 			}
 
-			if col+1 == len(currentList.columns) {
+			if col+1 == len(currentList.Columns) {
 				rightPadding = 0
 			}
 
-			strmax := currentList.columns[col].Width()
+			strmax := currentList.Columns[col].Width()
 			strmin := strmax - rightPadding
 
 			x = w.drawNext(x, y, strmin, strmax, runes, style)
@@ -253,21 +254,21 @@ func (w *SonglistWidget) MoveCursorDown(i int) {
 }
 
 func (w *SonglistWidget) MoveCursor(i int) {
-	w.SetCursor(w.List().cursor + i)
+	w.SetCursor(w.List().Cursor + i)
 }
 
 func (w *SonglistWidget) SetCursor(i int) {
 	currentList := w.List()
-	currentList.cursor = i
+	currentList.Cursor = i
 	w.validateCursorList()
 	w.expandVisualSelection()
-	w.viewport.MakeVisible(0, currentList.cursor)
+	w.viewport.MakeVisible(0, currentList.Cursor)
 	w.validateCursorVisible()
 	w.PostEventWidgetContent(w)
 }
 
 func (w *SonglistWidget) Cursor() int {
-	return w.List().cursor
+	return w.List().Cursor
 }
 
 func (w *SonglistWidget) CursorSong() *song.Song {
@@ -307,8 +308,8 @@ func (w *SonglistWidget) IndexAtCurrentSong(i int) bool {
 // validateCursorVisible makes sure the cursor stays within the visible area of the viewport.
 func (w *SonglistWidget) validateCursorVisible() {
 	currentList := w.List()
-	currentList.ymin, currentList.ymax = w.getVisibleBoundaries()
-	w.validateCursor(currentList.ymin, currentList.ymax)
+	currentList.Ymin, currentList.Ymax = w.getVisibleBoundaries()
+	w.validateCursor(currentList.Ymin, currentList.Ymax)
 }
 
 // validateCursorList makes sure the cursor stays within songlist boundaries.
@@ -320,11 +321,11 @@ func (w *SonglistWidget) validateCursorList() {
 // validateCursor adjusts the cursor based on minimum and maximum boundaries.
 func (w *SonglistWidget) validateCursor(ymin, ymax int) {
 	currentList := w.List()
-	if currentList.cursor < ymin {
-		currentList.cursor = ymin
+	if currentList.Cursor < ymin {
+		currentList.Cursor = ymin
 	}
-	if currentList.cursor > ymax {
-		currentList.cursor = ymax
+	if currentList.Cursor > ymax {
+		currentList.Cursor = ymax
 	}
 }
 
@@ -352,8 +353,8 @@ func (w *SonglistWidget) Name() string {
 	return w.Songlist().Name()
 }
 
-func (w *SonglistWidget) Columns() []column {
-	return w.List().columns
+func (w *SonglistWidget) Columns() list.Columns {
+	return w.List().Columns
 }
 
 // Len returns the number of songs in the current songlist.
@@ -396,7 +397,7 @@ func (w *SonglistWidget) PositionShortReadout() string {
 }
 
 func (w *SonglistWidget) AddSonglist(s songlist.Songlist) {
-	list := newList(s)
+	list := list.New(s)
 	w.lists = append(w.lists, list)
 	console.Log("Songlist UI: added songlist index %d of type %T at address %p", len(w.lists)-1, s, s)
 }
@@ -420,14 +421,14 @@ func (w *SonglistWidget) ReplaceSonglist(s songlist.Songlist) {
 	currentList := w.List()
 
 	for i := range w.lists {
-		if reflect.TypeOf(w.lists[i].songlist) != reflect.TypeOf(s) {
+		if reflect.TypeOf(w.lists[i].Songlist) != reflect.TypeOf(s) {
 			continue
 		}
-		console.Log("Songlist UI: replacing songlist of type %T at %p with new list at %p", s, w.lists[i].songlist, s)
+		console.Log("Songlist UI: replacing songlist of type %T at %p with new list at %p", s, w.lists[i].Songlist, s)
 		console.Log("Songlist UI: comparing %p %p", w.lists[i], currentList)
 
 		active := w.lists[i] == currentList
-		w.lists[i].songlist = s
+		w.lists[i].Songlist = s
 
 		if active {
 			console.Log("Songlist UI: replaced songlist is currently active, switching to new songlist.")
@@ -444,12 +445,12 @@ func (w *SonglistWidget) SetSonglist(s songlist.Songlist) {
 	console.Log("SetSonglist(%T %p)", s, s)
 	w.currentListIndex = -1
 	for i, stored := range w.lists {
-		if stored.songlist == s {
+		if stored.Songlist == s {
 			w.SetSonglistIndex(i)
 			return
 		}
 	}
-	w.activateList(newList(s))
+	w.activateList(list.New(s))
 }
 
 // SetFallbackSonglist sets a songlist that should be reverted to in case a search result returns zero results.
@@ -462,8 +463,8 @@ func (w *SonglistWidget) FallbackSonglist() songlist.Songlist {
 	return w.fallbackSonglist
 }
 
-func (w *SonglistWidget) activateList(s *list) {
-	console.Log("activateList(%T %p)", s.songlist, s.songlist)
+func (w *SonglistWidget) activateList(s *list.List) {
+	//console.Log("activateList(%T %p)", s.songlist, s.songlist)
 	w.currentList = s
 	w.ListChanged()
 }
@@ -474,8 +475,8 @@ func (w *SonglistWidget) ListChanged() {
 	//}
 	w.setViewportSize()
 	currentList := w.List()
-	w.viewport.MakeVisible(0, currentList.ymax)
-	w.viewport.MakeVisible(0, currentList.ymin)
+	w.viewport.MakeVisible(0, currentList.Ymax)
+	w.viewport.MakeVisible(0, currentList.Ymin)
 	w.validateViewport()
 	PostEventListChanged(w)
 }
@@ -505,7 +506,7 @@ func (w *SonglistWidget) SetSonglistIndex(i int) error {
 	}
 	w.currentListIndex = i
 	w.activateList(w.lists[w.currentListIndex])
-	w.SetFallbackSonglist(w.List().songlist)
+	w.SetFallbackSonglist(w.List().Songlist)
 	return nil
 }
 
@@ -529,7 +530,7 @@ func (w *SonglistWidget) Selection() songlist.Songlist {
 // cursor position.
 func (w *SonglistWidget) EnableVisualSelection() {
 	list := w.List()
-	w.SetVisualSelection(list.cursor, list.cursor, list.cursor)
+	w.SetVisualSelection(list.Cursor, list.Cursor, list.Cursor)
 }
 
 // DisableVisualSelection disables visual selection.
@@ -569,10 +570,10 @@ func (w *SonglistWidget) expandVisualSelection() {
 	}
 	ymin, ymax, ystart := list.VisualSelection()
 	switch {
-	case list.cursor < ystart:
-		ymin, ymax = list.cursor, ystart
-	case list.cursor > ystart:
-		ymin, ymax = ystart, list.cursor
+	case list.Cursor < ystart:
+		ymin, ymax = list.Cursor, ystart
+	case list.Cursor > ystart:
+		ymin, ymax = ystart, list.Cursor
 	default:
 		ymin, ymax = ystart, ystart
 	}

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"github.com/ambientsound/gompd/mpd"
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/message"
@@ -10,7 +11,6 @@ import (
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
-	"github.com/ambientsound/pms/widgets"
 )
 
 type testAPI struct {
@@ -41,7 +41,7 @@ func (api *testAPI) MpdClient() *mpd.Client {
 	return nil // FIXME
 }
 
-func (api *testAPI) Multibar() *widgets.MultibarWidget {
+func (api *testAPI) Multibar() api.MultibarWidget {
 	return nil // FIXME
 }
 
@@ -73,7 +73,7 @@ func (api *testAPI) Song() *song.Song {
 	return nil // FIXME
 }
 
-func (api *testAPI) SonglistWidget() *widgets.SonglistWidget {
+func (api *testAPI) SonglistWidget() api.SonglistWidget {
 	return nil // FIXME
 }
 
@@ -81,6 +81,6 @@ func (api *testAPI) Styles() style.Stylesheet {
 	return nil // FIXME
 }
 
-func (api *testAPI) UI() *widgets.UI {
+func (api *testAPI) UI() api.UI {
 	return nil // FIXME
 }

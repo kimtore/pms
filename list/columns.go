@@ -1,11 +1,11 @@
-package widgets
+package list
 
 import (
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/utils"
 )
 
-type column struct {
+type Column struct {
 	Tag        string
 	items      int
 	totalWidth int
@@ -14,9 +14,9 @@ type column struct {
 	width      int
 }
 
-type columns []column
+type Columns []Column
 
-func (c *column) Set(s songlist.Songlist) {
+func (c *Column) Set(s songlist.Songlist) {
 	for _, song := range s.Songs() {
 		l := len(song.Tags[c.Tag])
 		if l > 0 {
@@ -32,18 +32,18 @@ func (c *column) Set(s songlist.Songlist) {
 	}
 }
 
-func (c *column) Mid() int {
+func (c *Column) Mid() int {
 	return c.mid
 }
 
-func (c *column) MaxWidth() int {
+func (c *Column) MaxWidth() int {
 	return c.maxWidth
 }
 
-func (c *column) Width() int {
+func (c *Column) Width() int {
 	return c.width
 }
 
-func (c *column) SetWidth(width int) {
+func (c *Column) SetWidth(width int) {
 	c.width = width
 }

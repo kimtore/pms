@@ -21,7 +21,7 @@ func (cmd *Redraw) Execute(t lexer.Token) error {
 	ui := cmd.api.UI()
 	switch t.Class {
 	case lexer.TokenEnd:
-		ui.App.PostFunc(func() {
+		ui.PostFunc(func() {
 			ui.Refresh()
 		})
 		return nil
