@@ -4,12 +4,8 @@ import (
 	"testing"
 
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/stretchr/testify/assert"
 )
-
-type result struct {
-	class int
-	str   string
-}
 
 var lexerTests = []struct {
 	input    string
@@ -61,6 +57,17 @@ var lexerTests = []struct {
 			{class: lexer.TokenEnd, str: ""},
 		},
 	},
+	/*
+		{
+			`$"quoted variable" ok`,
+			[]result{
+				{class: lexer.TokenVariable, str: "$"},
+				{class: lexer.TokenIdentifier, str: "quoted variable"},
+				{class: lexer.TokenIdentifier, str: "ok"},
+				{class: lexer.TokenEnd, str: ""},
+			},
+		},
+	*/
 }
 
 // TestLexer tests the lexer.NextToken() function, checking that it correctly
@@ -89,16 +96,10 @@ func TestLexer(t *testing.T) {
 
 			t.Logf("Token %d: pos=%d, runes='%s', input='%s'", i, pos, str, test.input)
 
-			if token.Class != check.class {
-				t.Fatalf("Token class for token %d is wrong; expected %d but got %d", i, check.class, token.Class)
-			}
-
-			if check.str != str {
-				t.Fatalf("String check against token %d failed; expected '%s' but got '%s'", i,
-					check.str,
-					str,
-				)
-			}
+			assert.Equal(t, token.Class, check.class,
+				"Token class for token %d is wrong; expected %d but got %d", i, check.class, token.Class)
+			assert.Equal(t, check.str, str,
+				"String check against token %d failed; expected '%s' but got '%s'", i, check.str, str)
 
 			i++
 		}

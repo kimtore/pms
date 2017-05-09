@@ -1,7 +1,6 @@
 package lexer
 
 import (
-	"unicode"
 	"unicode/utf8"
 )
 
@@ -14,44 +13,6 @@ func NewToken() Token {
 	t := Token{}
 	t.Runes = make([]rune, 0)
 	return t
-}
-
-const (
-	TokenEnd = iota
-	TokenClose
-	TokenComment
-	TokenIdentifier
-	TokenOpen
-	TokenQuote
-	TokenSeparator
-	TokenStop
-	TokenVariable
-	TokenWhitespace
-)
-
-// runeClass returns the token class of an input character.
-func runeClass(r rune) int {
-	if unicode.IsSpace(r) {
-		return TokenWhitespace
-	}
-	switch r {
-	case '"':
-		return TokenQuote
-	case ';':
-		return TokenStop
-	case '|':
-		return TokenSeparator
-	case '$':
-		return TokenVariable
-	case '{':
-		return TokenOpen
-	case '}':
-		return TokenClose
-	case '#':
-		return TokenComment
-	default:
-		return TokenIdentifier
-	}
 }
 
 // Tokenize is a lexer for the input language. It extracts the next token out
