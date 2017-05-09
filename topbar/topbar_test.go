@@ -102,3 +102,40 @@ func TestFragments(t *testing.T) {
 		}
 	}
 }
+
+var pieceTests = []struct {
+	input     string
+	success   bool
+	fragments int
+}{
+	// Valid forms
+	{`plain`, true, 1},
+	{`plain two more`, true, 5},
+	{`${complex|form} and more whitespace `, true, 8},
+	{`|||||`, true, 0},
+
+	// Invalid form
+	{`token plus ${invalid`, false, 0},
+}
+
+func TestPieces(t *testing.T) {
+	for n, test := range pieceTests {
+
+		reader := strings.NewReader(test.input)
+		parser := topbar.NewParser(reader)
+
+		piece, err := parser.ParsePiece()
+
+		t.Logf("### Test %d: '%s'", n+1, test.input)
+
+		if test.success {
+			assert.Nil(t, err, "Expected success in topbar parser when parsing '%s'", test.input)
+		} else {
+			assert.NotNil(t, err, "Expected error in topbar parser when parsing '%s'", test.input)
+		}
+
+		if piece != nil {
+			assert.Equal(t, test.fragments, len(piece.Fragments))
+		}
+	}
+}

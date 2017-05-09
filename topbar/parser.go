@@ -18,6 +18,27 @@ type FragmentStatement struct {
 	Param    string
 }
 
+// PieceStatement holds information about a piece, e.g.:
+//
+// ${variable|param} frag2
+type PieceStatement struct {
+	Fragments []*FragmentStatement
+}
+
+// RowStatement holds information about a row, e.g.:
+//
+// ${variable|param} frag2|text2|text3
+type RowStatement struct {
+	Pieces []*PieceStatement
+}
+
+// MatrixStatement is an initialization of a complete topbar, e.g.:
+//
+// ${variable|param} frag2|text2|text3;row1.1|row1.2|row1.3
+type MatrixStatement struct {
+	Rows []*RowStatement
+}
+
 // Parser represents a parser.
 type Parser struct {
 	s   *lexer.Scanner
@@ -35,7 +56,7 @@ func NewParser(r io.Reader) *Parser {
 
 // ParseFragment parses a fragment statement.
 func (p *Parser) ParseFragment() (*FragmentStatement, error) {
-	frag := &FragmentStatement{}
+	stmt := &FragmentStatement{}
 
 	tok, lit := p.scan()
 
@@ -43,8 +64,8 @@ func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 	// The first token should either be whitespace or an identifier, which
 	// will compose the entirety of the fragment.
 	case lexer.TokenWhitespace, lexer.TokenIdentifier:
-		frag.Literal = lit
-		return frag, nil
+		stmt.Literal = lit
+		return stmt, nil
 
 	// Otherwise, look for a dollar sign, which refers to a dynamic topbar
 	// fragment, such as a tag in the current song.
@@ -63,8 +84,8 @@ func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 	switch tok {
 	// Simple variable, e.g. '$artist'. Return immediately.
 	case lexer.TokenIdentifier:
-		frag.Variable = lit
-		return frag, nil
+		stmt.Variable = lit
+		return stmt, nil
 
 	// Curly bracket opener, e.g. '${tag}'.
 	case lexer.TokenOpen:
@@ -80,7 +101,7 @@ func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 	if tok != lexer.TokenIdentifier {
 		return nil, fmt.Errorf("Unexpected %v, expected identifier", lit)
 	}
-	frag.Variable = lit
+	stmt.Variable = lit
 
 	// Next, we can either have a separator in order to pass parameters, or
 	// close with a curly bracket.
@@ -93,7 +114,7 @@ func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 
 	// Finished parsing the variable.
 	case lexer.TokenClose:
-		return frag, nil
+		return stmt, nil
 
 	// No other tokens are valid.
 	default:
@@ -103,9 +124,9 @@ func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 	// The only valid token is the parameter.
 	tok, lit = p.scanIgnoreWhitespace()
 	if tok != lexer.TokenIdentifier {
-		return nil, fmt.Errorf("Unexpected %v, expected parameter to $%s", lit, frag.Variable)
+		return nil, fmt.Errorf("Unexpected %v, expected parameter to $%s", lit, stmt.Variable)
 	}
-	frag.Param = lit
+	stmt.Param = lit
 
 	// The only valid token is the closing curly bracket.
 	tok, lit = p.scanIgnoreWhitespace()
@@ -113,7 +134,30 @@ func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 		return nil, fmt.Errorf("Unexpected %v, expected '}'", lit)
 	}
 
-	return frag, nil
+	return stmt, nil
+}
+
+// ParsePiece parses a piece statement.
+func (p *Parser) ParsePiece() (*PieceStatement, error) {
+	stmt := &PieceStatement{}
+
+	for {
+		tok, _ := p.scan()
+
+		// A piece is succeeded only by a new piece or new row.
+		switch tok {
+		case lexer.TokenSeparator, lexer.TokenStop, lexer.TokenEnd:
+			return stmt, nil
+		}
+
+		p.unscan()
+		frag, err := p.ParseFragment()
+		if err != nil {
+			return nil, err
+		}
+
+		stmt.Fragments = append(stmt.Fragments, frag)
+	}
 }
 
 // scan returns the next token from the underlying scanner.
