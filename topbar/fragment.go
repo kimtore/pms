@@ -8,6 +8,7 @@ import (
 
 // fragment is a useful base class for implementers of Fragment.
 type fragment struct {
+	//api  commands.API
 	view views.View
 	style.Styled
 }
@@ -19,6 +20,10 @@ func (w *fragment) drawNext(x, y int, runes []rune, style tcell.Style) int {
 		strlen++
 	}
 	return x + strlen
+}
+
+func (w *fragment) drawNextString(x, y int, s string, style tcell.Style) int {
+	return w.drawNext(x, y, []rune(s), style)
 }
 
 func (w *fragment) drawNextChar(x, y int, r rune, style tcell.Style) int {

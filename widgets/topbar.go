@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/topbar"
 	"github.com/gdamore/tcell"
@@ -11,7 +12,7 @@ import (
 // currently playing song. It is composed of several pieces to form a
 // two-dimensional matrix.
 type Topbar struct {
-	pieces [][]topbar.Piece
+	matrix topbar.Matrix
 	width  int // width is the matrix width, as opposed to character width
 	height int // height is both physical and matrix height
 
@@ -21,41 +22,29 @@ type Topbar struct {
 }
 
 // NewTopbar creates a new Topbar widget in the desired dimensions.
-func NewTopbar(width, height int) *Topbar {
+func NewTopbar() *Topbar {
 	return &Topbar{
-		width:  width,
-		height: height,
-		pieces: makePieces(width, height),
+		width:  0,
+		height: 0,
+		matrix: topbar.NewMatrix(0, 0),
 	}
-}
-
-// makePieces creates a new two-dimensional array of Piece objects.
-func makePieces(width, height int) [][]topbar.Piece {
-	pieces := make([][]topbar.Piece, height)
-	for y := 0; y < height; y++ {
-		pieces[y] = make([]topbar.Piece, width)
-	}
-	return pieces
 }
 
 // pieceWidth returns the auto-adjusted width of any topbar Piece.
 func (w *Topbar) pieceWidth() int {
+	if w.width == 0 {
+		return 0
+	}
 	xmax, _ := w.Size()
 	return xmax / w.width
 }
 
-// FIXME: configurability
-// Setup sets up a sample topbar.
-func (w *Topbar) Setup() {
-	for y := 0; y < w.height; y++ {
-		for x := 0; x < w.width; x++ {
-			p := topbar.NewPiece(topbar.AlignLeft + x)
-			w.SetPiece(x, y, p)
-		}
-	}
-
-	w.pieces[0][0].AddFragment(&topbar.Shortname{})
-	w.pieces[0][0].AddFragment(&topbar.Version{})
+// Setup sets up the topbar using the provided configuration string.
+func (w *Topbar) SetMatrix(matrix topbar.Matrix) {
+	matrix.SetView(w.view)
+	w.matrix = matrix
+	w.width, w.height = w.matrix.Size()
+	console.Log("Setting up new topbar with dimensions (%d, %d)", w.width, w.height)
 }
 
 // Draw draws all the pieces in the matrix, from top to bottom, right to left.
@@ -66,7 +55,7 @@ func (w *Topbar) Draw() {
 
 	for y := 0; y < w.height; y++ {
 		for x := w.width - 1; x >= 0; x-- {
-			w.pieces[y][x].Draw(x*pieceWidth, y, pieceWidth)
+			w.matrix[y][x].Draw(x*pieceWidth, y, pieceWidth)
 		}
 	}
 }
@@ -74,7 +63,7 @@ func (w *Topbar) Draw() {
 // SetPiece specifies that the given Piece should be drawn at the given matrix coordinates.
 func (w *Topbar) SetPiece(x, y int, p topbar.Piece) {
 	p.SetStylesheet(w.Stylesheet())
-	w.pieces[y][x] = p
+	w.matrix[y][x] = p
 }
 
 func (w *Topbar) HandleEvent(ev tcell.Event) bool {
@@ -91,9 +80,5 @@ func (w *Topbar) Resize() {
 
 func (w *Topbar) SetView(v views.View) {
 	w.view = v
-	for y := 0; y < w.height; y++ {
-		for x := 0; x < w.width; x++ {
-			w.pieces[y][x].SetView(w.view)
-		}
-	}
+	w.matrix.SetView(w.view)
 }

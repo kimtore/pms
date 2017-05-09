@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/utils"
 )
 
 type column struct {
@@ -21,7 +22,7 @@ func (c *column) Set(s songlist.Songlist) {
 		if l > 0 {
 			c.items++
 			c.totalWidth += l
-			c.maxWidth = max(c.maxWidth, l)
+			c.maxWidth = utils.Max(c.maxWidth, l)
 		}
 	}
 	if c.items == 0 {

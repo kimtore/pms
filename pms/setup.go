@@ -11,6 +11,7 @@ import (
 	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/topbar"
 	"github.com/ambientsound/pms/widgets"
 )
 
@@ -37,12 +38,17 @@ func New() *PMS {
 	pms.setupCLI()
 	pms.readDefaultConfiguration()
 
+	err := pms.setupTopbar()
+	if err != nil {
+		pms.Error("Error while setting up topbar configuration")
+	}
+
 	return pms
 }
 
-// setupCLI instantiates the different commands PMS understands, such as set; bind; etc.
-func (pms *PMS) setupCLI() {
-	resources := commands.BaseAPI(
+// setupAPI creates an API object
+func (pms *PMS) API() commands.API {
+	return commands.BaseAPI(
 		pms.EventList,
 		pms.EventMessage,
 		pms.CurrentIndex,
@@ -58,8 +64,11 @@ func (pms *PMS) setupCLI() {
 		pms.UI.Stylesheet,
 		pms.UI,
 	)
+}
 
-	pms.CLI = input.NewCLI(resources)
+// setupCLI instantiates the different commands PMS understands, such as set; bind; etc.
+func (pms *PMS) setupCLI() {
+	pms.CLI = input.NewCLI(pms.API())
 	pms.CLI.Register("add", commands.NewAdd)
 	pms.CLI.Register("bind", commands.NewBind)
 	pms.CLI.Register("cursor", commands.NewCursor)
@@ -92,7 +101,17 @@ func (pms *PMS) setupUI() {
 	pms.UI.Songlist.AddSonglist(pms.Queue)
 	pms.UI.Songlist.AddSonglist(pms.Library)
 	pms.UI.Songlist.SetSonglist(pms.Queue)
+
 	console.Log("UI initialized in %s", time.Since(timer).String())
+}
+
+func (pms *PMS) setupTopbar() error {
+	config := pms.Options.StringValue("topbar")
+	matrix, err := topbar.Parse(config)
+	if err == nil {
+		pms.UI.Topbar.SetMatrix(matrix)
+	}
+	return err
 }
 
 func (pms *PMS) readDefaultConfiguration() {

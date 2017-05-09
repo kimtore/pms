@@ -12,6 +12,7 @@ import (
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
+	"github.com/ambientsound/pms/utils"
 
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
@@ -29,20 +30,6 @@ type SonglistWidget struct {
 
 	style.Styled
 	views.WidgetWatchers
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 func NewSonglistWidget(o *options.Options) (w *SonglistWidget) {
@@ -127,7 +114,7 @@ func (w *SonglistWidget) expandColumns() {
 }
 
 func (w *SonglistWidget) drawNext(x, y, strmin, strmax int, runes []rune, style tcell.Style) int {
-	strmin = min(len(runes), strmin)
+	strmin = utils.Min(len(runes), strmin)
 	n := 0
 	for n < strmin {
 		w.viewport.SetContent(x, y, runes[n], nil, style)
@@ -248,7 +235,7 @@ func (w *SonglistWidget) getBoundaries() (ymin, ymax int) {
 func (w *SonglistWidget) setViewportSize() {
 	x, y := w.Size()
 	w.viewport.SetContentSize(x, w.Songlist().Len(), true)
-	w.viewport.SetSize(x, min(y, w.Songlist().Len()))
+	w.viewport.SetSize(x, utils.Min(y, w.Songlist().Len()))
 }
 
 func (w *SonglistWidget) validateViewport() {

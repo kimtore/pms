@@ -1,9 +1,15 @@
 package topbar
 
 import (
+	"fmt"
+
+	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/style"
+	"github.com/ambientsound/pms/utils"
 	"github.com/gdamore/tcell/views"
 )
+
+type Matrix [][]Piece
 
 // Fragment is the smallest possible unit in a topbar.
 type Fragment interface {
@@ -13,13 +19,6 @@ type Fragment interface {
 	Width() int
 	style.Stylable
 }
-
-// Contents of Pieces may be aligned to left, center or right.
-const (
-	AlignLeft = iota
-	AlignCenter
-	AlignRight
-)
 
 // Piece is one unit in the matrix.
 type Piece struct {
@@ -31,12 +30,137 @@ type Piece struct {
 	style.Styled
 }
 
-func NewPiece(align int) Piece {
+// Contents of Pieces may be aligned to left, center or right.
+const (
+	AlignLeft = iota
+	AlignCenter
+	AlignRight
+)
+
+func NewPiece() Piece {
 	return Piece{
-		align:     align,
 		padding:   1,
 		fragments: make([]Fragment, 0),
 	}
+}
+
+// MakePieces creates a new two-dimensional array of Piece objects.
+func NewMatrix(width, height int) Matrix {
+	matrix := make(Matrix, height)
+	for y := 0; y < height; y++ {
+		matrix[y] = make([]Piece, width)
+	}
+	return matrix
+}
+
+// autoAlign returns a best-guess align for a Piece.
+func autoAlign(x, width int) int {
+	switch x {
+	case 0:
+		return AlignLeft
+	case width - 1:
+		return AlignRight
+	default:
+		return AlignCenter
+	}
+}
+
+// Expand ensures that all rows of a Matrix have the same length, and sets auto-alignment.
+func (matrix Matrix) Expand() {
+	width := 0
+	for y := 0; y < len(matrix); y++ {
+		width = utils.Max(width, len(matrix[y]))
+	}
+	for y := 0; y < len(matrix); y++ {
+		for x := 0; x < width; x++ {
+			if x >= len(matrix[y]) {
+				p := NewPiece()
+				matrix[y] = append(matrix[y], p)
+			}
+			matrix[y][x].SetAlign(autoAlign(x, width))
+		}
+	}
+}
+
+// Size returns the dimensions of a Matrix.
+func (matrix Matrix) Size() (x, y int) {
+	y = len(matrix)
+	if y > 0 {
+		x = len(matrix[0])
+	}
+	return
+}
+
+func (matrix Matrix) SetView(v views.View) {
+	xmax, ymax := matrix.Size()
+	for y := 0; y < ymax; y++ {
+		for x := 0; x < xmax; x++ {
+			matrix[y][x].SetView(v)
+		}
+	}
+}
+
+// Parse creates a new two-dimensional array of Piece objects based on lexer input.
+func Parse(input string) (Matrix, error) {
+
+	piece := NewPiece()
+	matrix := NewMatrix(0, 0)
+	row := make([]Piece, 0)
+	pos := 0
+	x := 0
+
+	variable := false
+
+	addPiece := func() {
+		row = append(row, piece)
+		piece = NewPiece()
+		x += 1
+	}
+
+	addRow := func() {
+		addPiece()
+		matrix = append(matrix, row)
+		row = make([]Piece, 0)
+		x = 0
+	}
+
+	for {
+		t, npos := lexer.NextToken(input[pos:])
+		pos += npos
+		s := t.String()
+
+		if variable && t.Class != lexer.TokenIdentifier {
+			return nil, fmt.Errorf("Unexpected '%s', expected identifier")
+		}
+
+		switch t.Class {
+		case lexer.TokenEnd:
+			goto end
+		case lexer.TokenIdentifier:
+			if variable {
+				// FIXME: look up correct fragment
+				piece.AddFragment(NewText(s))
+				variable = false
+			} else {
+				piece.AddFragment(NewText(s))
+			}
+		case lexer.TokenSeparator:
+			addPiece()
+		case lexer.TokenStop:
+			addRow()
+		case lexer.TokenVariable:
+			variable = true
+			continue
+		default:
+			return nil, fmt.Errorf("Unexpected '%s', expected variable or identifier", s)
+		}
+	}
+
+end:
+	addRow()
+	matrix.Expand()
+
+	return matrix, nil
 }
 
 // Draw draws all fragments.
@@ -77,6 +201,10 @@ func (p *Piece) SetView(v views.View) {
 	for _, fragment := range p.fragments {
 		fragment.SetView(v)
 	}
+}
+
+func (p *Piece) SetAlign(align int) {
+	p.align = align
 }
 
 // drawX returns the draw start position.

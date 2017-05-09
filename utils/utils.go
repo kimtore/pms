@@ -21,3 +21,17 @@ func TimeString(secs int) string {
 func TimeRunes(secs int) []rune {
 	return []rune(TimeString(secs))
 }
+
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func Max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}

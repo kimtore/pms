@@ -58,7 +58,7 @@ func NewUI(opts *options.Options) *UI {
 	ui.App = &views.Application{}
 	ui.options = opts
 
-	ui.Topbar = NewTopbar(1, 1)
+	ui.Topbar = NewTopbar()
 	ui.Playbar = NewPlaybarWidget()
 	ui.Columnheaders = NewColumnheadersWidget()
 	ui.Multibar = NewMultibarWidget(ui.EventKeyInput)
@@ -77,9 +77,6 @@ func NewUI(opts *options.Options) *UI {
 	ui.Songlist.SetStylesheet(ui.Stylesheet)
 	ui.Multibar.SetStylesheet(ui.Stylesheet)
 
-	// FIXME
-	ui.Topbar.Setup()
-
 	ui.CreateLayout()
 	ui.App.SetScreen(ui.Screen)
 	ui.App.SetRootWidget(ui)
@@ -89,7 +86,7 @@ func NewUI(opts *options.Options) *UI {
 
 func (ui *UI) CreateLayout() {
 	ui.Layout = views.NewBoxLayout(views.Vertical)
-	ui.Layout.AddWidget(ui.Topbar, 0)
+	ui.Layout.AddWidget(ui.Topbar, 1)
 	ui.Layout.AddWidget(ui.Playbar, 0)
 	ui.Layout.AddWidget(ui.Columnheaders, 0)
 	ui.Layout.AddWidget(ui.Songlist, 2)
