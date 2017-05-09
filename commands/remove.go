@@ -3,15 +3,16 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Remove removes songs from songlists.
 type Remove struct {
-	api API
+	api api.API
 }
 
-func NewRemove(api API) Command {
+func NewRemove(api api.API) Command {
 	return &Remove{
 		api: api,
 	}

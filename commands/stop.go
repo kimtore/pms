@@ -3,15 +3,16 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Stop stops song playback in MPD.
 type Stop struct {
-	api API
+	api api.API
 }
 
-func NewStop(api API) Command {
+func NewStop(api api.API) Command {
 	return &Stop{
 		api: api,
 	}

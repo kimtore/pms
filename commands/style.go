@@ -3,13 +3,14 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/gdamore/tcell"
 )
 
 // Style manipulates the style table, allowing to set colors and attributes for UI elements.
 type Style struct {
-	api API
+	api api.API
 
 	styleKey   string
 	styleValue tcell.Style
@@ -24,7 +25,7 @@ type Style struct {
 	underline  bool
 }
 
-func NewStyle(api API) Command {
+func NewStyle(api api.API) Command {
 	return &Style{
 		api: api,
 	}

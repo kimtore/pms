@@ -3,17 +3,18 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Select manipulates song selection within a songlist.
 type Select struct {
-	api      API
+	api      api.API
 	toggle   bool
 	finished bool
 }
 
-func NewSelect(api API) Command {
+func NewSelect(api api.API) Command {
 	return &Select{
 		api: api,
 	}

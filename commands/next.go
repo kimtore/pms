@@ -3,15 +3,16 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Next switches to the next song in MPD's queue.
 type Next struct {
-	api API
+	api api.API
 }
 
-func NewNext(api API) Command {
+func NewNext(api api.API) Command {
 	return &Next{
 		api: api,
 	}

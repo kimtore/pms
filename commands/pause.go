@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 
 	pms_mpd "github.com/ambientsound/pms/mpd"
@@ -11,10 +12,10 @@ import (
 // Pause toggles MPD play/paused state. If the player is stopped, Pause will
 // attempt to start playback through the 'play' command instead.
 type Pause struct {
-	api API
+	api api.API
 }
 
-func NewPause(api API) Command {
+func NewPause(api api.API) Command {
 	return &Pause{
 		api: api,
 	}

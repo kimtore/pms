@@ -3,15 +3,16 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Quit exits the program.
 type Redraw struct {
-	api API
+	api api.API
 }
 
-func NewRedraw(api API) Command {
+func NewRedraw(api api.API) Command {
 	return &Redraw{
 		api: api,
 	}

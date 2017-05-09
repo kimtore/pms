@@ -3,6 +3,7 @@ package commands_test
 import (
 	"testing"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/options"
@@ -16,8 +17,8 @@ func TestSet(t *testing.T) {
 	var err error
 	var token lexer.Token
 
-	api := commands.NewTestAPI()
-	opts := api.Options()
+	a := api.NewTestAPI()
+	opts := a.Options()
 
 	opts.Add(options.NewStringOption("foo"))
 	opts.Add(options.NewIntOption("intopt"))
@@ -30,7 +31,7 @@ func TestSet(t *testing.T) {
 	opts.Get("baz").Set("false")
 
 	input_string := "foo=\"strings $are {}cool\" intopt=3 nobar invbaz"
-	cmd := commands.NewSet(api)
+	cmd := commands.NewSet(a)
 
 	pos := 0
 	npos := 0

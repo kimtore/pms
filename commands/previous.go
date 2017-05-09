@@ -3,15 +3,16 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Previous switches to the previous song in MPD's queue.
 type Previous struct {
-	api API
+	api api.API
 }
 
-func NewPrevious(api API) Command {
+func NewPrevious(api api.API) Command {
 	return &Previous{
 		api: api,
 	}

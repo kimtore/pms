@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Print displays information about the selected song's tags.
 type Print struct {
-	api  API
+	api  api.API
 	tags []string
 }
 
-func NewPrint(api API) Command {
+func NewPrint(api api.API) Command {
 	return &Print{
 		api:  api,
 		tags: make([]string, 0),

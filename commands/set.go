@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/options"
@@ -10,10 +11,10 @@ import (
 
 // Set manipulates a Options table by parsing input tokens from the "set" command.
 type Set struct {
-	api API
+	api api.API
 }
 
-func NewSet(api API) Command {
+func NewSet(api api.API) Command {
 	return &Set{
 		api: api,
 	}

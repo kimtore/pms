@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Isolate searches for songs that have similar tags as the selection.
 type Isolate struct {
-	api  API
+	api  api.API
 	tags []string
 }
 
-func NewIsolate(api API) Command {
+func NewIsolate(api api.API) Command {
 	return &Isolate{
 		api:  api,
 		tags: make([]string, 0),

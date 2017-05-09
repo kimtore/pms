@@ -3,15 +3,16 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Quit exits the program.
 type Quit struct {
-	api API
+	api api.API
 }
 
-func NewQuit(api API) Command {
+func NewQuit(api api.API) Command {
 	return &Quit{
 		api: api,
 	}

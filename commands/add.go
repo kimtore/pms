@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/gompd/mpd"
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
@@ -11,12 +12,12 @@ import (
 
 // Add adds songs to MPD's queue.
 type Add struct {
-	api      API
+	api      api.API
 	song     *song.Song
 	songlist songlist.Songlist
 }
 
-func NewAdd(api API) Command {
+func NewAdd(api api.API) Command {
 	return &Add{
 		api: api,
 	}

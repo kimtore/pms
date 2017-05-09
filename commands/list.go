@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/songlist"
@@ -11,14 +12,14 @@ import (
 
 // List navigates and manipulates songlists.
 type List struct {
-	api       API
+	api       api.API
 	relative  int
 	absolute  int
 	duplicate bool
 	remove    bool
 }
 
-func NewList(api API) Command {
+func NewList(api api.API) Command {
 	return &List{
 		api:      api,
 		absolute: -1,

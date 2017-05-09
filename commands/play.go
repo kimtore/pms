@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
@@ -10,13 +11,13 @@ import (
 
 // Play plays songs in the MPD playlist.
 type Play struct {
-	api  API
+	api  api.API
 	song *song.Song
 	id   int
 	pos  int
 }
 
-func NewPlay(api API) Command {
+func NewPlay(api api.API) Command {
 	return &Play{
 		api: api,
 		pos: -1,

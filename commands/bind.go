@@ -4,18 +4,19 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/input/parser"
 )
 
 // Bind maps a key sequence to the execution of a command.
 type Bind struct {
-	api      API
+	api      api.API
 	sentence []string
 	token    *parser.KeySequenceToken
 }
 
-func NewBind(api API) Command {
+func NewBind(api api.API) Command {
 	return &Bind{
 		api:      api,
 		sentence: make([]string, 0),

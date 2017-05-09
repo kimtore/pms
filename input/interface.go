@@ -3,21 +3,22 @@ package input
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
-type commandCtor func(commands.API) commands.Command
+type commandCtor func(api.API) commands.Command
 
 type commandMap map[string]commandCtor
 
 // CLI reads user input, tokenizes it, and dispatches the tokens to their respective commands.
 type CLI struct {
 	handlers commandMap
-	baseAPI  commands.API
+	baseAPI  api.API
 }
 
-func NewCLI(baseAPI commands.API) *CLI {
+func NewCLI(baseAPI api.API) *CLI {
 	return &CLI{
 		baseAPI:  baseAPI,
 		handlers: make(commandMap, 0),

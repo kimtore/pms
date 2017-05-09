@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Sort sorts songlists.
 type Sort struct {
-	api      API
+	api      api.API
 	fields   []string
 	finished bool
 }
 
-func NewSort(api API) Command {
+func NewSort(api api.API) Command {
 	sort := api.Options().StringValue("sort")
 	return &Sort{
 		api:    api,

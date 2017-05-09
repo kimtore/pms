@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
 
@@ -11,14 +12,14 @@ var preMuteVolume int
 
 // Volume adjusts MPD's volume.
 type Volume struct {
-	api      API
+	api      api.API
 	sign     int
 	volume   int
 	finished bool
 	mute     bool
 }
 
-func NewVolume(api API) Command {
+func NewVolume(api api.API) Command {
 	return &Volume{
 		api: api,
 	}

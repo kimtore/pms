@@ -3,6 +3,7 @@ package input_test
 import (
 	"testing"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/options"
@@ -16,9 +17,9 @@ import (
 func TestCLISet(t *testing.T) {
 	var err error
 
-	api := commands.NewTestAPI()
-	opts := api.Options()
-	iface := input.NewCLI(api)
+	a := api.NewTestAPI()
+	opts := a.Options()
+	iface := input.NewCLI(a)
 
 	iface.Register("set", commands.NewSet)
 

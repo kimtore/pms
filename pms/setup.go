@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input"
@@ -43,8 +44,8 @@ func New() *PMS {
 }
 
 // setupAPI creates an API object
-func (pms *PMS) API() commands.API {
-	return commands.BaseAPI(
+func (pms *PMS) API() api.API {
+	return api.BaseAPI(
 		pms.EventList,
 		pms.EventMessage,
 		pms.EventOption,

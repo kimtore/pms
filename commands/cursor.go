@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/lexer"
 )
@@ -15,7 +16,7 @@ import (
 // parameters such as 'up' and 'down', and it also accepts relative positions
 // if a number is given.
 type Cursor struct {
-	api             API
+	api             api.API
 	relative        int
 	absolute        int
 	current         bool
@@ -24,7 +25,7 @@ type Cursor struct {
 	nextOfTags      []string
 }
 
-func NewCursor(api API) Command {
+func NewCursor(api api.API) Command {
 	return &Cursor{
 		api: api,
 	}

@@ -3,17 +3,18 @@ package commands
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/widgets"
 )
 
 // InputMode changes the Multibar's input mode.
 type InputMode struct {
-	api  API
+	api  api.API
 	mode int
 }
 
-func NewInputMode(api API) Command {
+func NewInputMode(api api.API) Command {
 	return &InputMode{
 		api: api,
 	}
