@@ -1,15 +1,18 @@
 package topbar
 
-import "github.com/ambientsound/pms/version"
+import (
+	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/version"
+)
 
 // Shortname draws the short name of this application, as defined in the version module.
 type Shortname struct {
 	fragment
 }
 
-func NewShortname() Fragment {
+func NewShortname(a api.API) Fragment {
 	return &Shortname{
-	//fragment{api: api},
+		fragment{api: a},
 	}
 }
 

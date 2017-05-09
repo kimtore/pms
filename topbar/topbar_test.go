@@ -3,6 +3,7 @@ package topbar_test
 import (
 	"testing"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/topbar"
 	"github.com/stretchr/testify/assert"
 )
@@ -33,7 +34,9 @@ var topbarTests = []struct {
 func TestTopbarCount(t *testing.T) {
 	for _, test := range topbarTests {
 
-		matrix, err := topbar.Parse(test.input)
+		a := api.NewTestAPI()
+
+		matrix, err := topbar.Parse(a, test.input)
 		if test.success {
 			assert.Nil(t, err, "Expected success in topbar parser when parsing '%s'", test.input)
 		} else {

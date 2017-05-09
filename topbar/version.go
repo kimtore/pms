@@ -1,6 +1,7 @@
 package topbar
 
 import (
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/version"
 )
 
@@ -9,9 +10,9 @@ type Version struct {
 	fragment
 }
 
-func NewVersion() Fragment {
+func NewVersion(a api.API) Fragment {
 	return &Version{
-	//fragment{api: api},
+		fragment{api: a},
 	}
 }
 

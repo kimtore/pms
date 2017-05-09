@@ -3,6 +3,7 @@ package topbar
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/utils"
@@ -37,9 +38,10 @@ const (
 	AlignRight
 )
 
-var fragments = map[string]func() Fragment{
-	"version":   NewVersion,
+var fragments = map[string]func(api.API) Fragment{
+	"artist":    NewArtist,
 	"shortname": NewShortname,
+	"version":   NewVersion,
 }
 
 func NewPiece() *Piece {
@@ -119,7 +121,7 @@ func (matrix Matrix) SetView(v views.View) {
 }
 
 // Parse creates a new two-dimensional array of Piece objects based on lexer input.
-func Parse(input string) (Matrix, error) {
+func Parse(a api.API, input string) (Matrix, error) {
 
 	piece := NewPiece()
 	matrix := NewMatrix(0, 0)
@@ -161,7 +163,7 @@ func Parse(input string) (Matrix, error) {
 				if !ok {
 					return nil, fmt.Errorf("Unrecognized variable '$%s'", s)
 				}
-				piece.AddFragment(ctor())
+				piece.AddFragment(ctor(a))
 				variable = false
 			} else {
 				piece.AddFragment(NewText(s))

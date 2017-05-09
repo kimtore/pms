@@ -105,7 +105,7 @@ func (pms *PMS) setupUI() {
 
 func (pms *PMS) setupTopbar() {
 	config := pms.Options.StringValue("topbar")
-	matrix, err := topbar.Parse(config)
+	matrix, err := topbar.Parse(pms.API(), config)
 	if err == nil {
 		pms.UI.Topbar.SetMatrix(matrix)
 	} else {

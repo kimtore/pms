@@ -1,6 +1,7 @@
 package topbar
 
 import (
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/style"
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
@@ -8,7 +9,7 @@ import (
 
 // fragment is a useful base class for implementers of Fragment.
 type fragment struct {
-	//api  commands.API
+	api  api.API
 	view views.View
 	style.Styled
 }
