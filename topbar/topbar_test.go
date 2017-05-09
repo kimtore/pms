@@ -1,6 +1,7 @@
 package topbar_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/ambientsound/pms/api"
@@ -50,6 +51,54 @@ func TestTopbarCount(t *testing.T) {
 		for y := 0; y < len(matrix); y++ {
 			assert.Equal(t, test.width, len(matrix[y]),
 				"Topbar input '%s' should yield %d columns on line %d, got %d instead", test.input, test.width, y+1, len(matrix[y]))
+		}
+	}
+}
+
+var fragmentTests = []struct {
+	input     string
+	success   bool
+	statement topbar.FragmentStatement
+}{
+	// Valid forms
+	{`plain`, true, topbar.FragmentStatement{`plain`, ``, ``}},
+	{`plain and more`, true, topbar.FragmentStatement{`plain`, ``, ``}},
+	{`     `, true, topbar.FragmentStatement{`     `, ``, ``}},
+	{`$var`, true, topbar.FragmentStatement{``, `var`, ``}},
+	{`${var}`, true, topbar.FragmentStatement{``, `var`, ``}},
+	{`${var|param}`, true, topbar.FragmentStatement{``, `var`, `param`}},
+	{`${  var  |  param  }`, true, topbar.FragmentStatement{``, `var`, `param`}},
+
+	// Invalid forms
+	{`${var`, false, topbar.FragmentStatement{}},
+	{`${var|`, false, topbar.FragmentStatement{}},
+	{`${var|param`, false, topbar.FragmentStatement{}},
+	{`${var|}`, false, topbar.FragmentStatement{}},
+	{`${|`, false, topbar.FragmentStatement{}},
+	{`${}`, false, topbar.FragmentStatement{}},
+	{`${{`, false, topbar.FragmentStatement{}},
+	{`${$`, false, topbar.FragmentStatement{}},
+	{`${   }`, false, topbar.FragmentStatement{}},
+}
+
+func TestFragments(t *testing.T) {
+	for n, test := range fragmentTests {
+
+		reader := strings.NewReader(test.input)
+		parser := topbar.NewParser(reader)
+
+		frag, err := parser.ParseFragment()
+
+		t.Logf("### Test %d: '%s'", n+1, test.input)
+
+		if test.success {
+			assert.Nil(t, err, "Expected success in topbar parser when parsing '%s'", test.input)
+		} else {
+			assert.NotNil(t, err, "Expected error in topbar parser when parsing '%s'", test.input)
+		}
+
+		if frag != nil {
+			assert.Equal(t, test.statement, *frag)
 		}
 	}
 }
