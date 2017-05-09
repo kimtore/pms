@@ -45,6 +45,10 @@ func (api *testAPI) Multibar() *widgets.MultibarWidget {
 	return nil // FIXME
 }
 
+func (api *testAPI) OptionChanged(key string) {
+	// FIXME
+}
+
 func (api *testAPI) Options() *options.Options {
 	return api.options
 }

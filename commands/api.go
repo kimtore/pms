@@ -22,6 +22,9 @@ type API interface {
 	// ListChanged notifies the UI that the current songlist has changed.
 	ListChanged()
 
+	// OptionChanged notifies that an option has been changed.
+	OptionChanged(string)
+
 	// Message sends a message to the user through the statusbar.
 	Message(string, ...interface{})
 
@@ -64,6 +67,7 @@ type API interface {
 type baseAPI struct {
 	eventList      chan int
 	eventMessage   chan message.Message
+	eventOption    chan string
 	index          func() *index.Index
 	mpdClient      func() *mpd.Client
 	multibar       *widgets.MultibarWidget
@@ -81,6 +85,7 @@ type baseAPI struct {
 func BaseAPI(
 	eventList chan int,
 	eventMessage chan message.Message,
+	eventOption chan string,
 	index func() *index.Index,
 	mpdClient func() *mpd.Client,
 	multibar *widgets.MultibarWidget,
@@ -98,6 +103,7 @@ func BaseAPI(
 	return &baseAPI{
 		eventList:      eventList,
 		eventMessage:   eventMessage,
+		eventOption:    eventOption,
 		index:          index,
 		mpdClient:      mpdClient,
 		multibar:       multibar,
@@ -131,6 +137,10 @@ func (api *baseAPI) MpdClient() *mpd.Client {
 
 func (api *baseAPI) Multibar() *widgets.MultibarWidget {
 	return api.multibar
+}
+
+func (api *baseAPI) OptionChanged(key string) {
+	api.eventOption <- key
 }
 
 func (api *baseAPI) Options() *options.Options {

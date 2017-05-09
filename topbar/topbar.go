@@ -9,7 +9,7 @@ import (
 	"github.com/gdamore/tcell/views"
 )
 
-type Matrix [][]Piece
+type Matrix [][]*Piece
 
 // Fragment is the smallest possible unit in a topbar.
 type Fragment interface {
@@ -37,8 +37,13 @@ const (
 	AlignRight
 )
 
-func NewPiece() Piece {
-	return Piece{
+var fragments = map[string]func() Fragment{
+	"version":   NewVersion,
+	"shortname": NewShortname,
+}
+
+func NewPiece() *Piece {
+	return &Piece{
 		padding:   1,
 		fragments: make([]Fragment, 0),
 	}
@@ -48,7 +53,7 @@ func NewPiece() Piece {
 func NewMatrix(width, height int) Matrix {
 	matrix := make(Matrix, height)
 	for y := 0; y < height; y++ {
-		matrix[y] = make([]Piece, width)
+		matrix[y] = make([]*Piece, width)
 	}
 	return matrix
 }
@@ -91,13 +96,26 @@ func (matrix Matrix) Size() (x, y int) {
 	return
 }
 
-func (matrix Matrix) SetView(v views.View) {
+// mapPiece runs a callback function once for each piece in the matrix.
+func (matrix Matrix) mapPiece(f func(*Piece)) {
 	xmax, ymax := matrix.Size()
 	for y := 0; y < ymax; y++ {
 		for x := 0; x < xmax; x++ {
-			matrix[y][x].SetView(v)
+			f(matrix[y][x])
 		}
 	}
+}
+
+func (matrix Matrix) SetStylesheet(stylesheet style.Stylesheet) {
+	matrix.mapPiece(func(p *Piece) {
+		p.SetStylesheet(stylesheet)
+	})
+}
+
+func (matrix Matrix) SetView(v views.View) {
+	matrix.mapPiece(func(p *Piece) {
+		p.SetView(v)
+	})
 }
 
 // Parse creates a new two-dimensional array of Piece objects based on lexer input.
@@ -105,7 +123,7 @@ func Parse(input string) (Matrix, error) {
 
 	piece := NewPiece()
 	matrix := NewMatrix(0, 0)
-	row := make([]Piece, 0)
+	row := make([]*Piece, 0)
 	pos := 0
 	x := 0
 
@@ -120,7 +138,7 @@ func Parse(input string) (Matrix, error) {
 	addRow := func() {
 		addPiece()
 		matrix = append(matrix, row)
-		row = make([]Piece, 0)
+		row = make([]*Piece, 0)
 		x = 0
 	}
 
@@ -139,7 +157,11 @@ func Parse(input string) (Matrix, error) {
 		case lexer.TokenIdentifier:
 			if variable {
 				// FIXME: look up correct fragment
-				piece.AddFragment(NewText(s))
+				ctor, ok := fragments[s]
+				if !ok {
+					return nil, fmt.Errorf("Unrecognized variable '$%s'", s)
+				}
+				piece.AddFragment(ctor())
 				variable = false
 			} else {
 				piece.AddFragment(NewText(s))
@@ -205,6 +227,13 @@ func (p *Piece) SetView(v views.View) {
 
 func (p *Piece) SetAlign(align int) {
 	p.align = align
+}
+
+func (p *Piece) SetStylesheet(stylesheet style.Stylesheet) {
+	p.Styled.SetStylesheet(stylesheet)
+	for _, fragment := range p.fragments {
+		fragment.SetStylesheet(stylesheet)
+	}
 }
 
 // drawX returns the draw start position.

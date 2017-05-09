@@ -23,6 +23,7 @@ func New() *PMS {
 	pms.EventList = make(chan int, 1024)
 	pms.EventMessage = make(chan message.Message, 1024)
 	pms.EventPlayer = make(chan int)
+	pms.EventOption = make(chan string, 1024)
 	pms.EventQueue = make(chan int)
 	pms.QuitSignal = make(chan int, 1)
 
@@ -38,11 +39,6 @@ func New() *PMS {
 	pms.setupCLI()
 	pms.readDefaultConfiguration()
 
-	err := pms.setupTopbar()
-	if err != nil {
-		pms.Error("Error while setting up topbar configuration")
-	}
-
 	return pms
 }
 
@@ -51,6 +47,7 @@ func (pms *PMS) API() commands.API {
 	return commands.BaseAPI(
 		pms.EventList,
 		pms.EventMessage,
+		pms.EventOption,
 		pms.CurrentIndex,
 		pms.CurrentMpdClient,
 		pms.UI.Multibar,
@@ -61,7 +58,7 @@ func (pms *PMS) API() commands.API {
 		pms.Sequencer,
 		pms.CurrentSong,
 		pms.UI.CurrentSonglistWidget,
-		pms.UI.Stylesheet,
+		pms.UI.Stylesheet(),
 		pms.UI,
 	)
 }
@@ -105,13 +102,14 @@ func (pms *PMS) setupUI() {
 	console.Log("UI initialized in %s", time.Since(timer).String())
 }
 
-func (pms *PMS) setupTopbar() error {
+func (pms *PMS) setupTopbar() {
 	config := pms.Options.StringValue("topbar")
 	matrix, err := topbar.Parse(config)
 	if err == nil {
 		pms.UI.Topbar.SetMatrix(matrix)
+	} else {
+		pms.Error("Error in topbar configuration: %s", err)
 	}
-	return err
 }
 
 func (pms *PMS) readDefaultConfiguration() {

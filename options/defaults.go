@@ -13,7 +13,7 @@ const Defaults string = `
 # Global options
 set columns=artist,track,title,album,year,time
 set sort=file,track,disc,album,year,albumartistsort
-set topbar="|$shortname $version|;hello|centered|world"
+set topbar="$shortname $version"
 
 # Song tag styles
 style album teal
@@ -24,6 +24,11 @@ style time darkmagenta
 style title white bold
 style track green
 style year green
+
+# Topbar styles
+style shortName bold
+style topbar default
+style version gray
 
 # Other styles
 style commandText default
@@ -38,11 +43,8 @@ style readout default
 style searchText white bold
 style selection white blue
 style sequenceText teal
-style shortName blue bold
 style statusbar default
 style switches teal
-style topbar blue bold
-style version blue bold
 style visualText teal
 style volume green
 

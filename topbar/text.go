@@ -6,7 +6,7 @@ type Text struct {
 	t string
 }
 
-func NewText(s string) *Text {
+func NewText(s string) Fragment {
 	return &Text{
 		t: s,
 	}

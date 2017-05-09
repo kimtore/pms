@@ -65,6 +65,8 @@ func (p *Set) Execute(t lexer.Token) error {
 		return fmt.Errorf("Attempting to execute a boolean operation on a non-boolean option")
 	}
 
+	p.api.OptionChanged(opt.Key())
+
 msg:
 	p.api.Message(opt.String())
 	return nil

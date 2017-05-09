@@ -9,7 +9,7 @@ type Version struct {
 	fragment
 }
 
-func NewVersion() *Version {
+func NewVersion() Fragment {
 	return &Version{
 	//fragment{api: api},
 	}

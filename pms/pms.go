@@ -65,6 +65,9 @@ type PMS struct {
 	// EventMessage is used to display text in the statusbar.
 	EventMessage chan message.Message
 
+	// EventOption receives a signal when options have been changed.
+	EventOption chan string
+
 	// EventPlayer receives a signal when MPD's "player" status changes in an IDLE event.
 	EventPlayer chan int
 

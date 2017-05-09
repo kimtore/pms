@@ -21,6 +21,8 @@ func (pms *PMS) Main() {
 			pms.handleEventList()
 		case <-pms.EventPlayer:
 			pms.handleEventPlayer()
+		case key := <-pms.EventOption:
+			pms.handleEventOption(key)
 		case msg := <-pms.EventMessage:
 			pms.handleEventMessage(msg)
 		case ev := <-pms.UI.EventKeyInput:
@@ -67,6 +69,14 @@ func (pms *PMS) handleEventList() {
 	pms.UI.App.PostFunc(func() {
 		pms.UI.Songlist.ListChanged()
 	})
+}
+
+func (pms *PMS) handleEventOption(key string) {
+	console.Log("Option '%s' has been changed", key)
+	switch key {
+	case "topbar":
+		pms.setupTopbar()
+	}
 }
 
 func (pms *PMS) handleEventPlayer() {

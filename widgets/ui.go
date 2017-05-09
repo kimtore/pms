@@ -25,7 +25,7 @@ type UI struct {
 	Columnheaders *ColumnheadersWidget
 	Multibar      *MultibarWidget
 	Songlist      *SonglistWidget
-	Stylesheet    style.Stylesheet
+	Styles        style.Stylesheet
 
 	// Input events
 	EventInputCommand chan string
@@ -69,13 +69,13 @@ func NewUI(opts *options.Options) *UI {
 	ui.Playbar.Watch(ui)
 
 	// Set styles
-	ui.Stylesheet = make(style.Stylesheet)
-	ui.SetStylesheet(ui.Stylesheet)
-	ui.Topbar.SetStylesheet(ui.Stylesheet)
-	ui.Columnheaders.SetStylesheet(ui.Stylesheet)
-	ui.Playbar.SetStylesheet(ui.Stylesheet)
-	ui.Songlist.SetStylesheet(ui.Stylesheet)
-	ui.Multibar.SetStylesheet(ui.Stylesheet)
+	ui.Styles = make(style.Stylesheet)
+	ui.SetStylesheet(ui.Styles)
+	ui.Topbar.SetStylesheet(ui.Stylesheet())
+	ui.Columnheaders.SetStylesheet(ui.Stylesheet())
+	ui.Playbar.SetStylesheet(ui.Stylesheet())
+	ui.Songlist.SetStylesheet(ui.Stylesheet())
+	ui.Multibar.SetStylesheet(ui.Stylesheet())
 
 	ui.CreateLayout()
 	ui.App.SetScreen(ui.Screen)

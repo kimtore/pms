@@ -42,6 +42,7 @@ func (w *Topbar) pieceWidth() int {
 // Setup sets up the topbar using the provided configuration string.
 func (w *Topbar) SetMatrix(matrix topbar.Matrix) {
 	matrix.SetView(w.view)
+	matrix.SetStylesheet(w.Stylesheet())
 	w.matrix = matrix
 	w.width, w.height = w.matrix.Size()
 	console.Log("Setting up new topbar with dimensions (%d, %d)", w.width, w.height)
@@ -58,12 +59,6 @@ func (w *Topbar) Draw() {
 			w.matrix[y][x].Draw(x*pieceWidth, y, pieceWidth)
 		}
 	}
-}
-
-// SetPiece specifies that the given Piece should be drawn at the given matrix coordinates.
-func (w *Topbar) SetPiece(x, y int, p topbar.Piece) {
-	p.SetStylesheet(w.Stylesheet())
-	w.matrix[y][x] = p
 }
 
 func (w *Topbar) HandleEvent(ev tcell.Event) bool {

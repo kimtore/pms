@@ -7,6 +7,12 @@ type Shortname struct {
 	fragment
 }
 
+func NewShortname() Fragment {
+	return &Shortname{
+	//fragment{api: api},
+	}
+}
+
 func (w *Shortname) Width() int {
 	return len(version.ShortName())
 }
