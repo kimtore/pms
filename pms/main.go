@@ -76,6 +76,10 @@ func (pms *PMS) handleEventOption(key string) {
 	switch key {
 	case "topbar":
 		pms.setupTopbar()
+	case "columns":
+		pms.UI.App.PostFunc(func() {
+			pms.UI.Songlist.ListChanged()
+		})
 	}
 }
 
