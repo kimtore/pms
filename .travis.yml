@@ -5,6 +5,9 @@ language: go
 go:
 - 1.8
 
-script: make test
+script: ./test.sh
 
 install: make get-deps
+
+after_success:
+- bash <(curl -s https://codecov.io/bash)
