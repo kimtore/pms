@@ -23,6 +23,7 @@ var fragments = map[string]func(api.API, string) Fragment{
 	"mode":      NewMode,
 	"shortname": NewShortname,
 	"tag":       NewTag,
+	"time":      NewTime,
 	"version":   NewVersion,
 	"volume":    NewVolume,
 }
