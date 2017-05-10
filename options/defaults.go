@@ -13,7 +13,7 @@ const Defaults string = `
 # Global options
 set columns=artist,track,title,album,year,time
 set sort=file,track,disc,album,year,albumartistsort
-set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed $state $time;;"
+set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed $state $time;|[${list|index}/${list|total}] ${list|title}||;;"
 
 # Song tag styles
 style album teal
@@ -27,12 +27,15 @@ style year green
 
 # Topbar styles
 style elapsed green
+style listIndex darkblue
+style listTitle blue bold
+style listTotal darkblue
 style mute red
 style shortName bold
 style state default
 style switches teal
 style tagMissing red
-style topbar default
+style topbar darkgray
 style version gray
 style volume green
 

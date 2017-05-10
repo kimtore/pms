@@ -20,12 +20,12 @@ type Fragment interface {
 // its constructor in this map.
 var fragments = map[string]func(api.API, string) Fragment{
 	"elapsed":   NewElapsed,
+	"list":      NewList,
 	"mode":      NewMode,
 	"shortname": NewShortname,
 	"state":     NewState,
 	"tag":       NewTag,
 	"time":      NewTime,
-	"title":     NewTitle,
 	"version":   NewVersion,
 	"volume":    NewVolume,
 }
