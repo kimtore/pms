@@ -14,14 +14,14 @@ var fragmentTests = []struct {
 	statement topbar.FragmentStatement
 }{
 	// Valid forms
-	{`plain`, true, topbar.FragmentStatement{`plain`, ``, ``}},
-	{`plain; and more`, true, topbar.FragmentStatement{`plain`, ``, ``}},
-	{`     |    `, true, topbar.FragmentStatement{`     `, ``, ``}},
-	{`foo;bar`, true, topbar.FragmentStatement{`foo`, ``, ``}},
-	{`$var`, true, topbar.FragmentStatement{``, `var`, ``}},
-	{`${var}`, true, topbar.FragmentStatement{``, `var`, ``}},
-	{`${var|param}`, true, topbar.FragmentStatement{``, `var`, `param`}},
-	{`${  var  |  param  }`, true, topbar.FragmentStatement{``, `var`, `param`}},
+	{`plain`, true, topbar.FragmentStatement{`plain`, ``, ``, nil}},
+	{`plain; and more`, true, topbar.FragmentStatement{`plain`, ``, ``, nil}},
+	{`     |    `, true, topbar.FragmentStatement{`     `, ``, ``, nil}},
+	{`foo;bar`, true, topbar.FragmentStatement{`foo`, ``, ``, nil}},
+	{`$var`, true, topbar.FragmentStatement{``, `var`, ``, nil}},
+	{`${var}`, true, topbar.FragmentStatement{``, `var`, ``, nil}},
+	{`${var|param}`, true, topbar.FragmentStatement{``, `var`, `param`, nil}},
+	{`${  var  |  param  }`, true, topbar.FragmentStatement{``, `var`, `param`, nil}},
 
 	// Invalid forms
 	{`${var`, false, topbar.FragmentStatement{}},

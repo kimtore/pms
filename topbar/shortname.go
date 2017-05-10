@@ -7,19 +7,13 @@ import (
 
 // Shortname draws the short name of this application, as defined in the version module.
 type Shortname struct {
-	fragment
+	shortname string
 }
 
 func NewShortname(a api.API, param string) Fragment {
-	return &Shortname{
-		fragment{api: a},
-	}
+	return &Shortname{version.ShortName()}
 }
 
-func (w *Shortname) Width() int {
-	return len(version.ShortName())
-}
-
-func (w *Shortname) Draw(x, y int) int {
-	return w.drawNext(x, y, []rune(version.ShortName()), w.Style("shortName"))
+func (w *Shortname) Text() (string, string) {
+	return w.shortname, `shortName`
 }

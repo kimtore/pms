@@ -5,21 +5,15 @@ import (
 	"github.com/ambientsound/pms/version"
 )
 
-// Version draws the current version tag.
+// Version draws the short name of this application, as defined in the version module.
 type Version struct {
-	fragment
+	version string
 }
 
 func NewVersion(a api.API, param string) Fragment {
-	return &Version{
-		fragment{api: a},
-	}
+	return &Version{version.Version()}
 }
 
-func (w *Version) Width() int {
-	return len(version.Version())
-}
-
-func (w *Version) Draw(x, y int) int {
-	return w.drawNextString(x, y, version.Version(), w.Style("version"))
+func (w *Version) Text() (string, string) {
+	return w.version, `version`
 }

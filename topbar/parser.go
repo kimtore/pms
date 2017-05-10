@@ -16,6 +16,7 @@ type FragmentStatement struct {
 	Literal  string
 	Variable string
 	Param    string
+	Instance Fragment
 }
 
 // PieceStatement holds information about a piece, e.g.:
