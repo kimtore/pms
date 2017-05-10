@@ -77,12 +77,11 @@ func (w *Topbar) Draw() {
 
 // drawNext draws a string and returns the resulting X position.
 func (w *Topbar) drawNext(x, y int, s string, style tcell.Style) int {
-	strlen := 0
-	for p, r := range s {
-		w.view.SetContent(x+p, y, r, nil, style)
-		strlen++
+	for _, r := range s {
+		w.view.SetContent(x, y, r, nil, style)
+		x++
 	}
-	return x + strlen
+	return x
 }
 
 // autoAlign returns a best-guess align for a Piece: the outermost indices are
