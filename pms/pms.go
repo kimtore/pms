@@ -79,8 +79,8 @@ type PMS struct {
 }
 
 func createDirectory(dir string) error {
-	dir_mode := os.ModeDir | 0755
-	return os.MkdirAll(dir, dir_mode)
+	dirMode := os.ModeDir | 0755
+	return os.MkdirAll(dir, dirMode)
 }
 
 func makeAddress(host, port string) string {
@@ -88,15 +88,15 @@ func makeAddress(host, port string) string {
 }
 
 func indexDirectory(host, port string) string {
-	cache_dir := xdg.CacheDirectory()
-	index_dir := path.Join(cache_dir, host, port, "index")
-	return index_dir
+	cacheDir := xdg.CacheDirectory()
+	indexDir := path.Join(cacheDir, host, port, "index")
+	return indexDir
 }
 
 func indexStateFile(host, port string) string {
-	cache_dir := xdg.CacheDirectory()
-	state_file := path.Join(cache_dir, host, port, "state")
-	return state_file
+	cacheDir := xdg.CacheDirectory()
+	stateFile := path.Join(cacheDir, host, port, "state")
+	return stateFile
 }
 
 func (pms *PMS) writeIndexStateFile(version int) error {
@@ -449,17 +449,17 @@ func (pms *PMS) retrieveQueue() (*songlist.Queue, error) {
 
 func (pms *PMS) openIndex() error {
 	timer := time.Now()
-	index_dir := indexDirectory(pms.host, pms.port)
-	err := createDirectory(index_dir)
+	indexDir := indexDirectory(pms.host, pms.port)
+	err := createDirectory(indexDir)
 	if err != nil {
-		return fmt.Errorf("Unable to create index directory %s!", index_dir)
+		return fmt.Errorf("Unable to create index directory %s!", indexDir)
 	}
 
 	if pms.Index != nil {
 		pms.Index.Close()
 	}
 
-	pms.Index, err = index.New(index_dir, pms.Library)
+	pms.Index, err = index.New(indexDir, pms.Library)
 	if err != nil {
 		return fmt.Errorf("Unable to acquire index: %s", err)
 	}

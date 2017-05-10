@@ -11,12 +11,12 @@ type KeyEvent struct {
 	Rune rune
 }
 
-func (a KeyEvent) Equals(b KeyEvent) bool {
-	if a.Key != b.Key {
+func (k KeyEvent) Equals(x KeyEvent) bool {
+	if k.Key != x.Key {
 		return false
 	}
-	if a.Key == tcell.KeyRune {
-		if a.Rune != b.Rune {
+	if k.Key == tcell.KeyRune {
+		if k.Rune != x.Rune {
 			return false
 		}
 	}
@@ -37,19 +37,19 @@ func (k KeyEvent) String() string {
 
 type KeyEvents []KeyEvent
 
-func (a KeyEvents) Equals(b KeyEvents) bool {
-	if len(a) != len(b) {
+func (k KeyEvents) Equals(x KeyEvents) bool {
+	if len(k) != len(x) {
 		return false
 	}
-	return a.StartsWith(b)
+	return a.StartsWith(x)
 }
 
-func (a KeyEvents) StartsWith(b KeyEvents) bool {
-	if len(a) < len(b) {
+func (k KeyEvents) StartsWith(x KeyEvents) bool {
+	if len(k) < len(x) {
 		return false
 	}
 	for i := range b {
-		if !a[i].Equals(b[i]) {
+		if !k[i].Equals(x[i]) {
 			return false
 		}
 	}
@@ -79,38 +79,38 @@ func (t *KeySequenceToken) addRunes(runes []rune) {
 func (t *KeySequenceToken) Parse(runes []rune) error {
 	t.Sequence = make(KeyEvents, 0)
 
-	parse_special := false
-	special_characters := make([]rune, 0)
+	parseSpecial := false
+	specialCharacters := make([]rune, 0)
 
 	for _, r := range runes {
 		switch r {
 		case '<':
-			if parse_special {
+			if parseSpecial {
 				// If already parsing specials, assume that every key up to
 				// this point is literal, and add them to the key sequence
-				t.addRunes(special_characters)
-				special_characters = make([]rune, 0)
+				t.addRunes(specialCharacters)
+				specialCharacters = make([]rune, 0)
 			}
-			special_characters = append(special_characters, r)
-			parse_special = true
+			specialCharacters = append(specialCharacters, r)
+			parseSpecial = true
 			continue
 		case '>':
-			if !parse_special {
+			if !parseSpecial {
 				break
 			}
-			s := strings.ToLower(string(special_characters[1:]))
+			s := strings.ToLower(string(specialCharacters[1:]))
 			if _, ok := keyNames[s]; ok {
 				t.Sequence = append(t.Sequence, keyNames[s])
 			} else {
-				special_characters = append(special_characters, r)
-				t.addRunes(special_characters)
+				specialCharacters = append(specialCharacters, r)
+				t.addRunes(specialCharacters)
 			}
-			special_characters = make([]rune, 0)
-			parse_special = false
+			specialCharacters = make([]rune, 0)
+			parseSpecial = false
 			continue
 		}
-		if parse_special {
-			special_characters = append(special_characters, r)
+		if parseSpecial {
+			specialCharacters = append(specialCharacters, r)
 		} else {
 			t.Sequence = append(t.Sequence, KeyEvent{Key: tcell.KeyRune, Rune: r})
 		}

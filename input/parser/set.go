@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// OptionToken represents a key=value string, which can have setting, inversion, negation, and queries.
 type OptionToken struct {
 	Key    string
 	Value  string
@@ -13,14 +14,14 @@ type OptionToken struct {
 	Query  bool
 }
 
-// Parse parses a option=value string, accounting for inversion, negation, and queries.
+// Parse parses a option=value string.
 func (t *OptionToken) Parse(runes []rune) error {
 	// Parsing the value is done verbatim, whereas the key has
 	// modifiers such as !, ?, inv*, no*.
-	parsing_key := true
+	parsingKey := true
 
 	for _, r := range runes {
-		if !parsing_key {
+		if !parsingKey {
 			t.Value += string(r)
 			continue
 		}
@@ -28,7 +29,7 @@ func (t *OptionToken) Parse(runes []rune) error {
 		if t.Query {
 			return fmt.Errorf("Trailing characters after '?'")
 		} else if r == '=' {
-			parsing_key = false
+			parsingKey = false
 		} else if r == '?' {
 			t.Query = true
 		} else if r == '!' {
@@ -49,7 +50,7 @@ func (t *OptionToken) Parse(runes []rune) error {
 			}
 		}
 	}
-	if parsing_key && !t.Query {
+	if parsingKey && !t.Query {
 		t.Bool = true
 	}
 	if t.Query {

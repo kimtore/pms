@@ -89,7 +89,7 @@ func (w *PlaybarWidget) Draw() {
 
 	x = w.drawNext(x+1, y, []rune(utils.TimeString(int(w.status.Elapsed))), w.Style("elapsed"))
 	x = w.drawNext(x+1, y, []rune(playStrings[w.status.State]), w.Style("symbol"))
-	x = w.drawNext(x+1, y, []rune(utils.TimeString(w.status.Time)), w.Style("time"))
+	w.drawNext(x+1, y, []rune(utils.TimeString(w.status.Time)), w.Style("time"))
 }
 
 func (w *PlaybarWidget) SetView(v views.View) {
