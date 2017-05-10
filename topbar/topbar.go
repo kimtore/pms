@@ -9,13 +9,20 @@ import (
 
 // Fragment is the smallest possible unit in a topbar.
 type Fragment interface {
+
+	// Text returns a string that should be drawn,
+	// along with its stylesheet identifier.
 	Text() (string, string)
 }
 
+// fragments is a map of fragments that can be drawn in the topbar, along with
+// their textual representation. When implementing a new topbar fragment, place
+// its constructor in this map.
 var fragments = map[string]func(api.API, string) Fragment{
 	"tag":       NewTag,
 	"shortname": NewShortname,
 	"version":   NewVersion,
+	"volume":    NewVolume,
 }
 
 // NewFragment constructs a new Fragment based on a parsed topbar fragment statement.

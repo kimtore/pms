@@ -1,0 +1,29 @@
+package topbar
+
+import (
+	"fmt"
+
+	"github.com/ambientsound/pms/api"
+)
+
+// Volume draws the current volume.
+type Volume struct {
+	api api.API
+}
+
+func NewVolume(a api.API, param string) Fragment {
+	return &Volume{a}
+}
+
+func (w *Volume) Text() (string, string) {
+	playerStatus := w.api.PlayerStatus()
+	switch {
+	case playerStatus.Volume < 0:
+		return `!VOL!`, `mute`
+	case playerStatus.Volume == 0:
+		return `MUTE`, `mute`
+	default:
+		text := fmt.Sprintf("%d%%", playerStatus.Volume)
+		return text, `volume`
+	}
+}
