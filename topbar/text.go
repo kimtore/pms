@@ -5,10 +5,12 @@ type Text struct {
 	text string
 }
 
+// NewText returns Text.
 func NewText(s string) Fragment {
 	return &Text{text: s}
 }
 
+// Text implements Fragment.
 func (w *Text) Text() (string, string) {
 	return w.text, `topbar`
 }

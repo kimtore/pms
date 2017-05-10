@@ -10,10 +10,12 @@ type Tag struct {
 	tag string
 }
 
+// NewTag returns Tag.
 func NewTag(a api.API, param string) Fragment {
 	return &Tag{a, param}
 }
 
+// Text implements Fragment.
 func (w *Tag) Text() (string, string) {
 	song := w.api.Song()
 	if song == nil {

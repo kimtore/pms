@@ -11,10 +11,12 @@ type Volume struct {
 	api api.API
 }
 
+// NewVolume returns Volume.
 func NewVolume(a api.API, param string) Fragment {
 	return &Volume{a}
 }
 
+// Text implements Fragment.
 func (w *Volume) Text() (string, string) {
 	playerStatus := w.api.PlayerStatus()
 	switch {

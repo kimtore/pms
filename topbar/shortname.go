@@ -10,10 +10,12 @@ type Shortname struct {
 	shortname string
 }
 
+// NewShortname returns Shortname.
 func NewShortname(a api.API, param string) Fragment {
 	return &Shortname{version.ShortName()}
 }
 
+// Text implements Fragment.
 func (w *Shortname) Text() (string, string) {
 	return w.shortname, `shortName`
 }
