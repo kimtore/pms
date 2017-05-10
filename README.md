@@ -23,10 +23,10 @@ make
 pms
 ```
 
-If PMS crashes, it's very helpful with debugging information. This can be obtained using the debug log:
+If PMS crashes, and you want to report a bug, please include the debug log:
 
 ```
-pms --debug /tmp/pms.log
+pms --debug /tmp/pms.log 2>>/tmp/pms.log
 ```
 
 
@@ -39,11 +39,11 @@ A full-text search index takes up both space and memory. For a library of about 
 PMS is multithreaded and will benefit from multicore CPUs.
 
 
-## Configuring
+## Configuration
 
-### MPD
+### MPD server
 
-MPD's output buffer size bust be set to something reasonably high so that the `listallinfo` command does not overflow MPD's send buffer.
+During startup, in order to create a full-text search index, PMS retrieves the entire song library from MPD. If your song library is big, the `listallinfo` command will overflow MPD's send buffer, and the connection is dropped. This can be mitigated by increasing MPD's output buffer size:
 
 ```
 cat >>/etc/mpd.conf<<<EOF
@@ -53,9 +53,9 @@ EOF
 
 ### PMS
 
-PMS will honor the `MPD_HOST` and `MPD_PORT` variables.
+PMS connects to the MPD server specified in the `MPD_HOST` and `MPD_PORT` variables.
 
-See `pms --help` for configuration options. Configuration files are not implemented yet, but the configuration can be changed while running the program.
+See `pms --help` for command-line options. Configuration files are not implemented yet, but the configuration can be changed while running the program.
 
 The default configuration can be found in [options/defaults.go](options/defaults.go).
 
@@ -67,19 +67,20 @@ The current goal of the Go implementation is to implement most of the features f
 This functionality is not implemented yet:
 
 * Basic player controls (~~play~~, ~~add~~, ~~pause~~, ~~stop~~, ~~next~~, ~~prev~~, ~~volume~~, consume, repeat, single, random).
-* Automatic add to queue when queue is nearing end.
-* Customizable topbar.
+* ~~Customizable topbar~~.
 * ~~Customizable colors~~.
+* ~~Multiple selection~~.
+* Automatic add to queue when queue is nearing end.
+* Copy and paste.
 * Tab completion.
 * Reading configuration files.
-* ~~Multiple selection~~, copy, and paste.
 * Remote playlist management.
 * ...and probably more.
 
 
 ## Contributing
 
-There are probably many bugs, and much expected functionality is missing. You're welcome to report any bugs or feature requests by using the Github issue tracker. Code contributions are more than welcome, please submit a merge request on Github.
+There are bugs, and much expected functionality is missing. Code contributions are warmly received through merge requests on Github. You're also welcome to report any bugs or feature requests by using the Github issue tracker.
 
 For general discussion about the project, or to contact the project devs, you can use the IRC channel `#pms` on Freenode.
 
