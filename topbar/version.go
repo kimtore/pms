@@ -10,7 +10,7 @@ type Version struct {
 	fragment
 }
 
-func NewVersion(a api.API) Fragment {
+func NewVersion(a api.API, param string) Fragment {
 	return &Version{
 		fragment{api: a},
 	}

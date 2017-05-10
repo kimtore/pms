@@ -37,8 +37,8 @@ const (
 	AlignRight
 )
 
-var fragments = map[string]func(api.API) Fragment{
-	"artist":    NewArtist,
+var fragments = map[string]func(api.API, string) Fragment{
+	"tag":       NewTag,
 	"shortname": NewShortname,
 	"version":   NewVersion,
 }
@@ -77,7 +77,7 @@ func NewMatrix(matrixStmt *MatrixStatement, a api.API) (Matrix, error) {
 					if !ok {
 						return nil, fmt.Errorf("Unrecognized variable '${%s}'", fragmentStmt.Variable)
 					}
-					frag = ctor(a)
+					frag = ctor(a, fragmentStmt.Param)
 				} else {
 					frag = NewText(fragmentStmt.Literal)
 				}

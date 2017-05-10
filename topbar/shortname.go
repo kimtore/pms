@@ -10,7 +10,7 @@ type Shortname struct {
 	fragment
 }
 
-func NewShortname(a api.API) Fragment {
+func NewShortname(a api.API, param string) Fragment {
 	return &Shortname{
 		fragment{api: a},
 	}
