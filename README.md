@@ -14,10 +14,10 @@ This software was previously written in C++. The master branch now contains a re
 
 You are assumed to have a working [Go development environment](https://golang.org/doc/install). PMS requires Go >= 1.8.
 
-To install the application and dependencies, and run PMS, assuming you have $GOBIN in your path:
+To install the application and dependencies, and run PMS, assuming you have `$GOBIN` in your path:
 
 ```
-git clone https://github.com/ambientsound/pms $GOPATH/src/github.com/ambientsound/pms
+go get -u github.com/ambientsound/pms
 cd $GOPATH/src/github.com/ambientsound/pms
 make
 pms
