@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/utils"
 	"github.com/gdamore/tcell/views"
@@ -44,19 +43,65 @@ var fragments = map[string]func(api.API) Fragment{
 	"version":   NewVersion,
 }
 
+func NewRow() []*Piece {
+	return make([]*Piece, 0)
+}
+
 func NewPiece() *Piece {
 	return &Piece{
 		fragments: make([]Fragment, 0),
 	}
 }
 
-// MakePieces creates a new two-dimensional array of Piece objects.
-func NewMatrix(width, height int) Matrix {
-	matrix := make(Matrix, height)
-	for y := 0; y < height; y++ {
-		matrix[y] = make([]*Piece, width)
+// EmptyMatrix creates a new two-dimensional array of Piece objects.
+func EmptyMatrix() Matrix {
+	return make(Matrix, 0)
+}
+
+// NewMatrix creates a matrix based on a parsed topbar matrix statement.
+func NewMatrix(matrixStmt *MatrixStatement, a api.API) (Matrix, error) {
+
+	var frag Fragment
+	matrix := EmptyMatrix()
+
+	for _, rowStmt := range matrixStmt.Rows {
+		row := NewRow()
+
+		for _, pieceStmt := range rowStmt.Pieces {
+			piece := NewPiece()
+
+			for _, fragmentStmt := range pieceStmt.Fragments {
+
+				if len(fragmentStmt.Variable) > 0 {
+					ctor, ok := fragments[fragmentStmt.Variable]
+					if !ok {
+						return nil, fmt.Errorf("Unrecognized variable '${%s}'", fragmentStmt.Variable)
+					}
+					frag = ctor(a)
+				} else {
+					frag = NewText(fragmentStmt.Literal)
+				}
+				piece.AddFragment(frag)
+			}
+			row = append(row, piece)
+		}
+		matrix = append(matrix, row)
 	}
-	return matrix
+
+	matrix.Expand()
+	return matrix, nil
+}
+
+func Parse(a api.API, input string) (Matrix, error) {
+	reader := strings.NewReader(input)
+	parser := NewParser(reader)
+
+	stmt, err := parser.ParseMatrix()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewMatrix(stmt, a)
 }
 
 // autoAlign returns a best-guess align for a Piece.
@@ -117,75 +162,6 @@ func (matrix Matrix) SetView(v views.View) {
 	matrix.mapPiece(func(p *Piece) {
 		p.SetView(v)
 	})
-}
-
-// Parse creates a new two-dimensional array of Piece objects based on lexer input.
-func Parse(a api.API, input string) (Matrix, error) {
-
-	piece := NewPiece()
-	matrix := NewMatrix(0, 0)
-	row := make([]*Piece, 0)
-	x := 0
-
-	variable := false
-
-	addPiece := func() {
-		row = append(row, piece)
-		piece = NewPiece()
-		x += 1
-	}
-
-	addRow := func() {
-		addPiece()
-		matrix = append(matrix, row)
-		row = make([]*Piece, 0)
-		x = 0
-	}
-
-	reader := strings.NewReader(input)
-	scanner := lexer.NewScanner(reader)
-
-	for {
-		class, s := scanner.Scan()
-
-		if variable && class != lexer.TokenIdentifier {
-			return nil, fmt.Errorf("Unexpected '%s', expected identifier")
-		}
-
-		switch class {
-		case lexer.TokenEnd:
-			goto end
-		case lexer.TokenIdentifier:
-			if variable {
-				// FIXME: look up correct fragment
-				ctor, ok := fragments[s]
-				if !ok {
-					return nil, fmt.Errorf("Unrecognized variable '${%s}'", s)
-				}
-				piece.AddFragment(ctor(a))
-				variable = false
-			} else {
-				piece.AddFragment(NewText(s))
-			}
-		case lexer.TokenWhitespace:
-			piece.AddFragment(NewText(s))
-		case lexer.TokenSeparator:
-			addPiece()
-		case lexer.TokenStop:
-			addRow()
-		case lexer.TokenVariable:
-			variable = true
-			continue
-		default:
-			return nil, fmt.Errorf("Unexpected '%s', expected variable or identifier", s)
-		}
-	}
-
-end:
-	addRow()
-	matrix.Expand()
-
-	return matrix, nil
 }
 
 // Draw draws all fragments.

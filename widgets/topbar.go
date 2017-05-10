@@ -26,7 +26,7 @@ func NewTopbar() *Topbar {
 	return &Topbar{
 		width:  0,
 		height: 0,
-		matrix: topbar.NewMatrix(0, 0),
+		matrix: topbar.EmptyMatrix(),
 	}
 }
 
