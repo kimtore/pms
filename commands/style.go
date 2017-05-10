@@ -34,7 +34,6 @@ func NewStyle(api api.API) Command {
 func (cmd *Style) Execute(class int, s string) error {
 	var err error
 
-
 	switch class {
 
 	case lexer.TokenIdentifier:

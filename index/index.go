@@ -130,7 +130,7 @@ func (i *Index) Isolate(list songlist.Songlist, tags []string) (songlist.Songlis
 	r, _, err := i.Query(request)
 
 	names := make([]string, 0)
-	for k, _ := range terms {
+	for k := range terms {
 		names = append(names, k)
 	}
 	name := strings.Join(names, ", ")

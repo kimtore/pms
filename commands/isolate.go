@@ -24,7 +24,6 @@ func NewIsolate(api api.API) Command {
 func (cmd *Isolate) Execute(class int, s string) error {
 	var err error
 
-
 	switch class {
 	case lexer.TokenIdentifier:
 		if len(cmd.tags) != 0 {

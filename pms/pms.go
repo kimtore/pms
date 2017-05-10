@@ -330,7 +330,7 @@ func (pms *PMS) runTicker() {
 			pms.ticker <- t
 		}
 	}()
-	for _ = range pms.ticker {
+	for range pms.ticker {
 		pms.mpdStatus.Tick()
 		pms.EventPlayer <- 0
 	}
