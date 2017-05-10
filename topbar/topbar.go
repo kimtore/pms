@@ -25,6 +25,7 @@ var fragments = map[string]func(api.API, string) Fragment{
 	"state":     NewState,
 	"tag":       NewTag,
 	"time":      NewTime,
+	"title":     NewTitle,
 	"version":   NewVersion,
 	"volume":    NewVolume,
 }
