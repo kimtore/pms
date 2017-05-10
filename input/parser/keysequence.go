@@ -41,14 +41,14 @@ func (k KeyEvents) Equals(x KeyEvents) bool {
 	if len(k) != len(x) {
 		return false
 	}
-	return a.StartsWith(x)
+	return k.StartsWith(x)
 }
 
 func (k KeyEvents) StartsWith(x KeyEvents) bool {
 	if len(k) < len(x) {
 		return false
 	}
-	for i := range b {
+	for i := range x {
 		if !k[i].Equals(x[i]) {
 			return false
 		}
