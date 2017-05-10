@@ -19,8 +19,9 @@ type Fragment interface {
 // their textual representation. When implementing a new topbar fragment, place
 // its constructor in this map.
 var fragments = map[string]func(api.API, string) Fragment{
-	"tag":       NewTag,
+	"mode":      NewMode,
 	"shortname": NewShortname,
+	"tag":       NewTag,
 	"version":   NewVersion,
 	"volume":    NewVolume,
 }
