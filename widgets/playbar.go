@@ -75,20 +75,7 @@ func (w *PlaybarWidget) drawNextChar(x, y int, r rune, style tcell.Style) int {
 }
 
 func (w *PlaybarWidget) Draw() {
-	if len(w.song.Tags["file"]) == 0 {
-		w.drawNotPlaying()
-	} else {
-		w.drawCurrentSong()
-	}
-	w.drawStatus()
-}
-
-func (w *PlaybarWidget) drawNotPlaying() {
-	w.drawNext(0, 0, []rune("No current song."), w.Style("noCurrentSong"))
-}
-
-func (w *PlaybarWidget) drawStatus() {
-	x, y := 0, 1
+	x, y := 0, 0
 
 	// 54% ----   00:00 ■ 00:00   Artist - Title
 
@@ -105,32 +92,13 @@ func (w *PlaybarWidget) drawStatus() {
 	x = w.drawNext(x+1, y, []rune(utils.TimeString(w.status.Time)), w.Style("time"))
 }
 
-func (w *PlaybarWidget) drawCurrentSong() {
-	x, y := 0, 0
-
-	x = w.drawNext(x, y, w.song.Tags["artist"], w.Style("artist"))
-
-	x = w.drawNextChar(x+1, y, '"', w.Style("album"))
-	x = w.drawNext(x, y, w.song.Tags["album"], w.Style("album"))
-	x = w.drawNextChar(x, y, '"', w.Style("album"))
-
-	if len(w.song.Tags["year"]) > 0 {
-		x = w.drawNextChar(x+1, y, '(', w.Style("year"))
-		x = w.drawNext(x, y, w.song.Tags["year"], w.Style("year"))
-		x = w.drawNextChar(x, y, ')', w.Style("year"))
-	}
-
-	x = w.drawNextChar(x+1, y, '-', w.Style("separator"))
-	x = w.drawNext(x+1, y, w.song.Tags["title"], w.Style("title"))
-}
-
 func (w *PlaybarWidget) SetView(v views.View) {
 	w.view = v
 }
 
 func (w *PlaybarWidget) Size() (int, int) {
 	x, _ := w.view.Size()
-	return x, 3
+	return x, 2
 }
 
 func (w *PlaybarWidget) Resize() {

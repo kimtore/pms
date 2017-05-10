@@ -60,7 +60,7 @@ func (cmd *Isolate) Execute(class int, s string) error {
 
 		sort := cmd.api.Options().StringValue("sort")
 		fields := strings.Split(sort, ",")
-		err = result.Sort(fields)
+		result.Sort(fields)
 
 		songlistWidget.ClearSelection()
 		songlistWidget.AddSonglist(result)
