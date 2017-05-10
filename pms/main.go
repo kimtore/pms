@@ -85,8 +85,6 @@ func (pms *PMS) handleEventOption(key string) {
 
 func (pms *PMS) handleEventPlayer() {
 	pms.UI.App.PostFunc(func() {
-		pms.UI.Playbar.SetPlayerStatus(pms.CurrentPlayerStatus())
-		pms.UI.Playbar.SetSong(pms.CurrentSong())
 		pms.UI.Songlist.SetCurrentSong(pms.CurrentSong())
 	})
 }

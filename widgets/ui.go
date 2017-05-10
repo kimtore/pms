@@ -22,7 +22,6 @@ type UI struct {
 	Layout *views.BoxLayout
 
 	Topbar        *Topbar
-	Playbar       *PlaybarWidget
 	Columnheaders *ColumnheadersWidget
 	Multibar      *MultibarWidget
 	Songlist      *SonglistWidget
@@ -60,21 +59,18 @@ func NewUI(opts *options.Options) *UI {
 	ui.options = opts
 
 	ui.Topbar = NewTopbar()
-	ui.Playbar = NewPlaybarWidget()
 	ui.Columnheaders = NewColumnheadersWidget()
 	ui.Multibar = NewMultibarWidget(ui.EventKeyInput)
 	ui.Songlist = NewSonglistWidget(ui.options)
 
 	ui.Multibar.Watch(ui)
 	ui.Songlist.Watch(ui)
-	ui.Playbar.Watch(ui)
 
 	// Set styles
 	ui.Styles = make(style.Stylesheet)
 	ui.SetStylesheet(ui.Styles)
 	ui.Topbar.SetStylesheet(ui.Stylesheet())
 	ui.Columnheaders.SetStylesheet(ui.Stylesheet())
-	ui.Playbar.SetStylesheet(ui.Stylesheet())
 	ui.Songlist.SetStylesheet(ui.Stylesheet())
 	ui.Multibar.SetStylesheet(ui.Stylesheet())
 
@@ -88,7 +84,6 @@ func NewUI(opts *options.Options) *UI {
 func (ui *UI) CreateLayout() {
 	ui.Layout = views.NewBoxLayout(views.Vertical)
 	ui.Layout.AddWidget(ui.Topbar, 1)
-	ui.Layout.AddWidget(ui.Playbar, 0)
 	ui.Layout.AddWidget(ui.Columnheaders, 0)
 	ui.Layout.AddWidget(ui.Songlist, 2)
 	ui.Layout.AddWidget(ui.Multibar, 0)
