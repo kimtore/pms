@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/ambientsound/pms.svg?branch=go)](https://travis-ci.org/ambientsound/pms)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ambientsound/pms)](https://goreportcard.com/report/github.com/ambientsound/pms)
+[![codecov](https://codecov.io/gh/ambientsound/pms/branch/master/graph/badge.svg)](https://codecov.io/gh/ambientsound/pms/branch/master)
 
 Practical Music Search is an interactive console-based client for the [Music Player Daemon](https://www.musicpd.org/), written in Go. The interface is similar to Vim, and features lightning fast full-text searches, sorting, custom colors, configurable layouts, visual selection, keyboard shortcuts, and much more.
 
