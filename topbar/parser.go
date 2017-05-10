@@ -146,7 +146,10 @@ func (p *Parser) ParsePiece() (*PieceStatement, error) {
 
 		// A piece is succeeded only by a new piece or new row.
 		switch tok {
-		case lexer.TokenSeparator, lexer.TokenStop, lexer.TokenEnd:
+		case lexer.TokenStop:
+			p.unscan()
+			fallthrough
+		case lexer.TokenSeparator, lexer.TokenEnd:
 			return stmt, nil
 		}
 
@@ -169,8 +172,6 @@ func (p *Parser) ParseRow() (*RowStatement, error) {
 
 		// A row is succeeded only by a new row.
 		switch tok {
-		case lexer.TokenSeparator:
-			break
 		case lexer.TokenStop, lexer.TokenEnd:
 			return stmt, nil
 		}
@@ -182,6 +183,29 @@ func (p *Parser) ParseRow() (*RowStatement, error) {
 		}
 
 		stmt.Pieces = append(stmt.Pieces, piece)
+	}
+}
+
+// ParseMatrix parses a matrix statement.
+func (p *Parser) ParseMatrix() (*MatrixStatement, error) {
+	stmt := &MatrixStatement{}
+
+	for {
+		tok, _ := p.scan()
+
+		// A matrix is never succeeded.
+		switch tok {
+		case lexer.TokenEnd:
+			return stmt, nil
+		}
+
+		p.unscan()
+		row, err := p.ParseRow()
+		if err != nil {
+			return nil, err
+		}
+
+		stmt.Rows = append(stmt.Rows, row)
 	}
 }
 

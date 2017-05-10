@@ -62,8 +62,9 @@ var fragmentTests = []struct {
 }{
 	// Valid forms
 	{`plain`, true, topbar.FragmentStatement{`plain`, ``, ``}},
-	{`plain and more`, true, topbar.FragmentStatement{`plain`, ``, ``}},
-	{`     `, true, topbar.FragmentStatement{`     `, ``, ``}},
+	{`plain; and more`, true, topbar.FragmentStatement{`plain`, ``, ``}},
+	{`     |    `, true, topbar.FragmentStatement{`     `, ``, ``}},
+	{`foo;bar`, true, topbar.FragmentStatement{`foo`, ``, ``}},
 	{`$var`, true, topbar.FragmentStatement{``, `var`, ``}},
 	{`${var}`, true, topbar.FragmentStatement{``, `var`, ``}},
 	{`${var|param}`, true, topbar.FragmentStatement{``, `var`, `param`}},
@@ -112,6 +113,8 @@ var pieceTests = []struct {
 	{`plain`, true, 1},
 	{`plain two more`, true, 5},
 	{`${complex|form} and more whitespace `, true, 8},
+	{`hax | piece`, true, 2},
+	{`hax  ; more`, true, 2},
 	{`|||||`, true, 0},
 
 	// Invalid form
@@ -175,6 +178,47 @@ func TestRows(t *testing.T) {
 
 		if row != nil {
 			assert.Equal(t, test.pieces, len(row.Pieces))
+		}
+	}
+}
+
+var matrixTests = []struct {
+	input   string
+	success bool
+	rows    int
+}{
+	// Valid forms
+	{`plain`, true, 1},
+	{`plain|with|pieces`, true, 1},
+	{`plain;with|pieces;and rows`, true, 3},
+	{`;;a`, true, 3},
+	{`b;;`, true, 2},
+	{`;;`, true, 2},
+	{`;||;||;||;`, true, 4},
+
+	// Invalid form
+	{`token;plus|${invalid`, false, 0},
+}
+
+func TestMatrix(t *testing.T) {
+	for n, test := range matrixTests {
+
+		reader := strings.NewReader(test.input)
+		parser := topbar.NewParser(reader)
+
+		matrix, err := parser.ParseMatrix()
+
+		t.Logf("### Test %d: '%s'", n+1, test.input)
+
+		if test.success {
+			assert.Nil(t, err, "Expected success in topbar parser when parsing '%s'", test.input)
+		} else {
+			assert.NotNil(t, err, "Expected error in topbar parser when parsing '%s'", test.input)
+		}
+
+		if matrix != nil {
+			assert.Equal(t, test.rows, len(matrix.Rows))
+			t.Logf("%+v", matrix.Rows[0])
 		}
 	}
 }
