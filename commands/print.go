@@ -24,11 +24,10 @@ func NewPrint(api api.API) Command {
 func (cmd *Print) Execute(class int, s string) error {
 	var err error
 
-
 	switch class {
 	case lexer.TokenIdentifier:
 		if len(cmd.tags) > 0 {
-			return fmt.Errorf("Unexpected '%s', expected END")
+			return fmt.Errorf("Unexpected '%s', expected END", s)
 		}
 		cmd.tags = strings.Split(strings.ToLower(s), ",")
 

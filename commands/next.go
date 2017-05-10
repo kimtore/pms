@@ -30,6 +30,4 @@ func (cmd *Next) Execute(class int, s string) error {
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
-
-	return nil
 }
