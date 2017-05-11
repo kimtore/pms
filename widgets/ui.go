@@ -160,8 +160,10 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 
 	// If a list was changed, make sure we obtain the correct column widths.
 	case *EventListChanged:
-		columns := strings.Split(ui.options.StringValue("columns"), ",")
-		ui.Columnheaders.SetColumns(ui.Songlist.Songlist().Columns(columns))
+		tags := strings.Split(ui.options.StringValue("columns"), ",")
+		cols := ui.Songlist.Songlist().Columns(tags)
+		ui.Songlist.SetColumns(tags)
+		ui.Columnheaders.SetColumns(cols)
 		return true
 
 	case *EventModeSync:

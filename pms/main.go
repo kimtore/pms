@@ -84,10 +84,6 @@ func (pms *PMS) handleEventOption(key string) {
 }
 
 func (pms *PMS) handleEventPlayer() {
-	pms.ui.App.PostFunc(func() {
-		//FIXME
-		//pms.ui.Songlist.SetCurrentSong(pms.CurrentSong())
-	})
 }
 
 func (pms *PMS) handleEventMessage(msg message.Message) {

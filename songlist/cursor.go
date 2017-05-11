@@ -1,6 +1,8 @@
 package songlist
 
-import "github.com/ambientsound/pms/song"
+import (
+	"github.com/ambientsound/pms/song"
+)
 
 // CursorSong returns the song currently selected by the cursor.
 func (s *BaseSonglist) CursorSong() *song.Song {
@@ -27,10 +29,6 @@ func (s *BaseSonglist) SetCursor(i int) {
 	s.cursor = i
 	s.ValidateCursor(0, s.Len()-1)
 	s.expandVisualSelection()
-	// FIXME
-	//s.viewport.MakeVisible(0, currentList.Cursor)
-	//s.validateCursorVisible()
-	//s.PostEventWidgetContent(w)
 }
 
 // Cursor returns the cursor position.

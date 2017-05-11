@@ -6,7 +6,7 @@ import (
 )
 
 type Column struct {
-	Tag        string
+	tag        string
 	items      int
 	totalWidth int
 	maxWidth   int
@@ -14,11 +14,16 @@ type Column struct {
 	width      int
 }
 
-type Columns []Column
+type Columns []*Column
 
 type ColumnMap map[string]*Column
 
-// Set calculates
+// NewColumn returns a new Column.
+func NewColumn(tag string) *Column {
+	return &Column{tag: tag}
+}
+
+// Set calculates all song's widths.
 func (c *Column) Set(s Songlist) {
 	c.Reset()
 	for _, song := range s.Songs() {
@@ -28,7 +33,7 @@ func (c *Column) Set(s Songlist) {
 
 // Add a single song's width to the total and maximum width.
 func (c *Column) Add(song *song.Song) {
-	l := len(song.Tags[c.Tag])
+	l := len(song.Tags[c.tag])
 	if l == 0 {
 		return
 	}
@@ -40,14 +45,14 @@ func (c *Column) Add(song *song.Song) {
 
 // Remove a single song's tag width from the total and maximum width.
 func (c *Column) Remove(song *song.Song) {
-	l := len(song.Tags[c.Tag])
+	l := len(song.Tags[c.tag])
 	if l == 0 {
 		return
 	}
 	c.avg = 0
 	c.items--
 	c.totalWidth -= l
-	// FIXME: c.maxWidth is not updated
+	// TODO: c.maxWidth is not updated
 }
 
 // Reset sets all values to zero.
@@ -75,7 +80,13 @@ func (c *Column) Avg() int {
 			c.avg = c.totalWidth / c.items
 		}
 	}
+	//console.Log("Avg() of %s is %d", c.Tag(), c.avg)
 	return c.avg
+}
+
+// Tag returns the tag name.
+func (c *Column) Tag() string {
+	return c.tag
 }
 
 // MaxWidth returns the length of the longest tag value in this column.
@@ -95,7 +106,7 @@ func (c *Column) SetWidth(width int) {
 
 // expand adjusts the column widths equally between the different columns,
 // giving affinity to weight.
-func (columns Columns) expand(totalWidth int) {
+func (columns Columns) Expand(totalWidth int) {
 	if len(columns) == 0 {
 		return
 	}
@@ -120,7 +131,7 @@ func (columns Columns) expand(totalWidth int) {
 			if poolSize > 0 && saturated[i] {
 				continue
 			}
-			col := &columns[i]
+			col := columns[i]
 			if poolSize > 0 && col.Width() > col.MaxWidth() {
 				saturated[i] = true
 				poolSize--
@@ -140,7 +151,7 @@ func (c ColumnMap) Add(song *song.Song) {
 }
 
 // Remove removes song tags from all applicable columns.
-func (c ColumnMap) add(song *song.Song) {
+func (c ColumnMap) Remove(song *song.Song) {
 	for tag := range song.StringTags {
 		c[tag].Remove(song)
 	}
@@ -150,7 +161,7 @@ func (c ColumnMap) add(song *song.Song) {
 func (s *BaseSonglist) ensureColumns(song *song.Song) {
 	for tag := range song.StringTags {
 		if _, ok := s.columns[tag]; !ok {
-			s.columns[tag] = &Column{}
+			s.columns[tag] = NewColumn(tag)
 		}
 	}
 }
@@ -162,9 +173,9 @@ func (s *BaseSonglist) Columns(columns []string) Columns {
 	for _, tag := range columns {
 		col := s.columns[tag]
 		if col == nil {
-			col = &Column{Tag: tag}
+			col = NewColumn(tag)
 		}
-		cols = append(cols, *col)
+		cols = append(cols, col)
 	}
 	return cols
 }

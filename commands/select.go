@@ -5,6 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/widgets"
 )
 
 // Select manipulates song selection within a songlist.
@@ -48,6 +49,7 @@ func (cmd *Select) Execute(class int, s string) error {
 		case list.HasVisualSelection():
 			list.CommitVisualSelection()
 			list.DisableVisualSelection()
+			cmd.api.Multibar().SetMode(widgets.MultibarModeNormal) // FIXME: remove
 
 		default:
 			index := list.Cursor()

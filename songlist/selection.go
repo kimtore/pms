@@ -70,14 +70,6 @@ func (s *BaseSonglist) SetVisualSelection(ymin, ymax, ystart int) {
 	s.visualSelection[0] = ymin
 	s.visualSelection[1] = ymax
 	s.visualSelection[2] = ystart
-	// FIXME
-	/*
-		if list.HasVisualSelection() {
-			PostEventModeSync(w, MultibarModeVisual)
-		} else {
-			PostEventModeSync(w, MultibarModeNormal)
-		}
-	*/
 }
 
 // HasVisualSelection returns true if the songlist is in visual selection mode.

@@ -97,14 +97,16 @@ func (s *BaseSonglist) AddList(songlist Songlist) error {
 }
 
 func (s *BaseSonglist) Remove(index int) error {
-	if !s.InRange(index) {
+	song := s.Song(index)
+	if song == nil {
 		return fmt.Errorf("Out of bounds")
 	}
 
+	s.columns.Remove(song)
 	s.Lock()
 	defer s.Unlock()
 
-	console.Log("Removing song number %d from songlist '%s'", index, s.Name())
+	//console.Log("Removing song number %d from songlist '%s'", index, s.Name())
 	if index+1 == s.Len() {
 		s.songs = s.songs[:index]
 	} else {
@@ -195,7 +197,7 @@ func (s *BaseSonglist) Locate(match *song.Song) (int, error) {
 		hasId := !(match.NullID() || test.NullID())
 		switch {
 		case hasId && match.ID == test.ID:
-		case match.StringTags["file"] == test.StringTags["file"]:
+		case !hasId && match.StringTags["file"] == test.StringTags["file"]:
 		default:
 			continue
 		}

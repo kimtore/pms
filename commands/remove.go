@@ -5,6 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/widgets"
 )
 
 // Remove removes songs from songlists.
@@ -35,6 +36,7 @@ func (cmd *Remove) Execute(class int, s string) error {
 		if err == nil {
 			list.ClearSelection()
 			list.SetCursor(index)
+			cmd.api.Multibar().SetMode(widgets.MultibarModeNormal) // FIXME: remove
 		}
 
 		cmd.api.ListChanged()

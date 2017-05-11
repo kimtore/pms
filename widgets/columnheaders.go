@@ -31,10 +31,12 @@ func (c *ColumnheadersWidget) Draw() {
 	x := 0
 	y := 0
 	for i := range c.columns {
-		col := &c.columns[i]
-		title := []rune(strings.Title(col.Tag))
-		for p, r := range title {
+		col := c.columns[i]
+		title := []rune(strings.Title(col.Tag()))
+		p := 0
+		for _, r := range title {
 			c.view.SetContent(x+p, y, r, nil, c.Style("header"))
+			p++
 		}
 		x += col.Width()
 	}

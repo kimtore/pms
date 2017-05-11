@@ -8,6 +8,7 @@ import (
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/widgets"
 )
 
 // Add adds songs to MPD's queue.
@@ -51,6 +52,7 @@ func (cmd *Add) Execute(class int, s string) error {
 				break
 			}
 			list.ClearSelection()
+			cmd.api.Multibar().SetMode(widgets.MultibarModeNormal) // FIXME: remove
 			list.MoveCursor(1)
 			len := selection.Len()
 			if len == 1 {

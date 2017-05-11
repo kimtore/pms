@@ -81,9 +81,15 @@ func (w *SonglistWidget) Draw() {
 		return
 	}
 
+	//console.Log("SonglistWidget::Draw()")
+	//for key, col := range w.columns {
+	//console.Log("Draw() column %d addr %p: %+v", key, col, col)
+	//}
+
 	//list.Lock()
 	//defer list.Unlock()
 
+	w.viewport.MakeVisible(0, w.Songlist().Cursor())
 	_, ymin, xmax, ymax := w.viewport.GetVisible()
 	currentSong := w.api.Song()
 	xmax += 1
@@ -133,7 +139,7 @@ func (w *SonglistWidget) Draw() {
 		for col := 0; col < len(w.columns); col++ {
 
 			// Convert tag to runes
-			key := w.columns[col].Tag
+			key := w.columns[col].Tag()
 			runes := s.Tags[key]
 			if !lineStyled {
 				style = w.Style(key)
@@ -169,12 +175,6 @@ func (w *SonglistWidget) setViewportSize() {
 	w.viewport.SetSize(x, utils.Min(y, w.Songlist().Len()))
 }
 
-func (w *SonglistWidget) validateViewport() {
-	w.validateCursorVisible()
-	//w.AutoSetColumnWidths() FIXME
-	w.PostEventWidgetContent(w)
-}
-
 // validateCursorVisible makes sure the cursor stays within the visible area of the viewport.
 func (w *SonglistWidget) validateCursorVisible() {
 	ymin, ymax := w.getVisibleBoundaries()
@@ -190,7 +190,7 @@ func (w *SonglistWidget) validateCursorList() {
 func (w *SonglistWidget) Resize() {
 	w.viewport.Resize(0, 0, -1, -1)
 	w.setViewportSize()
-	w.validateViewport()
+	w.validateCursorVisible()
 	w.PostEventWidgetResize(w)
 }
 
@@ -324,15 +324,16 @@ func (w *SonglistWidget) activateList(s songlist.Songlist) {
 
 func (w *SonglistWidget) ListChanged() {
 	w.setViewportSize()
-	w.viewport.MakeVisible(0, 0)
-	w.viewport.MakeVisible(0, w.Songlist().Cursor())
-	w.validateViewport()
+	//w.validateCursorVisible()
 	PostEventListChanged(w)
 }
 
 // SetColumns sets which columns that should be visible
 func (w *SonglistWidget) SetColumns(tags []string) {
+	xmax, _ := w.Size()
 	w.columns = w.Songlist().Columns(tags)
+	w.columns.Expand(xmax)
+	//console.Log("SetColumns(%v) yields %+v", tags, w.columns)
 }
 
 func (w *SonglistWidget) SonglistIndex() (int, error) {

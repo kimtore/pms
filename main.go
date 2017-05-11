@@ -50,6 +50,8 @@ func main() {
 		os.Exit(0)
 	}
 
+	console.Log("Starting Practical Music Search.")
+
 	val, ok := os.LookupEnv("MPD_HOST")
 	if ok {
 		opts.MpdHost = val

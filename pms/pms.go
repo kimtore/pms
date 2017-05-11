@@ -441,7 +441,16 @@ func (pms *PMS) SyncQueue() error {
 	if err := newQueue.Truncate(pms.mpdStatus.PlaylistLength); err != nil {
 		return fmt.Errorf("Error while truncating queue: %s", err)
 	}
+
+	// Replace list while preserving cursor position, either at song ID, or if
+	// that failed, place it at the nearest position.
+	song := pms.Queue.CursorSong()
+	cursor := pms.Queue.Cursor()
 	pms.Queue = newQueue
+	if err := pms.Queue.CursorToSong(song); err != nil {
+		pms.Queue.SetCursor(cursor)
+	}
+
 	pms.queueVersion = pms.mpdStatus.Playlist
 	console.Log("Queue at version %d.", pms.queueVersion)
 	pms.EventQueue <- 1
