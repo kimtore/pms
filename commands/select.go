@@ -23,8 +23,7 @@ func NewSelect(api api.API) Command {
 func (cmd *Select) Execute(class int, s string) error {
 	var err error
 
-	songlistWidget := cmd.api.SonglistWidget()
-	list := songlistWidget.List()
+	list := cmd.api.Songlist()
 
 	switch class {
 
@@ -48,15 +47,15 @@ func (cmd *Select) Execute(class int, s string) error {
 		switch {
 		case list.HasVisualSelection():
 			list.CommitVisualSelection()
-			songlistWidget.DisableVisualSelection()
+			list.DisableVisualSelection()
 
 		default:
-			index := songlistWidget.Cursor()
-			selected := songlistWidget.List().Selected(index)
-			songlistWidget.List().SetSelected(index, !selected)
+			index := list.Cursor()
+			selected := list.Selected(index)
+			list.SetSelected(index, !selected)
 		}
 
-		songlistWidget.MoveCursor(1)
+		list.MoveCursor(1)
 
 	default:
 		return fmt.Errorf("Unexpected '%s', expected END", s)

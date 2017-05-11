@@ -26,8 +26,6 @@ func NewSort(api api.API) Command {
 func (cmd *Sort) Execute(class int, s string) error {
 	var err error
 
-	songlistWidget := cmd.api.SonglistWidget()
-
 	switch class {
 
 	case lexer.TokenIdentifier:
@@ -38,9 +36,10 @@ func (cmd *Sort) Execute(class int, s string) error {
 		cmd.finished = true
 
 	case lexer.TokenEnd:
-		song := songlistWidget.CursorSong()
-		err = songlistWidget.Songlist().Sort(cmd.fields)
-		songlistWidget.CursorToSong(song)
+		list := cmd.api.Songlist()
+		song := list.CursorSong()
+		err = list.Sort(cmd.fields)
+		list.CursorToSong(song)
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", s)

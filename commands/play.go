@@ -6,7 +6,6 @@ import (
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
-	"github.com/ambientsound/pms/songlist"
 )
 
 // Play plays songs in the MPD playlist.
@@ -27,14 +26,12 @@ func NewPlay(api api.API) Command {
 func (cmd *Play) Execute(class int, s string) error {
 	var err error
 
-	songlistWidget := cmd.api.SonglistWidget()
-
 	switch class {
 	case lexer.TokenIdentifier:
 		switch s {
 		case "cursor":
 
-			cmd.song = songlistWidget.CursorSong()
+			cmd.song = cmd.api.Songlist().CursorSong()
 			if cmd.song == nil {
 				return fmt.Errorf("Cannot play: no song under cursor")
 			}
@@ -55,10 +52,7 @@ func (cmd *Play) Execute(class int, s string) error {
 
 		id := cmd.song.ID
 
-		// Add song to queue only if we are not operating on the queue
-		list := songlistWidget.Songlist()
-
-		if !songlist.IsQueue(list) {
+		if cmd.song.NullID() {
 			id, err = client.AddID(cmd.song.StringTags["file"], -1)
 			if err != nil {
 				return err

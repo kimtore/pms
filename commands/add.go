@@ -37,12 +37,12 @@ func (cmd *Add) Execute(class int, s string) error {
 		})
 
 	case lexer.TokenEnd:
-		songlistWidget := cmd.api.SonglistWidget()
+		list := cmd.api.SonglistWidget().Songlist()
 		queue := cmd.api.Queue()
 
 		switch {
 		case cmd.song == nil:
-			selection := songlistWidget.Selection()
+			selection := list.Selection()
 			if selection.Len() == 0 {
 				return fmt.Errorf("No selection, cannot add without any parameters.")
 			}
@@ -50,8 +50,8 @@ func (cmd *Add) Execute(class int, s string) error {
 			if err != nil {
 				break
 			}
-			songlistWidget.ClearSelection()
-			songlistWidget.MoveCursor(1)
+			list.ClearSelection()
+			list.MoveCursor(1)
 			len := selection.Len()
 			if len == 1 {
 				song := selection.Songs()[0]

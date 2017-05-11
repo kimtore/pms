@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input"
@@ -20,6 +21,7 @@ import (
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/ambientsound/pms/xdg"
 
@@ -34,11 +36,12 @@ type PMS struct {
 	currentSong      *song.Song
 	Index            *index.Index
 	CLI              *input.CLI
-	UI               *widgets.UI
+	ui               *widgets.UI
 	Queue            *songlist.Queue
 	Library          *songlist.Library
 	Options          *options.Options
 	Sequencer        *keys.Sequencer
+	stylesheet       style.Stylesheet
 	mutex            sync.Mutex
 
 	ticker chan time.Time
@@ -136,6 +139,10 @@ func (pms *PMS) Message(format string, a ...interface{}) {
 
 func (pms *PMS) Error(format string, a ...interface{}) {
 	pms.EventMessage <- message.Errorf(format, a...)
+}
+
+func (pms *PMS) Wait() {
+	pms.ui.Wait()
 }
 
 func (pms *PMS) SetConnectionParams(host, port, password string) {
@@ -317,6 +324,26 @@ func (pms *PMS) CurrentPlayerStatus() pms_mpd.PlayerStatus {
 // CurrentIndex returns the Bleve search index.
 func (pms *PMS) CurrentIndex() *index.Index {
 	return pms.Index
+}
+
+// CurrentSonglistWidget returns the current songlist.
+func (pms *PMS) CurrentSonglistWidget() api.SonglistWidget {
+	return pms.ui.Songlist
+}
+
+// Stylesheet returns the global stylesheet.
+func (pms *PMS) Stylesheet() style.Stylesheet {
+	return pms.stylesheet
+}
+
+// Stylesheet returns the global stylesheet.
+func (pms *PMS) Multibar() api.MultibarWidget {
+	return pms.ui.Multibar
+}
+
+// UI returns the tcell UI widget.
+func (pms *PMS) UI() api.UI {
+	return pms.ui
 }
 
 // runTicker starts a ticker that will increase the elapsed time every second.
@@ -580,7 +607,7 @@ func (pms *PMS) KeyInput(ev parser.KeyEvent) {
 	}
 
 	//console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, input.Command)
-	pms.UI.EventInputCommand <- input.Command
+	pms.ui.EventInputCommand <- input.Command
 }
 
 func (pms *PMS) Execute(cmd string) {

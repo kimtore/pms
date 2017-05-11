@@ -35,6 +35,7 @@ func (cmd *Cursor) Execute(class int, s string) error {
 	var err error
 
 	songlistWidget := cmd.api.SonglistWidget()
+	list := cmd.api.Songlist()
 
 	if cmd.finished && class != lexer.TokenEnd {
 		return fmt.Errorf("Unknown input '%s', expected END", s)
@@ -63,7 +64,7 @@ func (cmd *Cursor) Execute(class int, s string) error {
 		case "home":
 			cmd.absolute = 0
 		case "end":
-			cmd.absolute = songlistWidget.Len() - 1
+			cmd.absolute = list.Len() - 1
 		case "current":
 			cmd.current = true
 		case "random":
@@ -101,13 +102,13 @@ func (cmd *Cursor) Execute(class int, s string) error {
 			if currentSong == nil {
 				return fmt.Errorf("No song is currently playing.")
 			}
-			err = songlistWidget.CursorToSong(currentSong)
+			err = list.CursorToSong(currentSong)
 
 		case cmd.relative != 0:
-			songlistWidget.MoveCursor(cmd.relative)
+			list.MoveCursor(cmd.relative)
 
 		default:
-			songlistWidget.SetCursor(cmd.absolute)
+			list.SetCursor(cmd.absolute)
 		}
 
 	default:
@@ -118,7 +119,7 @@ func (cmd *Cursor) Execute(class int, s string) error {
 }
 
 func (cmd *Cursor) random() int {
-	len := cmd.api.SonglistWidget().Len()
+	len := cmd.api.Songlist().Len()
 	if len == 0 {
 		return cmd.absolute
 	}
@@ -136,9 +137,8 @@ func (cmd *Cursor) setNextOfTags(taglist string) error {
 }
 
 func (cmd *Cursor) runNextOf() int {
-	songlistWidget := cmd.api.SonglistWidget()
-	list := songlistWidget.Songlist()
-	len := songlistWidget.Len()
+	list := cmd.api.Songlist()
+	len := list.Len()
 
 	offset := func(i int) int {
 		if cmd.nextOfDirection > 0 || i == 0 {
@@ -147,7 +147,7 @@ func (cmd *Cursor) runNextOf() int {
 		return 1
 	}
 
-	index := songlistWidget.Cursor()
+	index := list.Cursor()
 	index -= offset(index)
 	check := list.Song(index)
 

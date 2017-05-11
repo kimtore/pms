@@ -34,6 +34,24 @@ type Songlist interface {
 	Swap(int, int)
 	Truncate(int) error
 	Unlock()
+
+	ClearSelection()
+	Columns([]string) Columns
+	CommitVisualSelection()
+	Cursor() int
+	CursorSong() *song.Song
+	CursorToSong(*song.Song) error
+	DisableVisualSelection()
+	EnableVisualSelection()
+	HasVisualSelection() bool
+	IndexAtSong(int, *song.Song) bool
+	MoveCursor(int)
+	Selected(int) bool
+	Selection() Songlist
+	SelectionIndices() []int
+	SetCursor(int)
+	SetSelected(int, bool)
+	ValidateCursor(int, int)
 }
 
 type BaseSonglist struct {
@@ -41,11 +59,16 @@ type BaseSonglist struct {
 	songs               []*song.Song
 	currentSortCriteria string
 	mutex               sync.Mutex
+
+	columns         ColumnMap
+	cursor          int
+	selection       map[int]struct{}
+	visualSelection [3]int
 }
 
 func New() (s *BaseSonglist) {
 	s = &BaseSonglist{}
-	s.Clear()
+	s.clear()
 	return
 }
 
@@ -55,9 +78,11 @@ func (s *BaseSonglist) Add(song *song.Song) error {
 	return nil
 }
 
-// add internally adds a song to the songlist, without any side effects.
+// add internally adds a song to the songlist, without any side effects at MPD's side.
 func (s *BaseSonglist) add(song *song.Song) {
 	s.songs = append(s.songs, song)
+	s.ensureColumns(song)
+	s.columns.Add(song)
 }
 
 // AddList appends a songlist to this songlist.
@@ -109,9 +134,16 @@ func (s *BaseSonglist) Unlock() {
 	s.mutex.Unlock()
 }
 
+// Clear clears the songlist by removing any songs.
 func (s *BaseSonglist) Clear() error {
-	s.songs = make([]*song.Song, 0)
+	s.clear()
 	return nil
+}
+
+func (s *BaseSonglist) clear() {
+	s.songs = make([]*song.Song, 0)
+	s.columns = make(ColumnMap)
+	s.ClearSelection()
 }
 
 // Delete deletes a songlist. This is a placeholder function that should be
@@ -170,6 +202,13 @@ func (s *BaseSonglist) Locate(match *song.Song) (int, error) {
 		return i, nil
 	}
 	return 0, fmt.Errorf("Cannot find song in songlist '%s'", s.Name())
+}
+
+// IndexAtSong returns true if the song at the specified index is at a song
+// with the same ID, or the path if the songlist is not a queue.
+func (s *BaseSonglist) IndexAtSong(i int, song *song.Song) bool {
+	check := s.Song(i)
+	return song != nil && check != nil && check.StringTags["file"] == song.StringTags["file"]
 }
 
 func (s *BaseSonglist) SetName(name string) error {
@@ -236,10 +275,10 @@ func (s *BaseSonglist) Swap(a, b int) {
 	s.songs[a], s.songs[b] = s.songs[b], s.songs[a]
 }
 
-func (songs *BaseSonglist) AddFromAttrlist(attrlist []mpd.Attrs) {
+func (s *BaseSonglist) AddFromAttrlist(attrlist []mpd.Attrs) {
 	for _, attrs := range attrlist {
-		s := song.New()
-		s.SetTags(attrs)
-		songs.add(s)
+		newSong := song.New()
+		newSong.SetTags(attrs)
+		s.add(newSong)
 	}
 }

@@ -72,6 +72,10 @@ func (api *testAPI) Song() *song.Song {
 	return nil // FIXME
 }
 
+func (api *testAPI) Songlist() songlist.Songlist {
+	return nil // FIXME
+}
+
 func (api *testAPI) SonglistWidget() SonglistWidget {
 	return nil // FIXME
 }

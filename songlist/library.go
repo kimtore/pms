@@ -2,8 +2,6 @@ package songlist
 
 import (
 	"fmt"
-
-	"github.com/ambientsound/pms/song"
 )
 
 // Library is a Songlist which represents the MPD song library.
@@ -13,7 +11,7 @@ type Library struct {
 
 func NewLibrary() (s *Library) {
 	s = &Library{}
-	s.songs = make([]*song.Song, 0)
+	s.clear()
 	return
 }
 
@@ -43,13 +41,4 @@ func (s *Library) Remove(index int) error {
 
 func (s *Library) RemoveIndices(indices []int) error {
 	return fmt.Errorf("The song library is read-only.")
-}
-
-func IsLibrary(s Songlist) bool {
-	switch s.(type) {
-	case *Library:
-		return true
-	default:
-		return false
-	}
 }

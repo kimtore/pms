@@ -35,8 +35,8 @@ func (cmd *Print) Execute(class int, s string) error {
 		if len(cmd.tags) == 0 {
 			return fmt.Errorf("Unexpected END, expected list of tags to print")
 		}
-		songlistWidget := cmd.api.SonglistWidget()
-		selection := songlistWidget.Selection()
+		list := cmd.api.Songlist()
+		selection := list.Selection()
 		switch selection.Len() {
 		case 0:
 			return fmt.Errorf("Cannot print song tags; no song selected")
@@ -60,7 +60,7 @@ func (cmd *Print) Execute(class int, s string) error {
 			return fmt.Errorf("Multiple songs selected; cannot print song tags")
 		}
 
-		songlistWidget.ClearSelection()
+		list.ClearSelection()
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", s)

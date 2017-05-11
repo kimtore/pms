@@ -60,13 +60,15 @@ func main() {
 	}
 
 	pms := pms.New()
-	defer pms.UI.Quit()
+	defer func() {
+		pms.QuitSignal <- 0
+	}()
 
 	pms.SetConnectionParams(opts.MpdHost, opts.MpdPort, opts.MpdPassword)
 	go pms.LoopConnect()
 
 	pms.Main()
-	pms.UI.Wait()
+	pms.Wait()
 
 	console.Log("Exiting normally.")
 }

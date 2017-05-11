@@ -42,8 +42,9 @@ func (cmd *Isolate) Execute(class int, s string) error {
 		}
 
 		songlistWidget := cmd.api.SonglistWidget()
-		selection := songlistWidget.Selection()
-		song := songlistWidget.CursorSong()
+		list := cmd.api.Songlist()
+		selection := list.Selection()
+		song := list.CursorSong()
 
 		if selection.Len() == 0 {
 			return fmt.Errorf("No selection, cannot isolate in empty songlist.")
@@ -62,10 +63,10 @@ func (cmd *Isolate) Execute(class int, s string) error {
 		fields := strings.Split(sort, ",")
 		result.Sort(fields)
 
-		songlistWidget.ClearSelection()
+		list.ClearSelection()
 		songlistWidget.AddSonglist(result)
 		songlistWidget.SetSonglist(result)
-		songlistWidget.CursorToSong(song)
+		list.CursorToSong(song)
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END.", s)

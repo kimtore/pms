@@ -3,14 +3,14 @@ package widgets
 import (
 	"strings"
 
-	"github.com/ambientsound/pms/list"
+	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
 )
 
 type ColumnheadersWidget struct {
-	columns []list.Column
+	columns songlist.Columns
 	view    views.View
 
 	style.Styled
@@ -19,11 +19,11 @@ type ColumnheadersWidget struct {
 
 func NewColumnheadersWidget() (c *ColumnheadersWidget) {
 	c = &ColumnheadersWidget{}
-	c.columns = make(list.Columns, 0)
+	c.columns = make(songlist.Columns, 0)
 	return
 }
 
-func (c *ColumnheadersWidget) SetColumns(cols list.Columns) {
+func (c *ColumnheadersWidget) SetColumns(cols songlist.Columns) {
 	c.columns = cols
 }
 

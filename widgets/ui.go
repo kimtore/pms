@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
@@ -25,7 +26,6 @@ type UI struct {
 	Columnheaders *ColumnheadersWidget
 	Multibar      *MultibarWidget
 	Songlist      *SonglistWidget
-	Styles        style.Stylesheet
 
 	// Input events
 	EventInputCommand chan string
@@ -42,7 +42,7 @@ type UI struct {
 	views.WidgetWatchers
 }
 
-func NewUI(opts *options.Options) *UI {
+func NewUI(a api.API) *UI {
 	var err error
 
 	ui := &UI{}
@@ -56,23 +56,22 @@ func NewUI(opts *options.Options) *UI {
 	ui.EventKeyInput = make(chan parser.KeyEvent, 16)
 
 	ui.App = &views.Application{}
-	ui.options = opts
+	ui.options = a.Options()
 
 	ui.Topbar = NewTopbar()
 	ui.Columnheaders = NewColumnheadersWidget()
 	ui.Multibar = NewMultibarWidget(ui.EventKeyInput)
-	ui.Songlist = NewSonglistWidget(ui.options)
+	ui.Songlist = NewSonglistWidget(a)
 
 	ui.Multibar.Watch(ui)
 	ui.Songlist.Watch(ui)
 
 	// Set styles
-	ui.Styles = make(style.Stylesheet)
-	ui.SetStylesheet(ui.Styles)
-	ui.Topbar.SetStylesheet(ui.Stylesheet())
-	ui.Columnheaders.SetStylesheet(ui.Stylesheet())
-	ui.Songlist.SetStylesheet(ui.Stylesheet())
-	ui.Multibar.SetStylesheet(ui.Stylesheet())
+	ui.SetStylesheet(a.Styles())
+	ui.Topbar.SetStylesheet(a.Styles())
+	ui.Columnheaders.SetStylesheet(a.Styles())
+	ui.Songlist.SetStylesheet(a.Styles())
+	ui.Multibar.SetStylesheet(a.Styles())
 
 	ui.CreateLayout()
 	ui.App.SetScreen(ui.Screen)
@@ -159,24 +158,25 @@ func (ui *UI) PostFunc(f func()) {
 func (ui *UI) HandleEvent(ev tcell.Event) bool {
 	switch ev := ev.(type) {
 
+	// If a list was changed, make sure we obtain the correct column widths.
 	case *EventListChanged:
-		//ui.Topbar.SetCenter(ui.Title(), ui.Style("title"))
-		ui.Columnheaders.SetColumns(ui.Songlist.Columns())
-		ui.App.Update()
+		columns := strings.Split(ui.options.StringValue("columns"), ",")
+		ui.Columnheaders.SetColumns(ui.Songlist.Songlist().Columns(columns))
 		return true
 
 	case *EventModeSync:
 		console.Log("EventModeChanged %d", ev.InputMode)
+		hasVisual := ui.Songlist.Songlist().HasVisualSelection()
 		switch {
 		case ev.InputMode != ui.Multibar.Mode():
 			console.Log("Resetting multibar mode based on songlist change")
 			ui.Multibar.SetMode(ev.InputMode)
-		case ev.InputMode == MultibarModeVisual && !ui.Songlist.HasVisualSelection():
+		case ev.InputMode == MultibarModeVisual && !hasVisual:
 			console.Log("Enabling visual selection based on multibar setting")
-			ui.Songlist.EnableVisualSelection()
-		case ev.InputMode != MultibarModeVisual && ui.Songlist.HasVisualSelection():
+			ui.Songlist.Songlist().EnableVisualSelection()
+		case ev.InputMode != MultibarModeVisual && hasVisual:
 			console.Log("Disabling visual selection based on multibar setting")
-			ui.Songlist.DisableVisualSelection()
+			ui.Songlist.Songlist().DisableVisualSelection()
 		}
 		ui.UpdateCursor()
 		return true

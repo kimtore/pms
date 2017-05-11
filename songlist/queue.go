@@ -17,7 +17,7 @@ type Queue struct {
 func NewQueue(mpdClient func() *mpd.Client) (s *Queue) {
 	s = &Queue{}
 	s.mpdClient = mpdClient
-	s.songs = make([]*song.Song, 0)
+	s.clear()
 	return
 }
 
@@ -131,11 +131,8 @@ func (q *Queue) Merge(s Songlist) (*Queue, error) {
 	return newQueue, nil
 }
 
-func IsQueue(s Songlist) bool {
-	switch s.(type) {
-	case *Queue:
-		return true
-	default:
-		return false
-	}
+// IndexAtSong returns true if the song at the specified index is at a song with the same ID.
+func (q *Queue) IndexAtSong(i int, song *song.Song) bool {
+	check := q.Song(i)
+	return song != nil && check != nil && check.ID == song.ID
 }

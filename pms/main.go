@@ -25,49 +25,49 @@ func (pms *PMS) Main() {
 			pms.handleEventOption(key)
 		case msg := <-pms.EventMessage:
 			pms.handleEventMessage(msg)
-		case ev := <-pms.UI.EventKeyInput:
+		case ev := <-pms.ui.EventKeyInput:
 			pms.KeyInput(ev)
-		case s := <-pms.UI.EventInputCommand:
+		case s := <-pms.ui.EventInputCommand:
 			pms.Execute(s)
 		}
 
 		// Draw missing parts after every iteration
-		pms.UI.App.PostFunc(func() {
-			pms.UI.App.Update()
+		pms.ui.App.PostFunc(func() {
+			pms.ui.App.Update()
 		})
 	}
 }
 
 func (pms *PMS) handleQuitSignal() {
 	console.Log("Received quit signal, exiting.")
-	pms.UI.Quit()
+	pms.ui.Quit()
 }
 
 func (pms *PMS) handleEventLibrary() {
 	console.Log("Song library updated in MPD, assigning to UI")
-	pms.UI.App.PostFunc(func() {
-		pms.UI.Songlist.ReplaceSonglist(pms.Library)
+	pms.ui.App.PostFunc(func() {
+		pms.ui.Songlist.ReplaceSonglist(pms.Library)
 	})
 }
 
 func (pms *PMS) handleEventQueue() {
 	console.Log("Queue updated in MPD, assigning to UI")
-	pms.UI.App.PostFunc(func() {
-		pms.UI.Songlist.ReplaceSonglist(pms.Queue)
+	pms.ui.App.PostFunc(func() {
+		pms.ui.Songlist.ReplaceSonglist(pms.Queue)
 	})
 }
 
 func (pms *PMS) handleEventIndex() {
 	console.Log("Search index updated, assigning to UI")
-	pms.UI.App.PostFunc(func() {
-		pms.UI.SetIndex(pms.Index)
+	pms.ui.App.PostFunc(func() {
+		pms.ui.SetIndex(pms.Index)
 	})
 }
 
 func (pms *PMS) handleEventList() {
 	console.Log("Songlist changed, notifying UI")
-	pms.UI.App.PostFunc(func() {
-		pms.UI.Songlist.ListChanged()
+	pms.ui.App.PostFunc(func() {
+		pms.ui.Songlist.ListChanged()
 	})
 }
 
@@ -77,21 +77,22 @@ func (pms *PMS) handleEventOption(key string) {
 	case "topbar":
 		pms.setupTopbar()
 	case "columns":
-		pms.UI.App.PostFunc(func() {
-			pms.UI.Songlist.ListChanged()
+		pms.ui.App.PostFunc(func() {
+			pms.ui.Songlist.ListChanged()
 		})
 	}
 }
 
 func (pms *PMS) handleEventPlayer() {
-	pms.UI.App.PostFunc(func() {
-		pms.UI.Songlist.SetCurrentSong(pms.CurrentSong())
+	pms.ui.App.PostFunc(func() {
+		//FIXME
+		//pms.ui.Songlist.SetCurrentSong(pms.CurrentSong())
 	})
 }
 
 func (pms *PMS) handleEventMessage(msg message.Message) {
 	message.Log(msg)
-	pms.UI.App.PostFunc(func() {
-		pms.UI.Multibar.SetMessage(msg)
+	pms.ui.App.PostFunc(func() {
+		pms.ui.Multibar.SetMessage(msg)
 	})
 }

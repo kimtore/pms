@@ -53,6 +53,9 @@ type API interface {
 	// be checked using PlayerStatus().
 	Song() *song.Song
 
+	// Songlist returns the visible songlist.
+	Songlist() songlist.Songlist
+
 	// SonglistWidget returns the songlist widget.
 	SonglistWidget() SonglistWidget
 
@@ -69,7 +72,7 @@ type baseAPI struct {
 	eventOption    chan string
 	index          func() *index.Index
 	mpdClient      func() *mpd.Client
-	multibar       MultibarWidget
+	multibar       func() MultibarWidget
 	options        *options.Options
 	playerStatus   func() pms_mpd.PlayerStatus
 	queue          func() *songlist.Queue
@@ -78,7 +81,7 @@ type baseAPI struct {
 	song           func() *song.Song
 	songlistWidget func() SonglistWidget
 	styles         style.Stylesheet
-	ui             UI
+	ui             func() UI
 }
 
 func BaseAPI(
@@ -87,7 +90,7 @@ func BaseAPI(
 	eventOption chan string,
 	index func() *index.Index,
 	mpdClient func() *mpd.Client,
-	multibar MultibarWidget,
+	multibar func() MultibarWidget,
 	options *options.Options,
 	playerStatus func() pms_mpd.PlayerStatus,
 	queue func() *songlist.Queue,
@@ -96,7 +99,7 @@ func BaseAPI(
 	song func() *song.Song,
 	songlistWidget func() SonglistWidget,
 	styles style.Stylesheet,
-	ui UI,
+	ui func() UI,
 
 ) API {
 	return &baseAPI{
@@ -135,7 +138,7 @@ func (api *baseAPI) MpdClient() *mpd.Client {
 }
 
 func (api *baseAPI) Multibar() MultibarWidget {
-	return api.multibar
+	return api.multibar()
 }
 
 func (api *baseAPI) OptionChanged(key string) {
@@ -166,6 +169,13 @@ func (api *baseAPI) Song() *song.Song {
 	return api.song()
 }
 
+func (api *baseAPI) Songlist() songlist.Songlist {
+	if w := api.songlistWidget(); w != nil {
+		return w.Songlist()
+	}
+	return nil
+}
+
 func (api *baseAPI) SonglistWidget() SonglistWidget {
 	return api.songlistWidget()
 }
@@ -175,5 +185,5 @@ func (api *baseAPI) Styles() style.Stylesheet {
 }
 
 func (api *baseAPI) UI() UI {
-	return api.ui
+	return api.ui()
 }

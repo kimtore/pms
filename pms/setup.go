@@ -12,6 +12,7 @@ import (
 	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/topbar"
 	"github.com/ambientsound/pms/widgets"
 )
@@ -27,6 +28,7 @@ func New() *PMS {
 	pms.EventOption = make(chan string, 1024)
 	pms.EventQueue = make(chan int)
 	pms.QuitSignal = make(chan int, 1)
+	pms.stylesheet = make(style.Stylesheet)
 
 	pms.Queue = songlist.NewQueue(pms.CurrentMpdClient)
 	pms.Library = songlist.NewLibrary()
@@ -51,15 +53,15 @@ func (pms *PMS) API() api.API {
 		pms.EventOption,
 		pms.CurrentIndex,
 		pms.CurrentMpdClient,
-		pms.UI.Multibar,
+		pms.Multibar,
 		pms.Options,
 		pms.CurrentPlayerStatus,
 		pms.CurrentQueue,
 		pms.QuitSignal,
 		pms.Sequencer,
 		pms.CurrentSong,
-		pms.UI.CurrentSonglistWidget,
-		pms.UI.Stylesheet(),
+		pms.CurrentSonglistWidget,
+		pms.Stylesheet(),
 		pms.UI,
 	)
 }
@@ -94,11 +96,11 @@ func (pms *PMS) setupCLI() {
 
 func (pms *PMS) setupUI() {
 	timer := time.Now()
-	pms.UI = widgets.NewUI(pms.Options)
-	pms.UI.Start()
-	pms.UI.Songlist.AddSonglist(pms.Queue)
-	pms.UI.Songlist.AddSonglist(pms.Library)
-	pms.UI.Songlist.SetSonglist(pms.Queue)
+	pms.ui = widgets.NewUI(pms.API())
+	pms.ui.Start()
+	pms.ui.Songlist.AddSonglist(pms.Queue)
+	pms.ui.Songlist.AddSonglist(pms.Library)
+	pms.ui.Songlist.SetSonglist(pms.Queue)
 
 	console.Log("UI initialized in %s", time.Since(timer).String())
 }
@@ -107,7 +109,7 @@ func (pms *PMS) setupTopbar() {
 	config := pms.Options.StringValue("topbar")
 	matrix, err := topbar.Parse(pms.API(), config)
 	if err == nil {
-		pms.UI.Topbar.SetMatrix(matrix)
+		pms.ui.Topbar.SetMatrix(matrix)
 	} else {
 		pms.Error("Error in topbar configuration: %s", err)
 	}
