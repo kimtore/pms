@@ -95,7 +95,7 @@ func (m *MultibarWidget) DrawStatusbar() {
 		s = "/" + m.RuneString()
 		st = m.Style("searchText")
 	default:
-		if len(m.msg.Text) > 0 && m.api.Songlist().HasVisualSelection() {
+		if len(m.msg.Text) == 0 && m.api.Songlist().HasVisualSelection() {
 			s = "-- VISUAL --"
 			st = m.Style("visualText")
 		} else {
