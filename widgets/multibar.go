@@ -291,6 +291,10 @@ func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 		m.handleHistory(1)
 	case tcell.KeyCtrlG, tcell.KeyCtrlC:
 		m.handleAbort()
+	case tcell.KeyCtrlA, tcell.KeyHome:
+		m.handleCursor(-len(m.runes))
+	case tcell.KeyCtrlE, tcell.KeyEnd:
+		m.handleCursor(len(m.runes))
 	case tcell.KeyBS, tcell.KeyDEL:
 		m.handleBackspace()
 
