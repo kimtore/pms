@@ -205,6 +205,19 @@ func (m *MultibarWidget) handleTextRune(r rune) {
 	PostEventInputChanged(m)
 }
 
+// deleteBackwards returns a new rune slice with a part cut out. If the deleted
+// part is bigger than the string contains, deleteBackwards removes as much as
+// possible.
+func deleteBackwards(src []rune, cursor int, length int) []rune {
+	if cursor < length {
+		length = cursor
+	}
+	runes := make([]rune, len(src)-length)
+	index := copy(runes, src[:cursor-length])
+	copy(runes[index:], src[cursor:])
+	return runes
+}
+
 // handleBackspace deletes a literal rune behind the cursor position.
 func (m *MultibarWidget) handleBackspace() {
 
@@ -214,16 +227,8 @@ func (m *MultibarWidget) handleBackspace() {
 		return
 	}
 
-	// Can't delete at start of string
-	if m.cursor == 0 {
-		return
-	}
-
 	// Copy all runes except the deleted rune
-	runes := make([]rune, len(m.runes)-1)
-	index := copy(runes, m.runes[:m.cursor-1])
-	copy(runes[index:], m.runes[m.cursor:])
-
+	runes := deleteBackwards(m.runes, m.cursor, 1)
 	m.cursor--
 	m.setRunes(runes)
 
