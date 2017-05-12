@@ -221,7 +221,7 @@ func (m *MultibarWidget) handleBackspace() {
 
 	// Copy all runes except the deleted rune
 	runes := make([]rune, len(m.runes)-1)
-	copy(runes, m.runes[:m.cursor-1])
+	index := copy(runes, m.runes[:m.cursor-1])
 	copy(runes[index:], m.runes[m.cursor:])
 
 	m.cursor--
