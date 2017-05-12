@@ -24,15 +24,22 @@ func (cmd *Remove) Execute(class int, s string) error {
 	switch class {
 	case lexer.TokenEnd:
 		list := cmd.api.Songlist()
-		selection := list.SelectionIndices()
+		selection := list.Selection()
+		indices := list.SelectionIndices()
+		len := len(indices)
 
-		if len(selection) == 0 {
+		if len == 0 {
 			return fmt.Errorf("No song selected, cannot remove without any parameters.")
 		}
 
-		index := selection[0]
-		err = list.RemoveIndices(selection)
+		index := indices[0]
+		err = list.RemoveIndices(indices)
 		if err == nil {
+			if len == 1 {
+				cmd.api.Message("Removed '%s'", selection.Song(0).StringTags["file"])
+			} else {
+				cmd.api.Message("%d fewer songs", len)
+			}
 			list.ClearSelection()
 			list.SetCursor(index)
 		}
