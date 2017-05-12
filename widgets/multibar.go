@@ -281,13 +281,13 @@ func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 		m.handleTruncate()
 	case tcell.KeyEnter:
 		m.handleFinished()
-	case tcell.KeyLeft:
+	case tcell.KeyLeft, tcell.KeyCtrlB:
 		m.handleCursor(-1)
-	case tcell.KeyRight:
+	case tcell.KeyRight, tcell.KeyCtrlF:
 		m.handleCursor(1)
-	case tcell.KeyUp:
+	case tcell.KeyUp, tcell.KeyCtrlP:
 		m.handleHistory(-1)
-	case tcell.KeyDown:
+	case tcell.KeyDown, tcell.KeyCtrlN:
 		m.handleHistory(1)
 	case tcell.KeyCtrlG, tcell.KeyCtrlC:
 		m.handleAbort()
