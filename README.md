@@ -74,7 +74,7 @@ The following features have been implemented:
 
 This functionality is present in the `0.42.x` branch, but missing in master:
 
-* Basic player controls: consume, repeat, single, random).
+* Basic player controls: consume, repeat, single, random.
 * Automatic add to queue when queue is nearing end.
 * Copy and paste.
 * Tab completion.

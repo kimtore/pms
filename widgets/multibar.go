@@ -23,6 +23,7 @@ type history struct {
 // MultibarWidget receives keyboard events, displays status messages, and the position readout.
 type MultibarWidget struct {
 	api       api.API
+	cursor    int
 	events    chan parser.KeyEvent
 	inputMode int
 	msg       message.Message
@@ -144,6 +145,7 @@ func (m *MultibarWidget) Mode() int {
 
 func (m *MultibarWidget) setRunes(r []rune) {
 	m.runes = r
+	m.validateCursor()
 	m.DrawStatusbar()
 }
 
@@ -180,25 +182,52 @@ func (m *MultibarWidget) RuneLen() int {
 	return len(m.runes)
 }
 
+func (m *MultibarWidget) Cursor() int {
+	return m.cursor
+}
+
 func (m *MultibarWidget) handleTruncate() {
 	m.setRunes(make([]rune, 0))
 	m.History().Reset(m.RuneString())
 	PostEventInputChanged(m)
 }
 
+// handleTextRune inserts a literal rune at the cursor position.
 func (m *MultibarWidget) handleTextRune(r rune) {
-	m.setRunes(append(m.runes, r))
+	runes := make([]rune, len(m.runes)+1)
+	copy(runes, m.runes[:m.cursor])
+	copy(runes[m.cursor+1:], m.runes[m.cursor:])
+	runes[m.cursor] = r
+	m.setRunes(runes)
+
+	m.cursor++
 	m.History().Reset(m.RuneString())
 	PostEventInputChanged(m)
 }
 
+// handleBackspace deletes a literal rune behind the cursor position.
 func (m *MultibarWidget) handleBackspace() {
-	if len(m.runes) > 0 {
-		m.setRunes(m.runes[:len(m.runes)-1])
-		m.History().Reset(m.RuneString())
-	} else {
+
+	// Backspace on an empty string returns to normal mode.
+	if len(m.runes) == 0 {
 		m.SetMode(MultibarModeNormal)
+		return
 	}
+
+	// Can't delete at start of string
+	if m.cursor == 0 {
+		return
+	}
+
+	// Copy all runes except the deleted rune
+	runes := make([]rune, len(m.runes)-1)
+	copy(runes, m.runes[:m.cursor-1])
+	copy(runes[index:], m.runes[m.cursor:])
+
+	m.cursor--
+	m.setRunes(runes)
+
+	m.History().Reset(m.RuneString())
 	PostEventInputChanged(m)
 }
 
@@ -217,7 +246,24 @@ func (m *MultibarWidget) handleAbort() {
 func (m *MultibarWidget) handleHistory(offset int) {
 	s := m.History().Navigate(offset)
 	m.setRunes([]rune(s))
+	m.cursor = len(m.runes)
 	PostEventInputChanged(m)
+}
+
+func (m *MultibarWidget) handleCursor(offset int) {
+	m.cursor += offset
+	m.validateCursor()
+	PostEventInputChanged(m) // FIXME: this triggers a search query; disable that
+}
+
+// validateCursor makes sure the cursor stays within boundaries.
+func (m *MultibarWidget) validateCursor() {
+	if m.cursor > len(m.runes) {
+		m.cursor = len(m.runes)
+	}
+	if m.cursor < 0 {
+		m.cursor = 0
+	}
 }
 
 // handleTextInputEvent is called when an input event is received during any of the text input modes.
@@ -230,6 +276,10 @@ func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 		m.handleTruncate()
 	case tcell.KeyEnter:
 		m.handleFinished()
+	case tcell.KeyLeft:
+		m.handleCursor(-1)
+	case tcell.KeyRight:
+		m.handleCursor(1)
 	case tcell.KeyUp:
 		m.handleHistory(-1)
 	case tcell.KeyDown:

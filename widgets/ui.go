@@ -147,7 +147,7 @@ func (ui *UI) UpdateCursor() {
 	switch ui.Multibar.Mode() {
 	case MultibarModeInput, MultibarModeSearch:
 		_, ymax := ui.Screen.Size()
-		ui.Screen.ShowCursor(ui.Multibar.RuneLen()+1, ymax-1)
+		ui.Screen.ShowCursor(ui.Multibar.Cursor()+1, ymax-1)
 	default:
 		ui.Screen.HideCursor()
 	}
