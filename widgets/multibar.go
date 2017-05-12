@@ -13,15 +13,24 @@ import (
 	"github.com/gdamore/tcell/views"
 )
 
+// history represents a text history that can be navigated through.
+type history struct {
+	items   []string
+	current string
+	index   int
+}
+
 // MultibarWidget receives keyboard events, displays status messages, and the position readout.
 type MultibarWidget struct {
-	runes     []rune
 	api       api.API
-	msg       message.Message
-	textStyle tcell.Style
 	events    chan parser.KeyEvent
-
 	inputMode int
+	msg       message.Message
+	runes     []rune
+	textStyle tcell.Style
+
+	// Three histories, one for each input mode
+	history [3]history
 
 	views.TextBar
 	style.Styled
@@ -35,12 +44,67 @@ const (
 	MultibarModeSearch
 )
 
+// Add adds to the input history.
+func (h *history) Add(s string) {
+	if len(s) > 0 {
+		hl := len(h.items)
+		if hl == 0 || h.items[hl-1] != s {
+			h.items = append(h.items, s)
+		}
+	}
+	h.Reset(s)
+}
+
+// Reset resets the cursor offset to the last position.
+func (h *history) Reset(s string) {
+	h.index = len(h.items)
+	h.current = s
+}
+
+// Current returns the current history item.
+func (h *history) Current() string {
+	if len(h.items) == 0 || h.index >= len(h.items) {
+		console.Log("Want index %d, returning current string '%s'", h.index, h.current)
+		h.index = len(h.items)
+		return h.current
+	}
+	h.validateIndex()
+	console.Log("History returning index %d", h.index)
+	return h.items[h.index]
+}
+
+// Navigate navigates the history and returns that history item.
+func (h *history) Navigate(offset int) string {
+	h.index += offset
+	return h.Current()
+}
+
+// validateIndex ensures that the item index stays within the valid range.
+func (h *history) validateIndex() {
+	if h.index >= len(h.items) {
+		h.index = len(h.items) - 1
+	}
+	if h.index < 0 {
+		h.index = 0
+	}
+}
+
 func NewMultibarWidget(a api.API, events chan parser.KeyEvent) *MultibarWidget {
 	return &MultibarWidget{
 		api:    a,
 		runes:  make([]rune, 0),
 		events: events,
+		history: [3]history{
+			{items: make([]string, 0)},
+			{items: make([]string, 0)},
+			{items: make([]string, 0)},
+		},
 	}
+}
+
+// History returns the input history of the current input mode.
+func (m *MultibarWidget) History() *history {
+	return &m.history[m.inputMode]
 }
 
 func (m *MultibarWidget) SetMessage(msg message.Message) {
@@ -68,7 +132,8 @@ func (m *MultibarWidget) SetMode(mode int) error {
 	}
 	console.Log("Switching input mode from %d to %d", m.inputMode, mode)
 	m.inputMode = mode
-	m.setRunes([]rune{})
+	m.setRunes(make([]rune, 0))
+	m.History().Reset("")
 	PostEventInputChanged(m)
 	return nil
 }
@@ -117,43 +182,69 @@ func (m *MultibarWidget) RuneLen() int {
 
 func (m *MultibarWidget) handleTruncate() {
 	m.setRunes(make([]rune, 0))
+	m.History().Reset(m.RuneString())
 	PostEventInputChanged(m)
 }
 
 func (m *MultibarWidget) handleTextRune(r rune) {
 	m.setRunes(append(m.runes, r))
+	m.History().Reset(m.RuneString())
 	PostEventInputChanged(m)
 }
 
 func (m *MultibarWidget) handleBackspace() {
 	if len(m.runes) > 0 {
 		m.setRunes(m.runes[:len(m.runes)-1])
-		PostEventInputChanged(m)
+		m.History().Reset(m.RuneString())
 	} else {
 		m.SetMode(MultibarModeNormal)
 	}
+	PostEventInputChanged(m)
+}
+
+func (m *MultibarWidget) handleFinished() {
+	m.History().Add(m.RuneString())
+	PostEventInputFinished(m)
+}
+
+func (m *MultibarWidget) handleAbort() {
+	m.History().Add(m.RuneString())
+	m.History().Reset("")
+	m.setRunes(make([]rune, 0))
+	m.SetMode(MultibarModeNormal)
+}
+
+func (m *MultibarWidget) handleHistory(offset int) {
+	s := m.History().Navigate(offset)
+	m.setRunes([]rune(s))
+	PostEventInputChanged(m)
 }
 
 // handleTextInputEvent is called when an input event is received during any of the text input modes.
 func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 	switch ev.Key() {
+
 	case tcell.KeyRune:
 		m.handleTextRune(ev.Rune())
-		return true
 	case tcell.KeyCtrlU:
 		m.handleTruncate()
-		return true
 	case tcell.KeyEnter:
-		PostEventInputFinished(m)
-		return true
-	case tcell.KeyBS:
-		fallthrough
-	case tcell.KeyDEL:
+		m.handleFinished()
+	case tcell.KeyUp:
+		m.handleHistory(-1)
+	case tcell.KeyDown:
+		m.handleHistory(1)
+	case tcell.KeyCtrlG, tcell.KeyCtrlC:
+		m.handleAbort()
+	case tcell.KeyBS, tcell.KeyDEL:
 		m.handleBackspace()
-		return true
+
+	default:
+		console.Log("Unhandled text input event in Multibar: %s", ev.Key())
+		return false
 	}
-	console.Log("Unhandled text input event in Multibar: %s", ev.Key())
-	return false
+
+	return true
 }
 
 // handleNormalEvent is called when an input event is received during command mode.

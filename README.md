@@ -64,12 +64,17 @@ The default configuration can be found in [options/defaults.go](options/defaults
 
 The current goal of the Go implementation is to implement most of the features found in the 0.42 branch.
 
-This functionality is not implemented yet:
+The following features have been implemented:
 
-* Basic player controls (~~play~~, ~~add~~, ~~pause~~, ~~stop~~, ~~next~~, ~~prev~~, ~~volume~~, consume, repeat, single, random).
-* ~~Customizable topbar~~.
-* ~~Customizable colors~~.
-* ~~Multiple selection~~.
+* Basic player controls: play, add, pause, stop, next, prev, volume.
+* Customizable topbar.
+* Customizable colors.
+* Multiple selection.
+* Scroll through history of commands and search.
+
+This functionality is present in the `0.42.x` branch, but missing in master:
+
+* Basic player controls: consume, repeat, single, random).
 * Automatic add to queue when queue is nearing end.
 * Copy and paste.
 * Tab completion.
