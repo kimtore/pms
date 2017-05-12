@@ -6,7 +6,6 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/widgets"
 )
 
 // Isolate searches for songs that have similar tags as the selection.
@@ -65,7 +64,6 @@ func (cmd *Isolate) Execute(class int, s string) error {
 		result.Sort(fields)
 
 		list.ClearSelection()
-		cmd.api.Multibar().SetMode(widgets.MultibarModeNormal) // FIXME: remove
 		songlistWidget.AddSonglist(result)
 		songlistWidget.SetSonglist(result)
 		list.CursorToSong(song)

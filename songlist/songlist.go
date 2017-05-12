@@ -51,6 +51,7 @@ type Songlist interface {
 	SelectionIndices() []int
 	SetCursor(int)
 	SetSelected(int, bool)
+	ToggleVisualSelection()
 	ValidateCursor(int, int)
 }
 

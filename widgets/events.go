@@ -55,17 +55,6 @@ func PostEventScroll(w eventfulWidget) {
 	w.PostEvent(ev)
 }
 
-type EventModeSync struct {
-	widgetEvent
-	InputMode int
-}
-
-func PostEventModeSync(w eventfulWidget, inputMode int) {
-	ev := &EventModeSync{InputMode: inputMode}
-	ev.SetWidget(w)
-	w.PostEvent(ev)
-}
-
 func (wev *widgetEvent) Widget() views.Widget {
 	return wev.widget
 }

@@ -44,39 +44,6 @@ func (s *BaseSonglist) SelectionIndices() []int {
 	return selection
 }
 
-// validateVisualSelection makes sure the visual selection stays in range of
-// the songlist size.
-func (s *BaseSonglist) validateVisualSelection(ymin, ymax, ystart int) (int, int, int) {
-	if s.Len() == 0 || ymin < 0 || ymax < 0 || !s.InRange(ystart) {
-		return -1, -1, -1
-	}
-	if !s.InRange(ymin) {
-		ymin = 0
-	}
-	if !s.InRange(ymax) {
-		ymax = s.Len() - 1
-	}
-	return ymin, ymax, ystart
-}
-
-// VisualSelection returns the min, max, and start position of visual select.
-func (s *BaseSonglist) VisualSelection() (int, int, int) {
-	return s.visualSelection[0], s.visualSelection[1], s.visualSelection[2]
-}
-
-// SetVisualSelection sets the range of the visual selection. Use negative
-// integers to un-select all visually selected songs.
-func (s *BaseSonglist) SetVisualSelection(ymin, ymax, ystart int) {
-	s.visualSelection[0] = ymin
-	s.visualSelection[1] = ymax
-	s.visualSelection[2] = ystart
-}
-
-// HasVisualSelection returns true if the songlist is in visual selection mode.
-func (s *BaseSonglist) HasVisualSelection() bool {
-	return s.visualSelection[0] >= 0 && s.visualSelection[1] >= 0
-}
-
 // SetSelection sets the selected status of a single song.
 func (s *BaseSonglist) SetSelected(i int, selected bool) {
 	var x struct{}
@@ -124,6 +91,39 @@ func (s *BaseSonglist) Selection() Songlist {
 	return dest
 }
 
+// validateVisualSelection makes sure the visual selection stays in range of
+// the songlist size.
+func (s *BaseSonglist) validateVisualSelection(ymin, ymax, ystart int) (int, int, int) {
+	if s.Len() == 0 || ymin < 0 || ymax < 0 || !s.InRange(ystart) {
+		return -1, -1, -1
+	}
+	if !s.InRange(ymin) {
+		ymin = 0
+	}
+	if !s.InRange(ymax) {
+		ymax = s.Len() - 1
+	}
+	return ymin, ymax, ystart
+}
+
+// VisualSelection returns the min, max, and start position of visual select.
+func (s *BaseSonglist) VisualSelection() (int, int, int) {
+	return s.visualSelection[0], s.visualSelection[1], s.visualSelection[2]
+}
+
+// SetVisualSelection sets the range of the visual selection. Use negative
+// integers to un-select all visually selected songs.
+func (s *BaseSonglist) SetVisualSelection(ymin, ymax, ystart int) {
+	s.visualSelection[0] = ymin
+	s.visualSelection[1] = ymax
+	s.visualSelection[2] = ystart
+}
+
+// HasVisualSelection returns true if the songlist is in visual selection mode.
+func (s *BaseSonglist) HasVisualSelection() bool {
+	return s.visualSelection[0] >= 0 && s.visualSelection[1] >= 0
+}
+
 // EnableVisualSelection sets start and stop of the visual selection to the
 // cursor position.
 func (s *BaseSonglist) EnableVisualSelection() {
@@ -134,6 +134,15 @@ func (s *BaseSonglist) EnableVisualSelection() {
 // DisableVisualSelection disables visual selection.
 func (s *BaseSonglist) DisableVisualSelection() {
 	s.SetVisualSelection(-1, -1, -1)
+}
+
+// ToggleVisualSelection toggles visual selection on and off.
+func (s *BaseSonglist) ToggleVisualSelection() {
+	if !s.HasVisualSelection() {
+		s.EnableVisualSelection()
+	} else {
+		s.DisableVisualSelection()
+	}
 }
 
 // expandVisualSelection sets the visual selection boundaries from where it

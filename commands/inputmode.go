@@ -28,13 +28,6 @@ func (cmd *InputMode) Execute(class int, s string) error {
 		switch s {
 		case "normal":
 			cmd.mode = widgets.MultibarModeNormal
-		case "visual":
-			switch multibar.Mode() {
-			case widgets.MultibarModeVisual:
-				cmd.mode = widgets.MultibarModeNormal
-			default:
-				cmd.mode = widgets.MultibarModeVisual
-			}
 		case "input":
 			cmd.mode = widgets.MultibarModeInput
 		case "search":

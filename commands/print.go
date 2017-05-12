@@ -6,7 +6,6 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/widgets"
 )
 
 // Print displays information about the selected song's tags.
@@ -62,7 +61,6 @@ func (cmd *Print) Execute(class int, s string) error {
 		}
 
 		list.ClearSelection()
-		cmd.api.Multibar().SetMode(widgets.MultibarModeNormal) // FIXME: remove
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", s)

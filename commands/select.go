@@ -5,13 +5,13 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/widgets"
 )
 
 // Select manipulates song selection within a songlist.
 type Select struct {
 	api      api.API
 	toggle   bool
+	visual   bool
 	finished bool
 }
 
@@ -33,8 +33,12 @@ func (cmd *Select) Execute(class int, s string) error {
 			return fmt.Errorf("Unexpected '%s', expected END", s)
 		}
 		switch s {
+		// Toggle cursor select on/off
 		case "toggle":
 			cmd.toggle = true
+		// Toggle visual mode on/off
+		case "visual":
+			cmd.visual = true
 		default:
 			return fmt.Errorf("Unexpected '%s', expected identifier", s)
 		}
@@ -46,10 +50,13 @@ func (cmd *Select) Execute(class int, s string) error {
 		}
 
 		switch {
-		case list.HasVisualSelection():
+		case cmd.toggle && list.HasVisualSelection():
 			list.CommitVisualSelection()
 			list.DisableVisualSelection()
-			cmd.api.Multibar().SetMode(widgets.MultibarModeNormal) // FIXME: remove
+
+		case cmd.visual:
+			list.ToggleVisualSelection()
+			return nil
 
 		default:
 			index := list.Cursor()

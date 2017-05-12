@@ -13,7 +13,7 @@ const Defaults string = `
 # Global options
 set columns=artist,track,title,album,year,time
 set sort=file,track,disc,album,year,albumartistsort
-set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed $state $time;|[${list|index}/${list|total}] ${list|title}||;;"
+set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed ${state|unicode} $time;|[${list|index}/${list|total}] ${list|title}||;;"
 
 # Song tag styles
 style album teal
@@ -74,8 +74,8 @@ bind e cursor next-of album
 bind : inputmode input
 bind / inputmode search
 bind <F3> inputmode search
-bind v inputmode visual
-bind V inputmode visual
+bind v select visual
+bind V select visual
 
 # Keyboard bindings: player and mixer
 bind <Enter> play cursor

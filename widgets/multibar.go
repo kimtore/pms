@@ -3,6 +3,7 @@ package widgets
 import (
 	"fmt"
 
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/message"
@@ -12,10 +13,10 @@ import (
 	"github.com/gdamore/tcell/views"
 )
 
+// MultibarWidget receives keyboard events, displays status messages, and the position readout.
 type MultibarWidget struct {
-	// runes contain user input, while
-	// text and errorText contains text set by the program.
 	runes     []rune
+	api       api.API
 	msg       message.Message
 	textStyle tcell.Style
 	events    chan parser.KeyEvent
@@ -30,16 +31,16 @@ type MultibarWidget struct {
 // MultibarWidget.inputMode against these constants.
 const (
 	MultibarModeNormal = iota
-	MultibarModeVisual
 	MultibarModeInput
 	MultibarModeSearch
 )
 
-func NewMultibarWidget(events chan parser.KeyEvent) *MultibarWidget {
-	m := &MultibarWidget{}
-	m.runes = make([]rune, 0)
-	m.events = events
-	return m
+func NewMultibarWidget(a api.API, events chan parser.KeyEvent) *MultibarWidget {
+	return &MultibarWidget{
+		api:    a,
+		runes:  make([]rune, 0),
+		events: events,
+	}
 }
 
 func (m *MultibarWidget) SetMessage(msg message.Message) {
@@ -60,7 +61,6 @@ func (m *MultibarWidget) SetMessage(msg message.Message) {
 func (m *MultibarWidget) SetMode(mode int) error {
 	switch mode {
 	case MultibarModeNormal:
-	case MultibarModeVisual:
 	case MultibarModeInput:
 	case MultibarModeSearch:
 	default:
@@ -69,7 +69,6 @@ func (m *MultibarWidget) SetMode(mode int) error {
 	console.Log("Switching input mode from %d to %d", m.inputMode, mode)
 	m.inputMode = mode
 	m.setRunes([]rune{})
-	PostEventModeSync(m, m.inputMode)
 	PostEventInputChanged(m)
 	return nil
 }
@@ -95,12 +94,14 @@ func (m *MultibarWidget) DrawStatusbar() {
 	case MultibarModeSearch:
 		s = "/" + m.RuneString()
 		st = m.Style("searchText")
-	case MultibarModeVisual:
-		s = "-- VISUAL --"
-		st = m.Style("visualText")
 	default:
-		s = m.msg.Text
-		st = m.textStyle
+		if len(m.msg.Text) > 0 && m.api.Songlist().HasVisualSelection() {
+			s = "-- VISUAL --"
+			st = m.Style("visualText")
+		} else {
+			s = m.msg.Text
+			st = m.textStyle
+		}
 	}
 
 	m.SetLeft(s, st)
@@ -167,9 +168,6 @@ func (m *MultibarWidget) HandleEvent(ev tcell.Event) bool {
 	switch ev := ev.(type) {
 	case *tcell.EventKey:
 		switch m.inputMode {
-		case MultibarModeVisual:
-			// Visual mode should have the same key bindings and behavior as normal mode.
-			fallthrough
 		case MultibarModeNormal:
 			return m.handleNormalEvent(ev)
 		case MultibarModeInput:

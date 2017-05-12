@@ -32,8 +32,9 @@ type UI struct {
 	EventKeyInput     chan parser.KeyEvent
 
 	// Data resources
+	api          api.API
 	Index        *index.Index
-	options      *options.Options
+	options      *options.Options // FIXME: use api instead
 	searchResult songlist.Songlist
 
 	// TCell
@@ -56,22 +57,23 @@ func NewUI(a api.API) *UI {
 	ui.EventKeyInput = make(chan parser.KeyEvent, 16)
 
 	ui.App = &views.Application{}
-	ui.options = a.Options()
+	ui.api = a
+	ui.options = ui.api.Options()
 
 	ui.Topbar = NewTopbar()
 	ui.Columnheaders = NewColumnheadersWidget()
-	ui.Multibar = NewMultibarWidget(ui.EventKeyInput)
-	ui.Songlist = NewSonglistWidget(a)
+	ui.Multibar = NewMultibarWidget(ui.api, ui.EventKeyInput)
+	ui.Songlist = NewSonglistWidget(ui.api)
 
 	ui.Multibar.Watch(ui)
 	ui.Songlist.Watch(ui)
 
 	// Set styles
-	ui.SetStylesheet(a.Styles())
-	ui.Topbar.SetStylesheet(a.Styles())
-	ui.Columnheaders.SetStylesheet(a.Styles())
-	ui.Songlist.SetStylesheet(a.Styles())
-	ui.Multibar.SetStylesheet(a.Styles())
+	ui.SetStylesheet(ui.api.Styles())
+	ui.Topbar.SetStylesheet(ui.api.Styles())
+	ui.Columnheaders.SetStylesheet(ui.api.Styles())
+	ui.Songlist.SetStylesheet(ui.api.Styles())
+	ui.Multibar.SetStylesheet(ui.api.Styles())
 
 	ui.CreateLayout()
 	ui.App.SetScreen(ui.Screen)
@@ -156,7 +158,7 @@ func (ui *UI) PostFunc(f func()) {
 }
 
 func (ui *UI) HandleEvent(ev tcell.Event) bool {
-	switch ev := ev.(type) {
+	switch ev.(type) {
 
 	// If a list was changed, make sure we obtain the correct column widths.
 	case *EventListChanged:
@@ -164,23 +166,6 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 		cols := ui.Songlist.Songlist().Columns(tags)
 		ui.Songlist.SetColumns(tags)
 		ui.Columnheaders.SetColumns(cols)
-		return true
-
-	case *EventModeSync:
-		console.Log("EventModeChanged %d", ev.InputMode)
-		hasVisual := ui.Songlist.Songlist().HasVisualSelection()
-		switch {
-		case ev.InputMode != ui.Multibar.Mode():
-			console.Log("Resetting multibar mode based on songlist change")
-			ui.Multibar.SetMode(ev.InputMode)
-		case ev.InputMode == MultibarModeVisual && !hasVisual:
-			console.Log("Enabling visual selection based on multibar setting")
-			ui.Songlist.Songlist().EnableVisualSelection()
-		case ev.InputMode != MultibarModeVisual && hasVisual:
-			console.Log("Disabling visual selection based on multibar setting")
-			ui.Songlist.Songlist().DisableVisualSelection()
-		}
-		ui.UpdateCursor()
 		return true
 
 	case *EventInputChanged:
