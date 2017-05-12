@@ -5,12 +5,40 @@
 [![codecov](https://codecov.io/gh/ambientsound/pms/branch/master/graph/badge.svg)](https://codecov.io/gh/ambientsound/pms/branch/master)
 [![License](https://img.shields.io/github/license/ambientsound/pms.svg)](LICENSE)
 
-Practical Music Search is an interactive console-based client for the [Music Player Daemon](https://www.musicpd.org/), written in Go. The interface is similar to Vim, and features lightning fast full-text searches, sorting, custom colors, configurable layouts, visual selection, keyboard shortcuts, and much more.
+Practical Music Search is an interactive console client for the [Music Player Daemon](https://www.musicpd.org/), written in Go. Its interface is similar to Vim, and aims to be fast, configurable, and practical.
 
-This software was previously written in C++. The master branch now contains a rewrite, currently implemented in Go. This branch is still somewhat experimental, and much of the old functionality is missing (see [Roadmap](#roadmap)), but it is under rapid development, and is usable for basic tasks and a little more. The full-text search is very fast; consider giving it a try!
+PMS has many features that involves sorting, searching and navigating. It is designed to let you navigate your music collection in an effective way. Some of the features currently implemented are:
+
+* Vim-style look and feel!
+* Can be configured to consume a very minimal amount of screen space.
+* MPD player controls: play, add, pause, stop, next, prev, volume.
+* Comprehensive customizable topbar, tag headers, text styles, colors, keyboard bindings.
+* Fast library search. Supports UTF-8 normalization, fuzzy search, and scoring.
+* Selecting songs, both by _visual mode_ and manual selection.
+* Many forms of songlist manipulation, such as copying, filtering, and sorting.
+* Basic readline functionality when typing, including history.
 
 
-## Running
+## Project status
+
+PMS is in _alpha_ stage, and is a work in progress. A more feature complete, but older, version can be found in the `0.42.x` branch.
+
+This software was previously written in C++. The master branch now contains a rewrite, currently implemented in Go. 
+The current goal of the Go implementation is to implement most of the features found in the 0.42 branch.
+
+This functionality is present in the `0.42.x` branch, but missing in master:
+
+* Basic player controls: consume, repeat, single, random.
+* Automatic add to queue when queue is nearing end.
+* Copy and paste.
+* Tab completion.
+* Reading configuration files.
+* Remote playlist management.
+* Configuration and command documentation.
+* ...and probably more.
+
+
+## Getting started
 
 You are assumed to have a working [Go development environment](https://golang.org/doc/install). PMS requires Go >= 1.8.
 
@@ -58,29 +86,6 @@ PMS connects to the MPD server specified in the `MPD_HOST` and `MPD_PORT` variab
 See `pms --help` for command-line options. Configuration files are not implemented yet, but the configuration can be changed while running the program.
 
 The default configuration can be found in [options/defaults.go](options/defaults.go).
-
-
-## Roadmap
-
-The current goal of the Go implementation is to implement most of the features found in the 0.42 branch.
-
-The following features have been implemented:
-
-* Basic player controls: play, add, pause, stop, next, prev, volume.
-* Customizable topbar.
-* Customizable colors.
-* Multiple selection.
-* Scroll through history of commands and search.
-
-This functionality is present in the `0.42.x` branch, but missing in master:
-
-* Basic player controls: consume, repeat, single, random.
-* Automatic add to queue when queue is nearing end.
-* Copy and paste.
-* Tab completion.
-* Reading configuration files.
-* Remote playlist management.
-* ...and probably more.
 
 
 ## Contributing
