@@ -1,7 +1,6 @@
 package pms
 
 import (
-	"strings"
 	"time"
 
 	"github.com/ambientsound/pms/api"
@@ -40,7 +39,6 @@ func New() *PMS {
 
 	pms.setupUI()
 	pms.setupCLI()
-	pms.readDefaultConfiguration()
 
 	return pms
 }
@@ -112,15 +110,5 @@ func (pms *PMS) setupTopbar() {
 		pms.ui.Topbar.SetMatrix(matrix)
 	} else {
 		pms.Error("Error in topbar configuration: %s", err)
-	}
-}
-
-func (pms *PMS) readDefaultConfiguration() {
-	lines := strings.Split(options.Defaults, "\n")
-	for _, line := range lines {
-		err := pms.CLI.Execute(line)
-		if err != nil {
-			console.Log("Error while reading default configuration: %s", err)
-		}
 	}
 }

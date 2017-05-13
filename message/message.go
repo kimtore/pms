@@ -53,6 +53,10 @@ func Log(msg Message) {
 		return
 	}
 	switch msg.Severity {
+	case Info:
+		console.Log(msg.Text)
+	case Error:
+		console.Log("ERROR: %s", msg.Text)
 	case Debug:
 		console.Log("DEBUG: %s", msg.Text)
 	}

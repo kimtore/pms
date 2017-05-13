@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/pms"
 	"github.com/ambientsound/pms/version"
+	"github.com/ambientsound/pms/xdg"
 
 	"github.com/jessevdk/go-flags"
 )
@@ -65,6 +67,23 @@ func main() {
 	defer func() {
 		pms.QuitSignal <- 0
 	}()
+
+	// Source default configuration.
+	pms.Message("Applying default configuration.")
+	if err := pms.SourceDefaultConfig(); err != nil {
+		panic(fmt.Sprintf("BUG in default config: %s\n", err))
+	}
+
+	// Source configuration files from all XDG standard directories.
+	configDirs := xdg.ConfigDirectories()
+	for _, dir := range configDirs {
+		p := path.Join(dir, "pms.conf")
+		pms.Message("Reading configuration file '%s'.", p)
+		err = pms.SourceConfigFile(p)
+		if err != nil {
+			pms.Error("Error while reading configuration file '%s': %s", p, err)
+		}
+	}
 
 	pms.SetConnectionParams(opts.MpdHost, opts.MpdPort, opts.MpdPassword)
 	go pms.LoopConnect()

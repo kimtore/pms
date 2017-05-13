@@ -17,6 +17,7 @@ PMS has many features that involves sorting, searching and navigating. It is des
 * Selecting songs, both by _visual mode_ and manual selection.
 * Many forms of songlist manipulation, such as copying, filtering, and sorting.
 * Basic readline functionality when typing, including history.
+* Configuration file support, following the XDG standard.
 
 
 ## Project status
@@ -32,9 +33,8 @@ This functionality is present in the `0.42.x` branch, but missing in master:
 * Automatic add to queue when queue is nearing end.
 * Copy and paste.
 * Tab completion.
-* Reading configuration files.
 * Remote playlist management.
-* Configuration and command documentation.
+* Documentation for configuration and commands.
 * ...and probably more.
 
 
@@ -81,11 +81,11 @@ EOF
 
 ### PMS
 
-PMS connects to the MPD server specified in the `MPD_HOST` and `MPD_PORT` variables.
+PMS connects to the MPD server specified in the `MPD_HOST` and `MPD_PORT` variables. See `pms --help` for command-line options.
 
-See `pms --help` for command-line options. Configuration files are not implemented yet, but the configuration can be changed while running the program.
+By default, PMS should find your configuration file in `$HOME/.config/pms/pms.conf`. If you have defined any of `$XDG_CONFIG_DIRS` or `$XDG_CONFIG_HOME`, PMS will look here for your configuration files.
 
-The default configuration can be found in [options/defaults.go](options/defaults.go).
+The default configuration can be found in [options/defaults.go](options/defaults.go), and contains| all the different options and commands that can be used.
 
 
 ## Contributing

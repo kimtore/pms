@@ -1,3 +1,4 @@
+// Package version provides access to the program name and compiled version.
 package version
 
 const shortName string = "PMS"
