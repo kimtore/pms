@@ -2,12 +2,16 @@ package widgets
 
 import (
 	"fmt"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/style"
+	"github.com/ambientsound/pms/utils"
 
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
@@ -261,6 +265,50 @@ func (m *MultibarWidget) handleCursor(offset int) {
 	PostEventInputChanged(m) // FIXME: this triggers a search query; disable that
 }
 
+// nextWord returns the distance to the next word in a rune slice.
+func nextWord(runes []rune, cursor, offset int) int {
+	var s string
+
+	switch {
+	// Move backwards
+	case offset < 0:
+		rev := utils.ReverseRunes(runes)
+		revIndex := len(runes) - cursor
+		runes := rev[revIndex:]
+		s = string(runes)
+
+	// Move forwards
+	case offset > 0:
+		runes := runes[cursor:]
+		s = string(runes)
+
+	default:
+		return 0
+	}
+
+	reader := strings.NewReader(s)
+	scanner := lexer.NewScanner(reader)
+
+	// Strip any whitespace, and count the total length of the whitespace and
+	// the next token.
+	tok, lit := scanner.Scan()
+	skip := utf8.RuneCountInString(lit)
+	if tok == lexer.TokenWhitespace {
+		tok, lit = scanner.Scan()
+		skip += utf8.RuneCountInString(lit)
+	}
+
+	return offset * skip
+}
+
+// handleCursorWord moves the cursor forward to the start of the next word or
+// backwards to the start of the previous word.
+func (m *MultibarWidget) handleCursorWord(offset int) {
+	m.cursor += nextWord(m.runes, m.cursor, offset)
+	m.validateCursor()
+	PostEventInputChanged(m) // FIXME: this triggers a search query; disable that
+}
+
 // validateCursor makes sure the cursor stays within boundaries.
 func (m *MultibarWidget) validateCursor() {
 	if m.cursor > len(m.runes) {
@@ -275,8 +323,21 @@ func (m *MultibarWidget) validateCursor() {
 func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 	switch ev.Key() {
 
+	// Alt keys has to be handled a bit differently than Ctrl keys.
 	case tcell.KeyRune:
-		m.handleTextRune(ev.Rune())
+		modifiers := ev.Modifiers()
+		if modifiers&tcell.ModAlt == 0 {
+			// Pass the rune on to the text handling function if the alt modifier was not used.
+			m.handleTextRune(ev.Rune())
+		} else {
+			switch ev.Rune() {
+			case 'b':
+				m.handleCursorWord(-1)
+			case 'f':
+				m.handleCursorWord(1)
+			}
+		}
+
 	case tcell.KeyCtrlU:
 		m.handleTruncate()
 	case tcell.KeyEnter:
