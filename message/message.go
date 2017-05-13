@@ -1,3 +1,4 @@
+// Package message provides simple text message communication.
 package message
 
 import (
@@ -6,6 +7,8 @@ import (
 	"github.com/ambientsound/pms/console"
 )
 
+// Message is a message passed from anywhere inside PMS, relayed to the user
+// through the statusbar.
 type Message struct {
 	Text     string
 	Severity int
@@ -25,6 +28,7 @@ const (
 	SequenceText
 )
 
+// format formats using Sprintf, and returns a new Message.
 func format(severity int, t int, format string, a ...interface{}) Message {
 	return Message{
 		Text:     fmt.Sprintf(format, a...),
@@ -48,6 +52,7 @@ func Sequencef(fmt string, a ...interface{}) Message {
 	return format(Info, SequenceText, fmt, a...)
 }
 
+// Log prints a message to the debug log.
 func Log(msg Message) {
 	if msg.Type != Normal {
 		return
