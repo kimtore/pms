@@ -294,7 +294,7 @@ func nextWord(runes []rune, cursor, offset int) int {
 	tok, lit := scanner.Scan()
 	skip := utf8.RuneCountInString(lit)
 	if tok == lexer.TokenWhitespace {
-		tok, lit = scanner.Scan()
+		_, lit = scanner.Scan()
 		skip += utf8.RuneCountInString(lit)
 	}
 

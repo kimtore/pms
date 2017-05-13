@@ -22,7 +22,7 @@ func ConfigDirectories() []string {
 
 	// $XDG_CONFIG_DIRS defines the preference-ordered set of base directories
 	// to search for configuration files in addition to the $XDG_CONFIG_HOME base
-	// directory. The directories in $XDG_CONFIG_DIRS should be seperated with a
+	// directory. The directories in $XDG_CONFIG_DIRS should be separated with a
 	// colon ':'.
 	xdgConfigDirs := os.Getenv("XDG_CONFIG_DIRS")
 	if len(xdgConfigDirs) == 0 {
