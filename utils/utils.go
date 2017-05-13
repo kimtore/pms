@@ -1,12 +1,14 @@
+// package utils provides simple transformation functions which do not fit anywhere else in particular.
 package utils
 
 import (
 	"fmt"
 )
 
+// TimeString formats length in seconds as H:mm:ss.
 func TimeString(secs int) string {
 	if secs < 0 {
-		return "--:--"
+		return `--:--`
 	}
 	hours := int(secs / 3600)
 	secs = secs % 3600
@@ -18,6 +20,7 @@ func TimeString(secs int) string {
 	return fmt.Sprintf("%02d:%02d", minutes, secs)
 }
 
+// TimeRunes acts as TimeString, but returns a slice of runes.
 func TimeRunes(secs int) []rune {
 	return []rune(TimeString(secs))
 }
@@ -31,6 +34,7 @@ func ReverseRunes(src []rune) []rune {
 	return dest
 }
 
+// Min returns the minimum of a and b.
 func Min(a, b int) int {
 	if a < b {
 		return a
@@ -38,6 +42,7 @@ func Min(a, b int) int {
 	return b
 }
 
+// Max returns the maximum of a and b.
 func Max(a, b int) int {
 	if a > b {
 		return a
