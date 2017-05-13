@@ -1,3 +1,4 @@
+// Package api provides data model interfaces.
 package api
 
 import (

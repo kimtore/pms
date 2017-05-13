@@ -1,3 +1,4 @@
+// Package console provides logging functions.
 package console
 
 import (
@@ -10,6 +11,7 @@ var logFile *os.File
 
 var start = time.Now()
 
+// Open opens a log file for writing.
 func Open(logfile string) (err error) {
 	logFile, err = os.Create(logfile)
 	if err != nil {
@@ -18,10 +20,14 @@ func Open(logfile string) (err error) {
 	return
 }
 
+// Close closes an open log file.
 func Close() {
 	logFile.Close()
 }
 
+// Log writes a log line to the log file.
+// A timestamp and a newline is automatically added.
+// If the log file isn't open, nothing is done.
 func Log(format string, args ...interface{}) {
 	if logFile == nil {
 		return
