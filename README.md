@@ -85,7 +85,7 @@ PMS connects to the MPD server specified in the `MPD_HOST` and `MPD_PORT` variab
 
 By default, PMS should find your configuration file in `$HOME/.config/pms/pms.conf`. If you defined paths in either `$XDG_CONFIG_DIRS` or `$XDG_CONFIG_HOME`, PMS will look for your configuration files there.
 
-The default configuration can be found in [options/defaults.go](options/defaults.go), and contains| all the different options and commands that can be used.
+The default configuration can be found in [options/defaults.go](options/defaults.go), and contains all available options and commands.
 
 
 ## Contributing
