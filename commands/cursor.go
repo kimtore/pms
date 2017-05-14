@@ -98,8 +98,10 @@ func (cmd *Cursor) parseNextOf() error {
 	if tok != lexer.TokenIdentifier {
 		return fmt.Errorf("Unexpected %v, expected END", lit)
 	}
+
 	cmd.setNextOfTags(lit)
-	return nil
+
+	return cmd.ParseEnd()
 }
 
 func (cmd *Cursor) Exec() error {

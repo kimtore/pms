@@ -41,6 +41,8 @@ var cursorTests = []struct {
 	{`random 1`, false},
 	{`next-of`, false},
 	{`prev-of`, false},
+	{`next-of 1 2`, false},
+	{`prev-of 1 2`, false},
 }
 
 func TestCursor(t *testing.T) {
