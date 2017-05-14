@@ -9,6 +9,7 @@ import (
 
 // Remove removes songs from songlists.
 type Remove struct {
+	command
 	api api.API
 }
 

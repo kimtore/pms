@@ -12,6 +12,7 @@ import (
 
 // Add adds songs to MPD's queue.
 type Add struct {
+	command
 	api      api.API
 	song     *song.Song
 	songlist songlist.Songlist

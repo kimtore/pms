@@ -5,7 +5,18 @@ import (
 	"io"
 
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/parser"
 )
+
+// Parser represents a parser.
+type Parser struct {
+	parser.Parser
+}
+
+// NewParser returns a new instance of Parser.
+func NewParser(r io.Reader) *Parser {
+	return &Parser{parser.Parser{S: lexer.NewScanner(r)}}
+}
 
 // FragmentStatement holds information about a fragment, e.g.:
 //
@@ -40,26 +51,11 @@ type MatrixStatement struct {
 	Rows []*RowStatement
 }
 
-// Parser represents a parser.
-type Parser struct {
-	s   *lexer.Scanner
-	buf struct {
-		tok int    // last read token
-		lit string // last read literal
-		n   int    // buffer size (max=1)
-	}
-}
-
-// NewParser returns a new instance of Parser.
-func NewParser(r io.Reader) *Parser {
-	return &Parser{s: lexer.NewScanner(r)}
-}
-
 // ParseFragment parses a fragment statement.
 func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 	stmt := &FragmentStatement{}
 
-	tok, lit := p.scan()
+	tok, lit := p.Scan()
 
 	switch tok {
 	// The first token should either be whitespace or an identifier, which
@@ -80,7 +76,7 @@ func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 
 	// Next comes an identifier, or in case of parameterized variables, the
 	// curly bracket opener.
-	tok, lit = p.scan()
+	tok, lit = p.Scan()
 
 	switch tok {
 	// Simple variable, e.g. '$artist'. Return immediately.
@@ -98,7 +94,7 @@ func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 	}
 
 	// Next, the only valid token is the variable name.
-	tok, lit = p.scanIgnoreWhitespace()
+	tok, lit = p.ScanIgnoreWhitespace()
 	if tok != lexer.TokenIdentifier {
 		return nil, fmt.Errorf("Unexpected %v, expected identifier", lit)
 	}
@@ -106,7 +102,7 @@ func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 
 	// Next, we can either have a separator in order to pass parameters, or
 	// close with a curly bracket.
-	tok, lit = p.scanIgnoreWhitespace()
+	tok, lit = p.ScanIgnoreWhitespace()
 
 	switch tok {
 	// Parameterized variable, e.g. '${tag|artist}'.
@@ -123,14 +119,14 @@ func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 	}
 
 	// The only valid token is the parameter.
-	tok, lit = p.scanIgnoreWhitespace()
+	tok, lit = p.ScanIgnoreWhitespace()
 	if tok != lexer.TokenIdentifier {
 		return nil, fmt.Errorf("Unexpected %v, expected parameter to $%s", lit, stmt.Variable)
 	}
 	stmt.Param = lit
 
 	// The only valid token is the closing curly bracket.
-	tok, lit = p.scanIgnoreWhitespace()
+	tok, lit = p.ScanIgnoreWhitespace()
 	if tok != lexer.TokenClose {
 		return nil, fmt.Errorf("Unexpected %v, expected '}'", lit)
 	}
@@ -143,18 +139,18 @@ func (p *Parser) ParsePiece() (*PieceStatement, error) {
 	stmt := &PieceStatement{}
 
 	for {
-		tok, _ := p.scan()
+		tok, _ := p.Scan()
 
 		// A piece is succeeded only by a new piece or new row.
 		switch tok {
 		case lexer.TokenStop:
-			p.unscan()
+			p.Unscan()
 			fallthrough
 		case lexer.TokenSeparator, lexer.TokenEnd:
 			return stmt, nil
 		}
 
-		p.unscan()
+		p.Unscan()
 		frag, err := p.ParseFragment()
 		if err != nil {
 			return nil, err
@@ -169,7 +165,7 @@ func (p *Parser) ParseRow() (*RowStatement, error) {
 	stmt := &RowStatement{}
 
 	for {
-		tok, _ := p.scan()
+		tok, _ := p.Scan()
 
 		// A row is succeeded only by a new row.
 		switch tok {
@@ -177,7 +173,7 @@ func (p *Parser) ParseRow() (*RowStatement, error) {
 			return stmt, nil
 		}
 
-		p.unscan()
+		p.Unscan()
 		piece, err := p.ParsePiece()
 		if err != nil {
 			return nil, err
@@ -192,7 +188,7 @@ func (p *Parser) ParseMatrix() (*MatrixStatement, error) {
 	stmt := &MatrixStatement{}
 
 	for {
-		tok, _ := p.scan()
+		tok, _ := p.Scan()
 
 		// A matrix is never succeeded.
 		switch tok {
@@ -200,7 +196,7 @@ func (p *Parser) ParseMatrix() (*MatrixStatement, error) {
 			return stmt, nil
 		}
 
-		p.unscan()
+		p.Unscan()
 		row, err := p.ParseRow()
 		if err != nil {
 			return nil, err
@@ -209,33 +205,3 @@ func (p *Parser) ParseMatrix() (*MatrixStatement, error) {
 		stmt.Rows = append(stmt.Rows, row)
 	}
 }
-
-// scan returns the next token from the underlying scanner.
-// If a token has been unscanned then read that instead.
-func (p *Parser) scan() (tok int, lit string) {
-	// If we have a token on the buffer, then return it.
-	if p.buf.n != 0 {
-		p.buf.n = 0
-		return p.buf.tok, p.buf.lit
-	}
-
-	// Otherwise read the next token from the scanner.
-	tok, lit = p.s.Scan()
-
-	// Save it to the buffer in case we unscan later.
-	p.buf.tok, p.buf.lit = tok, lit
-
-	return
-}
-
-// scanIgnoreWhitespace scans the next non-whitespace token.
-func (p *Parser) scanIgnoreWhitespace() (tok int, lit string) {
-	tok, lit = p.scan()
-	if tok == lexer.TokenWhitespace {
-		tok, lit = p.scan()
-	}
-	return
-}
-
-// unscan pushes the previously read token back onto the buffer.
-func (p *Parser) unscan() { p.buf.n = 1 }

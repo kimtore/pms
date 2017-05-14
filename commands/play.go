@@ -10,6 +10,7 @@ import (
 
 // Play plays songs in the MPD playlist.
 type Play struct {
+	command
 	api  api.API
 	song *song.Song
 	id   int

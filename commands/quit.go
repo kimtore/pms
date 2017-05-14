@@ -9,6 +9,7 @@ import (
 
 // Quit exits the program.
 type Quit struct {
+	command
 	api api.API
 }
 

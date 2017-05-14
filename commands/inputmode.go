@@ -10,6 +10,7 @@ import (
 
 // InputMode changes the Multibar's input mode.
 type InputMode struct {
+	command
 	api  api.API
 	mode int
 }

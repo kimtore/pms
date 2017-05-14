@@ -11,6 +11,7 @@ import (
 
 // Set manipulates a Options table by parsing input tokens from the "set" command.
 type Set struct {
+	command
 	api   api.API
 	key   string
 	val   string

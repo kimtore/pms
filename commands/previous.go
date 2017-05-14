@@ -9,6 +9,7 @@ import (
 
 // Previous switches to the previous song in MPD's queue.
 type Previous struct {
+	command
 	api api.API
 }
 

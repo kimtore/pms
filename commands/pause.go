@@ -12,6 +12,7 @@ import (
 // Pause toggles MPD play/paused state. If the player is stopped, Pause will
 // attempt to start playback through the 'play' command instead.
 type Pause struct {
+	command
 	api api.API
 }
 

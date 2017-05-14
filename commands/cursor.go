@@ -10,12 +10,14 @@ import (
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/parser"
 )
 
 // Cursor moves the cursor in a songlist widget. It can take human-readable
 // parameters such as 'up' and 'down', and it also accepts relative positions
 // if a number is given.
 type Cursor struct {
+	parser.Parser
 	api             api.API
 	relative        int
 	absolute        int
@@ -29,6 +31,77 @@ func NewCursor(api api.API) Command {
 	return &Cursor{
 		api: api,
 	}
+}
+
+func (cmd *Cursor) parseNextOf() error {
+	tok, lit := cmd.ScanIgnoreWhitespace()
+	if tok != lexer.TokenIdentifier {
+		return fmt.Errorf("Unexpected %v, expected END", lit)
+	}
+
+	cmd.setNextOfTags(lit)
+	//if err == nil {
+	//cmd.absolute = cmd.runNextOf(direction)
+	//}
+
+	return nil
+}
+
+// ParseEnd parses to the end, and returns an error if the end hasn't been reached.
+func (cmd *Cursor) ParseEnd() error {
+	tok, lit := cmd.ScanIgnoreWhitespace()
+	if tok != lexer.TokenEnd {
+		return fmt.Errorf("Unexpected %v, expected END", lit)
+	}
+	return nil
+}
+
+// Parse parses cursor movement.
+func (cmd *Cursor) Parse(s *lexer.Scanner) error {
+	// Boilerplate
+	cmd.S = s
+	songlistWidget := cmd.api.SonglistWidget()
+	list := cmd.api.Songlist()
+
+	tok, lit := cmd.ScanIgnoreWhitespace()
+	if tok != lexer.TokenIdentifier {
+		return fmt.Errorf("Unexpected %v, expected identifier", lit)
+	}
+
+	switch lit {
+	case "up":
+		cmd.relative = -1
+	case "down":
+		cmd.relative = 1
+	case "pgup", "pageup":
+		_, y := songlistWidget.Size()
+		cmd.relative = -y
+	case "pgdn", "pagedn", "pagedown":
+		_, y := songlistWidget.Size()
+		cmd.relative = y
+	case "home":
+		cmd.absolute = 0
+	case "end":
+		cmd.absolute = list.Len() - 1
+	case "current":
+		cmd.current = true
+	case "random":
+		cmd.absolute = cmd.random()
+	case "next-of":
+		cmd.nextOfDirection = 1
+		return cmd.parseNextOf()
+	case "prev-of":
+		cmd.nextOfDirection = -1
+		return cmd.parseNextOf()
+	default:
+		i, err := strconv.Atoi(lit)
+		if err != nil {
+			return fmt.Errorf("Cursor command '%s' not recognized, and is not a number", lit)
+		}
+		cmd.relative = i
+	}
+
+	return cmd.ParseEnd()
 }
 
 func (cmd *Cursor) Execute(class int, s string) error {
@@ -80,7 +153,7 @@ func (cmd *Cursor) Execute(class int, s string) error {
 			case 1, -1:
 				err = cmd.setNextOfTags(s)
 				if err == nil {
-					cmd.absolute = cmd.runNextOf()
+					cmd.absolute = cmd.runNextOf(cmd.nextOfDirection)
 				}
 			default:
 				i, err := strconv.Atoi(s)
@@ -136,12 +209,12 @@ func (cmd *Cursor) setNextOfTags(taglist string) error {
 	return nil
 }
 
-func (cmd *Cursor) runNextOf() int {
+func (cmd *Cursor) runNextOf(direction int) int {
 	list := cmd.api.Songlist()
 	len := list.Len()
 
 	offset := func(i int) int {
-		if cmd.nextOfDirection > 0 || i == 0 {
+		if direction > 0 || i == 0 {
 			return 0
 		}
 		return 1
@@ -151,7 +224,7 @@ func (cmd *Cursor) runNextOf() int {
 	index -= offset(index)
 	check := list.Song(index)
 
-	for ; index < len && index >= 0; index += cmd.nextOfDirection {
+	for ; index < len && index >= 0; index += direction {
 		song := list.Song(index)
 		if song == nil {
 			console.Log("NextOf: empty song, break")

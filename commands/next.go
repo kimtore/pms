@@ -9,6 +9,7 @@ import (
 
 // Next switches to the next song in MPD's queue.
 type Next struct {
+	command
 	api api.API
 }
 

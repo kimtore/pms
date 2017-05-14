@@ -10,6 +10,7 @@ import (
 
 // Sort sorts songlists.
 type Sort struct {
+	command
 	api      api.API
 	fields   []string
 	finished bool

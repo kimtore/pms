@@ -10,6 +10,7 @@ import (
 
 // Style manipulates the style table, allowing to set colors and attributes for UI elements.
 type Style struct {
+	command
 	api api.API
 
 	styleKey   string

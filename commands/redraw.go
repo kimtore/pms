@@ -9,6 +9,7 @@ import (
 
 // Quit exits the program.
 type Redraw struct {
+	command
 	api api.API
 }
 

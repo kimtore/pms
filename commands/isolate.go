@@ -10,6 +10,7 @@ import (
 
 // Isolate searches for songs that have similar tags as the selection.
 type Isolate struct {
+	command
 	api  api.API
 	tags []string
 }

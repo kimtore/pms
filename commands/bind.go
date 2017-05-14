@@ -11,6 +11,7 @@ import (
 
 // Bind maps a key sequence to the execution of a command.
 type Bind struct {
+	command
 	api      api.API
 	sentence []string
 	token    *parser.KeySequenceToken

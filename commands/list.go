@@ -12,6 +12,7 @@ import (
 
 // List navigates and manipulates songlists.
 type List struct {
+	command
 	api       api.API
 	relative  int
 	absolute  int
