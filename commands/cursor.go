@@ -19,12 +19,13 @@ type Cursor struct {
 	parser.Parser
 	command
 	api             api.API
-	relative        int
 	absolute        int
 	current         bool
 	finished        bool
+	hasVerb         bool
 	nextOfDirection int
 	nextOfTags      []string
+	relative        int
 }
 
 // NewCursor returns Cursor.
@@ -42,6 +43,60 @@ func (cmd *Cursor) Execute(class int, s string) error {
 	}
 	cmd.cmdline += " " + s
 	return nil
+}
+
+// filter returns a subset of tokens that match the specified prefix.
+func (cmd *Cursor) filter(match string, tokens []string) []string {
+	dest := make([]string, 0, len(tokens))
+	for _, tok := range tokens {
+		if strings.HasPrefix(tok, match) {
+			dest = append(dest, tok)
+		}
+	}
+	return dest
+}
+
+// TabComplete returns a set of tokens that could possibly be used as the next
+// command parameter.
+func (cmd *Cursor) TabComplete() []string {
+	cmd.Unscan()
+	_, lit := cmd.Scan()
+	switch {
+
+	// next-of, prev-of should return a list of tags.
+	case len(cmd.nextOfTags) > 0:
+		break
+
+	case cmd.nextOfDirection != 0:
+		song := cmd.api.Songlist().CursorSong()
+		if song == nil {
+			break
+		}
+		return cmd.filter(lit, song.TagKeys())
+
+	// any other verbs
+	case cmd.hasVerb:
+		break
+
+	// any other word
+	default:
+		return cmd.filter(lit, []string{
+			"current",
+			"down",
+			"end",
+			"home",
+			"next-of",
+			"pagedn",
+			"pagedown",
+			"pageup",
+			"pgdn",
+			"pgup",
+			"prev-of",
+			"random",
+			"up",
+		})
+	}
+	return []string{}
 }
 
 // Parse parses cursor movement.
@@ -88,6 +143,8 @@ func (cmd *Cursor) Parse(s *lexer.Scanner) error {
 		}
 		cmd.relative = i
 	}
+
+	cmd.hasVerb = true
 
 	return cmd.ParseEnd()
 }

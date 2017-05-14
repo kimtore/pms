@@ -12,6 +12,9 @@ type Command interface {
 
 	// Parse and make an abstract syntax tree
 	Parse(*lexer.Scanner) error
+
+	// Return a list of tab completion at this stage in parsing
+	TabComplete() []string
 }
 
 type command struct {

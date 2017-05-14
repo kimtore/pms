@@ -15,13 +15,24 @@ import (
 type testAPI struct {
 	messages chan message.Message
 	options  *options.Options
+	song     *song.Song
 }
 
 func NewTestAPI() API {
 	return &testAPI{
 		messages: make(chan message.Message, 1024),
 		options:  options.New(),
+		song:     createTestSong(),
 	}
+}
+
+func createTestSong() *song.Song {
+	s := song.New()
+	s.SetTags(mpd.Attrs{
+		"artist": "foo",
+		"title":  "bar",
+	})
+	return s
 }
 
 func (api *testAPI) Index() *index.Index {
@@ -69,11 +80,13 @@ func (api *testAPI) Sequencer() *keys.Sequencer {
 }
 
 func (api *testAPI) Song() *song.Song {
-	return nil // FIXME
+	return api.song
 }
 
 func (api *testAPI) Songlist() songlist.Songlist {
-	return songlist.New()
+	s := songlist.New()
+	s.Add(api.song)
+	return s
 }
 
 func (api *testAPI) SonglistWidget() SonglistWidget {

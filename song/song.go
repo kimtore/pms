@@ -2,6 +2,7 @@ package song
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -114,6 +115,15 @@ func (s *Song) HasOneOfTags(tags ...string) bool {
 		}
 	}
 	return false
+}
+
+// TagKeys returns a string slice with all tag keys, sorted in alphabetical order.
+func (s *Song) TagKeys() []string {
+	keys := make([]string, 0, len(s.StringTags))
+	for tag := range s.StringTags {
+		keys = append(keys, tag)
+	}
+	return sort.StringSlice(keys)
 }
 
 func trackSort(s string) string {
