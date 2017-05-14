@@ -23,3 +23,9 @@ func (c *command) Parse(*lexer.Scanner) error {
 	// FIXME
 	return nil
 }
+
+// TabComplete implements Command.TabComplete.
+func (c *command) TabComplete() []string {
+	// FIXME
+	return make([]string, 0)
+}

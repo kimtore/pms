@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/parser"
 )
@@ -28,6 +27,7 @@ type Cursor struct {
 	nextOfTags      []string
 }
 
+// NewCursor returns Cursor.
 func NewCursor(api api.API) Command {
 	return &Cursor{
 		api: api,
@@ -92,20 +92,8 @@ func (cmd *Cursor) Parse(s *lexer.Scanner) error {
 	return cmd.ParseEnd()
 }
 
-// parseNextOf parses a set of tags.
-func (cmd *Cursor) parseNextOf() error {
-	tok, lit := cmd.ScanIgnoreWhitespace()
-	if tok != lexer.TokenIdentifier {
-		return fmt.Errorf("Unexpected %v, expected END", lit)
-	}
-
-	cmd.setNextOfTags(lit)
-
-	return cmd.ParseEnd()
-}
-
+// Exec is the next Execute(), evading the old system
 func (cmd *Cursor) Exec() error {
-	// Evade old system
 	// FIXME: move this code out of Command
 	reader := strings.NewReader(cmd.cmdline)
 	scanner := lexer.NewScanner(reader)
@@ -118,7 +106,7 @@ func (cmd *Cursor) Exec() error {
 
 	switch {
 	case cmd.nextOfDirection != 0:
-		cmd.absolute = cmd.runNextOf(cmd.nextOfDirection)
+		cmd.absolute = cmd.runNextOf()
 	case cmd.current:
 		currentSong := cmd.api.Song()
 		if currentSong == nil {
@@ -137,6 +125,7 @@ func (cmd *Cursor) Exec() error {
 	return nil
 }
 
+// random returns a random list index in the songlist.
 func (cmd *Cursor) random() int {
 	len := cmd.api.Songlist().Len()
 	if len == 0 {
@@ -147,6 +136,20 @@ func (cmd *Cursor) random() int {
 	return r.Int() % len
 }
 
+// parseNextOf parses a set of tags.
+func (cmd *Cursor) parseNextOf() error {
+	tok, lit := cmd.ScanIgnoreWhitespace()
+	if tok != lexer.TokenIdentifier {
+		return fmt.Errorf("Unexpected %v, expected END", lit)
+	}
+
+	cmd.setNextOfTags(lit)
+
+	return cmd.ParseEnd()
+}
+
+// setNextOfTags defines the list of tags that will be used to discern one
+// chunk of songs from the next.
 func (cmd *Cursor) setNextOfTags(taglist string) error {
 	if len(cmd.nextOfTags) != 0 {
 		return fmt.Errorf("Unexpected tags, expected END")
@@ -155,35 +158,9 @@ func (cmd *Cursor) setNextOfTags(taglist string) error {
 	return nil
 }
 
-func (cmd *Cursor) runNextOf(direction int) int {
+// runNextOf finds the next song with different tags.
+func (cmd *Cursor) runNextOf() int {
 	list := cmd.api.Songlist()
-	len := list.Len()
-
-	offset := func(i int) int {
-		if direction > 0 || i == 0 {
-			return 0
-		}
-		return 1
-	}
-
 	index := list.Cursor()
-	index -= offset(index)
-	check := list.Song(index)
-
-	for ; index < len && index >= 0; index += direction {
-		song := list.Song(index)
-		if song == nil {
-			console.Log("NextOf: empty song, break")
-			break
-		}
-		for _, tag := range cmd.nextOfTags {
-			if check.StringTags[tag] != song.StringTags[tag] {
-				console.Log("NextOf: tag '%s' on source '%s' differs from destination '%s', breaking", tag, check.StringTags[tag], song.StringTags[tag])
-				return index + offset(index)
-			}
-		}
-	}
-
-	console.Log("NextOf: fallthrough")
-	return index + offset(index)
+	return list.NextOf(cmd.nextOfTags, index, cmd.nextOfDirection)
 }

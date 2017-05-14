@@ -24,6 +24,7 @@ type Songlist interface {
 	Locate(*song.Song) (int, error)
 	Lock()
 	Name() string
+	NextOf([]string, int, int) int
 	Remove(int) error
 	RemoveIndices([]int) error
 	Replace(int, *song.Song) error
@@ -232,6 +233,42 @@ func (s *BaseSonglist) Song(i int) *song.Song {
 
 func (s *BaseSonglist) Songs() []*song.Song {
 	return s.songs
+}
+
+// NextOf searches forwards or backwards for songs having different tags than the specified song.
+// The index of the next song is returned.
+func (s *BaseSonglist) NextOf(tags []string, index int, direction int) int {
+	offset := func(i int) int {
+		if direction > 0 || i == 0 {
+			return 0
+		}
+		return 1
+	}
+
+	len := s.Len()
+	index -= offset(index)
+	check := s.Song(index)
+	//console.Log("Starting at index %d, cursor at %d, direction %d", index, s.Cursor(), direction)
+
+	//console.Log("Check: %+v", check.StringTags)
+	for ; index < len && index >= 0; index += direction {
+		//console.Log("trying %d", index)
+		song := s.Song(index)
+		//console.Log(".....: %+v", song.StringTags)
+		if song == nil {
+			//console.Log("NextOf: empty song, break")
+			break
+		}
+		for _, tag := range tags {
+			if check.StringTags[tag] != song.StringTags[tag] {
+				//console.Log("NextOf: tag '%s' on source '%s' differs from destination '%s', breaking", tag, check.StringTags[tag], song.StringTags[tag])
+				return index + offset(index)
+			}
+		}
+	}
+
+	//console.Log("NextOf: fallthrough")
+	return index + offset(index)
 }
 
 func (s *BaseSonglist) Sort(fields []string) error {
