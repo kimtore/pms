@@ -41,7 +41,7 @@ func (s *BaseSonglist) CursorToSong(song *song.Song) error {
 	if err != nil {
 		return err
 	}
-	//console.Log("Located %s at position %d, id %d", s.StringTags["file"], index, s.ID)
+	//console.Log("Located %s at position %d, id %d", song.StringTags["file"], index, song.ID)
 	s.SetCursor(index)
 	return nil
 }

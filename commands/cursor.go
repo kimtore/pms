@@ -169,7 +169,7 @@ func (cmd *Cursor) Exec() error {
 		if currentSong == nil {
 			return fmt.Errorf("No song is currently playing.")
 		}
-		err = list.CursorToSong(currentSong)
+		return list.CursorToSong(currentSong)
 	}
 
 	switch {
