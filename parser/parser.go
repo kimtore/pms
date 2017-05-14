@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/ambientsound/pms/input/lexer"
 )
 
@@ -43,3 +45,12 @@ func (p *Parser) ScanIgnoreWhitespace() (tok int, lit string) {
 
 // Unscan pushes the previously read token back onto the buffer.
 func (p *Parser) Unscan() { p.buf.n = 1 }
+
+// ParseEnd parses to the end, and returns an error if the end hasn't been reached.
+func (p *Parser) ParseEnd() error {
+	tok, lit := p.ScanIgnoreWhitespace()
+	if tok != lexer.TokenEnd {
+		return fmt.Errorf("Unexpected %v, expected END", lit)
+	}
+	return nil
+}

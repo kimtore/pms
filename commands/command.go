@@ -14,7 +14,9 @@ type Command interface {
 	Parse(*lexer.Scanner) error
 }
 
-type command struct{}
+type command struct {
+	cmdline string
+}
 
 // Parse implements Command.Parse.
 func (c *command) Parse(*lexer.Scanner) error {

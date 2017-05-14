@@ -18,6 +18,7 @@ import (
 // if a number is given.
 type Cursor struct {
 	parser.Parser
+	command
 	api             api.API
 	relative        int
 	absolute        int
@@ -33,36 +34,23 @@ func NewCursor(api api.API) Command {
 	}
 }
 
-func (cmd *Cursor) parseNextOf() error {
-	tok, lit := cmd.ScanIgnoreWhitespace()
-	if tok != lexer.TokenIdentifier {
-		return fmt.Errorf("Unexpected %v, expected END", lit)
+// Execute implements Command.Execute.
+// FIXME: boilerplate until Execute is removed from interface
+func (cmd *Cursor) Execute(class int, s string) error {
+	if class == lexer.TokenEnd {
+		return cmd.Exec()
 	}
-
-	cmd.setNextOfTags(lit)
-	//if err == nil {
-	//cmd.absolute = cmd.runNextOf(direction)
-	//}
-
-	return nil
-}
-
-// ParseEnd parses to the end, and returns an error if the end hasn't been reached.
-func (cmd *Cursor) ParseEnd() error {
-	tok, lit := cmd.ScanIgnoreWhitespace()
-	if tok != lexer.TokenEnd {
-		return fmt.Errorf("Unexpected %v, expected END", lit)
-	}
+	cmd.cmdline += " " + s
 	return nil
 }
 
 // Parse parses cursor movement.
 func (cmd *Cursor) Parse(s *lexer.Scanner) error {
-	// Boilerplate
-	cmd.S = s
 	songlistWidget := cmd.api.SonglistWidget()
 	list := cmd.api.Songlist()
 
+	// FIXME: initial verb scan boilerplate?
+	cmd.S = s
 	tok, lit := cmd.ScanIgnoreWhitespace()
 	if tok != lexer.TokenIdentifier {
 		return fmt.Errorf("Unexpected %v, expected identifier", lit)
@@ -104,91 +92,47 @@ func (cmd *Cursor) Parse(s *lexer.Scanner) error {
 	return cmd.ParseEnd()
 }
 
-func (cmd *Cursor) Execute(class int, s string) error {
-	var err error
+// parseNextOf parses a set of tags.
+func (cmd *Cursor) parseNextOf() error {
+	tok, lit := cmd.ScanIgnoreWhitespace()
+	if tok != lexer.TokenIdentifier {
+		return fmt.Errorf("Unexpected %v, expected END", lit)
+	}
+	cmd.setNextOfTags(lit)
+	return nil
+}
 
-	songlistWidget := cmd.api.SonglistWidget()
+func (cmd *Cursor) Exec() error {
+	// Evade old system
+	// FIXME: move this code out of Command
+	reader := strings.NewReader(cmd.cmdline)
+	scanner := lexer.NewScanner(reader)
+	err := cmd.Parse(scanner)
+	if err != nil {
+		return err
+	}
+
 	list := cmd.api.Songlist()
 
-	if cmd.finished && class != lexer.TokenEnd {
-		return fmt.Errorf("Unknown input '%s', expected END", s)
+	switch {
+	case cmd.nextOfDirection != 0:
+		cmd.absolute = cmd.runNextOf(cmd.nextOfDirection)
+	case cmd.current:
+		currentSong := cmd.api.Song()
+		if currentSong == nil {
+			return fmt.Errorf("No song is currently playing.")
+		}
+		err = list.CursorToSong(currentSong)
 	}
 
-	switch class {
-
-	case lexer.TokenIdentifier:
-		switch s {
-		case "up":
-			cmd.relative = -1
-		case "down":
-			cmd.relative = 1
-		case "pgup":
-			fallthrough
-		case "pageup":
-			_, y := songlistWidget.Size()
-			cmd.relative = -y
-		case "pgdn":
-			fallthrough
-		case "pagedn":
-			fallthrough
-		case "pagedown":
-			_, y := songlistWidget.Size()
-			cmd.relative = y
-		case "home":
-			cmd.absolute = 0
-		case "end":
-			cmd.absolute = list.Len() - 1
-		case "current":
-			cmd.current = true
-		case "random":
-			cmd.absolute = cmd.random()
-		case "next-of":
-			cmd.nextOfDirection = 1
-			return nil
-		case "prev-of":
-			cmd.nextOfDirection = -1
-			return nil
-		default:
-			switch cmd.nextOfDirection {
-			case 1, -1:
-				err = cmd.setNextOfTags(s)
-				if err == nil {
-					cmd.absolute = cmd.runNextOf(cmd.nextOfDirection)
-				}
-			default:
-				i, err := strconv.Atoi(s)
-				if err != nil {
-					return fmt.Errorf("Cannot move cursor: input '%s' is not recognized, and is not a number", s)
-				}
-				cmd.relative = i
-			}
-		}
-		cmd.finished = true
-
-	case lexer.TokenEnd:
-		switch {
-		case !cmd.finished:
-			return fmt.Errorf("Unexpected END, expected cursor offset.")
-
-		case cmd.current:
-			currentSong := cmd.api.Song()
-			if currentSong == nil {
-				return fmt.Errorf("No song is currently playing.")
-			}
-			err = list.CursorToSong(currentSong)
-
-		case cmd.relative != 0:
-			list.MoveCursor(cmd.relative)
-
-		default:
-			list.SetCursor(cmd.absolute)
-		}
-
+	switch {
+	case cmd.relative != 0:
+		list.MoveCursor(cmd.relative)
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", s)
+		list.SetCursor(cmd.absolute)
 	}
 
-	return err
+	return nil
 }
 
 func (cmd *Cursor) random() int {
