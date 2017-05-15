@@ -32,24 +32,15 @@ func New(source string, a api.API) *TabComplete {
 	}
 }
 
-// next returns the next tabcomplete item in the list.
-func (t *TabComplete) next() string {
-	// Wrap around
-	if t.cursor >= len(t.items) {
-		t.cursor = 0
-	}
-
-	// Return next in line
-	s := t.base + t.items[t.cursor]
-	t.cursor++
-
-	return s
+// Len returns the number of tab completion candidates.
+func (t *TabComplete) Len() int {
+	return len(t.items)
 }
 
 // Active returns true if the tab completion is initialized successfully and
 // has more than one candidate.
 func (t *TabComplete) Active() bool {
-	return len(t.items) > 0
+	return t.Len() > 0
 }
 
 // Scan cycles through tabcomplete entries and returns the next full string.
@@ -63,6 +54,20 @@ func (t *TabComplete) Scan() (string, error) {
 	}
 
 	return t.next(), nil
+}
+
+// next returns the next tabcomplete item in the list.
+func (t *TabComplete) next() string {
+	// Wrap around
+	if t.cursor >= t.Len() {
+		t.cursor = 0
+	}
+
+	// Return next in line
+	s := t.base + t.items[t.cursor]
+	t.cursor++
+
+	return s
 }
 
 // init initializes the tab completion. The source string is fed to the
@@ -137,7 +142,7 @@ func (t *TabComplete) init() error {
 // set stores the tabcomplete configuration.
 func (t *TabComplete) set(stringTokens []string, items []string, whitespaceEnds bool) {
 	t.items = items
-	t.cursor = len(t.items)
+	t.cursor = t.Len()
 	if whitespaceEnds {
 		t.base = strings.Join(stringTokens, "")
 	} else if len(stringTokens) > 0 {
