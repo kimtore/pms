@@ -6,14 +6,33 @@ import (
 	"github.com/ambientsound/pms/input/lexer"
 )
 
+// Token represent a token: classification and literal text
+type Token struct {
+	Tok int
+	Lit string
+}
+
+// buf represents the last scanned token.
+type buf struct {
+	Token
+	n int // buffer size (max=1)
+}
+
 // Parser represents a parser.
 type Parser struct {
-	S   *lexer.Scanner
-	buf struct {
-		tok int    // last read token
-		lit string // last read literal
-		n   int    // buffer size (max=1)
-	}
+	S       *lexer.Scanner
+	buf     buf
+	scanned []Token
+}
+
+// New returns Parser.
+func New(r *lexer.Scanner) *Parser {
+	return &Parser{S: r}
+}
+
+// Scanned returns all scanned tokens.
+func (p *Parser) Scanned() []Token {
+	return p.scanned
 }
 
 // Scan returns the next token from the underlying scanner.
@@ -22,14 +41,22 @@ func (p *Parser) Scan() (tok int, lit string) {
 	// If we have a token on the buffer, then return it.
 	if p.buf.n != 0 {
 		p.buf.n = 0
-		return p.buf.tok, p.buf.lit
+		return p.buf.Tok, p.buf.Lit
 	}
 
 	// Otherwise read the next token from the scanner.
 	tok, lit = p.S.Scan()
 
+	// Create the scanned buffer.
+	if p.scanned == nil {
+		p.scanned = make([]Token, 0)
+	}
+
+	// Push the data to the scanned buffer.
+	p.scanned = append(p.scanned, Token{tok, lit})
+
 	// Save it to the buffer in case we unscan later.
-	p.buf.tok, p.buf.lit = tok, lit
+	p.buf.Tok, p.buf.Lit = tok, lit
 
 	return
 }

@@ -65,6 +65,7 @@ func (pms *PMS) API() api.API {
 }
 
 // setupCLI instantiates the different commands PMS understands, such as set; bind; etc.
+// FIXME: deprecated
 func (pms *PMS) setupCLI() {
 	pms.CLI = input.NewCLI(pms.API())
 	pms.CLI.Register("add", commands.NewAdd)

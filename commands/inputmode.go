@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/widgets"
 )
 
 // InputMode changes the Multibar's input mode.
@@ -28,11 +28,11 @@ func (cmd *InputMode) Execute(class int, s string) error {
 	case lexer.TokenIdentifier:
 		switch s {
 		case "normal":
-			cmd.mode = widgets.MultibarModeNormal
+			cmd.mode = constants.MultibarModeNormal
 		case "input":
-			cmd.mode = widgets.MultibarModeInput
+			cmd.mode = constants.MultibarModeInput
 		case "search":
-			cmd.mode = widgets.MultibarModeSearch
+			cmd.mode = constants.MultibarModeSearch
 		default:
 			cmd.mode = multibar.Mode()
 		}

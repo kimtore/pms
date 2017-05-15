@@ -6,6 +6,7 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/options"
@@ -145,7 +146,7 @@ func (ui *UI) Title() string {
 
 func (ui *UI) UpdateCursor() {
 	switch ui.Multibar.Mode() {
-	case MultibarModeInput, MultibarModeSearch:
+	case constants.MultibarModeInput, constants.MultibarModeSearch:
 		_, ymax := ui.Screen.Size()
 		ui.Screen.ShowCursor(ui.Multibar.Cursor()+1, ymax-1)
 	default:
@@ -172,7 +173,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 		term := ui.Multibar.RuneString()
 		mode := ui.Multibar.Mode()
 		switch mode {
-		case MultibarModeSearch:
+		case constants.MultibarModeSearch:
 			if err := ui.runIndexSearch(term); err != nil {
 				console.Log("Error while searching: %s", err)
 			}
@@ -184,9 +185,9 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 		term := ui.Multibar.RuneString()
 		mode := ui.Multibar.Mode()
 		switch mode {
-		case MultibarModeInput:
+		case constants.MultibarModeInput:
 			ui.EventInputCommand <- term
-		case MultibarModeSearch:
+		case constants.MultibarModeSearch:
 			if ui.searchResult != nil {
 				if ui.searchResult.Len() > 0 {
 					ui.Songlist.AddSonglist(ui.searchResult)
@@ -196,7 +197,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 			}
 			ui.showSearchResult()
 		}
-		ui.Multibar.SetMode(MultibarModeNormal)
+		ui.Multibar.SetMode(constants.MultibarModeNormal)
 		return true
 
 	case *EventScroll:

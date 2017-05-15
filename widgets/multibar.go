@@ -6,10 +6,13 @@ import (
 	"unicode/utf8"
 
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/input/parser"
+	input_parser "github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/message"
+	"github.com/ambientsound/pms/parser"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/utils"
 
@@ -24,15 +27,25 @@ type history struct {
 	index   int
 }
 
+// autocomplete represents a list of strings that autocompletes the current word.
+type autocomplete struct {
+	active   bool
+	base     string
+	index    int
+	items    []string
+	original string
+}
+
 // MultibarWidget receives keyboard events, displays status messages, and the position readout.
 type MultibarWidget struct {
-	api       api.API
-	cursor    int
-	events    chan parser.KeyEvent
-	inputMode int
-	msg       message.Message
-	runes     []rune
-	textStyle tcell.Style
+	api          api.API
+	autocomplete autocomplete
+	cursor       int
+	events       chan input_parser.KeyEvent
+	inputMode    int
+	msg          message.Message
+	runes        []rune
+	textStyle    tcell.Style
 
 	// Three histories, one for each input mode
 	history [3]history
@@ -40,14 +53,6 @@ type MultibarWidget struct {
 	views.TextBar
 	style.Styled
 }
-
-// Different input modes are handled in different ways. Check
-// MultibarWidget.inputMode against these constants.
-const (
-	MultibarModeNormal = iota
-	MultibarModeInput
-	MultibarModeSearch
-)
 
 // Add adds to the input history.
 func (h *history) Add(s string) {
@@ -94,7 +99,7 @@ func (h *history) validateIndex() {
 	}
 }
 
-func NewMultibarWidget(a api.API, events chan parser.KeyEvent) *MultibarWidget {
+func NewMultibarWidget(a api.API, events chan input_parser.KeyEvent) *MultibarWidget {
 	return &MultibarWidget{
 		api:    a,
 		runes:  make([]rune, 0),
@@ -129,9 +134,9 @@ func (m *MultibarWidget) SetMessage(msg message.Message) {
 
 func (m *MultibarWidget) SetMode(mode int) error {
 	switch mode {
-	case MultibarModeNormal:
-	case MultibarModeInput:
-	case MultibarModeSearch:
+	case constants.MultibarModeNormal:
+	case constants.MultibarModeInput:
+	case constants.MultibarModeSearch:
 	default:
 		return fmt.Errorf("Mode not supported")
 	}
@@ -159,10 +164,10 @@ func (m *MultibarWidget) DrawStatusbar() {
 	var s string
 
 	switch m.inputMode {
-	case MultibarModeInput:
+	case constants.MultibarModeInput:
 		s = ":" + m.RuneString()
 		st = m.Style("commandText")
-	case MultibarModeSearch:
+	case constants.MultibarModeSearch:
 		s = "/" + m.RuneString()
 		st = m.Style("searchText")
 	default:
@@ -191,6 +196,7 @@ func (m *MultibarWidget) Cursor() int {
 }
 
 func (m *MultibarWidget) handleTruncate() {
+	m.autocomplete.active = false
 	m.setRunes(make([]rune, 0))
 	m.History().Reset(m.RuneString())
 	PostEventInputChanged(m)
@@ -198,6 +204,7 @@ func (m *MultibarWidget) handleTruncate() {
 
 // handleTextRune inserts a literal rune at the cursor position.
 func (m *MultibarWidget) handleTextRune(r rune) {
+	m.autocomplete.active = false
 	runes := make([]rune, len(m.runes)+1)
 	copy(runes, m.runes[:m.cursor])
 	copy(runes[m.cursor+1:], m.runes[m.cursor:])
@@ -225,9 +232,11 @@ func deleteBackwards(src []rune, cursor int, length int) []rune {
 // handleBackspace deletes a literal rune behind the cursor position.
 func (m *MultibarWidget) handleBackspace() {
 
+	m.autocomplete.active = false
+
 	// Backspace on an empty string returns to normal mode.
 	if len(m.runes) == 0 {
-		m.SetMode(MultibarModeNormal)
+		m.SetMode(constants.MultibarModeNormal)
 		return
 	}
 
@@ -241,18 +250,21 @@ func (m *MultibarWidget) handleBackspace() {
 }
 
 func (m *MultibarWidget) handleFinished() {
+	m.autocomplete.active = false
 	m.History().Add(m.RuneString())
 	PostEventInputFinished(m)
 }
 
 func (m *MultibarWidget) handleAbort() {
+	m.autocomplete.active = false
 	m.History().Add(m.RuneString())
 	m.History().Reset("")
 	m.setRunes(make([]rune, 0))
-	m.SetMode(MultibarModeNormal)
+	m.SetMode(constants.MultibarModeNormal)
 }
 
 func (m *MultibarWidget) handleHistory(offset int) {
+	m.autocomplete.active = false
 	s := m.History().Navigate(offset)
 	m.setRunes([]rune(s))
 	m.cursor = len(m.runes)
@@ -260,6 +272,7 @@ func (m *MultibarWidget) handleHistory(offset int) {
 }
 
 func (m *MultibarWidget) handleCursor(offset int) {
+	m.autocomplete.active = false
 	m.cursor += offset
 	m.validateCursor()
 	PostEventInputChanged(m) // FIXME: this triggers a search query; disable that
@@ -304,9 +317,91 @@ func nextWord(runes []rune, cursor, offset int) int {
 // handleCursorWord moves the cursor forward to the start of the next word or
 // backwards to the start of the previous word.
 func (m *MultibarWidget) handleCursorWord(offset int) {
+	m.autocomplete.active = false
 	m.cursor += nextWord(m.runes, m.cursor, offset)
 	m.validateCursor()
 	PostEventInputChanged(m) // FIXME: this triggers a search query; disable that
+}
+
+// handleTab cycles through autocomplete entries.
+func (m *MultibarWidget) handleTab() {
+
+	// Update text if autocomplete has been initialized
+	if m.autocomplete.active {
+		if len(m.autocomplete.items) == 0 {
+			return
+		}
+		if m.autocomplete.index >= len(m.autocomplete.items) {
+			m.autocomplete.index = 0
+		}
+		s := m.autocomplete.base + m.autocomplete.items[m.autocomplete.index]
+		m.autocomplete.index++
+		m.setRunes([]rune(s))
+		m.cursor = len(m.runes)
+		PostEventInputChanged(m) // FIXME: this triggers a search query; disable that
+		return
+	}
+
+	// Set up the input token stream for the parser
+	s := string(m.runes)
+	reader := strings.NewReader(s)
+	scanner := lexer.NewScanner(reader)
+	parser := parser.New(scanner)
+
+	// Find the verb
+	tok, verb := parser.ScanIgnoreWhitespace()
+	if tok != lexer.TokenIdentifier {
+		console.Log("Tab completing verb '%s', but this is not an identifier", verb)
+		return
+	}
+
+	// Instantiate the Command registered with this verb
+	cmd := commands.New(verb, m.api)
+	if cmd == nil {
+		console.Log("Tab completing verb '%s' yielded zero results", verb)
+		return
+	}
+
+	// Parse the remaining text
+	cmd.Parse(scanner)
+
+	// Concatenate scanned tokens, except the last one
+	// FIXME: add support for command completion
+	tokens := cmd.Scanned()
+	if len(tokens) < 2 {
+		return
+	}
+
+	//console.Log("Scanned tokens: %+v", tokens)
+
+	lastToken := lexer.TokenEnd
+	stringTokens := make([]string, 1)
+	stringTokens[0] = verb
+	for i := range tokens {
+		if tokens[i].Tok == lexer.TokenEnd {
+			break
+		}
+		lastToken = tokens[i].Tok
+		stringTokens = append(stringTokens, tokens[i].Lit)
+	}
+
+	//console.Log("StringTokens: %+v", stringTokens)
+
+	// Initialize autocomplete
+	lt := len(stringTokens) - 1
+	m.autocomplete.active = true
+	m.autocomplete.index = len(m.autocomplete.items)
+	m.autocomplete.items = cmd.TabComplete()
+	if lastToken == lexer.TokenWhitespace {
+		m.autocomplete.original = ""
+		m.autocomplete.base = strings.Join(stringTokens, "")
+	} else {
+		m.autocomplete.original = stringTokens[lt]
+		m.autocomplete.base = strings.Join(stringTokens[:lt], "")
+	}
+
+	// Recurse to update
+	m.handleTab()
 }
 
 // validateCursor makes sure the cursor stays within boundaries.
@@ -342,6 +437,10 @@ func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 		m.handleTruncate()
 	case tcell.KeyEnter:
 		m.handleFinished()
+	case tcell.KeyTab:
+		if m.Mode() == constants.MultibarModeInput {
+			m.handleTab()
+		}
 	case tcell.KeyLeft, tcell.KeyCtrlB:
 		m.handleCursor(-1)
 	case tcell.KeyRight, tcell.KeyCtrlF:
@@ -369,7 +468,7 @@ func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 
 // handleNormalEvent is called when an input event is received during command mode.
 func (m *MultibarWidget) handleNormalEvent(ev *tcell.EventKey) bool {
-	ke := parser.KeyEvent{Key: ev.Key(), Rune: ev.Rune()}
+	ke := input_parser.KeyEvent{Key: ev.Key(), Rune: ev.Rune()}
 	//console.Log("Input event in command mode: %s %s", ke.Key, string(ke.Rune))
 	m.events <- ke
 	return true
@@ -379,11 +478,11 @@ func (m *MultibarWidget) HandleEvent(ev tcell.Event) bool {
 	switch ev := ev.(type) {
 	case *tcell.EventKey:
 		switch m.inputMode {
-		case MultibarModeNormal:
+		case constants.MultibarModeNormal:
 			return m.handleNormalEvent(ev)
-		case MultibarModeInput:
+		case constants.MultibarModeInput:
 			return m.handleTextInputEvent(ev)
-		case MultibarModeSearch:
+		case constants.MultibarModeSearch:
 			return m.handleTextInputEvent(ev)
 		}
 	}

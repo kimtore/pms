@@ -16,6 +16,9 @@ var cursorTests = []struct {
 	tabComplete []string
 }{
 	// Valid forms
+	{`6`, true, []string{}},
+	{`+8`, true, []string{}},
+	{`-1`, true, []string{}},
 	{`up`, true, []string{}},
 	{`down`, true, []string{}},
 	//{`pgup`, true},
@@ -26,8 +29,8 @@ var cursorTests = []struct {
 	{`end`, true, []string{}},
 	{`current`, true, []string{}},
 	{`random`, true, []string{}},
-	{`next-of tag1,tag2`, true, []string{}},
-	{`prev-of tag1,tag2`, true, []string{}},
+	{`next-of tag1 tag2`, true, []string{}},
+	{`prev-of tag1 tag2`, true, []string{}},
 
 	// Invalid forms
 	{`up 1`, false, []string{}},
@@ -40,10 +43,11 @@ var cursorTests = []struct {
 	{`end 1`, false, []string{}},
 	{`current 1`, false, []string{}},
 	{`random 1`, false, []string{}},
-	{`next-of`, false, []string{"artist", "title"}},
-	{`prev-of`, false, []string{"artist", "title"}},
-	{`next-of 1 2`, false, []string{}},
-	{`prev-of 1 2`, false, []string{}},
+	{`next-of`, false, []string{}},
+	{`next-of `, false, []string{"artist", "title"}},
+	{`next-of t`, true, []string{"title"}},
+	{`prev-of`, false, []string{}},
+	{`prev-of `, false, []string{"artist", "title"}},
 
 	// Tab completion
 	{``, false, []string{

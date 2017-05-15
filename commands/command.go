@@ -3,22 +3,82 @@
 // such as 'sort', 'add', etc. must be implemented here.
 package commands
 
-import "github.com/ambientsound/pms/input/lexer"
+import (
+	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/parser"
+)
+
+var commands = map[string]func(api.API) Command{
+	"add":       NewAdd,
+	"bind":      NewBind,
+	"cursor":    NewCursor,
+	"inputmode": NewInputMode,
+	"isolate":   NewIsolate,
+	"list":      NewList,
+	"next":      NewNext,
+	"pause":     NewPause,
+	"play":      NewPlay,
+	"prev":      NewPrevious,
+	"previous":  NewPrevious,
+	"print":     NewPrint,
+	"q":         NewQuit,
+	"quit":      NewQuit,
+	"redraw":    NewRedraw,
+	"remove":    NewRemove,
+	"se":        NewSet,
+	"select":    NewSelect,
+	"set":       NewSet,
+	"sort":      NewSort,
+	"stop":      NewStop,
+	"style":     NewStyle,
+	"volume":    NewVolume,
+}
 
 // Command must be implemented by all commands.
 type Command interface {
-	// Parse the next input token
+	// Execute parses the next input token.
+	// FIXME: Execute is deprecated
 	Execute(class int, s string) error
 
-	// Parse and make an abstract syntax tree
+	// Parse and make an abstract syntax tree. This function MUST NOT have any side effects.
 	Parse(*lexer.Scanner) error
 
-	// Return a list of tab completion at this stage in parsing
+	// TabComplete returns a set of tokens that could possibly be used as the next
+	// command parameter.
 	TabComplete() []string
+
+	// Scanned returns a slice of tokens that have been scanned using Parse().
+	Scanned() []parser.Token
 }
 
 type command struct {
-	cmdline string
+	cmdline     string
+	tabComplete []string
+}
+
+// New returns the Command associated with the given verb.
+func New(verb string, a api.API) Command {
+	ctor := commands[verb]
+	if ctor == nil {
+		return nil
+	}
+	return ctor(a)
+}
+
+// setTabComplete defines a string slice that will be used for tab completion
+// at the current point in parsing.
+func (c *command) setTabComplete(s []string) {
+	c.tabComplete = s
+}
+
+// TabComplete implements Command.TabComplete.
+func (c *command) TabComplete() []string {
+	if c.tabComplete == nil {
+		// FIXME
+		return make([]string, 0)
+	}
+	return c.tabComplete
 }
 
 // Parse implements Command.Parse.
@@ -27,8 +87,8 @@ func (c *command) Parse(*lexer.Scanner) error {
 	return nil
 }
 
-// TabComplete implements Command.TabComplete.
-func (c *command) TabComplete() []string {
+// Scanned implements Command.Scanned.
+func (c *command) Scanned() []parser.Token {
 	// FIXME
-	return make([]string, 0)
+	return make([]parser.Token, 0)
 }
