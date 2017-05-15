@@ -9,7 +9,6 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/parser"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/utils"
 )
@@ -18,8 +17,7 @@ import (
 // parameters such as 'up' and 'down', and it also accepts relative positions
 // if a number is given.
 type Cursor struct {
-	parser.Parser
-	command
+	newcommand
 	api             api.API
 	absolute        int
 	current         bool
@@ -36,60 +34,15 @@ func NewCursor(api api.API) Command {
 	}
 }
 
-// FIXME: remove when Scanned() is removed from 'command' struct, and
-// responsibility handed over to parser.Parser
-func (cmd *Cursor) Scanned() []parser.Token {
-	return cmd.Parser.Scanned()
-}
-
-// Execute implements Command.Execute.
-// FIXME: boilerplate until Execute is removed from interface
-func (cmd *Cursor) Execute(class int, s string) error {
-	if class == lexer.TokenEnd {
-		return cmd.Exec()
-	}
-	cmd.cmdline += " " + s
-	return nil
-}
-
-func (cmd *Cursor) setTabCompleteVerbs(lit string) {
-	cmd.tabComplete = utils.TokenFilter(lit, []string{
-		"current",
-		"down",
-		"end",
-		"home",
-		"next-of",
-		"pagedn",
-		"pagedown",
-		"pageup",
-		"pgdn",
-		"pgup",
-		"prev-of",
-		"random",
-		"up",
-	})
-}
-
-func (cmd *Cursor) setTabCompleteSong(lit string, song *song.Song) {
-	if song == nil {
-		cmd.setTabCompleteEmpty()
-		return
-	}
-	cmd.tabComplete = utils.TokenFilter(lit, song.TagKeys())
-}
-
 // Parse parses cursor movement.
-func (cmd *Cursor) Parse(s *lexer.Scanner) error {
+func (cmd *Cursor) Parse() error {
 	songlistWidget := cmd.api.SonglistWidget()
 	list := cmd.api.Songlist()
-
-	// FIXME: initial verb scan boilerplate?
-	cmd.S = s
 
 	tok, lit := cmd.ScanIgnoreWhitespace()
 	cmd.setTabCompleteVerbs(lit)
 	if tok != lexer.TokenIdentifier {
-		return fmt.Errorf("Unexpected %v, expected identifier", lit)
+		return fmt.Errorf("Unexpected '%v', expected identifier", lit)
 	}
 
 	switch lit {
@@ -132,14 +85,6 @@ func (cmd *Cursor) Parse(s *lexer.Scanner) error {
 
 // Exec is the next Execute(), evading the old system
 func (cmd *Cursor) Exec() error {
-	// FIXME: move this code out of Command
-	reader := strings.NewReader(cmd.cmdline)
-	scanner := lexer.NewScanner(reader)
-	err := cmd.Parse(scanner)
-	if err != nil {
-		return err
-	}
-
 	list := cmd.api.Songlist()
 
 	switch {
@@ -163,6 +108,34 @@ func (cmd *Cursor) Exec() error {
 	return nil
 }
 
+// setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.
+func (cmd *Cursor) setTabCompleteVerbs(lit string) {
+	cmd.tabComplete = utils.TokenFilter(lit, []string{
+		"current",
+		"down",
+		"end",
+		"home",
+		"next-of",
+		"pagedn",
+		"pagedown",
+		"pageup",
+		"pgdn",
+		"pgup",
+		"prev-of",
+		"random",
+		"up",
+	})
+}
+
+// setTabCompleteTag sets the tab complete list to a list of tag keys in a specific song.
+func (cmd *Cursor) setTabCompleteTag(lit string, song *song.Song) {
+	if song == nil {
+		cmd.setTabCompleteEmpty()
+		return
+	}
+	cmd.tabComplete = utils.TokenFilter(lit, song.TagKeys())
+}
+
 // random returns a random list index in the songlist.
 func (cmd *Cursor) random() int {
 	len := cmd.api.Songlist().Len()
@@ -184,9 +157,9 @@ func (cmd *Cursor) parseNextOf() error {
 
 		switch tok {
 		case lexer.TokenWhitespace:
-			cmd.setTabCompleteSong("", song)
+			cmd.setTabCompleteTag("", song)
 		case lexer.TokenIdentifier:
-			cmd.setTabCompleteSong(lit, song)
+			cmd.setTabCompleteTag(lit, song)
 			cmd.nextOfTags = append(cmd.nextOfTags, strings.ToLower(lit))
 		case lexer.TokenEnd:
 			if len(cmd.nextOfTags) == 0 {

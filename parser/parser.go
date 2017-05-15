@@ -30,6 +30,12 @@ func New(r *lexer.Scanner) *Parser {
 	return &Parser{S: r}
 }
 
+// SetScanner assigns a scanner object to the parser.
+func (p *Parser) SetScanner(s *lexer.Scanner) {
+	p.S = s
+	p.buf.n = 0
+}
+
 // Scanned returns all scanned tokens.
 func (p *Parser) Scanned() []Token {
 	return p.scanned

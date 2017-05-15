@@ -11,21 +11,62 @@ import (
 
 // CLI reads user input, tokenizes it, and dispatches the tokens to their respective commands.
 type CLI struct {
-	baseAPI api.API
+	api api.API
 }
 
-func NewCLI(baseAPI api.API) *CLI {
+func NewCLI(api api.API) *CLI {
 	return &CLI{
-		baseAPI: baseAPI,
+		api: api,
 	}
 }
 
+// Exec is the new Execute.
+func (i *CLI) Exec(line string) error {
+
+	// Create the token scanner.
+	reader := strings.NewReader(line)
+	scanner := lexer.NewScanner(reader)
+
+	// Read the verb of the function. Comments and whitespace are ignored, all
+	// tokens other than identifiers throw errors.
+	tok, verb := scanner.ScanIgnoreWhitespace()
+	switch tok {
+	case lexer.TokenEnd, lexer.TokenComment:
+		return nil
+	case lexer.TokenIdentifier:
+		break
+	default:
+		return fmt.Errorf("Unexpected '%s', expected verb", verb)
+	}
+
+	// Instantiate the command.
+	cmd := commands.New(verb, i.api)
+	if cmd == nil {
+		return fmt.Errorf("Not a command: %s", verb)
+	}
+
+	// Parse the command into an AST.
+	cmd.SetScanner(scanner)
+	err := cmd.Parse()
+	if err != nil {
+		return err
+	}
+
+	// Execute the AST.
+	return cmd.Exec()
+}
+
 // Execute sends scanned tokens to Command instances.
-// FIXME: this function is deprecated and must be refactored when all Command
+// FIXME: this function is deprecated and must be remove when all Command
 // classes have been ported.
 func (i *CLI) Execute(line string) error {
 	var cmd commands.Command
 	var err error
+
+	err = i.Exec(line)
+	if err != nil {
+		return err
+	}
 
 	reader := strings.NewReader(line)
 	scanner := lexer.NewScanner(reader)
@@ -38,7 +79,7 @@ func (i *CLI) Execute(line string) error {
 			switch class {
 			case lexer.TokenIdentifier:
 				if ctor, ok := commands.Verbs[token]; ok {
-					cmd = ctor(i.baseAPI)
+					cmd = ctor(i.api)
 					continue
 				}
 				return fmt.Errorf("Not a command: %s", token)

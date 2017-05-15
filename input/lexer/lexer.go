@@ -92,6 +92,15 @@ func (s *Scanner) Scan() (class int, lit string) {
 	return
 }
 
+// ScanIgnoreWhitespace scans the next non-whitespace token.
+func (s *Scanner) ScanIgnoreWhitespace() (tok int, lit string) {
+	tok, lit = s.Scan()
+	if tok == TokenWhitespace {
+		tok, lit = s.Scan()
+	}
+	return
+}
+
 // scanWhitespace consumes the current rune and all contiguous whitespace.
 func (s *Scanner) scanWhitespace() string {
 	var buf bytes.Buffer

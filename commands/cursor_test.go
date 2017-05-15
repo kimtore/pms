@@ -84,7 +84,8 @@ func TestCursor(t *testing.T) {
 		scanner := lexer.NewScanner(reader)
 
 		// Parse command
-		err := cmd.Parse(scanner)
+		cmd.SetScanner(scanner)
+		err := cmd.Parse()
 
 		// Test success
 		if test.success {

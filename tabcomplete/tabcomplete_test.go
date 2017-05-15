@@ -23,6 +23,18 @@ var tabCompleteTests = []struct {
 		"stop",
 		"style",
 	}},
+	{"set", true, []string{}},
+	{"add ", true, []string{}},
+	{"cursor next-of", true, []string{}},
+	{"cursor next-of ", true, []string{
+		"cursor next-of artist",
+		"cursor next-of title",
+	}},
+	{"foobarbaz", false, []string{}},
+	{"foobarbaz ", false, []string{}},
+	{"$var", false, []string{}},
+	{"{foo", false, []string{}},
+	{"# bar", false, []string{}},
 }
 
 func TestTabComplete(t *testing.T) {
@@ -37,7 +49,7 @@ func TestTabComplete(t *testing.T) {
 		sentences := make([]string, clen)
 		i := 0
 
-		for {
+		for i < len(sentences) {
 			sentence, err := tabComplete.Scan()
 			if test.success {
 				assert.Nil(t, err, "Expected success when parsing '%s'", test.input)

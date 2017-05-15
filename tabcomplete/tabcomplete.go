@@ -116,7 +116,8 @@ func (t *TabComplete) init() error {
 	}
 
 	// Parse the remaining text
-	cmd.Parse(scanner)
+	cmd.SetScanner(scanner)
+	cmd.Parse()
 
 	// Concatenate scanned tokens, except the last one
 	tokens := cmd.Scanned()
