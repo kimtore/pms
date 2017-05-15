@@ -18,6 +18,7 @@ PMS has many features that involve sorting, searching, and navigating. It’s de
 * Many forms of tracklist manipulation, such as copying, filtering, and sorting.
 * Basic readline functionality when typing, including history.
 * Configuration file support, following the XDG standard.
+* Tab completion (some commands; still some work to be done).
 
 
 ## Project status
@@ -32,7 +33,6 @@ This functionality is present in the `0.42.x` branch, but missing in master:
 * Basic player controls: consume, repeat, single, random.
 * Automatically add songs to the queue when it is nearing end.
 * Copy and paste.
-* Tab completion.
 * Remote playlist management.
 * Documentation for configuration and commands.
 * ...and probably more.
@@ -67,9 +67,13 @@ A full-text search index takes up both space and memory. For a library of about 
 PMS is multithreaded and benefits from multicore CPUs.
 
 
-## Configuration
+## Documentation
 
-### MPD server
+See [configuring PMS](config.md) for a detailed list of options, styles, topbar widgets, and commands.
+
+### Configuration
+
+#### MPD server
 
 During startup, in order to create a full-text search index, PMS retrieves the entire song library from MPD. If your song library is big, the `listallinfo` command will overflow MPD's send buffer, and the connection is dropped. This can be mitigated by increasing MPD's output buffer size:
 
@@ -79,7 +83,7 @@ max_output_buffer_size "262144"
 EOF
 ```
 
-### PMS
+#### PMS
 
 PMS connects to the MPD server specified in the `MPD_HOST` and `MPD_PORT` variables. See `pms --help` for command-line options.
 
