@@ -20,7 +20,6 @@ type Songlist interface {
 	Duplicate(Songlist) error
 	InRange(int) bool
 	Len() int
-	Less(int, int) bool
 	Locate(*song.Song) (int, error)
 	Lock()
 	Name() string
@@ -32,7 +31,6 @@ type Songlist interface {
 	Song(int) *song.Song
 	Songs() []*song.Song
 	Sort([]string) error
-	Swap(int, int)
 	Truncate(int) error
 	Unlock()
 
@@ -57,10 +55,9 @@ type Songlist interface {
 }
 
 type BaseSonglist struct {
-	name                string
-	songs               []*song.Song
-	currentSortCriteria string
-	mutex               sync.Mutex
+	name  string
+	songs []*song.Song
+	mutex sync.Mutex
 
 	columns         ColumnMap
 	cursor          int
@@ -271,31 +268,36 @@ func (s *BaseSonglist) NextOf(tags []string, index int, direction int) int {
 	return index + offset(index)
 }
 
+// Sort sorts the songlist by the given tags. The first tag is sorted normally,
+// while the remaining tags are used for stable sorting.
 func (s *BaseSonglist) Sort(fields []string) error {
 	if len(fields) == 0 {
 		return fmt.Errorf("Cannot sort without sort criteria")
 	}
 	s.Lock()
 	defer s.Unlock()
-	s.sortBy(fields[0])
-	for _, field := range fields[1:] {
-		s.stableSortBy(field)
+
+	stable := false
+	for _, field := range fields {
+		s.sortBy(field, stable)
+		stable = true
 	}
+
 	return nil
 }
 
-func (s *BaseSonglist) sortBy(field string) {
-	s.currentSortCriteria = field
+// sortBy sorts the songlist by the given tag, optionally using stable sort.
+func (s *BaseSonglist) sortBy(field string, stable bool) {
+	sortFunc := func(a, b int) bool {
+		return s.songs[a].SortTags[field] < s.songs[b].SortTags[field]
+	}
 	timer := time.Now()
-	sort.Sort(s)
+	if stable {
+		sort.SliceStable(s.songs, sortFunc)
+	} else {
+		sort.Slice(s.songs, sortFunc)
+	}
 	console.Log("Sorted '%s' by '%s' in %s", s.Name(), field, time.Since(timer).String())
-}
-
-func (s *BaseSonglist) stableSortBy(field string) {
-	s.currentSortCriteria = field
-	timer := time.Now()
-	sort.Stable(s)
-	console.Log("Stable sorted '%s' by '%s' in %s", s.Name(), field, time.Since(timer).String())
 }
 
 func (s *BaseSonglist) Len() int {
@@ -305,14 +307,6 @@ func (s *BaseSonglist) Len() int {
 // InRange returns true if the provided index is within songlist range, false otherwise.
 func (s *BaseSonglist) InRange(index int) bool {
 	return index >= 0 && index < s.Len()
-}
-
-func (s *BaseSonglist) Less(a, b int) bool {
-	return s.songs[a].SortTags[s.currentSortCriteria] < s.songs[b].SortTags[s.currentSortCriteria]
-}
-
-func (s *BaseSonglist) Swap(a, b int) {
-	s.songs[a], s.songs[b] = s.songs[b], s.songs[a]
 }
 
 func (s *BaseSonglist) AddFromAttrlist(attrlist []mpd.Attrs) {
