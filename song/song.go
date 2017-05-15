@@ -119,11 +119,12 @@ func (s *Song) HasOneOfTags(tags ...string) bool {
 
 // TagKeys returns a string slice with all tag keys, sorted in alphabetical order.
 func (s *Song) TagKeys() []string {
-	keys := make([]string, 0, len(s.StringTags))
+	keys := make(sort.StringSlice, 0, len(s.StringTags))
 	for tag := range s.StringTags {
 		keys = append(keys, tag)
 	}
-	return sort.StringSlice(keys)
+	keys.Sort()
+	return keys
 }
 
 func trackSort(s string) string {
