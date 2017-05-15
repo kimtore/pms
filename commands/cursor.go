@@ -26,7 +26,6 @@ type Cursor struct {
 	nextOfDirection int
 	nextOfTags      []string
 	relative        int
-	tabComplete     []string
 }
 
 // NewCursor returns Cursor.
@@ -63,15 +62,7 @@ func (cmd *Cursor) filter(match string, tokens []string) []string {
 	return dest
 }
 
-func (cmd *Cursor) TabComplete() []string {
-	return cmd.tabComplete
-}
-
-func (cmd *Cursor) tabCompleteEmpty() {
-	cmd.tabComplete = []string{}
-}
-
-func (cmd *Cursor) tabCompleteVerbs(lit string) {
+func (cmd *Cursor) setTabCompleteVerbs(lit string) {
 	cmd.tabComplete = cmd.filter(lit, []string{
 		"current",
 		"down",
@@ -89,9 +80,9 @@ func (cmd *Cursor) tabCompleteVerbs(lit string) {
 	})
 }
 
-func (cmd *Cursor) tabCompleteSong(lit string, song *song.Song) {
+func (cmd *Cursor) setTabCompleteSong(lit string, song *song.Song) {
 	if song == nil {
-		cmd.tabCompleteEmpty()
+		cmd.setTabCompleteEmpty()
 		return
 	}
 	cmd.tabComplete = cmd.filter(lit, song.TagKeys())
@@ -106,7 +97,7 @@ func (cmd *Cursor) Parse(s *lexer.Scanner) error {
 	cmd.S = s
 
 	tok, lit := cmd.ScanIgnoreWhitespace()
-	cmd.tabCompleteVerbs(lit)
+	cmd.setTabCompleteVerbs(lit)
 	if tok != lexer.TokenIdentifier {
 		return fmt.Errorf("Unexpected %v, expected identifier", lit)
 	}
@@ -144,7 +135,7 @@ func (cmd *Cursor) Parse(s *lexer.Scanner) error {
 		cmd.relative = i
 	}
 
-	cmd.tabCompleteEmpty()
+	cmd.setTabCompleteEmpty()
 
 	return cmd.ParseEnd()
 }
@@ -196,16 +187,16 @@ func (cmd *Cursor) random() int {
 // parseNextOf parses a set of tags.
 func (cmd *Cursor) parseNextOf() error {
 	song := cmd.api.Songlist().CursorSong()
-	cmd.tabCompleteEmpty()
+	cmd.setTabCompleteEmpty()
 
 	for {
 		tok, lit := cmd.Scan()
 
 		switch tok {
 		case lexer.TokenWhitespace:
-			cmd.tabCompleteSong("", song)
+			cmd.setTabCompleteSong("", song)
 		case lexer.TokenIdentifier:
-			cmd.tabCompleteSong(lit, song)
+			cmd.setTabCompleteSong(lit, song)
 			cmd.nextOfTags = append(cmd.nextOfTags, strings.ToLower(lit))
 		case lexer.TokenEnd:
 			if len(cmd.nextOfTags) == 0 {

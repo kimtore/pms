@@ -72,6 +72,11 @@ func (c *command) setTabComplete(s []string) {
 	c.tabComplete = s
 }
 
+// setTabCompleteEmpty removes all tab completions.
+func (c *command) setTabCompleteEmpty() {
+	c.setTabComplete([]string{})
+}
+
 // TabComplete implements Command.TabComplete.
 func (c *command) TabComplete() []string {
 	if c.tabComplete == nil {
