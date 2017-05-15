@@ -81,7 +81,17 @@ func (t *TabComplete) init() error {
 
 	// Find the verb
 	tok, verb := parser.ScanIgnoreWhitespace()
-	if tok != lexer.TokenIdentifier {
+	switch tok {
+
+	// Blank line, return the list of commands
+	case lexer.TokenEnd:
+		items := utils.TokenFilter("", commands.Keys())
+		t.set([]string{}, items, false)
+		return nil
+
+	// Only let through identifiers
+	case lexer.TokenIdentifier:
+	default:
 		return fmt.Errorf("Tab completing verb '%s', but this is not an identifier", verb)
 	}
 

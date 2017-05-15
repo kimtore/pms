@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/tabcomplete"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,6 +14,7 @@ var tabCompleteTests = []struct {
 	success     bool
 	completions []string
 }{
+	{"", true, commands.Keys()},
 	{"s", true, []string{
 		"se",
 		"select",
