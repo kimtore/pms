@@ -20,6 +20,9 @@ func NewCLI(baseAPI api.API) *CLI {
 	}
 }
 
+// Execute sends scanned tokens to Command instances.
+// FIXME: this function is deprecated and must be refactored when all Command
+// classes have been ported.
 func (i *CLI) Execute(line string) error {
 	var cmd commands.Command
 	var err error

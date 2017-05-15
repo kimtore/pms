@@ -6,14 +6,13 @@ import (
 	"unicode/utf8"
 
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/input/lexer"
 	input_parser "github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/message"
-	"github.com/ambientsound/pms/parser"
 	"github.com/ambientsound/pms/style"
+	"github.com/ambientsound/pms/tabcomplete"
 	"github.com/ambientsound/pms/utils"
 
 	"github.com/gdamore/tcell"
@@ -27,25 +26,16 @@ type history struct {
 	index   int
 }
 
-// autocomplete represents a list of strings that autocompletes the current word.
-type autocomplete struct {
-	active   bool
-	base     string
-	index    int
-	items    []string
-	original string
-}
-
 // MultibarWidget receives keyboard events, displays status messages, and the position readout.
 type MultibarWidget struct {
-	api          api.API
-	autocomplete autocomplete
-	cursor       int
-	events       chan input_parser.KeyEvent
-	inputMode    int
-	msg          message.Message
-	runes        []rune
-	textStyle    tcell.Style
+	api         api.API
+	cursor      int
+	events      chan input_parser.KeyEvent
+	inputMode   int
+	msg         message.Message
+	runes       []rune
+	tabComplete *tabcomplete.TabComplete
+	textStyle   tcell.Style
 
 	// Three histories, one for each input mode
 	history [3]history
@@ -191,12 +181,23 @@ func (m *MultibarWidget) RuneLen() int {
 	return len(m.runes)
 }
 
+// Cursor returns the cursor position.
 func (m *MultibarWidget) Cursor() int {
 	return m.cursor
 }
 
+// validateCursor makes sure the cursor stays within boundaries.
+func (m *MultibarWidget) validateCursor() {
+	if m.cursor > len(m.runes) {
+		m.cursor = len(m.runes)
+	}
+	if m.cursor < 0 {
+		m.cursor = 0
+	}
+}
+
 func (m *MultibarWidget) handleTruncate() {
-	m.autocomplete.active = false
+	m.tabComplete = nil
 	m.setRunes(make([]rune, 0))
 	m.History().Reset(m.RuneString())
 	PostEventInputChanged(m)
@@ -204,7 +205,7 @@ func (m *MultibarWidget) handleTruncate() {
 
 // handleTextRune inserts a literal rune at the cursor position.
 func (m *MultibarWidget) handleTextRune(r rune) {
-	m.autocomplete.active = false
+	m.tabComplete = nil
 	runes := make([]rune, len(m.runes)+1)
 	copy(runes, m.runes[:m.cursor])
 	copy(runes[m.cursor+1:], m.runes[m.cursor:])
@@ -232,7 +233,7 @@ func deleteBackwards(src []rune, cursor int, length int) []rune {
 // handleBackspace deletes a literal rune behind the cursor position.
 func (m *MultibarWidget) handleBackspace() {
 
-	m.autocomplete.active = false
+	m.tabComplete = nil
 
 	// Backspace on an empty string returns to normal mode.
 	if len(m.runes) == 0 {
@@ -250,13 +251,13 @@ func (m *MultibarWidget) handleBackspace() {
 }
 
 func (m *MultibarWidget) handleFinished() {
-	m.autocomplete.active = false
+	m.tabComplete = nil
 	m.History().Add(m.RuneString())
 	PostEventInputFinished(m)
 }
 
 func (m *MultibarWidget) handleAbort() {
-	m.autocomplete.active = false
+	m.tabComplete = nil
 	m.History().Add(m.RuneString())
 	m.History().Reset("")
 	m.setRunes(make([]rune, 0))
@@ -264,7 +265,7 @@ func (m *MultibarWidget) handleAbort() {
 }
 
 func (m *MultibarWidget) handleHistory(offset int) {
-	m.autocomplete.active = false
+	m.tabComplete = nil
 	s := m.History().Navigate(offset)
 	m.setRunes([]rune(s))
 	m.cursor = len(m.runes)
@@ -272,7 +273,7 @@ func (m *MultibarWidget) handleHistory(offset int) {
 }
 
 func (m *MultibarWidget) handleCursor(offset int) {
-	m.autocomplete.active = false
+	m.tabComplete = nil
 	m.cursor += offset
 	m.validateCursor()
 	PostEventInputChanged(m) // FIXME: this triggers a search query; disable that
@@ -317,101 +318,36 @@ func nextWord(runes []rune, cursor, offset int) int {
 // handleCursorWord moves the cursor forward to the start of the next word or
 // backwards to the start of the previous word.
 func (m *MultibarWidget) handleCursorWord(offset int) {
-	m.autocomplete.active = false
+	m.tabComplete = nil
 	m.cursor += nextWord(m.runes, m.cursor, offset)
 	m.validateCursor()
 	PostEventInputChanged(m) // FIXME: this triggers a search query; disable that
 }
 
-// handleTab cycles through autocomplete entries.
+// handleTab invokes tab completion.
 func (m *MultibarWidget) handleTab() {
 
-	// Update text if autocomplete has been initialized
-	if m.autocomplete.active {
-		if len(m.autocomplete.items) == 0 {
-			return
-		}
-		if m.autocomplete.index >= len(m.autocomplete.items) {
-			m.autocomplete.index = 0
-		}
-		s := m.autocomplete.base + m.autocomplete.items[m.autocomplete.index]
-		m.autocomplete.index++
-		m.setRunes([]rune(s))
-		m.cursor = len(m.runes)
-		PostEventInputChanged(m) // FIXME: this triggers a search query; disable that
+	// Ignore event if cursor is not at the end
+	if m.cursor != len(m.runes) {
 		return
 	}
 
-	// Set up the input token stream for the parser
-	s := string(m.runes)
-	reader := strings.NewReader(s)
-	scanner := lexer.NewScanner(reader)
-	parser := parser.New(scanner)
+	// Initialize tabcomplete
+	if m.tabComplete == nil {
+		m.tabComplete = tabcomplete.New(m.RuneString(), m.api)
+	}
 
-	// Find the verb
-	tok, verb := parser.ScanIgnoreWhitespace()
-	if tok != lexer.TokenIdentifier {
-		console.Log("Tab completing verb '%s', but this is not an identifier", verb)
+	// Get next sentence, and abort on any errors.
+	sentence, err := m.tabComplete.Scan()
+	if err != nil {
+		console.Log("Autocomplete: %s", err)
 		return
 	}
 
-	// Instantiate the Command registered with this verb
-	cmd := commands.New(verb, m.api)
-	if cmd == nil {
-		console.Log("Tab completing verb '%s' yielded zero results", verb)
-		return
-	}
-
-	// Parse the remaining text
-	cmd.Parse(scanner)
-
-	// Concatenate scanned tokens, except the last one
-	// FIXME: add support for command completion
-	tokens := cmd.Scanned()
-	if len(tokens) < 2 {
-		return
-	}
-
-	//console.Log("Scanned tokens: %+v", tokens)
-
-	lastToken := lexer.TokenEnd
-	stringTokens := make([]string, 1)
-	stringTokens[0] = verb
-	for i := range tokens {
-		if tokens[i].Tok == lexer.TokenEnd {
-			break
-		}
-		lastToken = tokens[i].Tok
-		stringTokens = append(stringTokens, tokens[i].Lit)
-	}
-
-	//console.Log("StringTokens: %+v", stringTokens)
-
-	// Initialize autocomplete
-	lt := len(stringTokens) - 1
-	m.autocomplete.active = true
-	m.autocomplete.index = len(m.autocomplete.items)
-	m.autocomplete.items = cmd.TabComplete()
-	if lastToken == lexer.TokenWhitespace {
-		m.autocomplete.original = ""
-		m.autocomplete.base = strings.Join(stringTokens, "")
-	} else {
-		m.autocomplete.original = stringTokens[lt]
-		m.autocomplete.base = strings.Join(stringTokens[:lt], "")
-	}
-
-	// Recurse to update
-	m.handleTab()
-}
-
-// validateCursor makes sure the cursor stays within boundaries.
-func (m *MultibarWidget) validateCursor() {
-	if m.cursor > len(m.runes) {
-		m.cursor = len(m.runes)
-	}
-	if m.cursor < 0 {
-		m.cursor = 0
-	}
+	// Replace current text.
+	m.setRunes([]rune(sentence))
+	m.cursor = len(m.runes)
+	PostEventInputChanged(m) // FIXME: this triggers a search query; disable that
 }
 
 // handleTextInputEvent is called when an input event is received during any of the text input modes.

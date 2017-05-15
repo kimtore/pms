@@ -4,6 +4,8 @@
 package commands
 
 import (
+	"sort"
+
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/parser"
@@ -67,6 +69,16 @@ func New(verb string, a api.API) Command {
 		return nil
 	}
 	return ctor(a)
+}
+
+// Keys returns a string slice with all verbs that can be invoked to run a command.
+func Keys() []string {
+	keys := make(sort.StringSlice, 0, len(Verbs))
+	for verb := range Verbs {
+		keys = append(keys, verb)
+	}
+	keys.Sort()
+	return keys
 }
 
 // setTabComplete defines a string slice that will be used for tab completion
