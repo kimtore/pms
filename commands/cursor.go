@@ -11,6 +11,7 @@ import (
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/parser"
 	"github.com/ambientsound/pms/song"
+	"github.com/ambientsound/pms/utils"
 )
 
 // Cursor moves the cursor in a songlist widget. It can take human-readable
@@ -51,19 +52,8 @@ func (cmd *Cursor) Execute(class int, s string) error {
 	return nil
 }
 
-// filter returns a subset of tokens that match the specified prefix.
-func (cmd *Cursor) filter(match string, tokens []string) []string {
-	dest := make([]string, 0, len(tokens))
-	for _, tok := range tokens {
-		if strings.HasPrefix(tok, match) {
-			dest = append(dest, tok)
-		}
-	}
-	return dest
-}
-
 func (cmd *Cursor) setTabCompleteVerbs(lit string) {
-	cmd.tabComplete = cmd.filter(lit, []string{
+	cmd.tabComplete = utils.TokenFilter(lit, []string{
 		"current",
 		"down",
 		"end",
@@ -85,7 +75,7 @@ func (cmd *Cursor) setTabCompleteSong(lit string, song *song.Song) {
 		cmd.setTabCompleteEmpty()
 		return
 	}
-	cmd.tabComplete = cmd.filter(lit, song.TagKeys())
+	cmd.tabComplete = utils.TokenFilter(lit, song.TagKeys())
 }
 
 // Parse parses cursor movement.

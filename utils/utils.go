@@ -3,6 +3,7 @@ package utils
 
 import (
 	"fmt"
+	"strings"
 )
 
 // TimeString formats length in seconds as H:mm:ss.
@@ -30,6 +31,17 @@ func ReverseRunes(src []rune) []rune {
 	dest := make([]rune, len(src))
 	for i, j := 0, len(src)-1; i <= j; i, j = i+1, j-1 {
 		dest[i], dest[j] = src[j], src[i]
+	}
+	return dest
+}
+
+// TokenFilter returns a subset of tokens that match the specified prefix.
+func TokenFilter(match string, tokens []string) []string {
+	dest := make([]string, 0, len(tokens))
+	for _, tok := range tokens {
+		if strings.HasPrefix(tok, match) {
+			dest = append(dest, tok)
+		}
 	}
 	return dest
 }
