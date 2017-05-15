@@ -9,20 +9,14 @@ import (
 	"github.com/ambientsound/pms/input/lexer"
 )
 
-type commandCtor func(api.API) commands.Command
-
-type commandMap map[string]commandCtor
-
 // CLI reads user input, tokenizes it, and dispatches the tokens to their respective commands.
 type CLI struct {
-	handlers commandMap
-	baseAPI  api.API
+	baseAPI api.API
 }
 
 func NewCLI(baseAPI api.API) *CLI {
 	return &CLI{
-		baseAPI:  baseAPI,
-		handlers: make(commandMap, 0),
+		baseAPI: baseAPI,
 	}
 }
 
@@ -40,7 +34,7 @@ func (i *CLI) Execute(line string) error {
 		if cmd == nil {
 			switch class {
 			case lexer.TokenIdentifier:
-				if ctor, ok := i.handlers[token]; ok {
+				if ctor, ok := commands.Verbs[token]; ok {
 					cmd = ctor(i.baseAPI)
 					continue
 				}
@@ -74,13 +68,5 @@ func (i *CLI) Execute(line string) error {
 		}
 	}
 
-	return nil
-}
-
-func (i *CLI) Register(verb string, ctor commandCtor) error {
-	if _, ok := i.handlers[verb]; ok {
-		return fmt.Errorf("Handler with verb '%s' already exists", verb)
-	}
-	i.handlers[verb] = ctor
 	return nil
 }

@@ -9,7 +9,9 @@ import (
 	"github.com/ambientsound/pms/parser"
 )
 
-var commands = map[string]func(api.API) Command{
+// Verbs contain mappings from strings to Command constructors.
+// Make sure to add commands here when implementing them, or they will not be recognized.
+var Verbs = map[string]func(api.API) Command{
 	"add":       NewAdd,
 	"bind":      NewBind,
 	"cursor":    NewCursor,
@@ -52,6 +54,7 @@ type Command interface {
 	Scanned() []parser.Token
 }
 
+// command is a helper base class that all commands may use.
 type command struct {
 	cmdline     string
 	tabComplete []string
@@ -59,7 +62,7 @@ type command struct {
 
 // New returns the Command associated with the given verb.
 func New(verb string, a api.API) Command {
-	ctor := commands[verb]
+	ctor := Verbs[verb]
 	if ctor == nil {
 		return nil
 	}

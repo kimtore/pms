@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"
@@ -20,8 +19,6 @@ func TestCLISet(t *testing.T) {
 	a := api.NewTestAPI()
 	opts := a.Options()
 	iface := input.NewCLI(a)
-
-	iface.Register("set", commands.NewSet)
 
 	opts.Add(options.NewStringOption("foo"))
 	err = opts.Get("foo").Set("this string must die")

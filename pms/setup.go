@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/keys"
@@ -38,7 +37,8 @@ func New() *PMS {
 	pms.Sequencer = keys.NewSequencer()
 
 	pms.setupUI()
-	pms.setupCLI()
+
+	pms.CLI = input.NewCLI(pms.API())
 
 	return pms
 }
@@ -62,35 +62,6 @@ func (pms *PMS) API() api.API {
 		pms.Stylesheet(),
 		pms.UI,
 	)
-}
-
-// setupCLI instantiates the different commands PMS understands, such as set; bind; etc.
-// FIXME: deprecated
-func (pms *PMS) setupCLI() {
-	pms.CLI = input.NewCLI(pms.API())
-	pms.CLI.Register("add", commands.NewAdd)
-	pms.CLI.Register("bind", commands.NewBind)
-	pms.CLI.Register("cursor", commands.NewCursor)
-	pms.CLI.Register("inputmode", commands.NewInputMode)
-	pms.CLI.Register("isolate", commands.NewIsolate)
-	pms.CLI.Register("list", commands.NewList)
-	pms.CLI.Register("next", commands.NewNext)
-	pms.CLI.Register("pause", commands.NewPause)
-	pms.CLI.Register("play", commands.NewPlay)
-	pms.CLI.Register("prev", commands.NewPrevious)
-	pms.CLI.Register("previous", commands.NewPrevious)
-	pms.CLI.Register("print", commands.NewPrint)
-	pms.CLI.Register("q", commands.NewQuit)
-	pms.CLI.Register("quit", commands.NewQuit)
-	pms.CLI.Register("redraw", commands.NewRedraw)
-	pms.CLI.Register("remove", commands.NewRemove)
-	pms.CLI.Register("se", commands.NewSet)
-	pms.CLI.Register("select", commands.NewSelect)
-	pms.CLI.Register("set", commands.NewSet)
-	pms.CLI.Register("sort", commands.NewSort)
-	pms.CLI.Register("stop", commands.NewStop)
-	pms.CLI.Register("style", commands.NewStyle)
-	pms.CLI.Register("volume", commands.NewVolume)
 }
 
 func (pms *PMS) setupUI() {
