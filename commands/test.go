@@ -9,9 +9,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// CommandTest is a structure for test data, and can be used to conveniently
+// TestData contains data needed for a single Command table test.
+type TestData struct {
+	T    *testing.T
+	Cmd  Command
+	Api  api.API
+	Test Test
+}
+
+// Test is a structure for test data, and can be used to conveniently
 // test Command instances.
-type CommandTest struct {
+type Test struct {
 
 	// The input data for the command, as seen on the command line.
 	Input string
@@ -19,46 +27,60 @@ type CommandTest struct {
 	// True if the command should parse and execute properly, false otherwise.
 	Success bool
 
+	// An initialization function for tests.
+	Init func(data *TestData)
+
 	// A callback function to call for every test, allowing customization of tests.
-	Callback func(t *testing.T, cmd Command, api api.API, test CommandTest)
+	Callback func(data *TestData)
 
 	// A slice of tab completion candidates to expect.
 	TabComplete []string
 }
 
 // TestVerb runs table tests for Command implementations.
-func TestVerb(t *testing.T, verb string, tests []CommandTest) {
+func TestVerb(t *testing.T, verb string, tests []Test) {
 	for n, test := range tests {
 		api := api.NewTestAPI()
-		cmd := New(verb, api)
+
+		data := &TestData{
+			T:    t,
+			Api:  api,
+			Cmd:  New(verb, api),
+			Test: test,
+		}
+
+		if data.Test.Init != nil {
+			t.Logf("### Initializing data for verb test '%s' number %d", test.Input, n+1)
+			data.Test.Init(data)
+		}
 
 		t.Logf("### Test %d: '%s'", n+1, test.Input)
-		TestCommand(t, cmd, api, test)
+		TestCommand(data)
 	}
 }
 
 // TestCommand runs a single test a for Command implementation.
-func TestCommand(t *testing.T, cmd Command, api api.API, test CommandTest) {
-	reader := strings.NewReader(test.Input)
+func TestCommand(data *TestData) {
+	reader := strings.NewReader(data.Test.Input)
 	scanner := lexer.NewScanner(reader)
 
 	// Parse command
-	cmd.SetScanner(scanner)
-	err := cmd.Parse()
+	data.Cmd.SetScanner(scanner)
+	err := data.Cmd.Parse()
 
 	// Test success
-	if test.Success {
-		assert.Nil(t, err, "Expected success when parsing '%s'", test.Input)
+	if data.Test.Success {
+		assert.Nil(data.T, err, "Expected success when parsing '%s'", data.Test.Input)
 	} else {
-		assert.NotNil(t, err, "Expected error when parsing '%s'", test.Input)
+		assert.NotNil(data.T, err, "Expected error when parsing '%s'", data.Test.Input)
 	}
 
 	// Test tab completes
-	completes := cmd.TabComplete()
-	assert.Equal(t, test.TabComplete, completes)
+	completes := data.Cmd.TabComplete()
+	assert.Equal(data.T, data.Test.TabComplete, completes)
 
 	// Test callback function
-	if test.Callback != nil {
-		test.Callback(t, cmd, api, test)
+	if data.Test.Callback != nil {
+		data.Test.Callback(data)
 	}
 }

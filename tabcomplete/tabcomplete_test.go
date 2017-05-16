@@ -26,10 +26,6 @@ var tabCompleteTests = []struct {
 	{"set", true, []string{}},
 	{"add ", true, []string{}},
 	{"cursor next-of", true, []string{}},
-	{"cursor next-of ", true, []string{
-		"cursor next-of artist",
-		"cursor next-of title",
-	}},
 	{"foobarbaz", false, []string{}},
 	{"foobarbaz ", false, []string{}},
 	{"$var", false, []string{}},

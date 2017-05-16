@@ -6,22 +6,22 @@ import (
 	"github.com/ambientsound/pms/commands"
 )
 
-var selectTests = []commands.CommandTest{
+var selectTests = []commands.Test{
 	// Valid forms
-	{`visual`, true, nil, []string{}},
-	{`toggle`, true, nil, []string{}},
+	{`visual`, true, nil, nil, []string{}},
+	{`toggle`, true, nil, nil, []string{}},
 
 	// Invalid forms
-	{`foo`, false, nil, []string{}},
-	{`visual 1`, false, nil, []string{}},
-	{`toggle 1`, false, nil, []string{}},
+	{`foo`, false, nil, nil, []string{}},
+	{`visual 1`, false, nil, nil, []string{}},
+	{`toggle 1`, false, nil, nil, []string{}},
 
 	// Tab completion
-	{``, false, nil, []string{
+	{``, false, nil, nil, []string{
 		"toggle",
 		"visual",
 	}},
-	{`t`, false, nil, []string{
+	{`t`, false, nil, nil, []string{
 		"toggle",
 	}},
 }

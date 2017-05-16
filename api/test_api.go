@@ -16,14 +16,7 @@ type testAPI struct {
 	messages chan message.Message
 	options  *options.Options
 	song     *song.Song
-}
-
-func NewTestAPI() API {
-	return &testAPI{
-		messages: make(chan message.Message, 1024),
-		options:  options.New(),
-		song:     createTestSong(),
-	}
+	songlist songlist.Songlist
 }
 
 func createTestSong() *song.Song {
@@ -33,6 +26,15 @@ func createTestSong() *song.Song {
 		"title":  "bar",
 	})
 	return s
+}
+
+func NewTestAPI() API {
+	return &testAPI{
+		messages: make(chan message.Message, 1024),
+		options:  options.New(),
+		song:     createTestSong(),
+		songlist: songlist.New(),
+	}
 }
 
 func (api *testAPI) Index() *index.Index {
@@ -84,9 +86,7 @@ func (api *testAPI) Song() *song.Song {
 }
 
 func (api *testAPI) Songlist() songlist.Songlist {
-	s := songlist.New()
-	s.Add(api.song)
-	return s
+	return api.songlist
 }
 
 func (api *testAPI) SonglistWidget() SonglistWidget {
