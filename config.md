@@ -83,6 +83,16 @@ Manipulate tracklist selection. `visual` will toggle _visual mode_ and anchor th
 
 `toggle` will toggle selection status for the track under the cursor. If in visual mode when using `toggle`, the visual selection will be converted to manual selection, and visual mode switched off.
 
+## seek
+
+```
+seek <+N>
+seek <-N>
+seek <N>
+```
+
+Skip forwards or backwards in the current track. It is also possible to seek to an absolute position.
+
 ## set
 ## sort
 ## stop

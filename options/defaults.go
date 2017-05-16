@@ -85,6 +85,8 @@ bind h previous
 bind l next
 bind + volume +2
 bind - volume -2
+bind <left> seek -5
+bind <right> seek +5
 bind M volume mute
 
 # Keyboard bindings: other

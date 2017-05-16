@@ -32,6 +32,7 @@ var Verbs = map[string]func(api.API) Command{
 	"redraw":    NewRedraw,
 	"remove":    NewRemove,
 	"se":        NewSet,
+	"seek":      NewSeek,
 	"select":    NewSelect,
 	"set":       NewSet,
 	"sort":      NewSort,

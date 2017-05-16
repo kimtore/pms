@@ -17,6 +17,7 @@ var tabCompleteTests = []struct {
 	{"", true, commands.Keys()},
 	{"s", true, []string{
 		"se",
+		"seek",
 		"select",
 		"set",
 		"sort",
