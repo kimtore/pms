@@ -36,7 +36,7 @@ Loop:
 		case lexer.TokenWhitespace, lexer.TokenEnd:
 			break Loop
 		default:
-			return fmt.Errorf("Unexpected %v, expected identifier", lit)
+			return fmt.Errorf("Unexpected '%v', expected identifier", lit)
 		}
 		addSong := song.New()
 		addSong.SetTags(mpd.Attrs{"file": lit})

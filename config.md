@@ -68,6 +68,16 @@ Switches between modes. Normal mode is where key bindings take effect. Input mod
 ## remove
 ## se
 ## select
+
+```
+select toggle
+select visual
+```
+
+Manipulate tracklist selection. `visual` will toggle _visual mode_ and anchor the selection on the track under the cursor.
+
+`toggle` will toggle selection status for the track under the cursor. If in visual mode when using `toggle`, the visual selection will be converted to manual selection, and visual mode switched off.
+
 ## set
 ## sort
 ## stop

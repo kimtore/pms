@@ -9,6 +9,7 @@ import (
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/parser"
+	"github.com/ambientsound/pms/utils"
 )
 
 // Verbs contain mappings from strings to Command constructors.
@@ -98,13 +99,13 @@ func Keys() []string {
 
 // setTabComplete defines a string slice that will be used for tab completion
 // at the current point in parsing.
-func (c *newcommand) setTabComplete(s []string) {
-	c.tabComplete = s
+func (c *newcommand) setTabComplete(filter string, s []string) {
+	c.tabComplete = utils.TokenFilter(filter, s)
 }
 
 // setTabCompleteEmpty removes all tab completions.
 func (c *newcommand) setTabCompleteEmpty() {
-	c.setTabComplete([]string{})
+	c.setTabComplete("", []string{})
 }
 
 // TabComplete implements Command.TabComplete.

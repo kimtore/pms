@@ -10,7 +10,6 @@ import (
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
-	"github.com/ambientsound/pms/utils"
 )
 
 // Cursor moves the cursor in a songlist widget. It can take human-readable
@@ -110,7 +109,7 @@ func (cmd *Cursor) Exec() error {
 
 // setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.
 func (cmd *Cursor) setTabCompleteVerbs(lit string) {
-	cmd.tabComplete = utils.TokenFilter(lit, []string{
+	cmd.setTabComplete(lit, []string{
 		"current",
 		"down",
 		"end",
@@ -133,7 +132,7 @@ func (cmd *Cursor) setTabCompleteTag(lit string, song *song.Song) {
 		cmd.setTabCompleteEmpty()
 		return
 	}
-	cmd.tabComplete = utils.TokenFilter(lit, song.TagKeys())
+	cmd.setTabComplete(lit, song.TagKeys())
 }
 
 // random returns a random list index in the songlist.
