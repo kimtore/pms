@@ -73,8 +73,6 @@ func (s *BaseSonglist) CommitVisualSelection() {
 func (s *BaseSonglist) ClearSelection() {
 	s.selection = make(map[int]struct{}, 0)
 	s.visualSelection = [3]int{-1, -1, -1}
-	// FIXME
-	//PostEventModeSync(w, MultibarModeNormal)
 }
 
 // Selection returns the current selection as a new Songlist.
