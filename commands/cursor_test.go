@@ -1,26 +1,19 @@
 package commands_test
 
 import (
-	"strings"
 	"testing"
 
-	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/commands"
-	"github.com/ambientsound/pms/input/lexer"
-	"github.com/stretchr/testify/assert"
 )
 
-var cursorTests = []struct {
-	input       string
-	success     bool
-	tabComplete []string
-}{
+var cursorTests = []commands.CommandTest{
 	// Valid forms
 	{`6`, true, []string{}},
 	{`+8`, true, []string{}},
 	{`-1`, true, []string{}},
 	{`up`, true, []string{}},
 	{`down`, true, []string{}},
+	// FIXME: depends on SonglistWidget, which is not mocked
 	//{`pgup`, true},
 	//{`pageup`, true},
 	//{`pagedn`, true},
@@ -35,6 +28,7 @@ var cursorTests = []struct {
 	// Invalid forms
 	{`up 1`, false, []string{}},
 	{`down 1`, false, []string{}},
+	// FIXME: depends on SonglistWidget, which is not mocked
 	//{`pgup 1`, false},
 	//{`pageup 1`, false},
 	//{`pagedn 1`, false},
@@ -73,29 +67,5 @@ var cursorTests = []struct {
 }
 
 func TestCursor(t *testing.T) {
-	for n, test := range cursorTests {
-
-		api := api.NewTestAPI()
-		cmd := commands.NewCursor(api)
-
-		t.Logf("### Test %d: '%s'", n+1, test.input)
-
-		reader := strings.NewReader(test.input)
-		scanner := lexer.NewScanner(reader)
-
-		// Parse command
-		cmd.SetScanner(scanner)
-		err := cmd.Parse()
-
-		// Test success
-		if test.success {
-			assert.Nil(t, err, "Expected success when parsing '%s'", test.input)
-		} else {
-			assert.NotNil(t, err, "Expected error when parsing '%s'", test.input)
-		}
-
-		// Test tab completes
-		completes := cmd.TabComplete()
-		assert.Equal(t, test.tabComplete, completes)
-	}
+	commands.TestVerb(t, "cursor", cursorTests)
 }

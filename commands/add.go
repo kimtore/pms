@@ -17,6 +17,7 @@ type Add struct {
 	songlist songlist.Songlist
 }
 
+// NewAdd returns Add.
 func NewAdd(api api.API) Command {
 	return &Add{
 		api:      api,
@@ -27,19 +28,22 @@ func NewAdd(api api.API) Command {
 // Parse implements Command.
 func (cmd *Add) Parse() error {
 
-	// Add all songs specified
+	// Add all songs specified on the command line.
 Loop:
 	for {
-		tok, lit := cmd.ScanIgnoreWhitespace()
+		str := ""
+		tok, lit := cmd.Scan()
 		switch tok {
-		case lexer.TokenIdentifier:
-		case lexer.TokenWhitespace, lexer.TokenEnd:
+		case lexer.TokenWhitespace:
+			str = ""
+			continue
+		case lexer.TokenEnd:
 			break Loop
 		default:
-			return fmt.Errorf("Unexpected '%v', expected identifier", lit)
+			str += lit
 		}
 		addSong := song.New()
-		addSong.SetTags(mpd.Attrs{"file": lit})
+		addSong.SetTags(mpd.Attrs{"file": str})
 		cmd.songlist.Add(addSong)
 	}
 
@@ -54,7 +58,7 @@ Loop:
 	return nil
 }
 
-// Exec is the next Execute(), evading the old system
+// Exec implements Command.
 func (cmd *Add) Exec() error {
 	list := cmd.api.SonglistWidget().Songlist()
 	queue := cmd.api.Queue()

@@ -13,7 +13,7 @@ import (
 )
 
 // Verbs contain mappings from strings to Command constructors.
-// Make sure to add commands here when implementing them, or they will not be recognized.
+// Make sure to add commands here when implementing them.
 var Verbs = map[string]func(api.API) Command{
 	"add":       NewAdd,
 	"bind":      NewBind,

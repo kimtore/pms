@@ -16,6 +16,7 @@ type Select struct {
 	finished bool
 }
 
+// NewSelect returns Select.
 func NewSelect(api api.API) Command {
 	return &Select{
 		api: api,
@@ -48,6 +49,7 @@ func (cmd *Select) Parse() error {
 	return cmd.ParseEnd()
 }
 
+// Exec implements Command.
 func (cmd *Select) Exec() error {
 	list := cmd.api.Songlist()
 
