@@ -8,20 +8,20 @@ import (
 
 var selectTests = []commands.CommandTest{
 	// Valid forms
-	{`visual`, true, []string{}},
-	{`toggle`, true, []string{}},
+	{`visual`, true, nil, []string{}},
+	{`toggle`, true, nil, []string{}},
 
 	// Invalid forms
-	{`foo`, false, []string{}},
-	{`visual 1`, false, []string{}},
-	{`toggle 1`, false, []string{}},
+	{`foo`, false, nil, []string{}},
+	{`visual 1`, false, nil, []string{}},
+	{`toggle 1`, false, nil, []string{}},
 
 	// Tab completion
-	{``, false, []string{
+	{``, false, nil, []string{
 		"toggle",
 		"visual",
 	}},
-	{`t`, false, []string{
+	{`t`, false, nil, []string{
 		"toggle",
 	}},
 }

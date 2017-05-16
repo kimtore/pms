@@ -8,43 +8,43 @@ import (
 
 var cursorTests = []commands.CommandTest{
 	// Valid forms
-	{`6`, true, []string{}},
-	{`+8`, true, []string{}},
-	{`-1`, true, []string{}},
-	{`up`, true, []string{}},
-	{`down`, true, []string{}},
+	{`6`, true, nil, []string{}},
+	{`+8`, true, nil, []string{}},
+	{`-1`, true, nil, []string{}},
+	{`up`, true, nil, []string{}},
+	{`down`, true, nil, []string{}},
 	// FIXME: depends on SonglistWidget, which is not mocked
 	//{`pgup`, true},
 	//{`pageup`, true},
 	//{`pagedn`, true},
 	//{`pagedown`, true},
-	{`home`, true, []string{}},
-	{`end`, true, []string{}},
-	{`current`, true, []string{}},
-	{`random`, true, []string{}},
-	{`next-of tag1 tag2`, true, []string{}},
-	{`prev-of tag1 tag2`, true, []string{}},
+	{`home`, true, nil, []string{}},
+	{`end`, true, nil, []string{}},
+	{`current`, true, nil, []string{}},
+	{`random`, true, nil, []string{}},
+	{`next-of tag1 tag2`, true, nil, []string{}},
+	{`prev-of tag1 tag2`, true, nil, []string{}},
 
 	// Invalid forms
-	{`up 1`, false, []string{}},
-	{`down 1`, false, []string{}},
+	{`up 1`, false, nil, []string{}},
+	{`down 1`, false, nil, []string{}},
 	// FIXME: depends on SonglistWidget, which is not mocked
 	//{`pgup 1`, false},
 	//{`pageup 1`, false},
 	//{`pagedn 1`, false},
 	//{`pagedown 1`, false},
-	{`home 1`, false, []string{}},
-	{`end 1`, false, []string{}},
-	{`current 1`, false, []string{}},
-	{`random 1`, false, []string{}},
-	{`next-of`, false, []string{}},
-	{`next-of `, false, []string{"artist", "title"}},
-	{`next-of t`, true, []string{"title"}},
-	{`prev-of`, false, []string{}},
-	{`prev-of `, false, []string{"artist", "title"}},
+	{`home 1`, false, nil, []string{}},
+	{`end 1`, false, nil, []string{}},
+	{`current 1`, false, nil, []string{}},
+	{`random 1`, false, nil, []string{}},
+	{`next-of`, false, nil, []string{}},
+	{`next-of `, false, nil, []string{"artist", "title"}},
+	{`next-of t`, true, nil, []string{"title"}},
+	{`prev-of`, false, nil, []string{}},
+	{`prev-of `, false, nil, []string{"artist", "title"}},
 
 	// Tab completion
-	{``, false, []string{
+	{``, false, nil, []string{
 		"current",
 		"down",
 		"end",
@@ -59,7 +59,7 @@ var cursorTests = []commands.CommandTest{
 		"random",
 		"up",
 	}},
-	{`page`, false, []string{
+	{`page`, false, nil, []string{
 		"pagedn",
 		"pagedown",
 		"pageup",

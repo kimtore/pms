@@ -8,11 +8,11 @@ import (
 
 var addTests = []commands.CommandTest{
 	// Valid forms
-	{``, true, []string{}},
-	{`foo bar baz`, true, []string{}},
-	{`http://example.com/stream.mp3?foo=bar&baz=foo foo bar baz`, true, []string{}},
-	{`|`, true, []string{}},
-	{`|{}$`, true, []string{}},
+	{``, true, nil, []string{}},
+	{`foo bar baz`, true, nil, []string{}},
+	{`http://example.com/stream.mp3?foo=bar&baz=foo foo bar baz`, true, nil, []string{}},
+	{`|`, true, nil, []string{}},
+	{`|{}$`, true, nil, []string{}},
 
 	// No invalid forms, all input is accepted
 }

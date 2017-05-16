@@ -19,6 +19,9 @@ type CommandTest struct {
 	// True if the command should parse and execute properly, false otherwise.
 	Success bool
 
+	// A callback function to call for every test, allowing customization of tests.
+	Callback func(t *testing.T, cmd Command, api api.API, test CommandTest)
+
 	// A slice of tab completion candidates to expect.
 	TabComplete []string
 }
@@ -30,12 +33,12 @@ func TestVerb(t *testing.T, verb string, tests []CommandTest) {
 		cmd := New(verb, api)
 
 		t.Logf("### Test %d: '%s'", n+1, test.Input)
-		TestCommand(t, cmd, test)
+		TestCommand(t, cmd, api, test)
 	}
 }
 
 // TestCommand runs a single test a for Command implementation.
-func TestCommand(t *testing.T, cmd Command, test CommandTest) {
+func TestCommand(t *testing.T, cmd Command, api api.API, test CommandTest) {
 	reader := strings.NewReader(test.Input)
 	scanner := lexer.NewScanner(reader)
 
@@ -53,4 +56,9 @@ func TestCommand(t *testing.T, cmd Command, test CommandTest) {
 	// Test tab completes
 	completes := cmd.TabComplete()
 	assert.Equal(t, test.TabComplete, completes)
+
+	// Test callback function
+	if test.Callback != nil {
+		test.Callback(t, cmd, api, test)
+	}
 }
