@@ -238,7 +238,7 @@ func (m *MultibarWidget) handleBackspace() {
 
 	// Backspace on an empty string returns to normal mode.
 	if len(m.runes) == 0 {
-		m.SetMode(constants.MultibarModeNormal)
+		m.handleAbort()
 		return
 	}
 
@@ -292,11 +292,8 @@ func (m *MultibarWidget) handleFinished() {
 }
 
 func (m *MultibarWidget) handleAbort() {
-	m.tabComplete = nil
-	m.History().Add(m.RuneString())
-	m.History().Reset("")
 	m.setRunes(make([]rune, 0))
-	m.SetMode(constants.MultibarModeNormal)
+	m.handleFinished()
 }
 
 func (m *MultibarWidget) handleHistory(offset int) {
