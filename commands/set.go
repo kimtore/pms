@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
@@ -11,114 +12,112 @@ import (
 
 // Set manipulates a Options table by parsing input tokens from the "set" command.
 type Set struct {
-	command
-	api   api.API
-	key   string
-	val   string
-	equal bool
+	newcommand
+	api    api.API
+	tokens []parser.OptionToken
 }
 
+// NewSet returns Set.
 func NewSet(api api.API) Command {
 	return &Set{
-		api: api,
+		api:    api,
+		tokens: make([]parser.OptionToken, 0),
 	}
 }
 
-func (cmd *Set) Execute(class int, s string) error {
+// Parse implements Command.
+func (cmd *Set) Parse() error {
 
-	switch class {
-
-	case lexer.TokenIdentifier:
-		if len(cmd.key) > 0 {
-			if len(cmd.val) > 0 {
-				return fmt.Errorf("Unexpected '%s', expected whitespace or END", s)
-			}
-			cmd.val = s
-		} else {
-			cmd.key = s
-		}
-
-	case lexer.TokenEqual:
-		if len(cmd.key) == 0 {
-			return fmt.Errorf("Unexpected '%s', expected option", s)
-		}
-		if cmd.equal {
-			return fmt.Errorf("Unexpected '%s', expected option value", s)
-		}
-		cmd.equal = true
-
-	case lexer.TokenEnd, lexer.TokenComment, lexer.TokenWhitespace:
-		if len(cmd.key) == 0 {
-			cmd.reset()
+	for {
+		// Scan the next token, which must be an identifier.
+		tok, lit := cmd.ScanIgnoreWhitespace()
+		switch tok {
+		case lexer.TokenIdentifier:
+			break
+		case lexer.TokenEnd, lexer.TokenComment:
 			return nil
+		default:
+			return fmt.Errorf("Unexpected '%s', expected whitespace or END", lit)
 		}
-		token := cmd.key
-		if len(cmd.val) > 0 {
-			token = fmt.Sprintf("%s=%s", cmd.key, cmd.val)
-		}
-		cmd.reset()
-		return cmd.run(token)
 
-	default:
-		return fmt.Errorf("Unexpected '%s', expected identifier", s)
+		// Parse the option statement.
+		cmd.Unscan()
+		err := cmd.ParseSet()
+		if err != nil {
+			return err
+		}
+	}
+}
+
+// ParseSet parses a single "key=val" statement.
+func (cmd *Set) ParseSet() error {
+	tokens := make([]string, 0)
+	for {
+		tok, lit := cmd.Scan()
+		if tok == lexer.TokenWhitespace || tok == lexer.TokenEnd || tok == lexer.TokenComment {
+			break
+		}
+		tokens = append(tokens, lit)
 	}
 
-	return nil
-}
-
-// reset resets internal state between options
-func (cmd *Set) reset() {
-	cmd.key = ""
-	cmd.val = ""
-	cmd.equal = false
-}
-
-func (cmd *Set) run(token string) error {
-
-	tok := parser.OptionToken{}
-	err := tok.Parse([]rune(token))
+	s := strings.Join(tokens, "")
+	optionToken := parser.OptionToken{}
+	err := optionToken.Parse([]rune(s))
 	if err != nil {
 		return err
 	}
 
-	opt := cmd.api.Options().Get(tok.Key)
+	cmd.tokens = append(cmd.tokens, optionToken)
 
-	if opt == nil {
-		return fmt.Errorf("No such option: %s", tok.Key)
-	}
+	return nil
+}
 
-	if tok.Query {
-		goto msg
-	}
+// Exec implements Command.
+func (cmd *Set) Exec() error {
+	for _, tok := range cmd.tokens {
+		opt := cmd.api.Options().Get(tok.Key)
 
-	switch opt := opt.(type) {
+		if opt == nil {
+			return fmt.Errorf("No such option: %s", tok.Key)
+		}
 
-	case *options.BoolOption:
-		switch {
-		case !tok.Bool:
-			return fmt.Errorf("Attempting to give parameters to a boolean option (try 'set no%s' or 'set inv%s')", tok.Key, tok.Key)
-		case tok.Invert:
-			opt.SetBool(!opt.BoolValue())
+		// Queries print options to the statusbar.
+		if tok.Query {
 			cmd.api.Message(opt.String())
-		case tok.Negate:
-			opt.SetBool(false)
-		default:
-			opt.SetBool(true)
+			continue
 		}
 
-	default:
-		if !tok.Bool {
-			if err := opt.Set(tok.Value); err != nil {
-				return err
+		switch opt := opt.(type) {
+
+		case *options.BoolOption:
+			switch {
+			case !tok.Bool:
+				return fmt.Errorf("Attempting to give parameters to a boolean option (try 'set no%s' or 'set inv%s')", tok.Key, tok.Key)
+			case tok.Invert:
+				opt.SetBool(!opt.BoolValue())
+				cmd.api.Message(opt.String())
+			case tok.Negate:
+				opt.SetBool(false)
+			default:
+				opt.SetBool(true)
 			}
-			break
+
+		default:
+			if !tok.Bool {
+				if err := opt.Set(tok.Value); err != nil {
+					return err
+				}
+				break
+			}
+
+			// Not a boolean option, and no value. Print the value.
+			cmd.api.Message(opt.String())
+			continue
 		}
-		return fmt.Errorf("Attempting to set '%s', but '%s' is not a boolean option", token, tok.Key)
+
+		cmd.api.OptionChanged(opt.Key())
+		cmd.api.Message(opt.String())
 	}
 
-	cmd.api.OptionChanged(opt.Key())
-
-msg:
-	cmd.api.Message(opt.String())
 	return nil
 }

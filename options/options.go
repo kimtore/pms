@@ -2,6 +2,7 @@ package options
 
 import (
 	"fmt"
+	"sort"
 )
 
 type Options struct {
@@ -23,6 +24,16 @@ func New() *Options {
 
 func (o *Options) Add(opt Option) {
 	o.opts[opt.Key()] = opt
+}
+
+// Keys returns all registered option keys.
+func (o *Options) Keys() []string {
+	keys := make(sort.StringSlice, 0, len(o.opts))
+	for tag := range o.opts {
+		keys = append(keys, tag)
+	}
+	keys.Sort()
+	return keys
 }
 
 func (o *Options) Get(key string) Option {

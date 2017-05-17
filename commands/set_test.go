@@ -1,56 +1,58 @@
 package commands_test
 
 import (
-	"strings"
 	"testing"
 
-	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/commands"
-	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"
 )
 
-// TestSet tests the pms.input.commands.Set.Execute() function. A string of input
-// parameters are given, and Execute() is expected to populate a options.Options
-// struct with parsed values.
+var setTests = []commands.Test{
+	// Valid forms
+	{``, true, testSetInit, nil, []string{}},
+	{`foo=bar`, true, testSetInit, testFooSet(`foo`, `bar`, true), []string{}},
+	{`foo="bar baz"`, true, testSetInit, testFooSet(`foo`, `bar baz`, true), []string{}},
+	{`foo=${}|;#`, true, testSetInit, testFooSet(`foo`, `${}|;`, true), []string{}},
+	{`foo=x bar=x baz=x int=4 invbool`, true, testSetInit, testMultiSet, []string{}},
+	{`foo=y foo`, true, testSetInit, testFooSet(`foo`, `y`, true), []string{}},
+
+	// Invalid forms
+	{`nonexist=foo`, true, testSetInit, testFooSet(`nonexist`, ``, false), []string{}},
+	{`$=""`, false, testSetInit, nil, []string{}},
+}
+
 func TestSet(t *testing.T) {
-	var err error
+	commands.TestVerb(t, "set", setTests)
+}
 
-	a := api.NewTestAPI()
-	opts := a.Options()
+func testSetInit(test *commands.TestData) {
+	test.Api.Options().Add(options.NewStringOption("foo"))
+	test.Api.Options().Add(options.NewStringOption("bar"))
+	test.Api.Options().Add(options.NewStringOption("baz"))
+	test.Api.Options().Add(options.NewIntOption("int"))
+	test.Api.Options().Add(options.NewBoolOption("bool"))
+}
 
-	opts.Add(options.NewStringOption("foo"))
-	opts.Add(options.NewIntOption("intopt"))
-	opts.Add(options.NewBoolOption("bar"))
-	opts.Add(options.NewBoolOption("baz"))
-
-	opts.Get("foo").Set("this string must die")
-	opts.Get("intopt").Set("4")
-	opts.Get("bar").Set("true")
-	opts.Get("baz").Set("false")
-
-	line := `foo="strings $are {}cool" intopt=3 nobar invbaz`
-	cmd := commands.NewSet(a)
-
-	reader := strings.NewReader(line)
-	scanner := lexer.NewScanner(reader)
-
-	for {
-		class, token := scanner.Scan()
-
-		err = cmd.Execute(class, token)
-
-		assert.Nil(t, err, "Error while parsing input '%s' of class %d: %s", token, class, err)
-
-		if class == lexer.TokenEnd {
-			break
+func testFooSet(key, check string, ok bool) func(*commands.TestData) {
+	return func(test *commands.TestData) {
+		err := test.Cmd.Exec()
+		assert.Equal(test.T, ok, err == nil, "Expected OK=%s", ok)
+		if err != nil {
+			return
 		}
+		val := test.Api.Options().StringValue(key)
+		assert.Equal(test.T, check, val)
 	}
+}
 
-	assert.Equal(t, "strings $are {}cool", opts.Value("foo"))
-	assert.Equal(t, 3, opts.Value("intopt"))
-	assert.Equal(t, false, opts.Value("bar"))
-	assert.Equal(t, true, opts.Value("baz"))
-	assert.Equal(t, nil, opts.Value("skrot"))
+func testMultiSet(test *commands.TestData) {
+	err := test.Cmd.Exec()
+	assert.Nil(test.T, err)
+	opts := test.Api.Options()
+	assert.Equal(test.T, "x", opts.StringValue("foo"))
+	assert.Equal(test.T, "x", opts.StringValue("bar"))
+	assert.Equal(test.T, "x", opts.StringValue("baz"))
+	assert.Equal(test.T, 4, opts.IntValue("int"))
+	assert.Equal(test.T, true, opts.BoolValue("bool"))
 }
