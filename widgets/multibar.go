@@ -3,6 +3,7 @@ package widgets
 import (
 	"fmt"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/ambientsound/pms/api"
@@ -250,6 +251,40 @@ func (m *MultibarWidget) handleBackspace() {
 	PostEventInputChanged(m)
 }
 
+// handleDeleteWord deletes the previous word, along with all the backspace
+// succeeding it.
+func (m *MultibarWidget) handleDeleteWord() {
+
+	m.tabComplete = nil
+
+	// We don't use the lexer here because it is too smart when it comes to
+	// quoted strings.
+	cursor := m.cursor - 1
+
+	// Scan backwards until a non-space character is found.
+	for ; cursor >= 0; cursor-- {
+		if !unicode.IsSpace(m.runes[cursor]) {
+			break
+		}
+	}
+
+	// Scan backwards until a space character is found.
+	for ; cursor >= 0; cursor-- {
+		if unicode.IsSpace(m.runes[cursor]) {
+			cursor++
+			break
+		}
+	}
+
+	// Delete backwards.
+	runes := deleteBackwards(m.runes, m.cursor, m.cursor-cursor)
+	m.cursor = cursor
+	m.setRunes(runes)
+
+	m.History().Reset(m.RuneString())
+	PostEventInputChanged(m)
+}
+
 func (m *MultibarWidget) handleFinished() {
 	m.tabComplete = nil
 	m.History().Add(m.RuneString())
@@ -393,6 +428,8 @@ func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 		m.handleCursor(len(m.runes))
 	case tcell.KeyBS, tcell.KeyDEL:
 		m.handleBackspace()
+	case tcell.KeyCtrlW:
+		m.handleDeleteWord()
 
 	default:
 		console.Log("Unhandled text input event in Multibar: %s", ev.Key())
