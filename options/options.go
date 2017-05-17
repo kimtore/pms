@@ -12,6 +12,7 @@ type Options struct {
 type Option interface {
 	Key() string
 	String() string
+	StringValue() string
 	Value() interface{}
 	Set(value string) error
 }

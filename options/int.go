@@ -35,3 +35,7 @@ func (o *IntOption) Value() interface{} {
 func (o *IntOption) String() string {
 	return fmt.Sprintf("%s=%d", o.key, o.value)
 }
+
+func (o *IntOption) StringValue() string {
+	return fmt.Sprintf("%d", o.value)
+}

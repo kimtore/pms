@@ -40,3 +40,7 @@ func (o *BoolOption) String() string {
 	}
 	return t
 }
+
+func (o *BoolOption) StringValue() string {
+	return o.String()
+}

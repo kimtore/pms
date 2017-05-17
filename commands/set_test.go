@@ -10,12 +10,14 @@ import (
 
 var setTests = []commands.Test{
 	// Valid forms
-	{``, true, testSetInit, nil, []string{}},
+	{``, true, testSetInit, nil, []string{`bar`, `baz`, `bool`, `foo`, `int`}},
 	{`foo=bar`, true, testSetInit, testFooSet(`foo`, `bar`, true), []string{}},
 	{`foo="bar baz"`, true, testSetInit, testFooSet(`foo`, `bar baz`, true), []string{}},
 	{`foo=${}|;#`, true, testSetInit, testFooSet(`foo`, `${}|;`, true), []string{}},
 	{`foo=x bar=x baz=x int=4 invbool`, true, testSetInit, testMultiSet, []string{}},
-	{`foo=y foo`, true, testSetInit, testFooSet(`foo`, `y`, true), []string{}},
+	{`foo=y foo`, true, testSetInit, testFooSet(`foo`, `y`, true), []string{`foo`}},
+	{`baz=`, true, testSetInit, testFooSet(`baz`, ``, true), []string{`="foobar"`, `=`}},
+	{`bool`, true, testSetInit, nil, []string{`bool`}},
 
 	// Invalid forms
 	{`nonexist=foo`, true, testSetInit, testFooSet(`nonexist`, ``, false), []string{}},
@@ -32,6 +34,7 @@ func testSetInit(test *commands.TestData) {
 	test.Api.Options().Add(options.NewStringOption("baz"))
 	test.Api.Options().Add(options.NewIntOption("int"))
 	test.Api.Options().Add(options.NewBoolOption("bool"))
+	test.Api.Options().Get("baz").Set("foobar")
 }
 
 func testFooSet(key, check string, ok bool) func(*commands.TestData) {

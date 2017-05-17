@@ -20,14 +20,14 @@ func (o *StringOption) Key() string {
 	return o.key
 }
 
-func (o *StringOption) StringValue() string {
-	return o.value
-}
-
 func (o *StringOption) Value() interface{} {
 	return o.value
 }
 
 func (o *StringOption) String() string {
-	return fmt.Sprintf("%s=%s", o.key, o.value)
+	return fmt.Sprintf(`%s="%s"`, o.key, o.value)
+}
+
+func (o *StringOption) StringValue() string {
+	return o.value
 }
