@@ -162,7 +162,7 @@ func (cmd *Cursor) parseNextOf() error {
 			cmd.nextOfTags = append(cmd.nextOfTags, strings.ToLower(lit))
 		case lexer.TokenEnd:
 			if len(cmd.nextOfTags) == 0 {
-				return fmt.Errorf("Unexpected END, expected tag", lit)
+				return fmt.Errorf("Unexpected END, expected tag")
 			}
 			return nil
 		default:
