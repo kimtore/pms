@@ -182,5 +182,12 @@ Change global program options. Boolean option are enabled with `set option` and 
 
 ### sort
 ### stop
+
+```
+stop
+```
+
+Stops playback.
+
 ### style
 ### volume
