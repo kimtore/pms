@@ -181,6 +181,16 @@ set option!
 Change global program options. Boolean option are enabled with `set option` and disabled with `set nooption`. The value can be flipped using `set invoption` or `set option!`. Values can be queried using `set option?`.
 
 ### sort
+
+```
+sort
+sort <tag[,tag...]>
+```
+
+Sort the current tracklist by the specified tags. The most significant sort criteria is specified last. The first sort is performed as an unstable sort, while the remainder is a stable sort.
+
+If no tags are given, the tracklist is sorted by the tags specified in the `sort` option.
+
 ### stop
 
 ```
