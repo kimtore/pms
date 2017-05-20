@@ -200,4 +200,55 @@ stop
 Stops playback.
 
 ### style
+
+```
+style <name> [foreground [background]] [bold] [underline] [reverse] [blink]
+```
+
+Specify the style of an UI item.
+
+The keywords `bold`, `underline`, `reverse`, and `blink` can be specified literally. Any keyword order is accepted, but the foreground color must come prior to the background color, if specified.
+
+#### Stylable UI items
+
+##### Tags
+
+Any _tag_, such as `artist`, `album`, `date`, `time`, etc. can be styled. These tags are not included in this list. Their styles apply both to the tracklist and in the top bar. All tag names are in lowercase.
+
+##### Tracklist
+
+* `allTagsMissing` - song style in the tracklist when all the _essential_ tags are missing (`artist`, `album`, and `title`).
+* `currentSong` - color of the entire line in the tracklist, highlighting the currently playing song.
+* `cursor` - color of the entire line in the tracklist, highlighting the cursor position.
+* `header` - column headers showing tag names.
+* `mostTagsMissing` - song style in the tracklist when _most_ tags are missing (`artist` and `title`).
+* `selection` - line color of selected songs.
+
+##### Top bar
+
+See the [topbar setting](#topbar) for the corresponding variables.
+
+* `elapsed` - corresponds to `${elapsed}`.
+* `listIndex` - corresponds to `${list|index}`.
+* `listTitle` - corresponds to `${list|title}`.
+* `listTotal` - corresponds to `${list|total}`.
+* `mute` - the color of the `${volume}` widget when the volume is zero.
+* `shortName` - corresponds to `${elapsed}`.
+* `state` - corresponds to `${elapsed}`.
+* `switches` - corresponds to `${elapsed}`.
+* `tagMissing` - the color used for tag styling when the tag is missing.
+* `topbar` - the default color of the top bar text and whitespace.
+* `version` - corresponds to `${elapsed}`.
+* `volume` - corresponds to `${volume}`.
+
+##### Statusbar
+
+* `commandText` - text color when writing text in command input mode.
+* `errorText` - text color of error messages in the status bar.
+* `readout` - position readout at the bottom right.
+* `searchText` - text color when searching.
+* `sequenceText` - text color of uncompleted keyboard bindings.
+* `statusbar` - normal text in the status bar.
+* `visualText` - text color of the `-- VISUAL --` text when selecting songs in visual mode.
+
 ### volume

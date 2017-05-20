@@ -17,13 +17,20 @@ set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, $
 
 # Song tag styles
 style album teal
-style allTagsMissing red
 style artist yellow
 style date green
 style time darkmagenta
 style title white bold
 style track green
 style year green
+
+# Tracklist styles
+style allTagsMissing red
+style currentSong black yellow
+style cursor black white
+style header green bold
+style mostTagsMissing red
+style selection white blue
 
 # Topbar styles
 style elapsed green
@@ -41,15 +48,9 @@ style volume green
 
 # Other styles
 style commandText default
-style currentSong black yellow
-style cursor black white
 style errorText white red bold
-style header green bold
-style mostTagsMissing red
-style noCurrentSong red
 style readout default
 style searchText white bold
-style selection white blue
 style sequenceText teal
 style statusbar default
 style visualText teal
