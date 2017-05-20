@@ -10,40 +10,47 @@ import (
 
 // Style manipulates the style table, allowing to set colors and attributes for UI elements.
 type Style struct {
-	command
+	newcommand
 	api api.API
 
 	styleKey   string
 	styleValue tcell.Style
-	styled     bool
 
 	background bool
-	blink      bool
-	bold       bool
-	dim        bool
 	foreground bool
-	reverse    bool
-	underline  bool
 }
 
+// NewStyle returns Style.
 func NewStyle(api api.API) Command {
 	return &Style{
 		api: api,
 	}
 }
 
-func (cmd *Style) Execute(class int, s string) error {
-	var err error
+// Parse implements Command.
+func (cmd *Style) Parse() error {
 
-	switch class {
+	// Scan the style key. All names are accepted, even names that are not
+	// implemented anywhere.
+	tok, lit := cmd.ScanIgnoreWhitespace()
+	if tok != lexer.TokenIdentifier {
+		return fmt.Errorf("Unexpected '%v', expected identifier", lit)
+	}
+	cmd.styleKey = lit
 
-	case lexer.TokenIdentifier:
-		if len(cmd.styleKey) == 0 {
-			cmd.styleKey = s
+	// Scan each style attribute.
+	for {
+		tok, lit := cmd.ScanIgnoreWhitespace()
+		switch tok {
+		case lexer.TokenIdentifier:
+			break
+		case lexer.TokenEnd:
 			return nil
+		default:
+			return fmt.Errorf("Unexpected '%v', expected identifier", lit)
 		}
 
-		switch s {
+		switch lit {
 		case "blink":
 			cmd.styleValue = cmd.styleValue.Blink(true)
 		case "bold":
@@ -55,10 +62,10 @@ func (cmd *Style) Execute(class int, s string) error {
 		case "underline":
 			cmd.styleValue = cmd.styleValue.Underline(true)
 		default:
-			if s[0] == '@' {
-				s = "#" + s[1:]
+			if lit[0] == '@' {
+				lit = "#" + lit[1:]
 			}
-			color := tcell.GetColor(s)
+			color := tcell.GetColor(lit)
 			switch {
 			case !cmd.foreground:
 				cmd.styleValue = cmd.styleValue.Foreground(color)
@@ -70,19 +77,14 @@ func (cmd *Style) Execute(class int, s string) error {
 				return fmt.Errorf("Only two color values are allowed per style.")
 			}
 		}
-
-		cmd.styled = true
-
-	case lexer.TokenEnd:
-		if !cmd.styled {
-			return fmt.Errorf("Unexpected END, expected style attribute")
-		}
-		styleMap := cmd.api.Styles()
-		styleMap[cmd.styleKey] = cmd.styleValue
-
-	default:
-		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
 
-	return err
+	return nil
+}
+
+// Exec implements Command.
+func (cmd *Style) Exec() error {
+	styleMap := cmd.api.Styles()
+	styleMap[cmd.styleKey] = cmd.styleValue
+	return nil
 }
