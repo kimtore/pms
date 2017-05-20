@@ -55,8 +55,6 @@ func (cmd *Style) Parse() error {
 			return err
 		}
 	}
-
-	return nil
 }
 
 // Exec implements Command.
