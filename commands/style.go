@@ -78,8 +78,6 @@ func (cmd *Style) Parse() error {
 			}
 		}
 	}
-
-	return nil
 }
 
 // Exec implements Command.
