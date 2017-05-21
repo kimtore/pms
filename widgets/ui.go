@@ -8,7 +8,6 @@ import (
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/index"
-	"github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
@@ -30,7 +29,7 @@ type UI struct {
 
 	// Input events
 	EventInputCommand chan string
-	EventKeyInput     chan parser.KeyEvent
+	EventKeyInput     chan *tcell.EventKey
 
 	// Data resources
 	api          api.API
@@ -55,7 +54,7 @@ func NewUI(a api.API) *UI {
 	}
 
 	ui.EventInputCommand = make(chan string, 16)
-	ui.EventKeyInput = make(chan parser.KeyEvent, 16)
+	ui.EventKeyInput = make(chan *tcell.EventKey, 16)
 
 	ui.App = &views.Application{}
 	ui.api = a

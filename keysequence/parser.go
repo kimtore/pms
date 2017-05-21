@@ -39,13 +39,11 @@ func NewParser(r *lexer.Scanner) *Parser {
 func (p *Parser) ParseKeySequence() (KeySequence, error) {
 
 	keyseq := make(KeySequence, 0)
-	var tok int
-	var lit string
+
+	tok, lit := p.ScanIgnoreWhitespace()
 
 Parse:
 	for {
-		tok, lit = p.Scan()
-
 		switch tok {
 
 		// A left angle bracket signifies a special key, such as <Ctrl-A>.
@@ -66,6 +64,8 @@ Parse:
 			seq := runeEventKeys(lit)
 			keyseq = append(keyseq, seq...)
 		}
+
+		tok, lit = p.Scan()
 	}
 
 	if len(keyseq) == 0 {

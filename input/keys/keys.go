@@ -2,41 +2,47 @@ package keys
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/ambientsound/pms/input/parser"
+	"github.com/ambientsound/pms/keysequence"
+	"github.com/gdamore/tcell"
 )
 
-type Input struct {
-	Multiplier int
-	Command    string
-	Sequence   parser.KeyEvents
+// Binding holds a parsed, user provided key sequence.
+type Binding struct {
+	Command  string
+	Sequence keysequence.KeySequence
 }
 
+// Sequencer holds all the keyboard bindings and their action mappings.
 type Sequencer struct {
-	binds []Input
-	event parser.KeyEvent
-	input Input
+	binds []Binding
+	event *tcell.EventKey
+	input keysequence.KeySequence
 }
 
+// NewSequencer returns Sequencer.
 func NewSequencer() *Sequencer {
-	s := &Sequencer{}
-	s.binds = make([]Input, 0)
-	return s
+	return &Sequencer{
+		binds: make([]Binding, 0),
+		input: make(keysequence.KeySequence, 0),
+	}
 }
 
-func (s *Sequencer) AddBind(seq parser.KeyEvents, command string) error {
+// AddBind creates a new key mapping.
+func (s *Sequencer) AddBind(seq keysequence.KeySequence, command string) error {
 	if s.dupes(seq) {
-		return fmt.Errorf("Can't bind '%s': conflicting with already bound key sequence", seq.String())
+		return fmt.Errorf("Can't bind: conflicting with already bound key sequence")
 	}
-	s.binds = append(s.binds, Input{Sequence: seq, Command: command})
+	s.binds = append(s.binds, Binding{Sequence: seq, Command: command})
 	return nil
 }
 
 // KeyInput feeds a keypress to the sequencer. Returns true if there is one match or more, or false if there is no match.
-func (s *Sequencer) KeyInput(ev parser.KeyEvent) bool {
-	s.input.Sequence = append(s.input.Sequence, ev)
-	if len(s.find(s.input.Sequence)) == 0 {
-		s.input = Input{}
+func (s *Sequencer) KeyInput(ev *tcell.EventKey) bool {
+	s.input = append(s.input, ev)
+	if len(s.find(s.input)) == 0 {
+		s.input = make(keysequence.KeySequence, 0)
 		return false
 	}
 	return true
@@ -44,40 +50,40 @@ func (s *Sequencer) KeyInput(ev parser.KeyEvent) bool {
 
 // String returns the current input sequence as a string.
 func (s *Sequencer) String() string {
-	return s.input.Sequence.String()
+	str := make([]string, len(s.input))
+	for i := range s.input {
+		str[i] = s.input[i].Name()
+	}
+	return strings.Join(str, "")
 }
 
 // dupes returns true if binding the given key event sequence will conflict with any other bound sequences.
-func (s *Sequencer) dupes(seq parser.KeyEvents) bool {
-	for i := range s.binds {
-		if s.binds[i].Sequence.StartsWith(seq) || seq.StartsWith(s.binds[i].Sequence) {
-			return true
-		}
-	}
-	return false
+func (s *Sequencer) dupes(seq keysequence.KeySequence) bool {
+	matches := s.find(seq)
+	return len(matches) > 0
 }
 
-func (s *Sequencer) find(seq parser.KeyEvents) []Input {
-	binds := make([]Input, 0)
+// find returns a list of potential matches to key bindings.
+func (s *Sequencer) find(seq keysequence.KeySequence) []Binding {
+	binds := make([]Binding, 0)
 	for i := range s.binds {
-		if s.binds[i].Sequence.StartsWith(seq) {
+		if keysequence.StartsWith(s.binds[i].Sequence, seq) {
 			binds = append(binds, s.binds[i])
 		}
 	}
 	return binds
 }
 
-func (s *Sequencer) Match() *Input {
-	binds := s.find(s.input.Sequence)
-	for i := range binds {
-		if binds[i].Sequence.Equals(s.input.Sequence) {
-			x := &Input{
-				Multiplier: s.input.Multiplier,
-				Command:    binds[i].Command,
-			}
-			s.input = Input{}
-			return x
-		}
+// Match returns a key binding if the current input sequence is found.
+func (s *Sequencer) Match() *Binding {
+	binds := s.find(s.input)
+	if len(binds) != 1 {
+		return nil
 	}
-	return nil
+	b := binds[0]
+	if !keysequence.Compare(b.Sequence, s.input) {
+		return nil
+	}
+	s.input = make(keysequence.KeySequence, 0)
+	return &b
 }

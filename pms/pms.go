@@ -15,7 +15,6 @@ import (
 	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/keys"
-	"github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/message"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/options"
@@ -24,6 +23,7 @@ import (
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/ambientsound/pms/xdg"
+	"github.com/gdamore/tcell"
 
 	"github.com/ambientsound/gompd/mpd"
 )
@@ -598,7 +598,7 @@ func (pms *PMS) ReIndex() error {
 
 // KeyInput receives key input signals, checks the sequencer for key bindings,
 // and runs commands if key bindings are found.
-func (pms *PMS) KeyInput(ev parser.KeyEvent) {
+func (pms *PMS) KeyInput(ev *tcell.EventKey) {
 	matches := pms.Sequencer.KeyInput(ev)
 	seqString := pms.Sequencer.String()
 	statusText := seqString

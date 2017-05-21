@@ -10,7 +10,6 @@ import (
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/input/lexer"
-	input_parser "github.com/ambientsound/pms/input/parser"
 	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
@@ -31,7 +30,7 @@ type history struct {
 type MultibarWidget struct {
 	api         api.API
 	cursor      int
-	events      chan input_parser.KeyEvent
+	events      chan *tcell.EventKey
 	inputMode   int
 	msg         message.Message
 	runes       []rune
@@ -90,7 +89,7 @@ func (h *history) validateIndex() {
 	}
 }
 
-func NewMultibarWidget(a api.API, events chan input_parser.KeyEvent) *MultibarWidget {
+func NewMultibarWidget(a api.API, events chan *tcell.EventKey) *MultibarWidget {
 	return &MultibarWidget{
 		api:    a,
 		runes:  make([]rune, 0),
@@ -438,9 +437,8 @@ func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 
 // handleNormalEvent is called when an input event is received during command mode.
 func (m *MultibarWidget) handleNormalEvent(ev *tcell.EventKey) bool {
-	ke := input_parser.KeyEvent{Key: ev.Key(), Rune: ev.Rune()}
 	//console.Log("Input event in command mode: %s %s", ke.Key, string(ke.Rune))
-	m.events <- ke
+	m.events <- ev
 	return true
 }
 
