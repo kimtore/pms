@@ -1,6 +1,8 @@
 package keysequence
 
-import "github.com/gdamore/tcell"
+import (
+	"github.com/gdamore/tcell"
+)
 
 // KeySequence is an ordered sequence of keyboard events.
 type KeySequence []*tcell.EventKey
@@ -26,6 +28,9 @@ func Compare(a, b KeySequence) bool {
 
 // StartsWith return true if a starts with b.
 func StartsWith(a, b KeySequence) bool {
+	if len(b) > len(a) {
+		return false
+	}
 	for i := range b {
 		if !CompareKey(a[i], b[i]) {
 			return false

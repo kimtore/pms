@@ -96,9 +96,10 @@ func (s *Scanner) Scan() (class int, lit string) {
 	case TokenEscape:
 		class = TokenIdentifier
 		lit = s.scanIdentifier()
-	case TokenClose, TokenOpen, TokenSeparator, TokenStop, TokenVariable, TokenEqual:
-		lit = string(ch)
 	case TokenEnd:
+		lit = ``
+	default:
+		lit = string(ch)
 	}
 
 	return

@@ -35,10 +35,33 @@ var parserTests = []struct {
 		},
 	},
 	{
-		"<space>",
+		"<a-x>",
+		true,
+		keysequence.KeySequence{
+			tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModAlt),
+		},
+	},
+	{
+		"<c-x>x",
+		true,
+		keysequence.KeySequence{
+			tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModCtrl),
+			tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModNone),
+		},
+	},
+	{
+		"<Space>",
 		true,
 		keysequence.KeySequence{
 			tcell.NewEventKey(tcell.KeyRune, ' ', tcell.ModNone),
+		},
+	},
+	{
+		"<Space>X",
+		true,
+		keysequence.KeySequence{
+			tcell.NewEventKey(tcell.KeyRune, ' ', tcell.ModNone),
+			tcell.NewEventKey(tcell.KeyRune, 'X', tcell.ModNone),
 		},
 	},
 
@@ -50,6 +73,8 @@ var parserTests = []struct {
 	{"<C->", false, nil},
 	{"<C-S->", false, nil},
 	{"<X-m>", false, nil},
+	{"<crap>", false, nil},
+	{"<C-crap>", false, nil},
 }
 
 // Test that key sequences are correctly parsed.
@@ -72,11 +97,15 @@ func TestParser(t *testing.T) {
 		}
 
 		// Assert that key definitions are equal
-		assert.Equal(t, len(test.keyseq), len(seq))
-		for k := range test.keyseq {
-			assert.Equal(t, test.keyseq[k].Key(), seq[k].Key())
-			assert.Equal(t, test.keyseq[k].Rune(), seq[k].Rune())
-			assert.Equal(t, test.keyseq[k].Modifiers(), seq[k].Modifiers())
+		assert.Equal(t, len(test.keyseq), len(seq), "Assert that key sequences have equal length")
+		for k := range seq {
+			t.Logf("Keyseq data in position %d: key=%d, rune='%s', mods=%d", k+1, seq[k].Key(), string(seq[k].Rune()), seq[k].Modifiers())
+			if k >= len(test.keyseq) {
+				continue
+			}
+			assert.Equal(t, test.keyseq[k].Key(), seq[k].Key(), "Assert that key event has equal Key() in position %d", k+1)
+			assert.Equal(t, test.keyseq[k].Rune(), seq[k].Rune(), "Assert that key event has equal Rune() in position %d", k+1)
+			assert.Equal(t, test.keyseq[k].Modifiers(), seq[k].Modifiers(), "Assert that key event has equal Modifiers() in position %d", k+1)
 		}
 	}
 }

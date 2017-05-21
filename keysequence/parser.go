@@ -57,6 +57,7 @@ Parse:
 
 		// Any other key than whitespace, end, or comment may be mapped for convenience.
 		case lexer.TokenWhitespace, lexer.TokenEnd, lexer.TokenComment:
+			p.Unscan()
 			break Parse
 
 		// Append to the key sequence list.
@@ -94,13 +95,15 @@ Scam:
 			return nil, fmt.Errorf("Unexpected %v, expected identifier", lit)
 		}
 
+		// Turn key name into lowercase
+		lit = strings.ToLower(lit)
+
 		// Scan the next token, which may either be a sign, saying that
 		// modifier keys are used, or a right angle bracket, which ends the
 		// parsing with a key lookup. Any other key is an error.
 		tok, _ := p.Scan()
 		switch tok {
 		case lexer.TokenAngleRight:
-			p.Unscan()
 			break Scam
 		case lexer.TokenPlus, lexer.TokenMinus:
 			break
@@ -109,7 +112,7 @@ Scam:
 		}
 
 		// Apply the modifier key
-		m, ok := modifiers[strings.ToLower(lit)]
+		m, ok := modifiers[lit]
 		if !ok {
 			return nil, fmt.Errorf("Unexpected '%s', expected one of Shift, Ctrl, Alt, Meta", lit)
 		}
@@ -129,12 +132,6 @@ Scam:
 		for _, r := range lit {
 			return tcell.NewEventKey(tcell.KeyRune, r, mod), nil
 		}
-	}
-
-	// Finally, scan the closing angle bracket
-	tok, lit = p.Scan()
-	if tok != lexer.TokenAngleRight {
-		return nil, fmt.Errorf("Unexpected '%s', expected >", lit)
 	}
 
 	// Make a copy of the key, and apply any modifiers
