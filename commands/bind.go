@@ -11,54 +11,68 @@ import (
 
 // Bind maps a key sequence to the execution of a command.
 type Bind struct {
-	command
+	newcommand
 	api      api.API
-	sentence []string
+	sentence string
 	token    *parser.KeySequenceToken
 }
 
+// NewBind returns Bind.
 func NewBind(api api.API) Command {
 	return &Bind{
-		api:      api,
-		sentence: make([]string, 0),
+		api: api,
 	}
 }
 
-func (cmd *Bind) Execute(class int, s string) error {
+// Parse implements Command.
+func (cmd *Bind) Parse() error {
 
-	switch class {
-	case lexer.TokenIdentifier:
-		if cmd.token == nil {
-			cmd.token = &parser.KeySequenceToken{}
-			err := cmd.token.Parse([]rune(s))
-			if err != nil {
-				return err
+	// Scan the first key, which might be whitespace.
+	tok, lit := cmd.ScanIgnoreWhitespace()
+
+	// Scan all non-whitespace and non-end tokens into a string sequence.
+	seq := ""
+Sequence:
+	for {
+		switch tok {
+		case lexer.TokenWhitespace:
+			break Sequence
+		case lexer.TokenEnd:
+			if len(seq) == 0 {
+				return fmt.Errorf("Unexpected END, expected key sequence")
 			}
-		} else {
-			cmd.sentence = append(cmd.sentence, s)
-		}
-
-	case lexer.TokenEnd:
-		switch {
-		case cmd.token == nil:
-			return fmt.Errorf("Unexpected END, expected key sequence")
-		case len(cmd.sentence) == 0:
 			return fmt.Errorf("Unexpected END, expected verb")
-		default:
-			return cmd.bind()
 		}
-
-	default:
-		if class != lexer.TokenIdentifier {
-			return fmt.Errorf("Unknown input '%s', expected identifier", s)
-		}
+		seq += lit
+		tok, lit = cmd.Scan()
 	}
 
+	// Parse the key sequence.
+	cmd.token = &parser.KeySequenceToken{}
+	err := cmd.token.Parse([]rune(seq))
+	if err != nil {
+		return err
+	}
+
+	// Treat the rest of the line as the literal action to execute when the bind succeeds.
+	sentence := make([]string, 0, 32)
+	for {
+		tok, lit = cmd.Scan()
+		if tok == lexer.TokenEnd {
+			break
+		} else if tok == lexer.TokenIdentifier {
+			// Quote identifiers?
+		}
+		sentence = append(sentence, lit)
+	}
+	cmd.sentence = strings.Join(sentence, "")
+
+	// Accept no more input at this point.
 	return nil
 }
 
-func (cmd *Bind) bind() error {
-	sentence := strings.Join(cmd.sentence, " ")
+// Exec implements Command.
+func (cmd *Bind) Exec() error {
 	sequencer := cmd.api.Sequencer()
-	return sequencer.AddBind(cmd.token.Sequence, sentence)
+	return sequencer.AddBind(cmd.token.Sequence, cmd.sentence)
 }
