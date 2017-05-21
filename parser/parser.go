@@ -95,7 +95,7 @@ func (p *Parser) ParseInt() (tok int, lit int, absolute bool, err error) {
 	var multiplier int
 
 	// Scan and see if there is a plus or minus.
-	tok, slit := p.Scan()
+	tok, slit := p.ScanIgnoreWhitespace()
 	switch tok {
 	case lexer.TokenIdentifier:
 		// Absolute number.
@@ -103,18 +103,18 @@ func (p *Parser) ParseInt() (tok int, lit int, absolute bool, err error) {
 		lit, err = strconv.Atoi(slit)
 		return
 	case lexer.TokenMinus:
-		multiplier = 1
-	case lexer.TokenPlus:
 		multiplier = -1
+	case lexer.TokenPlus:
+		multiplier = 1
 	default:
-		err = fmt.Errorf("Unexpected %v, expected integer", slit)
+		err = fmt.Errorf("Unexpected '%s', expected integer", slit)
 		return
 	}
 
 	// Scan the next token, which must be an actual number.
 	tok, slit = p.Scan()
 	if tok != lexer.TokenIdentifier {
-		err = fmt.Errorf("Unexpected %v, expected integer", slit)
+		err = fmt.Errorf("Unexpected '%s', expected one or more digits", slit)
 		return
 	}
 
