@@ -130,12 +130,12 @@ Scam:
 
 		// Return the rune and modifiers
 		for _, r := range lit {
-			return tcell.NewEventKey(tcell.KeyRune, r, mod), nil
+			return convertCtrlKey(tcell.NewEventKey(tcell.KeyRune, r, mod)), nil
 		}
 	}
 
 	// Make a copy of the key, and apply any modifiers
-	key = tcell.NewEventKey(ev.Key(), ev.Rune(), mod)
+	key = convertCtrlKey(tcell.NewEventKey(ev.Key(), ev.Rune(), mod))
 
 	return key, nil
 }
@@ -149,4 +149,25 @@ func runeEventKeys(s string) KeySequence {
 		seq = append(seq, key)
 	}
 	return seq
+}
+
+// convertCtrlKey handles some special cases with Ctrl modifier keys, which are
+// handled somewhat differently by tcell for a few specific cases.
+func convertCtrlKey(ev *tcell.EventKey) *tcell.EventKey {
+	modifiers := ev.Modifiers()
+	hasCtrl := modifiers&tcell.ModCtrl == tcell.ModCtrl
+
+	// If this is not a Ctrl+Rune event, return the original event.
+	if !hasCtrl || ev.Key() != tcell.KeyRune {
+		return ev
+	}
+
+	// Catch Ctrl+A through Ctrl+Z
+	if ev.Rune() >= 'a' || ev.Rune() <= 'z' {
+		ctrl := rune(tcell.KeyCtrlA) - 'a' + ev.Rune()
+		return tcell.NewEventKey(tcell.Key(ctrl), rune(ctrl), modifiers)
+	}
+
+	// No more special rules
+	return ev
 }

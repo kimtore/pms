@@ -25,10 +25,10 @@ var parserTests = []struct {
 		},
 	},
 	{
-		"<C-a>x<S-m-A-f1>f",
+		"<C-c>x<S-m-A-f1>f",
 		true,
 		keysequence.KeySequence{
-			tcell.NewEventKey(tcell.KeyRune, 'a', tcell.ModCtrl),
+			tcell.NewEventKey(tcell.KeyCtrlC, rune(tcell.KeyCtrlC), tcell.ModCtrl),
 			tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModNone),
 			tcell.NewEventKey(tcell.KeyF1, 0, tcell.ModShift|tcell.ModMeta|tcell.ModAlt),
 			tcell.NewEventKey(tcell.KeyRune, 'f', tcell.ModNone),
@@ -45,7 +45,7 @@ var parserTests = []struct {
 		"<c-x>x",
 		true,
 		keysequence.KeySequence{
-			tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModCtrl),
+			tcell.NewEventKey(tcell.KeyCtrlX, rune(tcell.KeyCtrlX), tcell.ModCtrl),
 			tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModNone),
 		},
 	},

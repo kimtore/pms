@@ -9,13 +9,14 @@ type KeySequence []*tcell.EventKey
 
 // CompareKey compares two EventKey instances.
 func CompareKey(a, b *tcell.EventKey) bool {
-	if a.Modifiers() != b.Modifiers() {
+	if a.Modifiers() != b.Modifiers() || a.Key() != b.Key() {
 		return false
 	}
-	if a.Rune() != b.Rune() {
-		return false
+	// Runes don't have to match in case of a special key.
+	if a.Key() != tcell.KeyRune {
+		return true
 	}
-	return a.Key() == b.Key()
+	return a.Rune() == b.Rune()
 }
 
 // Compare compares two KeySequence instances.
