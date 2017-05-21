@@ -26,7 +26,7 @@ func NewSequencer() *Sequencer {
 
 func (s *Sequencer) AddBind(seq parser.KeyEvents, command string) error {
 	if s.dupes(seq) {
-		return fmt.Errorf("Can't bind: conflicting with already bound key sequence")
+		return fmt.Errorf("Can't bind '%s': conflicting with already bound key sequence", seq.String())
 	}
 	s.binds = append(s.binds, Input{Sequence: seq, Command: command})
 	return nil

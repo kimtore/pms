@@ -24,8 +24,8 @@ var cursorTests = []commands.Test{
 	{`end`, true, nil, nil, []string{}},
 	{`current`, true, nil, nil, []string{}},
 	{`random`, true, nil, nil, []string{}},
-	{`next-of tag1 tag2`, true, nil, nil, []string{}},
-	{`prev-of tag1 tag2`, true, nil, nil, []string{}},
+	{`nextOf tag1 tag2`, true, nil, nil, []string{}},
+	{`prevOf tag1 tag2`, true, nil, nil, []string{}},
 
 	// Invalid forms
 	{`up 1`, false, nil, nil, []string{}},
@@ -39,11 +39,11 @@ var cursorTests = []commands.Test{
 	{`end 1`, false, nil, nil, []string{}},
 	{`current 1`, false, nil, nil, []string{}},
 	{`random 1`, false, nil, nil, []string{}},
-	{`next-of`, false, nil, nil, []string{}},
-	{`next-of `, false, initSongTags, nil, []string{"artist", "title"}},
-	{`next-of t`, true, initSongTags, nil, []string{"title"}},
-	{`prev-of`, false, nil, nil, []string{}},
-	{`prev-of `, false, initSongTags, nil, []string{"artist", "title"}},
+	{`nextOf`, false, nil, nil, []string{}},
+	{`nextOf `, false, initSongTags, nil, []string{"artist", "title"}},
+	{`nextOf t`, true, initSongTags, nil, []string{"title"}},
+	{`prevOf`, false, nil, nil, []string{}},
+	{`prevOf `, false, initSongTags, nil, []string{"artist", "title"}},
 
 	// Tab completion
 	{``, false, nil, nil, []string{
@@ -51,13 +51,13 @@ var cursorTests = []commands.Test{
 		"down",
 		"end",
 		"home",
-		"next-of",
+		"nextOf",
 		"pagedn",
 		"pagedown",
 		"pageup",
 		"pgdn",
 		"pgup",
-		"prev-of",
+		"prevOf",
 		"random",
 		"up",
 	}},

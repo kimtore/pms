@@ -9,6 +9,10 @@ import (
 
 const (
 	TokenEnd = iota
+	TokenAngleLeft
+	TokenAngleRight
+	TokenMinus
+	TokenPlus
 	TokenClose
 	TokenComment
 	TokenEqual
@@ -30,6 +34,14 @@ func runeClass(r rune) int {
 	switch r {
 	case eof:
 		return TokenEnd
+	case '<':
+		return TokenAngleLeft
+	case '>':
+		return TokenAngleRight
+	case '-':
+		return TokenMinus
+	case '+':
+		return TokenPlus
 	case '"':
 		return TokenQuote
 	case ';':

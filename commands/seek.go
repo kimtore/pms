@@ -2,10 +2,8 @@ package commands
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Seek seeks forwards or backwards in the currently playing track.
@@ -25,33 +23,17 @@ func NewSeek(api api.API) Command {
 // Parse implements Command.
 func (cmd *Seek) Parse() error {
 
-	tok, lit := cmd.ScanIgnoreWhitespace()
-	if tok != lexer.TokenIdentifier {
-		return fmt.Errorf("Unexpected '%s', expected identifier", lit)
-	}
-
-	sign := 0
 	playerStatus := cmd.api.PlayerStatus()
 
-	// Relative seek
-	switch lit[0] {
-	case '+':
-		sign = 1
-		lit = lit[1:]
-	case '-':
-		sign = -1
-		lit = lit[1:]
-	}
-
-	i, err := strconv.Atoi(lit)
+	_, lit, absolute, err := cmd.ParseInt()
 	if err != nil {
-		return fmt.Errorf("Unexpected '%s', expected number", lit)
+		return err
 	}
 
-	if sign == 0 {
-		cmd.absolute = i
+	if absolute {
+		cmd.absolute = lit
 	} else {
-		cmd.absolute = int(playerStatus.Elapsed) + i*sign
+		cmd.absolute = int(playerStatus.Elapsed) + lit
 	}
 
 	return cmd.ParseEnd()

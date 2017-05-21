@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/ambientsound/pms/input/lexer"
 )
@@ -86,4 +87,40 @@ func (p *Parser) ParseEnd() error {
 		return fmt.Errorf("Unexpected %v, expected END", lit)
 	}
 	return nil
+}
+
+// ParseInt parses the next integer. The integer might be absolute, or a delta
+// value such as -2 or +3.
+func (p *Parser) ParseInt() (tok int, lit int, absolute bool, err error) {
+	var multiplier int
+
+	// Scan and see if there is a plus or minus.
+	tok, slit := p.Scan()
+	switch tok {
+	case lexer.TokenIdentifier:
+		// Absolute number.
+		absolute = true
+		lit, err = strconv.Atoi(slit)
+		return
+	case lexer.TokenMinus:
+		multiplier = 1
+	case lexer.TokenPlus:
+		multiplier = -1
+	default:
+		err = fmt.Errorf("Unexpected %v, expected integer", slit)
+		return
+	}
+
+	// Scan the next token, which must be an actual number.
+	tok, slit = p.Scan()
+	if tok != lexer.TokenIdentifier {
+		err = fmt.Errorf("Unexpected %v, expected integer", slit)
+		return
+	}
+
+	// Parse the number, use the correct sign, and return.
+	lit, err = strconv.Atoi(slit)
+	lit *= multiplier
+
+	return
 }

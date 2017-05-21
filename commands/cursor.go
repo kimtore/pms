@@ -40,8 +40,26 @@ func (cmd *Cursor) Parse() error {
 
 	tok, lit := cmd.ScanIgnoreWhitespace()
 	cmd.setTabCompleteVerbs(lit)
-	if tok != lexer.TokenIdentifier {
-		return fmt.Errorf("Unexpected '%v', expected identifier", lit)
+
+	switch tok {
+	// In case of a number, scan the actual number and return
+	case lexer.TokenMinus, lexer.TokenPlus:
+		cmd.setTabCompleteEmpty()
+		cmd.Unscan()
+		_, lit, absolute, err := cmd.ParseInt()
+		if err != nil {
+			return err
+		}
+		if absolute {
+			cmd.absolute = lit
+		} else {
+			cmd.relative = lit
+		}
+		return cmd.ParseEnd()
+
+	case lexer.TokenIdentifier:
+	default:
+		return fmt.Errorf("Unexpected '%v', expected number or identifier", lit)
 	}
 
 	switch lit {
@@ -63,10 +81,10 @@ func (cmd *Cursor) Parse() error {
 		cmd.current = true
 	case "random":
 		cmd.absolute = cmd.random()
-	case "next-of":
+	case "nextOf":
 		cmd.nextOfDirection = 1
 		return cmd.parseNextOf()
-	case "prev-of":
+	case "prevOf":
 		cmd.nextOfDirection = -1
 		return cmd.parseNextOf()
 	default:
@@ -114,13 +132,13 @@ func (cmd *Cursor) setTabCompleteVerbs(lit string) {
 		"down",
 		"end",
 		"home",
-		"next-of",
+		"nextOf",
 		"pagedn",
 		"pagedown",
 		"pageup",
 		"pgdn",
 		"pgup",
-		"prev-of",
+		"prevOf",
 		"random",
 		"up",
 	})
