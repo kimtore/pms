@@ -2,4 +2,4 @@ package keysequence
 
 import "github.com/gdamore/tcell"
 
-type KeySequence []tcell.EventKey
+type KeySequence []*tcell.EventKey

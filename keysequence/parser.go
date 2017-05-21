@@ -35,34 +35,54 @@ func NewParser(r *lexer.Scanner) *Parser {
 	}
 }
 
-func (p *Parser) ParseKeySequence() (tok int, lit string, seq KeySequence, err error) {
+// ParseKeySequence parses the next key sequence, which is a combination of literal keys.
+func (p *Parser) ParseKeySequence() (KeySequence, error) {
+
+	keyseq := make(KeySequence, 0)
+	var tok int
+	var lit string
+
+Parse:
 	for {
 		tok, lit = p.Scan()
-	}
-}
 
-// ParseKey parses the next literal key.
-func (p *Parser) ParseKey() (tok int, lit string, key tcell.EventKey, err error) {
-	tok, lit = p.Scan()
-	if tok == lexer.TokenWhitespace {
-		return
+		switch tok {
+
+		// A left angle bracket signifies a special key, such as <Ctrl-A>.
+		case lexer.TokenAngleLeft:
+			p.Unscan()
+			key, err := p.ParseSpecial()
+			if err != nil {
+				return nil, err
+			}
+			keyseq = append(keyseq, key)
+
+		// Any other key than whitespace, end, or comment may be mapped for convenience.
+		case lexer.TokenWhitespace, lexer.TokenEnd, lexer.TokenComment:
+			break Parse
+
+		// Append to the key sequence list.
+		default:
+			seq := runeEventKeys(lit)
+			keyseq = append(keyseq, seq...)
+		}
 	}
-	if tok == lexer.TokenAngleLeft {
-		p.Unscan()
-		return p.ParseSpecial()
+
+	if len(keyseq) == 0 {
+		return nil, fmt.Errorf("Unexpected '%s', expected key sequence", lit)
 	}
-	return
+
+	return keyseq, nil
 }
 
 // Parse a special key name, such as <space> or <C-M-a>.
-func (p *Parser) ParseSpecial() (tok int, lit string, key tcell.EventKey, err error) {
+func (p *Parser) ParseSpecial() (key *tcell.EventKey, err error) {
 	var mod tcell.ModMask
 
 	// Scan the opening angle bracket
-	tok, lit = p.Scan()
+	tok, lit := p.Scan()
 	if tok != lexer.TokenAngleLeft {
-		err = fmt.Errorf("Unexpected %v, expected left angle bracket", lit)
-		return
+		return nil, fmt.Errorf("Unexpected %v, expected left angle bracket", lit)
 	}
 
 Scam:
@@ -71,31 +91,27 @@ Scam:
 		// S, C, A, M, or an actual key name such as 'space' or 'f1'.
 		tok, lit = p.Scan()
 		if tok != lexer.TokenIdentifier {
-			err = fmt.Errorf("Unexpected %v, expected identifier", lit)
-			return
+			return nil, fmt.Errorf("Unexpected %v, expected identifier", lit)
 		}
 
 		// Scan the next token, which may either be a sign, saying that
 		// modifier keys are used, or a right angle bracket, which ends the
 		// parsing with a key lookup. Any other key is an error.
-		k := lit
-		tok, lit = p.Scan()
+		tok, _ := p.Scan()
 		switch tok {
 		case lexer.TokenAngleRight:
+			p.Unscan()
 			break Scam
 		case lexer.TokenPlus, lexer.TokenMinus:
-			lit = k
 			break
 		default:
-			err = fmt.Errorf("Unexpected %v, expected >", lit)
-			return
+			return nil, fmt.Errorf("Unexpected '%s', expected >", lit)
 		}
 
 		// Apply the modifier key
 		m, ok := modifiers[strings.ToLower(lit)]
 		if !ok {
-			err = fmt.Errorf("Unexpected %v, expected one of Shift, Ctrl, Alt, Meta", lit)
-			return
+			return nil, fmt.Errorf("Unexpected '%s', expected one of Shift, Ctrl, Alt, Meta", lit)
 		}
 		mod |= m
 	}
@@ -103,12 +119,37 @@ Scam:
 	// Look up the parsed key name.
 	ev, ok := keyNames[lit]
 	if !ok {
-		err = fmt.Errorf("Unknown key name %v", lit)
-		return
+
+		// If the key name is not found, it might be a letter.
+		if len(lit) != 1 {
+			return nil, fmt.Errorf("Unknown key name '%s'", lit)
+		}
+
+		// Return the rune and modifiers
+		for _, r := range lit {
+			return tcell.NewEventKey(tcell.KeyRune, r, mod), nil
+		}
 	}
 
-	tok = lexer.TokenIdentifier
-	key = *ev
+	// Finally, scan the closing angle bracket
+	tok, lit = p.Scan()
+	if tok != lexer.TokenAngleRight {
+		return nil, fmt.Errorf("Unexpected '%s', expected >", lit)
+	}
 
-	return
+	// Make a copy of the key, and apply any modifiers
+	key = tcell.NewEventKey(ev.Key(), ev.Rune(), mod)
+
+	return key, nil
+}
+
+// runeEventKeys creates a slice of tcell.EventKey objects that corresponds to
+// the literal runes in the string.
+func runeEventKeys(s string) KeySequence {
+	seq := make(KeySequence, 0)
+	for _, r := range s {
+		key := tcell.NewEventKey(tcell.KeyRune, r, tcell.ModNone)
+		seq = append(seq, key)
+	}
+	return seq
 }
