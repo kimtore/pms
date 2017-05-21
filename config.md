@@ -263,3 +263,12 @@ See the [topbar setting](#topbar) for the corresponding variables.
 * `visualText` - text color of the `-- VISUAL --` text when selecting songs in visual mode.
 
 ### volume
+
+```
+volume <+N>
+volume <-N>
+volume <N>
+volume mute
+```
+
+Set or mute the volume, either to an absolute or relative value. The volume range is `0-100`.

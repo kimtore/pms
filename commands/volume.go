@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
@@ -12,7 +11,7 @@ var preMuteVolume int
 
 // Volume adjusts MPD's volume.
 type Volume struct {
-	command
+	newcommand
 	api      api.API
 	sign     int
 	volume   int
@@ -20,69 +19,61 @@ type Volume struct {
 	mute     bool
 }
 
+// NewVolume returns Volume.
 func NewVolume(api api.API) Command {
 	return &Volume{
 		api: api,
 	}
 }
 
-func (cmd *Volume) Execute(class int, s string) error {
-	var err error
+// Parse implements Command.
+func (cmd *Volume) Parse() error {
 
-	switch class {
-	case lexer.TokenIdentifier:
+	playerStatus := cmd.api.PlayerStatus()
 
-		if cmd.finished {
-			return fmt.Errorf("Unexpected '%s', expected END", s)
-		}
+	tok, lit := cmd.ScanIgnoreWhitespace()
+	cmd.setTabComplete(lit, []string{"mute"})
 
-		switch {
-		case s == "mute":
-			cmd.mute = true
-			cmd.finished = true
-			return nil
-		case s[0] == '+':
-			cmd.sign = 1
-			s = s[1:]
-		case s[0] == '-':
-			cmd.sign = -1
-			s = s[1:]
-		}
-
-		cmd.volume, err = strconv.Atoi(s)
-		if err != nil {
-			return fmt.Errorf("Unexpected '%s', expected number", s)
-		}
-
-		cmd.finished = true
-
-	case lexer.TokenEnd:
-		if !cmd.finished {
-			return fmt.Errorf("Unexpected END, expected absolute or relative volume")
-		}
-
-		client := cmd.api.MpdClient()
-		if client == nil {
-			return fmt.Errorf("Unable to control volume: cannot communicate with MPD")
-		}
-		status := cmd.api.PlayerStatus()
-
-		switch {
-		case cmd.mute && status.Volume == 0:
-			cmd.volume = preMuteVolume
-		case cmd.mute && status.Volume > 0:
-			preMuteVolume = status.Volume
-			cmd.volume = 0
-		case cmd.sign != 0:
-			cmd.volume *= cmd.sign
-			cmd.volume = status.Volume + cmd.volume
-		}
-
-		return client.SetVolume(cmd.volume)
-
-	default:
-		return fmt.Errorf("Unknown input '%s', expected END", s)
+	// Check for muted status.
+	if tok == lexer.TokenIdentifier && lit == "mute" {
+		cmd.mute = true
+		cmd.setTabCompleteEmpty()
+		return cmd.ParseEnd()
 	}
 
-	return nil
+	// If not muted, try to parse a number.
+	cmd.Unscan()
+	_, ilit, absolute, err := cmd.ParseInt()
+	if err != nil {
+		return err
+	}
+
+	if absolute {
+		cmd.volume = ilit
+	} else {
+		cmd.volume = int(playerStatus.Volume) + ilit
+	}
+
+	cmd.setTabCompleteEmpty()
+	return cmd.ParseEnd()
+}
+
+// Exec implements Command.
+func (cmd *Volume) Exec() error {
+	mpdClient := cmd.api.MpdClient()
+	if mpdClient == nil {
+		return fmt.Errorf("Unable to set volume: cannot communicate with MPD")
+	}
+
+	playerStatus := cmd.api.PlayerStatus()
+
+	switch {
+	case cmd.mute && playerStatus.Volume == 0:
+		cmd.volume = preMuteVolume
+	case cmd.mute && playerStatus.Volume > 0:
+		preMuteVolume = playerStatus.Volume
+		cmd.volume = 0
+	}
+
+	return mpdClient.SetVolume(cmd.volume)
 }
