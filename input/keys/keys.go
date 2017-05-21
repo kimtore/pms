@@ -2,7 +2,6 @@ package keys
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/keysequence"
@@ -41,8 +40,7 @@ func (s *Sequencer) AddBind(seq keysequence.KeySequence, command string) error {
 
 // KeyInput feeds a keypress to the sequencer. Returns true if there is one match or more, or false if there is no match.
 func (s *Sequencer) KeyInput(ev *tcell.EventKey) bool {
-	//console.Log("Possible match found: %+v ||| %+v", b.Sequence, s.input)
-	console.Log("Keypress event: key=%d, rune=%d, mods=%d", ev.Key(), ev.Rune(), ev.Modifiers())
+	console.Log("Key event: %s", keysequence.FormatKey(ev))
 	s.input = append(s.input, ev)
 	if len(s.find(s.input)) == 0 {
 		s.input = make(keysequence.KeySequence, 0)
@@ -53,11 +51,7 @@ func (s *Sequencer) KeyInput(ev *tcell.EventKey) bool {
 
 // String returns the current input sequence as a string.
 func (s *Sequencer) String() string {
-	str := make([]string, len(s.input))
-	for i := range s.input {
-		str[i] = s.input[i].Name()
-	}
-	return strings.Join(str, "")
+	return keysequence.Format(s.input)
 }
 
 // dupes returns true if binding the given key event sequence will conflict with any other bound sequences.

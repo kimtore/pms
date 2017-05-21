@@ -12,10 +12,12 @@ import (
 
 var parserTests = []struct {
 	input   string
+	output  string
 	success bool
 	keyseq  keysequence.KeySequence
 }{
 	{
+		"abc",
 		"abc",
 		true,
 		keysequence.KeySequence{
@@ -26,6 +28,7 @@ var parserTests = []struct {
 	},
 	{
 		"<C-c>x<S-m-A-f1>f",
+		"<Ctrl-C>x<Shift-Alt-Meta-F1>f",
 		true,
 		keysequence.KeySequence{
 			tcell.NewEventKey(tcell.KeyCtrlC, rune(tcell.KeyCtrlC), tcell.ModCtrl),
@@ -36,6 +39,7 @@ var parserTests = []struct {
 	},
 	{
 		"<a-x>",
+		"<Alt-x>",
 		true,
 		keysequence.KeySequence{
 			tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModAlt),
@@ -43,6 +47,7 @@ var parserTests = []struct {
 	},
 	{
 		"<c-x>x",
+		"<Ctrl-X>x",
 		true,
 		keysequence.KeySequence{
 			tcell.NewEventKey(tcell.KeyCtrlX, rune(tcell.KeyCtrlX), tcell.ModCtrl),
@@ -51,12 +56,14 @@ var parserTests = []struct {
 	},
 	{
 		"<Space>",
+		"<Space>",
 		true,
 		keysequence.KeySequence{
 			tcell.NewEventKey(tcell.KeyRune, ' ', tcell.ModNone),
 		},
 	},
 	{
+		"<Space>X",
 		"<Space>X",
 		true,
 		keysequence.KeySequence{
@@ -66,15 +73,15 @@ var parserTests = []struct {
 	},
 
 	// Syntax errors
-	{"", false, nil},
-	{"<", false, nil},
-	{"<space", false, nil},
-	{"<>", false, nil},
-	{"<C->", false, nil},
-	{"<C-S->", false, nil},
-	{"<X-m>", false, nil},
-	{"<crap>", false, nil},
-	{"<C-crap>", false, nil},
+	{"", "", false, nil},
+	{"<", "", false, nil},
+	{"<space", "", false, nil},
+	{"<>", "", false, nil},
+	{"<C->", "", false, nil},
+	{"<C-S->", "", false, nil},
+	{"<X-m>", "", false, nil},
+	{"<crap>", "", false, nil},
+	{"<C-crap>", "", false, nil},
 }
 
 // Test that key sequences are correctly parsed.
@@ -95,6 +102,10 @@ func TestParser(t *testing.T) {
 			assert.NotNil(t, err, "Expected error when parsing '%s'", test.input)
 			continue
 		}
+
+		// Assert that names are converted back
+		conv := keysequence.Format(seq)
+		assert.Equal(t, test.output, conv, "Assert that reverse generated key sequence names are correct")
 
 		// Assert that key definitions are equal
 		assert.Equal(t, len(test.keyseq), len(seq), "Assert that key sequences have equal length")
