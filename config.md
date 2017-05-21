@@ -89,12 +89,23 @@ Adds one or more URI's to MPD's queue. If no URI's are specified, the current tr
 ### bind
 
 ```
-bind <keysequence> <command>
+bind <key sequence> <command>
 ```
 
-Binds a key sequence to execute a command. The key sequence is a combination of literal keys and special keys. Special keys are represented by wrapping them in angle brackets, e.g. `<F1>` or `<C-c>`.
+Binds a key sequence to execute a command.
 
-For reference, please see the [complete list of special keys](input/parser/keynames.go).
+A _key sequence_ may be either
+* a string of letters,
+* a `<special>` key, such as `<space>` or `<f1>`
+* a key with modifiers, such as `<Ctrl-X>`, `<Alt-A>`, or `<Shift-Escape>`,
+* or a combination of all three, such as `<Ctrl-X><Delete>quit`.
+
+Modifier keys are `Ctrl`, `Alt`, `Meta`, and `Shift`. The first letter of these four words can also be used as a shorthand.
+
+Special keys are too many to list here, but can be found in the [complete list of special keys](input/parser/keynames.go).
+
+Regular keys such as letters, numbers, symbols, unicode characters, etc. will never have the `Shift` modifier key. Generally, terminal applications have far less visibility into keyboard
+activity than graphical applications. Hence, you should avoid depending overly much on availability of modifiers, or the availability of any specific keys.
 
 ### cursor
 
