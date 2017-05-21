@@ -102,7 +102,7 @@ A _key sequence_ may be either
 
 Modifier keys are `Ctrl`, `Alt`, `Meta`, and `Shift`. The first letter of these four words can also be used as a shorthand.
 
-Special keys are too many to list here, but can be found in the [complete list of special keys](input/parser/keynames.go).
+Special keys are too many to list here, but can be found in the [complete list of special keys](keysequence/names.go).
 
 Regular keys such as letters, numbers, symbols, unicode characters, etc. will never have the `Shift` modifier key. Generally, terminal applications have far less visibility into keyboard
 activity than graphical applications. Hence, you should avoid depending overly much on availability of modifiers, or the availability of any specific keys.
