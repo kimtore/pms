@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
@@ -33,6 +34,7 @@ func (cmd *Style) Parse() error {
 	// Scan the style key. All names are accepted, even names that are not
 	// implemented anywhere.
 	tok, lit := cmd.ScanIgnoreWhitespace()
+	cmd.setTabCompleteNames(lit)
 	if tok != lexer.TokenIdentifier {
 		return fmt.Errorf("Unexpected '%v', expected identifier", lit)
 	}
@@ -40,8 +42,12 @@ func (cmd *Style) Parse() error {
 
 	// Scan each style attribute.
 	for {
-		tok, lit := cmd.ScanIgnoreWhitespace()
+		tok, lit := cmd.Scan()
+
 		switch tok {
+		case lexer.TokenWhitespace:
+			cmd.setTabCompleteStyles("")
+			continue
 		case lexer.TokenIdentifier:
 			break
 		case lexer.TokenEnd:
@@ -50,6 +56,7 @@ func (cmd *Style) Parse() error {
 			return fmt.Errorf("Unexpected '%v', expected identifier", lit)
 		}
 
+		cmd.setTabCompleteStyles(lit)
 		err := cmd.mergeStyle(lit)
 		if err != nil {
 			return err
@@ -62,6 +69,31 @@ func (cmd *Style) Exec() error {
 	styleMap := cmd.api.Styles()
 	styleMap[cmd.styleKey] = cmd.styleValue
 	return nil
+}
+
+// setTabCompleteNames sets the tab complete list to the list of available style keys.
+func (cmd *Style) setTabCompleteNames(lit string) {
+	styleMap := cmd.api.Styles()
+	list := make(sort.StringSlice, len(styleMap))
+	i := 0
+	for key := range styleMap {
+		list[i] = key
+		i++
+	}
+	list.Sort()
+	cmd.setTabComplete(lit, list)
+}
+
+// setTabCompleteStyles sets the tab complete list to available styles.
+func (cmd *Style) setTabCompleteStyles(lit string) {
+	list := []string{
+		"blink",
+		"bold",
+		"dim",
+		"reverse",
+		"underline",
+	}
+	cmd.setTabComplete(lit, list)
 }
 
 func (cmd *Style) mergeStyle(lit string) error {

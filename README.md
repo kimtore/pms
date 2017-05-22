@@ -18,7 +18,7 @@ PMS has many features that involve sorting, searching, and navigating. It’s de
 * Many forms of tracklist manipulation, such as copying, filtering, and sorting.
 * Basic readline functionality when typing, including history.
 * Configuration file support, following the XDG standard.
-* Tab completion (some commands; still some work to be done).
+* Tab completion (for most commands).
 
 
 ## Project status
@@ -34,7 +34,6 @@ This functionality is present in the `0.42.x` branch, but missing in master:
 * Automatically add songs to the queue when it is nearing end.
 * Copy and paste.
 * Remote playlist management.
-* Documentation for configuration and commands.
 * ...and probably more.
 
 
