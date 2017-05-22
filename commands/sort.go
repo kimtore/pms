@@ -10,41 +10,57 @@ import (
 
 // Sort sorts songlists.
 type Sort struct {
-	command
-	api      api.API
-	fields   []string
-	finished bool
+	newcommand
+	api  api.API
+	tags []string
 }
 
+// NewSort returns Sort.
 func NewSort(api api.API) Command {
-	sort := api.Options().StringValue("sort")
 	return &Sort{
-		api:    api,
-		fields: strings.Split(sort, ","),
+		api: api,
 	}
 }
 
-func (cmd *Sort) Execute(class int, s string) error {
+// Parse implements Command.
+func (cmd *Sort) Parse() error {
 	var err error
 
-	switch class {
+	// For tab completion
+	list := cmd.api.Songlist()
+	song := list.CursorSong()
 
-	case lexer.TokenIdentifier:
-		if cmd.finished {
-			return fmt.Errorf("Unknown input '%s', expected END", s)
+	for {
+		tok, lit := cmd.Scan()
+		switch tok {
+		case lexer.TokenWhitespace:
+			// Initialize tab completion
+			cmd.setTabCompleteTag("", song)
+			continue
+
+		case lexer.TokenIdentifier:
+			// Sort by tags specified on the command line
+			cmd.Unscan()
+			cmd.tags, err = cmd.ParseTags(song)
+			return err
+
+		case lexer.TokenEnd:
+			// Sort by default tags
+			sort := cmd.api.Options().StringValue("sort")
+			cmd.tags = strings.Split(sort, ",")
+			return nil
+
+		default:
+			return fmt.Errorf("Unexpected %v, expected tag", lit)
 		}
-		cmd.fields = strings.Split(s, ",")
-		cmd.finished = true
-
-	case lexer.TokenEnd:
-		list := cmd.api.Songlist()
-		song := list.CursorSong()
-		err = list.Sort(cmd.fields)
-		list.CursorToSong(song)
-
-	default:
-		return fmt.Errorf("Unknown input '%s', expected END", s)
 	}
+}
 
+// Exec implements Command.
+func (cmd *Sort) Exec() error {
+	list := cmd.api.Songlist()
+	song := list.CursorSong()
+	err := list.Sort(cmd.tags)
+	list.CursorToSong(song)
 	return err
 }
