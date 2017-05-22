@@ -4,11 +4,14 @@
 package commands
 
 import (
+	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/parser"
+	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/utils"
 )
 
@@ -104,9 +107,54 @@ func (c *newcommand) setTabComplete(filter string, s []string) {
 	c.tabComplete = utils.TokenFilter(filter, s)
 }
 
+// setTabCompleteTag sets the tab complete list to a list of tag keys in a specific song.
+func (c *newcommand) setTabCompleteTag(lit string, song *song.Song) {
+	if song == nil {
+		c.setTabCompleteEmpty()
+		return
+	}
+	c.setTabComplete(lit, song.TagKeys())
+}
+
 // setTabCompleteEmpty removes all tab completions.
 func (c *newcommand) setTabCompleteEmpty() {
 	c.setTabComplete("", []string{})
+}
+
+// ParseTags parses a set of tags until the end of the line, and maintains the
+// tab complete list according to a specified song.
+func (c *newcommand) ParseTags(song *song.Song) ([]string, error) {
+	c.setTabCompleteEmpty()
+	tags := make([]string, 0)
+
+	for {
+		tok, lit := c.Scan()
+
+		switch tok {
+		case lexer.TokenWhitespace:
+			c.setTabCompleteTag("", song)
+		case lexer.TokenIdentifier:
+			c.setTabCompleteTag(lit, song)
+			tags = append(tags, strings.ToLower(lit))
+		case lexer.TokenEnd:
+			if len(tags) == 0 {
+				return nil, fmt.Errorf("Unexpected END, expected tag")
+			}
+			return tags, nil
+		default:
+			return nil, fmt.Errorf("Unexpected %v, expected tag", lit)
+		}
+	}
+}
+
+//
+// These functions belong to the old implementation.
+// FIXME: remove everything below.
+//
+
+// Execute implements Command.Execute.
+func (c *newcommand) Execute(class int, s string) error {
+	return nil
 }
 
 // TabComplete implements Command.TabComplete.
@@ -117,17 +165,6 @@ func (c *newcommand) TabComplete() []string {
 	}
 	return c.tabComplete
 }
-
-// Execute implements Command.Execute.
-// FIXME: boilerplate until Execute is removed from interface
-func (c *newcommand) Execute(class int, s string) error {
-	return nil
-}
-
-//
-// These functions belong to the old implementation.
-// FIXME: remove everything below.
-//
 
 // Parse implements Command.Parse.
 func (c *command) SetScanner(s *lexer.Scanner) {

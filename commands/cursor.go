@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/song"
 )
 
 // Cursor moves the cursor in a songlist widget. It can take human-readable
@@ -144,15 +142,6 @@ func (cmd *Cursor) setTabCompleteVerbs(lit string) {
 	})
 }
 
-// setTabCompleteTag sets the tab complete list to a list of tag keys in a specific song.
-func (cmd *Cursor) setTabCompleteTag(lit string, song *song.Song) {
-	if song == nil {
-		cmd.setTabCompleteEmpty()
-		return
-	}
-	cmd.setTabComplete(lit, song.TagKeys())
-}
-
 // random returns a random list index in the songlist.
 func (cmd *Cursor) random() int {
 	len := cmd.api.Songlist().Len()
@@ -164,29 +153,13 @@ func (cmd *Cursor) random() int {
 	return r.Int() % len
 }
 
-// parseNextOf parses a set of tags.
+// parseNextOf assigns the nextOf tags and directions, or returns an error if
+// no tags are specified.
 func (cmd *Cursor) parseNextOf() error {
+	var err error
 	song := cmd.api.Songlist().CursorSong()
-	cmd.setTabCompleteEmpty()
-
-	for {
-		tok, lit := cmd.Scan()
-
-		switch tok {
-		case lexer.TokenWhitespace:
-			cmd.setTabCompleteTag("", song)
-		case lexer.TokenIdentifier:
-			cmd.setTabCompleteTag(lit, song)
-			cmd.nextOfTags = append(cmd.nextOfTags, strings.ToLower(lit))
-		case lexer.TokenEnd:
-			if len(cmd.nextOfTags) == 0 {
-				return fmt.Errorf("Unexpected END, expected tag")
-			}
-			return nil
-		default:
-			return fmt.Errorf("Unexpected %v, expected tag", lit)
-		}
-	}
+	cmd.nextOfTags, err = cmd.ParseTags(song)
+	return err
 }
 
 // runNextOf finds the next song with different tags.
