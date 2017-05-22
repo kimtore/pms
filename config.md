@@ -47,7 +47,7 @@ The top bar is an informational area where information about the current state o
     * `${list|title}` is the title of the current tracklist.
     * `${list|total}` is the total number of tracklists.
 * `${mode}` is the status of the player switches `consume`, `random`, `single`, and `repeat`, printed as four characters (`czsr`).
-* `${shortname} is the short name of this program.`
+* `${shortname}` is the short name of this program.
 * `${state}`
     * `${state}` is the current player state, represented as a two-character ASCII art.
     * `${state|unicode}` is the current player state, represented with unicode symbols.
