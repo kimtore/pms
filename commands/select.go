@@ -10,16 +10,17 @@ import (
 // Select manipulates song selection within a songlist.
 type Select struct {
 	newcommand
-	api      api.API
-	toggle   bool
-	visual   bool
-	finished bool
+	api    api.API
+	toggle bool
+	visual bool
+	nearby []string
 }
 
 // NewSelect returns Select.
 func NewSelect(api api.API) Command {
 	return &Select{
-		api: api,
+		api:    api,
+		nearby: make([]string, 0),
 	}
 }
 
@@ -34,12 +35,12 @@ func (cmd *Select) Parse() error {
 	}
 
 	switch lit {
-	// Toggle cursor select on/off
 	case "toggle":
 		cmd.toggle = true
-	// Toggle visual mode on/off
 	case "visual":
 		cmd.visual = true
+	case "nearby":
+		return cmd.parseNearby()
 	default:
 		return fmt.Errorf("Unexpected '%s', expected identifier", lit)
 	}
@@ -62,6 +63,9 @@ func (cmd *Select) Exec() error {
 		list.ToggleVisualSelection()
 		return nil
 
+	case len(cmd.nearby) > 0:
+		return cmd.selectNearby()
+
 	default:
 		index := list.Cursor()
 		selected := list.Selected(index)
@@ -73,9 +77,54 @@ func (cmd *Select) Exec() error {
 	return nil
 }
 
+// parseNearby parses tags and inserts them in the nearby list.
+func (cmd *Select) parseNearby() error {
+
+	// Data initialization and sanity checks
+	list := cmd.api.Songlist()
+	song := list.CursorSong()
+
+	// Retrieve a list of songs
+	tags, err := cmd.ParseTags(song)
+	if err != nil {
+		return err
+	}
+
+	cmd.nearby = tags
+	return nil
+}
+
+// selectNearby selects tracks near the cursor with similar tags.
+func (cmd *Select) selectNearby() error {
+	list := cmd.api.Songlist()
+	index := list.Cursor()
+	song := list.CursorSong()
+
+	// In case the list has a visual selection, disable that selection instead.
+	if list.HasVisualSelection() {
+		list.DisableVisualSelection()
+		return nil
+	}
+
+	if song == nil {
+		return fmt.Errorf("Can't select nearby songs; no song under cursor")
+	}
+
+	// Find the start and end positions
+	start := list.NextOf(cmd.nearby, index+1, -1)
+	end := list.NextOf(cmd.nearby, index, 1) - 1
+
+	// Set visual selection and move cursor to end of selection
+	list.SetVisualSelection(start, end, start)
+	list.SetCursor(end)
+
+	return nil
+}
+
 // setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.
 func (cmd *Select) setTabCompleteVerbs(lit string) {
 	cmd.setTabComplete(lit, []string{
+		"nearby",
 		"toggle",
 		"visual",
 	})

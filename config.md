@@ -175,11 +175,16 @@ The `selection` argument is like `cursor`, but adds the entire selection to the 
 ```
 select toggle
 select visual
+select nearby <tag> [tag...]
 ```
 
-Manipulate tracklist selection. `visual` will toggle _visual mode_ and anchor the selection on the track under the cursor.
+Manipulate tracklist selection.
+
+`visual` will toggle _visual mode_ and anchor the selection on the track under the cursor.
 
 `toggle` will toggle selection status for the track under the cursor. If in visual mode when using `toggle`, the visual selection will be converted to manual selection, and visual mode switched off.
+
+`nearby` will set the visual selection to nearby tracks having the same specified _tags_ as the track under the cursor. If there is already a visual selection, it will be cleared instead.
 
 ### seek
 

@@ -112,9 +112,7 @@ func (s *BaseSonglist) VisualSelection() (int, int, int) {
 // SetVisualSelection sets the range of the visual selection. Use negative
 // integers to un-select all visually selected songs.
 func (s *BaseSonglist) SetVisualSelection(ymin, ymax, ystart int) {
-	s.visualSelection[0] = ymin
-	s.visualSelection[1] = ymax
-	s.visualSelection[2] = ystart
+	s.visualSelection[0], s.visualSelection[1], s.visualSelection[2] = s.validateVisualSelection(ymin, ymax, ystart)
 }
 
 // HasVisualSelection returns true if the songlist is in visual selection mode.
