@@ -240,7 +240,7 @@ Change global program options. Boolean option are enabled with `set option` and 
 
 ```
 sort
-sort <tag[,tag...]>
+sort <tag> [tag...]
 ```
 
 Sort the current tracklist by the specified tags. The most significant sort criteria is specified last. The first sort is performed as an unstable sort, while the remainder is a stable sort.
