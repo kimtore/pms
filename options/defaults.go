@@ -79,7 +79,7 @@ bind v select visual
 bind V select visual
 
 # Keyboard bindings: player and mixer
-bind <Enter> play cursor
+bind <Enter> play selection
 bind <Space> pause
 bind s stop
 bind h previous

@@ -153,9 +153,14 @@ Switches between modes. Normal mode is where key bindings take effect. Input mod
 ```
 play
 play cursor
+play selection
 ```
 
-Start playing. Without any parameters, `play` will resume playing MPD's current song, or start from the beginning of the queue. If invoked with the `cursor` argument, `play` will add the song under the cursor to the queue if necessary, and start playing.
+Start playing. Without any parameters, `play` will resume playing MPD's current song, or start from the beginning of the queue.
+
+If invoked with the `cursor` argument, `play` will add the song under the cursor to the queue if necessary, and start playing.
+
+The `selection` argument is like `cursor`, but adds the entire selection to the queue, and starts playing from the first selected song. If there is no selection, fall back to the cursor.
 
 ### prev
 ### previous
