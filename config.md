@@ -96,8 +96,8 @@ Binds a key sequence to execute a command.
 
 A _key sequence_ may be either
 * a string of letters,
-* a `<special>` key, such as `<space>` or `<f1>`
-* a key with modifiers, such as `<Ctrl-X>`, `<Alt-A>`, or `<Shift-Escape>`,
+* a string of `<special>` keys, such as `<space>` or `<f1>`
+* a string of keys with modifiers, such as `<Ctrl-X>`, `<Alt-A>`, or `<Shift-Escape>`,
 * or a combination of all three, such as `<Ctrl-X><Delete>quit`.
 
 Modifier keys are `Ctrl`, `Alt`, `Meta`, and `Shift`. The first letter of these four words can also be used as a shorthand.
@@ -114,13 +114,13 @@ cursor current
 cursor down
 cursor end
 cursor home
-cursor next-of [tag] [tag...]
+cursor nextOf [tag] [tag...]
 cursor pagedn
 cursor pagedown
 cursor pageup
 cursor pgdn
 cursor pgup
-cursor prev-of [tag] [tag...]
+cursor prevOf [tag] [tag...]
 cursor random
 cursor up
 cursor <+N>
