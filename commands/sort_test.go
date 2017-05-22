@@ -15,6 +15,8 @@ var sortTests = []commands.Test{
 	// Valid forms
 	{``, true, initSort, testSorting, []string{}},
 	{`artist title`, true, initSort, testSorting, []string{"title"}},
+	{`complex-tag`, true, initSort, testSorting, []string{"complex-tag"}},
+	{`tag&|!{ more-tags "x y z"`, true, initSort, testSorting, []string{}},
 
 	// Invalid forms
 	{`$`, false, nil, nil, []string{}},
@@ -42,8 +44,9 @@ func initSort(data *commands.TestData) {
 		for j := 0; j < 10; j++ {
 			s := song.New()
 			s.SetTags(mpd.Attrs{
-				"artist": fmt.Sprintf("artist %d", 2-i),
-				"title":  fmt.Sprintf("title %d", 10-j),
+				"artist":      fmt.Sprintf("artist %d", 2-i),
+				"title":       fmt.Sprintf("title %d", 10-j),
+				"complex-tag": fmt.Sprintf("%d%d", j, i),
 			})
 			list.Add(s)
 		}

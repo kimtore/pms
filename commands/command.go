@@ -126,24 +126,30 @@ func (c *newcommand) setTabCompleteEmpty() {
 func (c *newcommand) ParseTags(song *song.Song) ([]string, error) {
 	c.setTabCompleteEmpty()
 	tags := make([]string, 0)
+	tag := ""
 
 	for {
 		tok, lit := c.Scan()
 
 		switch tok {
 		case lexer.TokenWhitespace:
-			c.setTabCompleteTag("", song)
-		case lexer.TokenIdentifier:
-			c.setTabCompleteTag(lit, song)
-			tags = append(tags, strings.ToLower(lit))
-		case lexer.TokenEnd:
+			if len(tag) > 0 {
+				tags = append(tags, strings.ToLower(tag))
+			}
+			tag = ""
+		case lexer.TokenEnd, lexer.TokenComment:
+			if len(tag) > 0 {
+				tags = append(tags, strings.ToLower(tag))
+			}
 			if len(tags) == 0 {
 				return nil, fmt.Errorf("Unexpected END, expected tag")
 			}
 			return tags, nil
 		default:
-			return nil, fmt.Errorf("Unexpected %v, expected tag", lit)
+			tag += lit
 		}
+
+		c.setTabCompleteTag(tag, song)
 	}
 }
 
