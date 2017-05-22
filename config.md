@@ -145,6 +145,13 @@ inputmode search
 Switches between modes. Normal mode is where key bindings take effect. Input mode allows commands to be typed in, while search mode executes searches while you type.
 
 ### isolate
+
+```
+isolate <tag> [tag...]
+```
+
+Searches for songs with similar tags as the current selection, and creates a new tracklist. The tracklist is sorted by the default sort criteria.
+
 ### list
 ### next
 ### pause

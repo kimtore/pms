@@ -10,7 +10,7 @@ var selectTests = []commands.Test{
 	// Valid forms
 	{`visual`, true, nil, nil, []string{}},
 	{`toggle`, true, nil, nil, []string{}},
-	{`nearby artist album`, true, nil, nil, []string{}},
+	{`nearby artist tit`, true, initSongTags, nil, []string{"title"}},
 
 	// Invalid forms
 	{`foo`, false, nil, nil, []string{}},

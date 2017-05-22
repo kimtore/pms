@@ -100,7 +100,7 @@ bind T list previous
 bind <C-d> list duplicate
 bind <C-g> list remove
 bind <C-j> isolate artist
-bind <C-t> isolate albumartist,album
+bind <C-t> isolate albumartist album
 bind & select nearby albumartist album
 bind m select toggle
 bind a add

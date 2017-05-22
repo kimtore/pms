@@ -5,16 +5,16 @@ import (
 	"strings"
 
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Isolate searches for songs that have similar tags as the selection.
 type Isolate struct {
-	command
+	newcommand
 	api  api.API
 	tags []string
 }
 
+// NewIsolate returns Isolate.
 func NewIsolate(api api.API) Command {
 	return &Isolate{
 		api:  api,
@@ -22,56 +22,49 @@ func NewIsolate(api api.API) Command {
 	}
 }
 
-func (cmd *Isolate) Execute(class int, s string) error {
+// Parse implements Command.
+func (cmd *Isolate) Parse() error {
 	var err error
+	list := cmd.api.Songlist()
+	cmd.tags, err = cmd.ParseTags(list.CursorSong())
+	return err
+}
 
-	switch class {
-	case lexer.TokenIdentifier:
-		if len(cmd.tags) != 0 {
-			return fmt.Errorf("Unexpected '%s', expected END.", s)
-		}
-		cmd.tags = strings.Split(strings.ToLower(s), ",")
-
-	case lexer.TokenEnd:
-		if len(cmd.tags) == 0 {
-			return fmt.Errorf("Unexpected END, expected comma-separated tags to isolate by.")
-		}
-
-		index := cmd.api.Index()
-		if index == nil {
-			return fmt.Errorf("Search index is not operational.")
-		}
-
-		songlistWidget := cmd.api.SonglistWidget()
-		list := cmd.api.Songlist()
-		selection := list.Selection()
-		song := list.CursorSong()
-
-		if selection.Len() == 0 {
-			return fmt.Errorf("No selection, cannot isolate in empty songlist.")
-		}
-
-		result, err := index.Isolate(selection, cmd.tags)
-		if err != nil {
-			return err
-		}
-
-		if result.Len() == 0 {
-			return fmt.Errorf("No results found when isolating by '%s'.", strings.Join(cmd.tags, ","))
-		}
-
-		sort := cmd.api.Options().StringValue("sort")
-		fields := strings.Split(sort, ",")
-		result.Sort(fields)
-
-		list.ClearSelection()
-		songlistWidget.AddSonglist(result)
-		songlistWidget.SetSonglist(result)
-		list.CursorToSong(song)
-
-	default:
-		return fmt.Errorf("Unknown input '%s', expected END.", s)
+// Exec implements Command.
+func (cmd *Isolate) Exec() error {
+	index := cmd.api.Index()
+	if index == nil {
+		return fmt.Errorf("Search index is not operational.")
 	}
 
-	return err
+	songlistWidget := cmd.api.SonglistWidget()
+	list := cmd.api.Songlist()
+	selection := list.Selection()
+	song := list.CursorSong()
+
+	if selection.Len() == 0 {
+		return fmt.Errorf("Isolate needs at least one track.")
+	}
+
+	result, err := index.Isolate(selection, cmd.tags)
+	if err != nil {
+		return err
+	}
+
+	if result.Len() == 0 {
+		return fmt.Errorf("No results found when isolating by %s", strings.Join(cmd.tags, ", "))
+	}
+
+	// Sort the new list.
+	sort := cmd.api.Options().StringValue("sort")
+	fields := strings.Split(sort, ",")
+	result.Sort(fields)
+
+	// Clear selection in the source list, and add a new list to the index.
+	list.ClearSelection()
+	songlistWidget.AddSonglist(result)
+	songlistWidget.SetSonglist(result)
+	list.CursorToSong(song)
+
+	return nil
 }
