@@ -26,7 +26,7 @@ var tabCompleteTests = []struct {
 	}},
 	{"set", true, []string{}},
 	{"add ", true, []string{}},
-	{"cursor next-of", true, []string{}},
+	{"cursor nextOf", true, []string{}},
 	{"foobarbaz", false, []string{}},
 	{"foobarbaz ", false, []string{}},
 	{"$var", false, []string{}},

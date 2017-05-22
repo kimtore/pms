@@ -130,7 +130,7 @@ cursor <N>
 
 Moves the cursor. `current` moves to the currently playing song. `random` picks a random song from the tracklist.
 
-The `next-of` and `prev-of` commands locates the next or previous track that has different tags from the track under the cursor. Multiple tags are allowed.
+The `nextOf` and `prevOf` commands locates the next or previous track that has different tags from the track under the cursor. Multiple tags are allowed.
 
 The cursor can also be set to a relative or absolute position using the three last forms.
 
