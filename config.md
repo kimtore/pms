@@ -166,10 +166,30 @@ The `selection` argument is like `cursor`, but adds the entire selection to the 
 ### previous
 ### print
 ### q
+
+`q` is an alias for [quit](#quit).
+
 ### quit
+
+```
+quit
+```
+
+Exit the program. Any unsaved changes will be lost.
+
 ### redraw
+
+```
+redraw
+```
+
+Force a screen redraw. Useful if rendering has gone wrong.
+
 ### remove
 ### se
+
+`se` is an alias for [set](#set).
+
 ### select
 
 ```
