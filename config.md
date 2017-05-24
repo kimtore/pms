@@ -263,6 +263,8 @@ style <name> [foreground [background]] [bold] [underline] [reverse] [blink]
 
 Specify the style of an UI item.
 
+Colors are either literal names, such as `red`, `yellow`, or `green`, or hexadecimal color values such as `@ff0077`. The hash sign `#` is used for comments; the at sign `@` is used instead. A full list of supported color names can be found in the [tcell documentation](https://github.com/gdamore/tcell/blob/master/color.go#L820).
+
 The keywords `bold`, `underline`, `reverse`, and `blink` can be specified literally. Any keyword order is accepted, but the foreground color must come prior to the background color, if specified.
 
 #### Stylable UI items
