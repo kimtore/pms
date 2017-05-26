@@ -104,6 +104,6 @@ bind <C-t> isolate albumartist album
 bind & select nearby albumartist album
 bind m select toggle
 bind a add
-bind <Delete> remove
-bind x remove
+bind <Delete> cut
+bind x cut
 `

@@ -134,6 +134,8 @@ The `nextOf` and `prevOf` commands locates the next or previous track that has d
 
 The cursor can also be set to a relative or absolute position using the three last forms.
 
+### cut
+
 ### inputmode
 
 ```
@@ -192,7 +194,6 @@ redraw
 
 Force a screen redraw. Useful if rendering has gone wrong.
 
-### remove
 ### se
 
 `se` is an alias for [set](#set).

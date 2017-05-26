@@ -6,8 +6,8 @@ import (
 	"github.com/ambientsound/pms/commands"
 )
 
-var removeTests = []commands.Test{
-	// Remove takes to parameters.
+var cutTests = []commands.Test{
+	// Cut takes to parameters.
 	{``, true, nil, nil, []string{}},
 	{`    `, true, nil, nil, []string{}},
 
@@ -16,6 +16,6 @@ var removeTests = []commands.Test{
 	{`foo bar`, false, nil, nil, []string{}},
 }
 
-func TestRemove(t *testing.T) {
-	commands.TestVerb(t, "remove", removeTests)
+func TestCut(t *testing.T) {
+	commands.TestVerb(t, "cut", cutTests)
 }

@@ -6,26 +6,26 @@ import (
 	"github.com/ambientsound/pms/api"
 )
 
-// Remove removes songs from songlists.
-type Remove struct {
+// Cut removes songs from songlists.
+type Cut struct {
 	newcommand
 	api api.API
 }
 
-// NewRemove returns Remove.
-func NewRemove(api api.API) Command {
-	return &Remove{
+// NewCut returns Cut.
+func NewCut(api api.API) Command {
+	return &Cut{
 		api: api,
 	}
 }
 
 // Parse implements Command.
-func (cmd *Remove) Parse() error {
+func (cmd *Cut) Parse() error {
 	return cmd.ParseEnd()
 }
 
 // Exec implements Command.
-func (cmd *Remove) Exec() error {
+func (cmd *Cut) Exec() error {
 	list := cmd.api.Songlist()
 	selection := list.Selection()
 	indices := list.SelectionIndices()
@@ -39,7 +39,7 @@ func (cmd *Remove) Exec() error {
 	err := list.RemoveIndices(indices)
 	if err == nil {
 		if len == 1 {
-			cmd.api.Message("Removed '%s'", selection.Song(0).StringTags["file"])
+			cmd.api.Message("Cut out '%s'", selection.Song(0).StringTags["file"])
 		} else {
 			cmd.api.Message("%d fewer songs", len)
 		}
