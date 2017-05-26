@@ -140,7 +140,7 @@ The cursor can also be set to a relative or absolute position using the three la
 cut
 ```
 
-Removes the current selection from the tracklist.
+Removes the current selection from the tracklist, and replace the clipboard contents with the removed tracks.
 
 ### inputmode
 

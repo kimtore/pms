@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/console"
 )
 
 // Cut removes songs from songlists.
@@ -35,19 +36,27 @@ func (cmd *Cut) Exec() error {
 		return fmt.Errorf("No tracks selected, cannot remove without any parameters.")
 	}
 
+	// Remove songs from list
 	index := indices[0]
 	err := list.RemoveIndices(indices)
-	if err == nil {
-		if len == 1 {
-			cmd.api.Message("Cut out '%s'", selection.Song(0).StringTags["file"])
-		} else {
-			cmd.api.Message("%d fewer songs", len)
-		}
-		list.ClearSelection()
-		list.SetCursor(index)
+	cmd.api.ListChanged()
+
+	if err != nil {
+		return err
 	}
 
-	cmd.api.ListChanged()
+	if len == 1 {
+		cmd.api.Message("Cut out '%s'", selection.Song(0).StringTags["file"])
+	} else {
+		cmd.api.Message("%d fewer songs", len)
+	}
+	list.ClearSelection()
+	list.SetCursor(index)
+
+	// Place songs in clipboard
+	clipboard := cmd.api.Clipboard()
+	selection.Duplicate(clipboard)
+	console.Log("Cut %d tracks into clipboard", clipboard.Len())
 
 	return nil
 }

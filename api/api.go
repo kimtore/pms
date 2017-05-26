@@ -16,6 +16,9 @@ import (
 // API defines a set of commands that should be available to commands run
 // through the command-line interface.
 type API interface {
+	// Clipboard returns the default clipboard.
+	Clipboard() songlist.Songlist
+
 	// Index returns the current Bleve search index, or nil if the search index is not available.
 	Index() *index.Index
 
@@ -68,6 +71,7 @@ type API interface {
 }
 
 type baseAPI struct {
+	clipboard      func() songlist.Songlist
 	eventList      chan int
 	eventMessage   chan message.Message
 	eventOption    chan string
@@ -86,6 +90,7 @@ type baseAPI struct {
 }
 
 func BaseAPI(
+	clipboard func() songlist.Songlist,
 	eventList chan int,
 	eventMessage chan message.Message,
 	eventOption chan string,
@@ -104,6 +109,7 @@ func BaseAPI(
 
 ) API {
 	return &baseAPI{
+		clipboard:      clipboard,
 		eventList:      eventList,
 		eventMessage:   eventMessage,
 		eventOption:    eventOption,
@@ -120,6 +126,10 @@ func BaseAPI(
 		styles:         styles,
 		ui:             ui,
 	}
+}
+
+func (api *baseAPI) Clipboard() songlist.Songlist {
+	return api.clipboard()
 }
 
 func (api *baseAPI) Index() *index.Index {

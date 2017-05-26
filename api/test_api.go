@@ -13,10 +13,11 @@ import (
 )
 
 type testAPI struct {
-	messages chan message.Message
-	options  *options.Options
-	song     *song.Song
-	songlist songlist.Songlist
+	messages  chan message.Message
+	options   *options.Options
+	song      *song.Song
+	songlist  songlist.Songlist
+	clipboard songlist.Songlist
 }
 
 func createTestSong() *song.Song {
@@ -30,11 +31,16 @@ func createTestSong() *song.Song {
 
 func NewTestAPI() API {
 	return &testAPI{
-		messages: make(chan message.Message, 1024),
-		options:  options.New(),
-		song:     createTestSong(),
-		songlist: songlist.New(),
+		clipboard: songlist.New(),
+		messages:  make(chan message.Message, 1024),
+		options:   options.New(),
+		song:      createTestSong(),
+		songlist:  songlist.New(),
 	}
+}
+
+func (api *testAPI) Clipboard() songlist.Songlist {
+	return api.clipboard
 }
 
 func (api *testAPI) Index() *index.Index {
