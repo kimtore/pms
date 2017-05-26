@@ -136,6 +136,12 @@ The cursor can also be set to a relative or absolute position using the three la
 
 ### cut
 
+```
+cut
+```
+
+Removes the current selection from the tracklist.
+
 ### inputmode
 
 ```
