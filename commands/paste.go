@@ -1,13 +1,17 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Paste inserts songs from the clipboard.
 type Paste struct {
 	newcommand
-	api api.API
+	api      api.API
+	position int
 }
 
 // NewPaste returns Paste.
@@ -19,7 +23,30 @@ func NewPaste(api api.API) Command {
 
 // Parse implements Command.
 func (cmd *Paste) Parse() error {
-	return cmd.ParseEnd()
+	tok, lit := cmd.ScanIgnoreWhitespace()
+
+	// Expect either "before" or "after".
+	switch tok {
+	case lexer.TokenIdentifier:
+		switch lit {
+		case "before":
+			cmd.position = 0
+		case "after":
+			cmd.position = 1
+		default:
+			return fmt.Errorf("Unexpected '%s', expected position", lit)
+		}
+		return cmd.ParseEnd()
+
+	// Fall back to "after" if no arguments given.
+	case lexer.TokenEnd:
+		cmd.position = 1
+
+	default:
+		return fmt.Errorf("Unexpected '%s', expected position", lit)
+	}
+
+	return nil
 }
 
 // Exec implements Command.
@@ -28,12 +55,19 @@ func (cmd *Paste) Exec() error {
 	cursor := list.Cursor()
 	clipboard := cmd.api.Clipboard()
 
-	err := list.InsertList(clipboard, cursor+1)
+	err := list.InsertList(clipboard, cursor+cmd.position)
 	cmd.api.ListChanged()
 
 	if err != nil {
-		cmd.api.Message("%d more tracks", clipboard.Len())
+		return err
 	}
 
-	return err
+	// If pasting before, move cursor down to the previously selected track.
+	if cmd.position == 0 {
+		list.MoveCursor(clipboard.Len())
+	}
+
+	cmd.api.Message("%d more tracks", clipboard.Len())
+
+	return nil
 }

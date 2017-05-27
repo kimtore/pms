@@ -163,6 +163,16 @@ Searches for songs with similar tags as the current selection, and creates a new
 ### list
 ### next
 ### pause
+### paste
+
+```
+paste
+paste before
+paste after
+```
+
+Insert the contents of the clipboard before or after the cursor position. If no position is given, `after` is assumed.
+
 ### play
 
 ```
