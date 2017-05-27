@@ -26,6 +26,7 @@ var Verbs = map[string]func(api.API) Command{
 	"isolate":   NewIsolate,
 	"list":      NewList,
 	"next":      NewNext,
+	"paste":     NewPaste,
 	"pause":     NewPause,
 	"play":      NewPlay,
 	"prev":      NewPrevious,

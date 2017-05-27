@@ -106,4 +106,5 @@ bind m select toggle
 bind a add
 bind <Delete> cut
 bind x cut
+bind p paste
 `

@@ -19,6 +19,8 @@ type Songlist interface {
 	Delete() error
 	Duplicate(Songlist) error
 	InRange(int) bool
+	Insert(*song.Song, int) error
+	InsertList(Songlist, int) error
 	Len() int
 	Locate(*song.Song) (int, error)
 	Lock()
@@ -93,6 +95,47 @@ func (s *BaseSonglist) AddList(songlist Songlist) error {
 			return err
 		}
 	}
+	return nil
+}
+
+// insert internally inserts a song to the songlist, without any side effects at MPD's side.
+func (s *BaseSonglist) insert(newSong *song.Song, position int) {
+	// create a copy of the list, with the new song inserted at the correct position
+	songs := make([]*song.Song, len(s.songs)+1)
+	position += copy(songs[:], s.songs[:position])
+	songs[position] = newSong
+	copy(songs[position+1:], s.songs[position:])
+	s.songs = songs
+
+	// expand columns
+	s.ensureColumns(newSong)
+	s.columns.Add(newSong)
+}
+
+func (s *BaseSonglist) Insert(song *song.Song, position int) error {
+	s.insert(song, position)
+	return nil
+}
+
+// InsertList inserts the songs in a songlist into this songlist, at a specified position.
+func (s *BaseSonglist) InsertList(list Songlist, position int) error {
+	size := list.Len()
+	//console.Log("making size %d array", s.Len()+size)
+	songs := make([]*song.Song, s.Len()+size)
+	//console.Log("copy to 0 <- songs[:%d]", position)
+	copy(songs[:], s.songs[:position])
+	//console.Log("copy to %d <- list", position)
+	copy(songs[position:], list.Songs())
+	//console.Log("copy to %d <- songs[%d:]", position+size, position)
+	copy(songs[position+size:], s.songs[position:])
+	s.songs = songs
+
+	// expand columns
+	for _, newSong := range list.Songs() {
+		s.ensureColumns(newSong)
+		s.columns.Add(newSong)
+	}
+
 	return nil
 }
 
@@ -171,8 +214,10 @@ func (s *BaseSonglist) Duplicate(dest Songlist) error {
 	}
 	oldSongs := s.Songs()
 	for i := range oldSongs {
-		song := *oldSongs[i]
-		if err := dest.Add(&song); err != nil {
+		newSong := *oldSongs[i]
+		newSong.ID = song.NullID
+		newSong.Position = song.NullPosition
+		if err := dest.Add(&newSong); err != nil {
 			return err
 		}
 	}
