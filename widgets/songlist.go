@@ -251,7 +251,7 @@ func (w *SonglistWidget) PositionShortReadout() string {
 
 func (w *SonglistWidget) AddSonglist(s songlist.Songlist) {
 	w.songlists = append(w.songlists, s)
-	console.Log("Songlist UI: added songlist index %d of type %T at address %p", len(w.songlists)-1, s, s)
+	//console.Log("Songlist UI: added songlist index %d of type %T at address %p", len(w.songlists)-1, s, s)
 }
 
 func (w *SonglistWidget) RemoveSonglist(index int) error {
@@ -263,7 +263,7 @@ func (w *SonglistWidget) RemoveSonglist(index int) error {
 	} else {
 		w.songlists = append(w.songlists[:index], w.songlists[index+1:]...)
 	}
-	console.Log("Songlist UI: removed songlist index %d", index)
+	//console.Log("Songlist UI: removed songlist index %d", index)
 	return nil
 }
 
@@ -274,20 +274,20 @@ func (w *SonglistWidget) ReplaceSonglist(s songlist.Songlist) {
 		if reflect.TypeOf(w.songlists[i]) != reflect.TypeOf(s) {
 			continue
 		}
-		console.Log("Songlist UI: replacing songlist of type %T at %p with new list at %p", s, w.songlists[i], s)
-		console.Log("Songlist UI: comparing %p %p", w.songlists[i], w.Songlist())
+		//console.Log("Songlist UI: replacing songlist of type %T at %p with new list at %p", s, w.songlists[i], s)
+		//console.Log("Songlist UI: comparing %p %p", w.songlists[i], w.Songlist())
 
 		active := w.songlists[i] == w.Songlist()
 		w.songlists[i] = s
 
 		if active {
-			console.Log("Songlist UI: replaced songlist is currently active, switching to new songlist.")
+			//console.Log("Songlist UI: replaced songlist is currently active, switching to new songlist.")
 			w.SetSonglist(s)
 		}
 		return
 	}
 
-	console.Log("Songlist UI: adding songlist of type %T at address %p since no similar exists", s, s)
+	//console.Log("Songlist UI: adding songlist of type %T at address %p since no similar exists", s, s)
 	w.AddSonglist(s)
 }
 
@@ -307,7 +307,7 @@ func (w *SonglistWidget) SetSonglist(s songlist.Songlist) {
 
 // SetFallbackSonglist sets a songlist that should be reverted to in case a search result returns zero results.
 func (w *SonglistWidget) SetFallbackSonglist(s songlist.Songlist) {
-	console.Log("SetFallbackSonglist(%T %p)", s, s)
+	//console.Log("SetFallbackSonglist(%T %p)", s, s)
 	w.fallbackSonglist = s
 }
 
@@ -324,7 +324,6 @@ func (w *SonglistWidget) activateList(s songlist.Songlist) {
 
 func (w *SonglistWidget) ListChanged() {
 	w.setViewportSize()
-	//w.validateCursorVisible()
 	PostEventListChanged(w)
 }
 
@@ -355,7 +354,7 @@ func (w *SonglistWidget) ValidateSonglistIndex(i int) error {
 }
 
 func (w *SonglistWidget) SetSonglistIndex(i int) error {
-	console.Log("SetSonglistIndex(%d)", i)
+	//console.Log("SetSonglistIndex(%d)", i)
 	if err := w.ValidateSonglistIndex(i); err != nil {
 		return err
 	}
