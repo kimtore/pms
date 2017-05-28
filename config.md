@@ -107,6 +107,10 @@ Special keys are too many to list here, but can be found in the [complete list o
 Regular keys such as letters, numbers, symbols, unicode characters, etc. will never have the `Shift` modifier key. Generally, terminal applications have far less visibility into keyboard
 activity than graphical applications. Hence, you should avoid depending overly much on availability of modifiers, or the availability of any specific keys.
 
+### copy
+
+`copy` is an alias for [yank](#yank).
+
 ### cursor
 
 ```
@@ -336,3 +340,11 @@ volume mute
 ```
 
 Set or mute the volume, either to an absolute or relative value. The volume range is `0-100`.
+
+### yank
+
+```
+yank
+```
+
+Replaces the clipboard contents with the currently selected tracks.

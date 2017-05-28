@@ -20,6 +20,7 @@ import (
 var Verbs = map[string]func(api.API) Command{
 	"add":       NewAdd,
 	"bind":      NewBind,
+	"copy":      NewYank,
 	"cursor":    NewCursor,
 	"cut":       NewCut,
 	"inputmode": NewInputMode,
@@ -43,6 +44,7 @@ var Verbs = map[string]func(api.API) Command{
 	"stop":      NewStop,
 	"style":     NewStyle,
 	"volume":    NewVolume,
+	"yank":      NewYank,
 }
 
 // Command must be implemented by all commands.

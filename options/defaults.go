@@ -106,6 +106,7 @@ bind m select toggle
 bind a add
 bind <Delete> cut
 bind x cut
+bind y yank
 bind p paste after
 bind P paste before
 `
