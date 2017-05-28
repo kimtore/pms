@@ -112,8 +112,12 @@ func (s *BaseSonglist) insert(newSong *song.Song, position int) {
 	s.columns.Add(newSong)
 }
 
+// Insert inserts a song at the specified position.
 func (s *BaseSonglist) Insert(song *song.Song, position int) error {
 	s.insert(song, position)
+	if position <= s.Cursor() {
+		s.MoveCursor(1)
+	}
 	return nil
 }
 
@@ -129,6 +133,11 @@ func (s *BaseSonglist) InsertList(list Songlist, position int) error {
 	//console.Log("copy to %d <- songs[%d:]", position+size, position)
 	copy(songs[position+size:], s.songs[position:])
 	s.songs = songs
+
+	// Move cursor if pasting above.
+	if position <= s.Cursor() {
+		s.MoveCursor(size)
+	}
 
 	// expand columns
 	for _, newSong := range list.Songs() {

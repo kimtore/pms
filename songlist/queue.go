@@ -34,6 +34,7 @@ func (s *Queue) Add(song *song.Song) error {
 	return client.Add(song.StringTags["file"])
 }
 
+// AddList appends a songlist to the queue.
 func (s *Queue) AddList(songlist Songlist) error {
 	client := s.mpdClient()
 	if client == nil {
@@ -46,6 +47,39 @@ func (s *Queue) AddList(songlist Songlist) error {
 	songs := songlist.Songs()
 	for _, song := range songs {
 		commandList.Add(song.StringTags["file"])
+	}
+	return commandList.End()
+}
+
+// Insert inserts a song at a specified position in the queue.
+func (s *Queue) Insert(song *song.Song, position int) error {
+	client := s.mpdClient()
+	if client == nil {
+		return fmt.Errorf("Cannot communicate with MPD")
+	}
+	_, err := client.AddID(song.StringTags["file"], position)
+	return err
+}
+
+// InsertList inserts the songs in a songlist into the queue, at a specified position.
+func (s *Queue) InsertList(list Songlist, position int) error {
+	// Get MPD client
+	client := s.mpdClient()
+	if client == nil {
+		return fmt.Errorf("Cannot communicate with MPD")
+	}
+
+	// Create command list
+	commandList := client.BeginCommandList()
+	if commandList == nil {
+		return fmt.Errorf("Cannot begin command list")
+	}
+
+	// Insert songs at incrementing positions
+	songs := list.Songs()
+	for _, song := range songs {
+		commandList.AddID(song.StringTags["file"], position)
+		position++
 	}
 	return commandList.End()
 }

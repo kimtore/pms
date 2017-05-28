@@ -65,11 +65,6 @@ func (cmd *Paste) Exec() error {
 		return err
 	}
 
-	// If pasting before, move cursor down to the previously selected track.
-	if cmd.position == 0 {
-		list.MoveCursor(clipboard.Len())
-	}
-
 	cmd.api.Message("%d more tracks", clipboard.Len())
 
 	return nil
