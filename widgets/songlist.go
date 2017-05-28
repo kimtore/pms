@@ -89,7 +89,8 @@ func (w *SonglistWidget) Draw() {
 	//list.Lock()
 	//defer list.Unlock()
 
-	w.viewport.MakeVisible(0, w.Songlist().Cursor())
+	w.validateCursor()
+
 	_, ymin, xmax, ymax := w.viewport.GetVisible()
 	currentSong := w.api.Song()
 	xmax += 1
@@ -164,33 +165,48 @@ func (w *SonglistWidget) getVisibleBoundaries() (ymin, ymax int) {
 	return
 }
 
+// Width returns the widget width.
 func (w *SonglistWidget) Width() int {
 	_, _, xmax, _ := w.viewport.GetVisible()
 	return xmax
+}
+
+// Height returns the widget height.
+func (w *SonglistWidget) Height() int {
+	_, ymin, _, ymax := w.viewport.GetVisible()
+	return ymax - ymin
 }
 
 func (w *SonglistWidget) setViewportSize() {
 	x, y := w.Size()
 	w.viewport.SetContentSize(x, w.Songlist().Len(), true)
 	w.viewport.SetSize(x, utils.Min(y, w.Songlist().Len()))
+	w.validateCursor()
 }
 
-// validateCursorVisible makes sure the cursor stays within the visible area of the viewport.
-func (w *SonglistWidget) validateCursorVisible() {
-	ymin, ymax := w.getVisibleBoundaries()
-	w.Songlist().ValidateCursor(ymin, ymax)
-}
+// validateCursor moves the visible viewport so that the cursor is made visible.
+// If the 'center' option is enabled, the viewport is centered on the cursor.
+func (w *SonglistWidget) validateCursor() {
+	list := w.Songlist()
+	cursor := list.Cursor()
 
-// validateCursorList makes sure the cursor stays within songlist boundaries.
-func (w *SonglistWidget) validateCursorList() {
-	ymin, ymax := 0, w.Songlist().Len()-1
-	w.Songlist().ValidateCursor(ymin, ymax)
+	// Make the cursor visible
+	if !w.api.Options().BoolValue("center") {
+		w.viewport.MakeVisible(0, cursor)
+		return
+	}
+
+	// If 'center' is on, make the cursor centered.
+	half := w.Height() / 2
+	min := utils.Max(0, cursor-half)
+	max := utils.Min(list.Len()-1, cursor+half)
+	w.viewport.MakeVisible(0, min)
+	w.viewport.MakeVisible(0, max)
 }
 
 func (w *SonglistWidget) Resize() {
 	w.viewport.Resize(0, 0, -1, -1)
 	w.setViewportSize()
-	w.validateCursorVisible()
 	w.PostEventWidgetResize(w)
 }
 

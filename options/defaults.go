@@ -3,6 +3,7 @@ package options
 // AddDefaultOptions adds internal options that can be set by the user through
 // the command-line interface.
 func (o *Options) AddDefaultOptions() {
+	o.Add(NewBoolOption("center"))
 	o.Add(NewStringOption("columns"))
 	o.Add(NewStringOption("sort"))
 	o.Add(NewStringOption("topbar"))
@@ -11,6 +12,7 @@ func (o *Options) AddDefaultOptions() {
 // Defaults is the default, internal configuration file.
 const Defaults string = `
 # Global options
+set nocenter
 set columns=artist,track,title,album,year,time
 set sort=file,track,disc,album,year,albumartistsort
 set topbar="|$shortname $version||;${tag|artist} \\- ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed ${state} $time;|[${list|index}/${list|total}] ${list|title}||;;"

@@ -6,6 +6,15 @@ Literal text is spelled out normally, along with `<required>` parameters and `[o
 
 ## Options
 
+### center
+
+```
+set center
+set nocenter
+```
+
+If set, the viewport is automatically moved so that the cursor stays in the center, if possible.
+
 ### columns
 
 ```
