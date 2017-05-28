@@ -25,6 +25,8 @@ func NewPaste(api api.API) Command {
 func (cmd *Paste) Parse() error {
 	tok, lit := cmd.ScanIgnoreWhitespace()
 
+	cmd.setTabCompleteVerbs(lit)
+
 	// Expect either "before" or "after".
 	switch tok {
 	case lexer.TokenIdentifier:
@@ -36,6 +38,7 @@ func (cmd *Paste) Parse() error {
 		default:
 			return fmt.Errorf("Unexpected '%s', expected position", lit)
 		}
+		cmd.setTabCompleteEmpty()
 		return cmd.ParseEnd()
 
 	// Fall back to "after" if no arguments given.
@@ -70,4 +73,12 @@ func (cmd *Paste) Exec() error {
 	cmd.api.Message("%d more tracks", clipboard.Len())
 
 	return nil
+}
+
+// setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.
+func (cmd *Paste) setTabCompleteVerbs(lit string) {
+	cmd.setTabComplete(lit, []string{
+		"after",
+		"before",
+	})
 }
