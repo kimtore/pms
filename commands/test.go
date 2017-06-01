@@ -7,6 +7,7 @@ import (
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestData contains data needed for a single Command table test.
@@ -49,7 +50,7 @@ func TestVerb(t *testing.T, verb string, tests []Test) {
 			Test: test,
 		}
 
-		assert.NotNil(t, data.Cmd, "Command '%s' is not implemented; it must be added to the commands.Verb variable.")
+		require.NotNil(t, data.Cmd, "Command '%s' is not implemented; it must be added to the `commands.Verb` variable.", verb)
 
 		if data.Test.Init != nil {
 			t.Logf("### Initializing data for verb test '%s' number %d", test.Input, n+1)
