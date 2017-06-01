@@ -49,6 +49,8 @@ func TestVerb(t *testing.T, verb string, tests []Test) {
 			Test: test,
 		}
 
+		assert.NotNil(t, data.Cmd, "Command '%s' is not implemented; it must be added to the commands.Verb variable.")
+
 		if data.Test.Init != nil {
 			t.Logf("### Initializing data for verb test '%s' number %d", test.Input, n+1)
 			data.Test.Init(data)
