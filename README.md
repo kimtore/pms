@@ -74,6 +74,8 @@ See [configuring PMS](config.md) for a detailed list of options, styles, topbar 
 
 #### MPD server
 
+PMS connects to the MPD server specified in the `$MPD_HOST` and `$MPD_PORT` environment variables. See `pms --help` for command-line options.
+
 During startup, in order to create a full-text search index, PMS retrieves the entire song library from MPD. If your song library is big, the `listallinfo` command will overflow MPD's send buffer, and the connection is dropped. This can be mitigated by increasing MPD's output buffer size:
 
 ```
@@ -83,8 +85,6 @@ EOF
 ```
 
 #### PMS
-
-PMS connects to the MPD server specified in the `MPD_HOST` and `MPD_PORT` variables. See `pms --help` for command-line options.
 
 By default, PMS should find your configuration file in `$HOME/.config/pms/pms.conf`. If you defined paths in either `$XDG_CONFIG_DIRS` or `$XDG_CONFIG_HOME`, PMS will look for your configuration files there.
 
