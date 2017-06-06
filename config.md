@@ -264,7 +264,19 @@ set option?
 set option!
 ```
 
-Change global program options. Boolean option are enabled with `set option` and disabled with `set nooption`. The value can be flipped using `set invoption` or `set option!`. Values can be queried using `set option?`.
+Change global program options. Boolean options are enabled with `set option` and disabled with `set nooption`. The value can be flipped using `set invoption` or `set option!`. Values can be queried using `set option?`.
+
+### single
+
+```
+single on
+single off
+single toggle
+```
+
+`single` is an alias for `single toggle`.
+
+Turn MPD's single mode playback style on or off.
 
 ### sort
 
