@@ -20,6 +20,7 @@ var tabCompleteTests = []struct {
 		"seek",
 		"select",
 		"set",
+		"single",
 		"sort",
 		"stop",
 		"style",
