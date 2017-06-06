@@ -58,20 +58,15 @@ func (p *Parser) ParseFragment() (*FragmentStatement, error) {
 	tok, lit := p.Scan()
 
 	switch tok {
-	// The first token should either be whitespace or an identifier, which
-	// will compose the entirety of the fragment.
-	case lexer.TokenWhitespace, lexer.TokenIdentifier:
-		stmt.Literal = lit
-		return stmt, nil
-
-	// Otherwise, look for a dollar sign, which refers to a dynamic topbar
-	// fragment, such as a tag in the current song.
+	// If the token is a dollar sign, it refers to a variable, such as a tag in
+	// the current song.
 	case lexer.TokenVariable:
 		break
 
-	// No other tokens are valid.
+	// If this is not a variable, use the text literally, and end parsing.
 	default:
-		return nil, fmt.Errorf("Unexpected %v, expected '$'", lit)
+		stmt.Literal = lit
+		return stmt, nil
 	}
 
 	// Next comes an identifier, or in case of parameterized variables, the
