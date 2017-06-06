@@ -12,13 +12,16 @@ PMS has many features that involve sorting, searching, and navigating. It’s de
 * Vim-style look and feel!
 * Can be configured to consume a very small amount of screen space.
 * MPD player controls: play, add, pause, stop, next, prev, volume.
-* Highly customizable top bar, tag headers, text styles, colors, keyboard bindings.
-* Fast library search. Supports UTF-8 normalization, fuzzy search, and scoring.
-* Selecting songs, both by _visual mode_ and manual selection.
+* Highly customizable top bar, tag headers, text styles, colors, and keyboard bindings.
+* Fast library search, featuring UTF-8 normalization, fuzzy search, and scoring.
+* Selecting songs, by _visual mode_, manual selection, and specific tags.
 * Many forms of tracklist manipulation, such as cut, copy, paste, filter, and sort.
-* Basic readline functionality when typing, including history.
-* Configuration file support, following the XDG standard.
-* Tab completion (for most commands).
+* Config files, tab completion, history, and much more!
+
+
+## Documentation
+
+[Documentation](doc/README.md) is available in the project repository.
 
 
 ## Project status
@@ -30,7 +33,7 @@ The current goal of the Go implementation is to implement most of the features f
 
 This functionality is present in the `0.42.x` branch, but missing in master:
 
-* Basic player controls: consume, repeat, single, random.
+* Controlling player flags: consume, repeat, single, random.
 * Automatically add songs to the queue when it is nearing end.
 * Remote playlist management.
 * ...and probably more.
@@ -63,31 +66,6 @@ PMS wants to build a search index from MPD's database. To be truly practical, PM
 A full-text search index takes up both space and memory. For a library of about 30 000 songs, you should expect using about 500 MB of disk space and around 1 GB of RAM.
 
 PMS is multithreaded and benefits from multicore CPUs.
-
-
-## Documentation
-
-See [configuring PMS](config.md) for a detailed list of options, styles, topbar widgets, and commands.
-
-### Configuration
-
-#### MPD server
-
-PMS connects to the MPD server specified in the `$MPD_HOST` and `$MPD_PORT` environment variables. See `pms --help` for command-line options.
-
-During startup, in order to create a full-text search index, PMS retrieves the entire song library from MPD. If your song library is big, the `listallinfo` command will overflow MPD's send buffer, and the connection is dropped. This can be mitigated by increasing MPD's output buffer size:
-
-```
-cat >>/etc/mpd.conf<<<EOF
-max_output_buffer_size "262144"
-EOF
-```
-
-#### PMS
-
-By default, PMS should find your configuration file in `$HOME/.config/pms/pms.conf`. If you defined paths in either `$XDG_CONFIG_DIRS` or `$XDG_CONFIG_HOME`, PMS will look for your configuration files there.
-
-The default configuration can be found in [options/defaults.go](options/defaults.go), and contains all available options and commands.
 
 
 ## Contributing
