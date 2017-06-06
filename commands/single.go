@@ -7,12 +7,14 @@ import (
 	"github.com/ambientsound/pms/input/lexer"
 )
 
+// Single toggles MPD's single mode on and off.
 type Single struct {
 	newcommand
 	api    api.API
 	action string
 }
 
+// NewSingle returns Single.
 func NewSingle(api api.API) Command {
 	return &Single{
 		api: api,
@@ -42,6 +44,7 @@ func (cmd *Single) Parse() error {
 	}
 
 	cmd.action = lit
+
 	cmd.setTabCompleteEmpty()
 	return cmd.ParseEnd()
 
@@ -55,13 +58,15 @@ func (cmd *Single) Exec() error {
 		return fmt.Errorf("Cannot change single mode: not connected to MPD.")
 	}
 
+	playerStatus := cmd.api.PlayerStatus()
+
 	switch cmd.action {
 	case "on":
-		return cmd.api.MpdClient().Single(true)
+		return client.Single(true)
 	case "off":
-		return cmd.api.MpdClient().Single(false)
+		return client.Single(false)
 	case "toggle", "":
-		return cmd.api.MpdClient().Single(!cmd.api.PlayerStatus().Single)
+		return client.Single(!playerStatus.Single)
 	}
 
 	return nil
