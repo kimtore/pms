@@ -53,6 +53,11 @@ cursor pagedown
 cursor pageup
 cursor pgdn
 cursor pgup
+cursor halfpagedn
+cursor halfpagedown
+cursor halfpageup
+cursor halfpgdn
+cursor halfpgup
 cursor prevOf [tag] [tag...]
 cursor random
 cursor up
