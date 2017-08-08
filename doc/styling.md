@@ -28,12 +28,12 @@ Please see [top bar](#top-bar) for corresponding variables.
 * `listTitle` - corresponds to `${list|title}`.
 * `listTotal` - corresponds to `${list|total}`.
 * `mute` - the color of the `${volume}` widget when the volume is zero.
-* `shortName` - corresponds to `${elapsed}`.
-* `state` - corresponds to `${elapsed}`.
-* `switches` - corresponds to `${elapsed}`.
+* `shortName` - corresponds to `${shortname}`.
+* `state` - corresponds to `${state}` and `${state|unicode}`.
+* `switches` - corresponds to `${mode}`.
 * `tagMissing` - the color used for tag styling when the tag is missing.
 * `topbar` - the default color of the top bar text and whitespace.
-* `version` - corresponds to `${elapsed}`.
+* `version` - corresponds to `${version}`.
 * `volume` - corresponds to `${volume}`.
 
 ### Statusbar
