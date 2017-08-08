@@ -82,6 +82,10 @@ func (s *Song) AutoFill() {
 		s.Tags["year"] = s.Tags["date"][:4]
 		s.StringTags["year"] = string(s.Tags["year"])
 	}
+	if len(s.Tags["originaldate"]) >= 4 {
+		s.Tags["originalyear"] = s.Tags["originaldate"][:4]
+		s.StringTags["originalyear"] = string(s.Tags["originalyear"])
+	}
 }
 
 // FillSortTags post-processes tags, and saves them as strings for sorting purposes later on.
