@@ -38,6 +38,23 @@ func (s *Sequencer) AddBind(seq keysequence.KeySequence, command string) error {
 	return nil
 }
 
+// RemoveBind removes a key mapping.
+func (s *Sequencer) RemoveBind(seq keysequence.KeySequence) error {
+	for i := range s.binds {
+		if keysequence.Compare(s.binds[i].Sequence, seq) {
+			// Overwrite this position with the last in the list
+			s.binds[i] = s.binds[len(s.binds)-1]
+
+			// Truncate to remove the (now duplicate) last entry
+			s.binds = s.binds[:len(s.binds)-1]
+
+			return nil
+		}
+	}
+
+	return fmt.Errorf("Can't unbind: sequence not bound")
+}
+
 // KeyInput feeds a keypress to the sequencer. Returns true if there is one match or more, or false if there is no match.
 func (s *Sequencer) KeyInput(ev *tcell.EventKey) bool {
 	console.Log("Key event: %s", keysequence.FormatKey(ev))
