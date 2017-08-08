@@ -23,7 +23,8 @@ Any _tag_, such as `artist`, `album`, `date`, `time`, etc. can be styled. These 
 
 Please see [top bar](#top-bar) for corresponding variables.
 
-* `elapsed` - corresponds to `${elapsed}`.
+* `elapsedPercentage` - corresponds to `${elapsed|percentage}`.
+* `elapsedTime` - corresponds to `${elapsed}`.
 * `listIndex` - corresponds to `${list|index}`.
 * `listTitle` - corresponds to `${list|title}`.
 * `listTotal` - corresponds to `${list|total}`.
@@ -97,7 +98,9 @@ set topbar=";|the ${tag|artist} is in the center||;;"
 
 ### Variables
 
-* `${elapsed}` is the time elapsed in the current track.
+* `${elapsed}`
+    * `${elapsed}` is the time elapsed in the current track.
+    * `${elapsed|percentage}` is the time elapsed in the current track as a percentage of its total length.
 * `${list}`
     * `${list|index}` is the numeric index of the current tracklist.
     * `${list|title}` is the title of the current tracklist.
