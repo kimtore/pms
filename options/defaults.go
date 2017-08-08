@@ -25,6 +25,7 @@ style time darkmagenta
 style title white bold
 style track green
 style year green
+style originalyear darkgreen
 
 # Tracklist styles
 style allTagsMissing red
