@@ -227,6 +227,16 @@ Specify the style of an UI item. Please see the [styling guide](styling.md#text-
 
 The keywords `bold`, `underline`, `reverse`, and `blink` can be specified literally. Any keyword order is accepted, but the foreground color must come prior to the background color, if specified.
 
+## unbind
+
+```
+unbind <key sequence>
+```
+
+Unbind a given sequence.
+
+See [bind](#bind).
+
 ## volume
 
 ```
