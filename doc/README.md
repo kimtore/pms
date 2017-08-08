@@ -7,4 +7,4 @@ This document serves as an entry point to Practical Music Search documentation.
 * [Commands](commands.md) describes the different commands that control PMS.
 * [Options](options.md) describes options that can be changed, and how they affect PMS' functionality.
 * [Styling](styling.md) describes how to change the layout, colors, and text styles.
-* See the [default configuration](options/defaults.go) for default options, keyboard bindings, and styles.
+* See the [default configuration](../options/defaults.go) for default options, keyboard bindings, and styles.
