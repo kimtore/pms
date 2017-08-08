@@ -23,6 +23,7 @@ style artist yellow
 style date green
 style time darkmagenta
 style title white bold
+style disc darkgreen
 style track green
 style year green
 style originalyear darkgreen
