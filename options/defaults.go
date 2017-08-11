@@ -37,7 +37,8 @@ style mostTagsMissing red
 style selection white blue
 
 # Topbar styles
-style elapsed green
+style elapsedTime green
+style elapsedPercentage green
 style listIndex darkblue
 style listTitle blue bold
 style listTotal darkblue

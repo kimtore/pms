@@ -569,6 +569,7 @@ func (pms *PMS) UpdatePlayerStatus() error {
 	pms.mpdStatus.Volume, _ = strconv.Atoi(attrs["volume"])
 
 	pms.mpdStatus.Elapsed, _ = strconv.ParseFloat(attrs["elapsed"], 64)
+	pms.mpdStatus.ElapsedPercentage, _ = strconv.ParseFloat(attrs["elapsedpercentage"], 64)
 	pms.mpdStatus.MixRampDB, _ = strconv.ParseFloat(attrs["mixrampdb"], 64)
 
 	pms.mpdStatus.Consume, _ = strconv.ParseBool(attrs["consume"])
