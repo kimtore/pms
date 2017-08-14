@@ -64,6 +64,10 @@ bind <Down> cursor down
 bind j cursor down
 bind <PgUp> cursor pgup
 bind <PgDn> cursor pgdn
+bind <C-b> cursor pgup
+bind <C-f> cursor pgdn
+bind <C-u> cursor halfpgup
+bind <C-d> cursor halfpgdn
 bind <Home> cursor home
 bind gg cursor home
 bind <End> cursor end
