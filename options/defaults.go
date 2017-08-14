@@ -100,7 +100,7 @@ bind <C-s> sort
 bind i print file
 bind t list next
 bind T list previous
-bind <C-d> list duplicate
+bind <C-w>d list duplicate
 bind <C-g> list remove
 bind <C-j> isolate artist
 bind <C-t> isolate albumartist album
