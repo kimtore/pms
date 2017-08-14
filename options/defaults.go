@@ -72,6 +72,9 @@ bind gc cursor current
 bind R cursor random
 bind b cursor prevOf album
 bind e cursor nextOf album
+bind H cursor high
+bind M cursor middle
+bind L cursor low
 
 # Keyboard bindings: input mode
 bind : inputmode input
