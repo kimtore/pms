@@ -23,17 +23,18 @@ Any _tag_, such as `artist`, `album`, `date`, `time`, etc. can be styled. These 
 
 Please see [top bar](#top-bar) for corresponding variables.
 
-* `elapsed` - corresponds to `${elapsed}`.
+* `elapsedPercentage` - corresponds to `${elapsed|percentage}`.
+* `elapsedTime` - corresponds to `${elapsed}`.
 * `listIndex` - corresponds to `${list|index}`.
 * `listTitle` - corresponds to `${list|title}`.
 * `listTotal` - corresponds to `${list|total}`.
 * `mute` - the color of the `${volume}` widget when the volume is zero.
-* `shortName` - corresponds to `${elapsed}`.
-* `state` - corresponds to `${elapsed}`.
-* `switches` - corresponds to `${elapsed}`.
+* `shortName` - corresponds to `${shortname}`.
+* `state` - corresponds to `${state}` and `${state|unicode}`.
+* `switches` - corresponds to `${mode}`.
 * `tagMissing` - the color used for tag styling when the tag is missing.
 * `topbar` - the default color of the top bar text and whitespace.
-* `version` - corresponds to `${elapsed}`.
+* `version` - corresponds to `${version}`.
 * `volume` - corresponds to `${volume}`.
 
 ### Statusbar
@@ -97,7 +98,9 @@ set topbar=";|the ${tag|artist} is in the center||;;"
 
 ### Variables
 
-* `${elapsed}` is the time elapsed in the current track.
+* `${elapsed}`
+    * `${elapsed}` is the time elapsed in the current track.
+    * `${elapsed|percentage}` is the time elapsed in the current track as a percentage of its total length.
 * `${list}`
     * `${list|index}` is the numeric index of the current tracklist.
     * `${list|title}` is the title of the current tracklist.

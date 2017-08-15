@@ -81,6 +81,15 @@ func (cmd *Cursor) Parse() error {
 		cmd.absolute = 0
 	case "end":
 		cmd.absolute = list.Len() - 1
+	case "high":
+		ymin, _ := songlistWidget.GetVisibleBoundaries()
+		cmd.absolute = ymin
+	case "middle":
+		ymin, ymax := songlistWidget.GetVisibleBoundaries()
+		cmd.absolute = (ymin + ymax) / 2
+	case "low":
+		_, ymax := songlistWidget.GetVisibleBoundaries()
+		cmd.absolute = ymax
 	case "current":
 		cmd.current = true
 	case "random":
@@ -140,7 +149,10 @@ func (cmd *Cursor) setTabCompleteVerbs(lit string) {
 		"halfpageup",
 		"halfpgdn",
 		"halfpgup",
+		"high",
 		"home",
+		"low",
+		"middle",
 		"nextOf",
 		"pagedn",
 		"pagedown",

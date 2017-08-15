@@ -46,18 +46,21 @@ activity than graphical applications. Hence, you should avoid depending overly m
 cursor current
 cursor down
 cursor end
+cursor halfpagedn
+cursor halfpagedown
+cursor halfpageup
+cursor halfpgdn
+cursor halfpgup
+cursor high
 cursor home
+cursor low
+cursor middle
 cursor nextOf [tag] [tag...]
 cursor pagedn
 cursor pagedown
 cursor pageup
 cursor pgdn
 cursor pgup
-cursor halfpagedn
-cursor halfpagedown
-cursor halfpageup
-cursor halfpgdn
-cursor halfpgup
 cursor prevOf [tag] [tag...]
 cursor random
 cursor up
@@ -231,6 +234,16 @@ style <name> [foreground [background]] [bold] [underline] [reverse] [blink]
 Specify the style of an UI item. Please see the [styling guide](styling.md#text-style) for details.
 
 The keywords `bold`, `underline`, `reverse`, and `blink` can be specified literally. Any keyword order is accepted, but the foreground color must come prior to the background color, if specified.
+
+## unbind
+
+```
+unbind <key sequence>
+```
+
+Unbind a given sequence.
+
+See [bind](#bind).
 
 ## volume
 

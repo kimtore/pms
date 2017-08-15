@@ -23,8 +23,10 @@ style artist yellow
 style date green
 style time darkmagenta
 style title white bold
+style disc darkgreen
 style track green
 style year green
+style originalyear darkgreen
 
 # Tracklist styles
 style allTagsMissing red
@@ -35,7 +37,8 @@ style mostTagsMissing red
 style selection white blue
 
 # Topbar styles
-style elapsed green
+style elapsedTime green
+style elapsedPercentage green
 style listIndex darkblue
 style listTitle blue bold
 style listTotal darkblue
@@ -76,6 +79,9 @@ bind gc cursor current
 bind R cursor random
 bind b cursor prevOf album
 bind e cursor nextOf album
+bind H cursor high
+bind M cursor middle
+bind L cursor low
 
 # Keyboard bindings: input mode
 bind : inputmode input
@@ -94,7 +100,7 @@ bind + volume +2
 bind - volume -2
 bind <left> seek -5
 bind <right> seek +5
-bind M volume mute
+bind <Alt-M> volume mute
 bind S single
 
 # Keyboard bindings: other
@@ -102,6 +108,8 @@ bind <C-c> quit
 bind <C-l> redraw
 bind <C-s> sort
 bind i print file
+bind gt list next
+bind gT list previous
 bind t list next
 bind T list previous
 bind <C-w>d list duplicate
