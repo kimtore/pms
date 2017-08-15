@@ -160,7 +160,7 @@ func (w *SonglistWidget) Draw() {
 	PostEventScroll(w)
 }
 
-func (w *SonglistWidget) getVisibleBoundaries() (ymin, ymax int) {
+func (w *SonglistWidget) GetVisibleBoundaries() (ymin, ymax int) {
 	_, ymin, _, ymax = w.viewport.GetVisible()
 	return
 }
@@ -243,14 +243,14 @@ func (w *SonglistWidget) PositionReadout() string {
 // range as well as the total number of songs.
 // FIXME: move this into a positionreadout fragment
 func (w *SonglistWidget) PositionLongReadout() string {
-	ymin, ymax := w.getVisibleBoundaries()
+	ymin, ymax := w.GetVisibleBoundaries()
 	return fmt.Sprintf("%d,%d-%d/%d", w.Songlist().Cursor()+1, ymin+1, ymax+1, w.Songlist().Len())
 }
 
 // PositionShortReadout returns a percentage indicator on how far the songlist is scrolled.
 // FIXME: move this into a positionreadout fragment
 func (w *SonglistWidget) PositionShortReadout() string {
-	ymin, ymax := w.getVisibleBoundaries()
+	ymin, ymax := w.GetVisibleBoundaries()
 	if ymin == 0 && ymax+1 == w.Songlist().Len() {
 		return `All`
 	}

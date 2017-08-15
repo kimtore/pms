@@ -7,6 +7,7 @@ import (
 type SonglistWidget interface {
 	AddSonglist(songlist.Songlist)
 	FallbackSonglist() songlist.Songlist
+	GetVisibleBoundaries() (int, int)
 	RemoveSonglist(int) error
 	SetSonglist(songlist.Songlist)
 	SetSonglistIndex(int) error

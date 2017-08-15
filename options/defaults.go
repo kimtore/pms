@@ -75,6 +75,9 @@ bind gc cursor current
 bind R cursor random
 bind b cursor prevOf album
 bind e cursor nextOf album
+bind H cursor high
+bind M cursor middle
+bind L cursor low
 
 # Keyboard bindings: input mode
 bind : inputmode input
@@ -93,7 +96,7 @@ bind + volume +2
 bind - volume -2
 bind <left> seek -5
 bind <right> seek +5
-bind M volume mute
+bind <Alt-M> volume mute
 bind S single
 
 # Keyboard bindings: other
