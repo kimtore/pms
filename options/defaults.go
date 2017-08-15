@@ -104,6 +104,8 @@ bind <C-c> quit
 bind <C-l> redraw
 bind <C-s> sort
 bind i print file
+bind gt list next
+bind gT list previous
 bind t list next
 bind T list previous
 bind <C-d> list duplicate
