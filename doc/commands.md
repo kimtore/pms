@@ -46,16 +46,21 @@ activity than graphical applications. Hence, you should avoid depending overly m
 cursor current
 cursor down
 cursor end
+cursor halfpagedn
+cursor halfpagedown
+cursor halfpageup
+cursor halfpgdn
+cursor halfpgup
+cursor high
 cursor home
+cursor low
+cursor middle
 cursor nextOf [tag] [tag...]
 cursor pagedn
 cursor pagedown
 cursor pageup
 cursor pgdn
 cursor pgup
-cursor high
-cursor middle
-cursor low
 cursor prevOf [tag] [tag...]
 cursor random
 cursor up

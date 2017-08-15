@@ -71,6 +71,12 @@ func (cmd *Cursor) Parse() error {
 	case "pgdn", "pagedn", "pagedown":
 		_, y := songlistWidget.Size()
 		cmd.relative = y
+	case "halfpgup", "halfpageup":
+		_, y := songlistWidget.Size()
+		cmd.relative = -y / 2
+	case "halfpgdn", "halfpagedn", "halfpagedown":
+		_, y := songlistWidget.Size()
+		cmd.relative = y / 2
 	case "home":
 		cmd.absolute = 0
 	case "end":
@@ -138,6 +144,11 @@ func (cmd *Cursor) setTabCompleteVerbs(lit string) {
 		"current",
 		"down",
 		"end",
+		"halfpagedn",
+		"halfpagedown",
+		"halfpageup",
+		"halfpgdn",
+		"halfpgup",
 		"high",
 		"home",
 		"low",
