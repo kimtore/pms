@@ -24,6 +24,43 @@ type cliOptions struct {
 	MpdPassword string `long:"password" description:"MPD password"`
 }
 
+// mpdEnvironmentVariables reads the host, port, and password parameters to MPD
+// from the MPD_HOST and MPD_PORT environment variables, then returns them to the
+// user. In case there is a password in MPD_HOST, it is parsed out.
+func mpdEnvironmentVariables(host, port, password string) (string, string, string) {
+	if len(host) == 0 {
+		env, ok := os.LookupEnv("MPD_HOST")
+		if ok {
+			// If MPD_HOST is found, try to parse out the password.
+			tokens := strings.SplitN(env, "@", 2)
+			switch len(tokens) {
+			case 0:
+				// Empty string, default to localhost
+				host = "localhost"
+			case 1:
+				// No '@' sign, use host as-is
+				host = env
+			case 2:
+				// password@host
+				host = tokens[1]
+				password = tokens[0]
+			}
+		} else {
+			host = "localhost"
+		}
+	}
+	if len(port) == 0 {
+		env, ok := os.LookupEnv("MPD_PORT")
+		if ok {
+			port = env
+		} else {
+			port = "6600"
+		}
+	}
+
+	return host, port, password
+}
+
 func main() {
 	var opts cliOptions
 
@@ -54,23 +91,6 @@ func main() {
 
 	console.Log("Starting Practical Music Search.")
 
-	if len(opts.MpdHost) == 0 {
-		val, ok := os.LookupEnv("MPD_HOST")
-		if ok {
-			opts.MpdHost = val
-		} else {
-			opts.MpdHost = "localhost"
-		}
-	}
-	if len(opts.MpdPort) == 0 {
-		val, ok := os.LookupEnv("MPD_PORT")
-		if ok {
-			opts.MpdPort = val
-		} else {
-			opts.MpdPort = "6600"
-		}
-	}
-
 	pms := pms.New()
 	defer func() {
 		pms.QuitSignal <- 0
@@ -93,7 +113,11 @@ func main() {
 		}
 	}
 
-	pms.SetConnectionParams(opts.MpdHost, opts.MpdPort, opts.MpdPassword)
+	// If host, port and password is not set by the command-line flags, try to
+	// read them from the environment variables.
+	host, port, password := mpdEnvironmentVariables(opts.MpdHost, opts.MpdPort, opts.MpdPassword)
+
+	pms.SetConnectionParams(host, port, password)
 	go pms.LoopConnect()
 
 	pms.Main()
