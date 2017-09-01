@@ -91,25 +91,25 @@ func main() {
 
 	console.Log("Starting Practical Music Search.")
 
-	pms := pms.New()
+	p := pms.New()
 	defer func() {
-		pms.QuitSignal <- 0
+		p.QuitSignal <- 0
 	}()
 
 	// Source default configuration.
-	pms.Message("Applying default configuration.")
-	if err := pms.SourceDefaultConfig(); err != nil {
+	p.Message("Applying default configuration.")
+	if err := p.SourceDefaultConfig(); err != nil {
 		panic(fmt.Sprintf("BUG in default config: %s\n", err))
 	}
 
 	// Source configuration files from all XDG standard directories.
 	configDirs := xdg.ConfigDirectories()
 	for _, dir := range configDirs {
-		p := path.Join(dir, "pms.conf")
-		pms.Message("Reading configuration file '%s'.", p)
-		err = pms.SourceConfigFile(p)
+		path := path.Join(dir, "pms.conf")
+		p.Message("Reading configuration file '%s'.", path)
+		err = p.SourceConfigFile(path)
 		if err != nil {
-			pms.Error("Error while reading configuration file '%s': %s", p, err)
+			p.Error("Error while reading configuration file '%s': %s", path, err)
 		}
 	}
 
@@ -117,11 +117,16 @@ func main() {
 	// read them from the environment variables.
 	host, port, password := mpdEnvironmentVariables(opts.MpdHost, opts.MpdPort, opts.MpdPassword)
 
-	pms.SetConnectionParams(host, port, password)
-	go pms.LoopConnect()
+	// Set up the self-healing connection.
+	p.Connection = pms.NewConnection(p.EventMessage)
+	p.Connection.Open(host, port, password)
+	go p.Connection.Run()
 
-	pms.Main()
-	pms.Wait()
+	// Every second counts
+	go p.RunTicker()
+
+	p.Main()
+	p.Wait()
 
 	console.Log("Exiting normally.")
 }

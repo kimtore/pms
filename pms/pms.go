@@ -30,27 +30,21 @@ import (
 
 // PMS is a kitchen sink of different objects, glued together as a singleton class.
 type PMS struct {
-	mpdStatus        pms_mpd.PlayerStatus
-	MpdClient        *mpd.Client
-	MpdClientWatcher *mpd.Watcher
-	currentSong      *song.Song
-	Index            *index.Index
-	CLI              *input.CLI
-	ui               *widgets.UI
-	Queue            *songlist.Queue
-	Library          *songlist.Library
-	clipboards       map[string]songlist.Songlist
-	Options          *options.Options
-	Sequencer        *keys.Sequencer
-	stylesheet       style.Stylesheet
-	mutex            sync.Mutex
+	mpdStatus   pms_mpd.PlayerStatus
+	currentSong *song.Song
+	Index       *index.Index
+	CLI         *input.CLI
+	ui          *widgets.UI
+	Queue       *songlist.Queue
+	Library     *songlist.Library
+	clipboards  map[string]songlist.Songlist
+	Options     *options.Options
+	Sequencer   *keys.Sequencer
+	stylesheet  style.Stylesheet
+	mutex       sync.Mutex
 
-	ticker chan time.Time
-
-	// MPD connection credentials
-	host     string
-	port     string
-	password string
+	// MPD connection object
+	Connection *Connection
 
 	// Local versions of MPD's queue and song library, in addition to the song library version that was indexed.
 	queueVersion   int
@@ -104,7 +98,7 @@ func indexStateFile(host, port string) string {
 }
 
 func (pms *PMS) writeIndexStateFile(version int) error {
-	path := indexStateFile(pms.host, pms.port)
+	path := indexStateFile(pms.Connection.Host, pms.Connection.Port)
 	file, err := os.Create(path)
 	if err != nil {
 		return err
@@ -116,7 +110,7 @@ func (pms *PMS) writeIndexStateFile(version int) error {
 }
 
 func (pms *PMS) readIndexStateFile() (int, error) {
-	path := indexStateFile(pms.host, pms.port)
+	path := indexStateFile(pms.Connection.Host, pms.Connection.Port)
 	file, err := os.Open(path)
 	if err != nil {
 		return 0, err
@@ -146,67 +140,25 @@ func (pms *PMS) Wait() {
 	pms.ui.Wait()
 }
 
-func (pms *PMS) SetConnectionParams(host, port, password string) {
-	pms.MpdClient = nil
-	pms.host = host
-	pms.port = port
-	pms.password = password
-}
-
-func (pms *PMS) LoopConnect() {
-	for {
-		err := pms.Connect()
-		if err == nil {
-			return
-		}
-		pms.Error("Error while connecting to MPD: %s", err)
-		time.Sleep(1 * time.Second)
-	}
-}
-
-func (pms *PMS) Connect() error {
+// handleConnected (re)synchronizes MPD's state with PMS.
+func (pms *PMS) handleConnected() {
 	var err error
 
-	addr := makeAddress(pms.host, pms.port)
+	console.Log("New connection to MPD.")
 
-	pms.MpdClient = nil
-	pms.MpdClientWatcher = nil
-
-	pms.Message("Establishing MPD IDLE connection to %s...", addr)
-
-	pms.MpdClientWatcher, err = mpd.NewWatcher(`tcp`, addr, pms.password)
-	if err != nil {
-		pms.Error("Connection error: %s", err)
-		goto errors
-	}
-	pms.Message("Connected to %s.", addr)
-
-	err = pms.PingConnect()
-	if err != nil {
-		goto errors
-	}
-
-	go pms.watchMpdIdleErrors()
-	go pms.watchMpdIdleEvents()
-	go pms.runTicker()
-
-	/*
-		err = pms.UpdatePlayerStatus()
-		if err != nil {
-			goto errors
-		}
-	*/
-
+	console.Log("Updating current song...")
 	err = pms.UpdateCurrentSong()
 	if err != nil {
 		goto errors
 	}
 
+	console.Log("Synchronizing queue...")
 	err = pms.SyncQueue()
 	if err != nil {
 		goto errors
 	}
 
+	console.Log("Synchronizing library...")
 	err = pms.SyncLibrary()
 	if err != nil {
 		goto errors
@@ -214,102 +166,21 @@ func (pms *PMS) Connect() error {
 
 	pms.Message("Ready.")
 
-	return nil
+	return
 
 errors:
 
 	pms.Error("ERROR: %s", err)
-
-	if pms.MpdClient != nil {
-		pms.MpdClient.Close()
-	}
-	if pms.MpdClientWatcher != nil {
-		pms.MpdClientWatcher.Close()
-	}
-	if pms.ticker != nil {
-		close(pms.ticker)
-		pms.ticker = nil
-	}
-	return err
-}
-
-func (pms *PMS) PingConnect() error {
-	var err error
-
-	addr := makeAddress(pms.host, pms.port)
-
-	if pms.MpdClient != nil {
-		err = pms.MpdClient.Ping()
-		if err != nil {
-			console.Log("MPD control connection timeout.")
-		}
-	}
-
-	if pms.MpdClient == nil || err != nil {
-		console.Log("Establishing MPD control connection to %s...", addr)
-		pms.MpdClient, err = mpd.DialAuthenticated(`tcp`, addr, pms.password)
-		if err != nil {
-			pms.Error("MPD control connection error: %s", err)
-		}
-		console.Log("Connected to %s.", addr)
-	}
-
-	return err
-}
-
-// Monitor connection for errors and terminate when an error occurs
-func (pms *PMS) watchMpdIdleErrors() {
-	for err := range pms.MpdClientWatcher.Error {
-		pms.Error("Error in MPD IDLE connection: %s", err)
-		pms.MpdClient.Close()
-		pms.MpdClientWatcher.Close()
-	}
-	go pms.LoopConnect()
-}
-
-// Watch for IDLE events and trigger actions when events arrive
-func (pms *PMS) watchMpdIdleEvents() {
-	var err error
-
-	for subsystem := range pms.MpdClientWatcher.Event {
-
-		console.Log("MPD says it has IDLE events on the following subsystem: %s", subsystem)
-		if pms.PingConnect() != nil {
-			pms.Error("IDLE: failed to establish MPD control connection: going out of sync with MPD!")
-			continue
-		}
-
-		switch subsystem {
-		case "database":
-			err = pms.SyncLibrary()
-		case "playlist":
-			err = pms.SyncQueue()
-		case "player":
-			err = pms.UpdatePlayerStatus()
-			if err != nil {
-				break
-			}
-			err = pms.UpdateCurrentSong()
-		case "options":
-			err = pms.UpdatePlayerStatus()
-		case "mixer":
-			err = pms.UpdatePlayerStatus()
-		default:
-			console.Log("Ignoring updates by subsystem %s", subsystem)
-		}
-		if err != nil {
-			pms.Error("Error updating status: %s", err)
-		}
-	}
+	pms.Connection.Close()
 }
 
 // CurrentMpdClient ensures there is a valid MPD connection, and returns the MPD client object.
 func (pms *PMS) CurrentMpdClient() *mpd.Client {
-	err := pms.PingConnect()
-	if err == nil {
-		return pms.MpdClient
+	client, err := pms.Connection.MpdClient()
+	if err != nil {
+		pms.Error("%s", err)
 	}
-	return nil
+	return client
 }
 
 // CurrentQueue returns the queue songlist.
@@ -347,18 +218,11 @@ func (pms *PMS) UI() api.UI {
 	return pms.ui
 }
 
-// runTicker starts a ticker that will increase the elapsed time every second.
-func (pms *PMS) runTicker() {
-	pms.ticker = make(chan time.Time, 0)
-
-	go func() {
-		ticker := time.NewTicker(time.Millisecond * 1000)
-		defer ticker.Stop()
-		for t := range ticker.C {
-			pms.ticker <- t
-		}
-	}()
-	for range pms.ticker {
+// RunTicker starts a ticker that will increase the elapsed time every second.
+func (pms *PMS) RunTicker() {
+	ticker := time.NewTicker(time.Millisecond * 1000)
+	defer ticker.Stop()
+	for range ticker.C {
 		pms.mpdStatus.Tick()
 		pms.EventPlayer <- 0
 	}
@@ -370,11 +234,12 @@ func (pms *PMS) runTicker() {
 //
 // If the Songlist or Index is cached at the correct version, that part goes untouched.
 func (pms *PMS) SyncLibrary() error {
-	if pms.MpdClient == nil {
-		return fmt.Errorf("Cannot call Sync() while not connected to MPD")
+	client, err := pms.Connection.MpdClient()
+	if err != nil {
+		return err
 	}
 
-	stats, err := pms.MpdClient.Stats()
+	stats, err := client.Stats()
 	if err != nil {
 		return fmt.Errorf("Error while retrieving library stats from MPD: %s", err)
 	}
@@ -459,8 +324,13 @@ func (pms *PMS) SyncQueue() error {
 }
 
 func (pms *PMS) retrieveLibrary() (*songlist.Library, error) {
+	client, err := pms.Connection.MpdClient()
+	if err != nil {
+		return nil, err
+	}
+
 	timer := time.Now()
-	list, err := pms.MpdClient.ListAllInfo("/")
+	list, err := client.ListAllInfo("/")
 	if err != nil {
 		return nil, err
 	}
@@ -472,8 +342,13 @@ func (pms *PMS) retrieveLibrary() (*songlist.Library, error) {
 }
 
 func (pms *PMS) retrieveQueue() (*songlist.Queue, error) {
+	client, err := pms.Connection.MpdClient()
+	if err != nil {
+		return nil, err
+	}
+
 	timer := time.Now()
-	list, err := pms.MpdClient.PlChanges(pms.queueVersion, -1, -1)
+	list, err := client.PlChanges(pms.queueVersion, -1, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -486,7 +361,7 @@ func (pms *PMS) retrieveQueue() (*songlist.Queue, error) {
 
 func (pms *PMS) openIndex() error {
 	timer := time.Now()
-	indexDir := indexDirectory(pms.host, pms.port)
+	indexDir := indexDirectory(pms.Connection.Host, pms.Connection.Port)
 	err := createDirectory(indexDir)
 	if err != nil {
 		return fmt.Errorf("Unable to create index directory %s!", indexDir)
@@ -512,24 +387,26 @@ func (pms *PMS) openIndex() error {
 }
 
 func (pms *PMS) CurrentSong() *song.Song {
-	pms.mutex.Lock()
-	defer pms.mutex.Unlock()
 	return pms.currentSong
 }
 
 // UpdateCurrentSong stores a local copy of the currently playing song.
 func (pms *PMS) UpdateCurrentSong() error {
-	attrs, err := pms.MpdClient.CurrentSong()
+	client, err := pms.Connection.MpdClient()
+	if err != nil {
+		return err
+	}
+
+	attrs, err := client.CurrentSong()
 	if err != nil {
 		return err
 	}
 
 	console.Log("MPD current song: %s", attrs["file"])
 
-	pms.mutex.Lock()
-	pms.currentSong = song.New()
-	pms.currentSong.SetTags(attrs)
-	pms.mutex.Unlock()
+	s := song.New()
+	s.SetTags(attrs)
+	pms.currentSong = s
 
 	pms.EventPlayer <- 0
 
@@ -538,7 +415,12 @@ func (pms *PMS) UpdateCurrentSong() error {
 
 // UpdatePlayerStatus populates pms.mpdStatus with data from the MPD server.
 func (pms *PMS) UpdatePlayerStatus() error {
-	attrs, err := pms.MpdClient.Status()
+	client, err := pms.Connection.MpdClient()
+	if err != nil {
+		return err
+	}
+
+	attrs, err := client.Status()
 	if err != nil {
 		return err
 	}

@@ -18,13 +18,13 @@ import (
 func New() *PMS {
 	pms := &PMS{}
 
-	pms.EventIndex = make(chan int)
-	pms.EventLibrary = make(chan int)
+	pms.EventIndex = make(chan int, 1024)
+	pms.EventLibrary = make(chan int, 1024)
 	pms.EventList = make(chan int, 1024)
 	pms.EventMessage = make(chan message.Message, 1024)
-	pms.EventPlayer = make(chan int)
+	pms.EventPlayer = make(chan int, 1024)
 	pms.EventOption = make(chan string, 1024)
-	pms.EventQueue = make(chan int)
+	pms.EventQueue = make(chan int, 1024)
 	pms.QuitSignal = make(chan int, 1)
 	pms.stylesheet = make(style.Stylesheet)
 

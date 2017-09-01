@@ -5,9 +5,14 @@ import (
 	"github.com/ambientsound/pms/message"
 )
 
+// Main does (eventually) read, evaluate, print, loop
 func (pms *PMS) Main() {
 	for {
 		select {
+		case <-pms.Connection.Connected:
+			pms.handleConnected()
+		case subsystem := <-pms.Connection.IdleEvents:
+			pms.handleEventIdle(subsystem)
 		case <-pms.QuitSignal:
 			pms.handleQuitSignal()
 			return
@@ -91,4 +96,35 @@ func (pms *PMS) handleEventMessage(msg message.Message) {
 	pms.ui.App.PostFunc(func() {
 		pms.ui.Multibar.SetMessage(msg)
 	})
+}
+
+// handleEventIdle triggers actions based on IDLE events.
+func (pms *PMS) handleEventIdle(subsystem string) {
+	var err error
+
+	console.Log("MPD says it has IDLE events on the following subsystem: %s", subsystem)
+
+	switch subsystem {
+	case "database":
+		err = pms.SyncLibrary()
+	case "playlist":
+		err = pms.SyncQueue()
+	case "player":
+		err = pms.UpdatePlayerStatus()
+		if err != nil {
+			break
+		}
+		err = pms.UpdateCurrentSong()
+	case "options":
+		err = pms.UpdatePlayerStatus()
+	case "mixer":
+		err = pms.UpdatePlayerStatus()
+	default:
+		console.Log("Ignoring updates by subsystem %s", subsystem)
+	}
+
+	if err != nil {
+		pms.Error("Lost sync with MPD; reconnecting.")
+		pms.Connection.Close()
+	}
 }
