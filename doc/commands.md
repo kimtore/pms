@@ -75,6 +75,8 @@ The `nextOf` and `prevOf` commands locates the next or previous track that has d
 
 The cursor can also be set to a relative or absolute position using the three last forms.
 
+See also [viewport][#viewport].
+
 ## cut
 
 ```
@@ -244,6 +246,17 @@ unbind <key sequence>
 Unbind a given sequence.
 
 See [bind](#bind).
+
+## viewport
+
+```
+viewport down
+viewport up
+```
+
+Moves the viewport, moving the cursor only if necessary.
+
+See also [cursor][#cursor].
 
 ## volume
 

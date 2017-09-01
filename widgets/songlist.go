@@ -89,7 +89,7 @@ func (w *SonglistWidget) Draw() {
 	//list.Lock()
 	//defer list.Unlock()
 
-	w.validateCursor()
+	w.validateViewport()
 
 	_, ymin, xmax, ymax := w.viewport.GetVisible()
 	currentSong := w.api.Song()
@@ -181,12 +181,12 @@ func (w *SonglistWidget) setViewportSize() {
 	x, y := w.Size()
 	w.viewport.SetContentSize(x, w.Songlist().Len(), true)
 	w.viewport.SetSize(x, utils.Min(y, w.Songlist().Len()))
-	w.validateCursor()
+	w.validateViewport()
 }
 
-// validateCursor moves the visible viewport so that the cursor is made visible.
+// validateViewport moves the visible viewport so that the cursor is made visible.
 // If the 'center' option is enabled, the viewport is centered on the cursor.
-func (w *SonglistWidget) validateCursor() {
+func (w *SonglistWidget) validateViewport() {
 	list := w.Songlist()
 	cursor := list.Cursor()
 
@@ -378,4 +378,49 @@ func (w *SonglistWidget) SetSonglistIndex(i int) error {
 	w.activateList(w.songlists[w.listIndex])
 	w.SetFallbackSonglist(w.Songlist())
 	return nil
+}
+
+// ScrollViewport scrolls the viewport by a number of rows, but keeps the cursor
+// pointing the same song where possible.
+func (w *SonglistWidget) ScrollViewport(delta int) {
+	// Do nothing if delta is zero
+	if delta == 0 {
+		return
+	}
+
+	ymin, ymax := w.GetVisibleBoundaries()
+	if delta < 0 {
+		if ymin <= 0 {
+			// Already at the top; do nothing
+			return
+		}
+		w.viewport.ScrollUp(-delta)
+	} else {
+		if ymax >= w.Songlist().Len()-1 {
+			// Already at the bottom; do nothing
+			return
+		}
+		w.viewport.ScrollDown(delta)
+	}
+	w.validateCursor()
+}
+
+// validateCursor ensures the cursor is within the allowable area without moving
+// the viewport.
+func (w *SonglistWidget) validateCursor() {
+	ymin, ymax := w.GetVisibleBoundaries()
+	list := w.Songlist()
+	cursor := list.Cursor()
+
+	if w.api.Options().BoolValue("center") {
+		// When 'center' is on, move cursor to the centre of the viewport
+		list.SetCursor((ymin + ymax) / 2)
+	} else {
+		// When 'center' is off, move cursor into the viewport
+		if cursor < ymin {
+			list.SetCursor(ymin)
+		} else if cursor > ymax {
+			list.SetCursor(ymax)
+		}
+	}
 }
