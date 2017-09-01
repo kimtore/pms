@@ -89,7 +89,7 @@ func (w *SonglistWidget) Draw() {
 	//list.Lock()
 	//defer list.Unlock()
 
-	w.validateCursor()
+	w.validateViewport()
 
 	_, ymin, xmax, ymax := w.viewport.GetVisible()
 	currentSong := w.api.Song()
@@ -181,12 +181,12 @@ func (w *SonglistWidget) setViewportSize() {
 	x, y := w.Size()
 	w.viewport.SetContentSize(x, w.Songlist().Len(), true)
 	w.viewport.SetSize(x, utils.Min(y, w.Songlist().Len()))
-	w.validateCursor()
+	w.validateViewport()
 }
 
-// validateCursor moves the visible viewport so that the cursor is made visible.
+// validateViewport moves the visible viewport so that the cursor is made visible.
 // If the 'center' option is enabled, the viewport is centered on the cursor.
-func (w *SonglistWidget) validateCursor() {
+func (w *SonglistWidget) validateViewport() {
 	list := w.Songlist()
 	cursor := list.Cursor()
 
