@@ -46,21 +46,11 @@ activity than graphical applications. Hence, you should avoid depending overly m
 cursor current
 cursor down
 cursor end
-cursor halfpagedn
-cursor halfpagedown
-cursor halfpageup
-cursor halfpgdn
-cursor halfpgup
 cursor high
 cursor home
 cursor low
 cursor middle
 cursor nextOf [tag] [tag...]
-cursor pagedn
-cursor pagedown
-cursor pageup
-cursor pgdn
-cursor pgup
 cursor prevOf [tag] [tag...]
 cursor random
 cursor up
@@ -251,10 +241,22 @@ See [bind](#bind).
 
 ```
 viewport down
+viewport halfpagedn
+viewport halfpagedown
+viewport halfpageup
+viewport halfpgdn
+viewport halfpgup
+viewport pagedn
+viewport pagedown
+viewport pageup
+viewport pgdn
+viewport pgup
 viewport up
 ```
 
-Moves the viewport, moving the cursor only if necessary.
+Moves the viewport.
+In most cases, these leave the cursor pointing to the same song as much as possible.
+With the half-page commands, the cursor is also moved half a page.
 
 See also [cursor][#cursor].
 

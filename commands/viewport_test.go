@@ -10,15 +10,47 @@ var viewportTests = []commands.Test{
 	// Valid forms
 	{`up`, true, nil, nil, []string{}},
 	{`down`, true, nil, nil, []string{}},
+	// FIXME: depends on SonglistWidget, which is not mocked
+	//{`pgup`, true},
+	//{`pgdn`, true},
+	//{`pageup`, true},
+	//{`pagedn`, true},
+	//{`pagedown`, true},
+	//{`halfpgup`, true},
+	//{`halfpgdn`, true},
+	//{`halfpageup`, true},
+	//{`halfpagedn`, true},
+	//{`halfpagedown`, true},
 
 	// Invalid forms
 	{`up 1`, false, nil, nil, []string{}},
 	{`down 1`, false, nil, nil, []string{}},
+	// FIXME: depends on SonglistWidget, which is not mocked
+	//{`pgup 1`, false},
+	//{`pgdn 1`, false},
+	//{`pageup 1`, false},
+	//{`pagedn 1`, false},
+	//{`pagedown 1`, false},
+	//{`halfpgup 1`, false},
+	//{`halfpgdn 1`, false},
+	//{`halfpageup 1`, false},
+	//{`halfpagedn 1`, false},
+	//{`halfpagedown 1`, false},
 	{`nonsense`, false, nil, nil, []string{}},
 
 	// Tab completion
 	{``, false, nil, nil, []string{
 		"down",
+		"halfpagedn",
+		"halfpagedown",
+		"halfpageup",
+		"halfpgdn",
+		"halfpgup",
+		"pagedn",
+		"pagedown",
+		"pageup",
+		"pgdn",
+		"pgup",
 		"up",
 	}},
 	{`u`, false, nil, nil, []string{
@@ -26,6 +58,16 @@ var viewportTests = []commands.Test{
 	}},
 	{`do`, false, nil, nil, []string{
 		"down",
+	}},
+	{`page`, false, nil, nil, []string{
+		"pagedn",
+		"pagedown",
+		"pageup",
+	}},
+	{`halfpage`, false, nil, nil, []string{
+		"halfpagedn",
+		"halfpagedown",
+		"halfpageup",
 	}},
 }
 
