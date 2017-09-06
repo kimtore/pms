@@ -1,37 +1,38 @@
 # Options
 
-## center
+See the documentation on [setting options](commands.md#setting-global-options) for more information on syntax.
 
-```
-set center
-set nocenter
-```
+## Cursor position
 
-If set, the viewport is automatically moved so that the cursor stays in the center, if possible.
+* `set center`  
+  `set nocenter`
 
-
-## columns
-
-```
-set columns=artist,track,title,album,year,time
-```
-
-Defines which tags should be shown in the tracklist.
+  If set, the viewport is automatically moved so that the cursor stays in the center, if possible.
 
 
-## sort
+## Visual options
 
-```
-set sort=file,track,disc,album,year,albumartistsort
-```
+### Visible columns of tracklist
 
-Set default sort order, for when using `sort` without any parameters.
+* `set columns=<tag>[,<tag>[...]]`
 
+  Define which tags should be shown in the tracklist.
 
-## topbar
+  A comma-separated list of tag names must be given, such as the default `artist,track,title,album,year,time`.
 
-```
-set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed ${state} $time;|[${list|index}/${list|total}] ${list|title}||;;"
-```
+### Sort order
 
-Define the layout and visible items in the _top bar_. Please see the [styling guide](styling.md#top-bar) for information on how to configure the top bar.
+* `set sort=<tag>[,<tag>[...]]`
+
+  Set the default sort order, for when using the [`sort` command](commands.md#manipulating-lists) without any parameters.
+
+  A comma-separated list of tag names must be given, such as the default `file,track,disc,album,year,albumartistsort`.
+
+### Information bar ("top bar")
+
+* `set topbar=<spec>`
+
+  Define the layout and visible items in the _top bar_.
+  See the [styling guide](styling.md#top-bar) for information on how to configure the top bar.
+
+  The default value is `"|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed ${state} $time;|[${list|index}/${list|total}] ${list|title}||;;"`.
