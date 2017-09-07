@@ -43,7 +43,7 @@ func (cmd *Seek) Parse() error {
 func (cmd *Seek) Exec() error {
 	mpdClient := cmd.api.MpdClient()
 	if mpdClient == nil {
-		return fmt.Errorf("Unable to set volume: cannot communicate with MPD")
+		return fmt.Errorf("Unable to seek: cannot communicate with MPD")
 	}
 
 	playerStatus := cmd.api.PlayerStatus()
