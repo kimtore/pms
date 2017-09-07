@@ -54,8 +54,19 @@ func (cmd *Volume) Parse() error {
 		cmd.volume = int(playerStatus.Volume) + ilit
 	}
 
+	cmd.validateVolume()
+
 	cmd.setTabCompleteEmpty()
 	return cmd.ParseEnd()
+}
+
+// validateVolume clamps the volume to the allowable range
+func (cmd *Volume) validateVolume() {
+	if cmd.volume > 100 {
+		cmd.volume = 100
+	} else if cmd.volume < 0 {
+		cmd.volume = 0
+	}
 }
 
 // Exec implements Command.
