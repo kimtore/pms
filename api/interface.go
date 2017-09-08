@@ -11,7 +11,7 @@ type SonglistWidget interface {
 	RemoveSonglist(int) error
 	SetSonglist(songlist.Songlist)
 	SetSonglistIndex(int) error
-	ScrollViewport(int)
+	ScrollViewport(int, bool)
 	Size() (int, int)
 	Songlist() songlist.Songlist
 	SonglistIndex() (int, error)

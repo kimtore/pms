@@ -60,17 +60,17 @@ style sequenceText teal
 style statusbar default
 style visualText teal
 
-# Keyboard bindings: cursor movement
+# Keyboard bindings: cursor and viewport movement
 bind <Up> cursor up
 bind k cursor up
 bind <Down> cursor down
 bind j cursor down
-bind <PgUp> cursor pgup
-bind <PgDn> cursor pgdn
-bind <C-b> cursor pgup
-bind <C-f> cursor pgdn
-bind <C-u> cursor halfpgup
-bind <C-d> cursor halfpgdn
+bind <PgUp> viewport pgup
+bind <PgDn> viewport pgdn
+bind <C-b> viewport pgup
+bind <C-f> viewport pgdn
+bind <C-u> viewport halfpgup
+bind <C-d> viewport halfpgdn
 bind <C-y> viewport up
 bind <C-e> viewport down
 bind <Home> cursor home

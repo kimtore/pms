@@ -380,28 +380,25 @@ func (w *SonglistWidget) SetSonglistIndex(i int) error {
 	return nil
 }
 
-// ScrollViewport scrolls the viewport by a number of rows, but keeps the cursor
-// pointing the same song where possible.
-func (w *SonglistWidget) ScrollViewport(delta int) {
+// ScrollViewport scrolls the viewport by delta rows, as far as possible.
+// If movecursor is false, the cursor is kept pointing at the same song where
+// possible. If true, the cursor is moved delta rows.
+func (w *SonglistWidget) ScrollViewport(delta int, movecursor bool) {
 	// Do nothing if delta is zero
 	if delta == 0 {
 		return
 	}
 
-	ymin, ymax := w.GetVisibleBoundaries()
 	if delta < 0 {
-		if ymin <= 0 {
-			// Already at the top; do nothing
-			return
-		}
 		w.viewport.ScrollUp(-delta)
 	} else {
-		if ymax >= w.Songlist().Len()-1 {
-			// Already at the bottom; do nothing
-			return
-		}
 		w.viewport.ScrollDown(delta)
 	}
+
+	if movecursor {
+		w.Songlist().MoveCursor(delta)
+	}
+
 	w.validateCursor()
 }
 
@@ -414,7 +411,26 @@ func (w *SonglistWidget) validateCursor() {
 
 	if w.api.Options().BoolValue("center") {
 		// When 'center' is on, move cursor to the centre of the viewport
-		list.SetCursor((ymin + ymax) / 2)
+		target := cursor
+		lowerbound := (ymin + ymax) / 2
+		upperbound := lowerbound
+		if ymin <= 0 {
+			// We are scrolled to the top, so the cursor is allowed to go above
+			// the middle of the viewport
+			lowerbound = 0
+		}
+		if ymax >= list.Len()-1 {
+			// We are scrolled to the bottom, so the cursor is allowed to go
+			// below the middle of the viewport
+			upperbound = list.Len() - 1
+		}
+		if target < lowerbound {
+			target = lowerbound
+		}
+		if target > upperbound {
+			target = upperbound
+		}
+		list.SetCursor(target)
 	} else {
 		// When 'center' is off, move cursor into the viewport
 		if cursor < ymin {
