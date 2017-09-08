@@ -33,7 +33,6 @@ The current goal of the Go implementation is to implement most of the features f
 
 This functionality is present in the `0.42.x` branch, but missing in master:
 
-* Controlling player flags: consume, repeat, single, random.
 * Automatically add songs to the queue when it is nearing end.
 * Remote playlist management.
 * ...and probably more.
