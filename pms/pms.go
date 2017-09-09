@@ -336,8 +336,13 @@ func (pms *PMS) retrieveLibrary() (*songlist.Library, error) {
 	}
 	console.Log("ListAllInfo in %s", time.Since(timer).String())
 
+	console.Log("Building library...")
+
+	timer = time.Now()
 	s := songlist.NewLibrary()
 	s.AddFromAttrlist(list)
+	console.Log("Built library in %s", time.Since(timer).String())
+
 	return s, nil
 }
 
