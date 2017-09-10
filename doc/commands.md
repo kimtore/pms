@@ -1,280 +1,328 @@
 # Commands
 
-Practical Music Search is driven by _commands_. Commands are sentences of text, and can be entered in the _multibar_ or in configuration files.
+Practical Music Search is driven by _commands_.
+Commands are strings of text, and can be entered in the [_multibar_](#switching-input-modes) or in configuration files.
 
 Below is a list of commands recognized by PMS, along with their parameters and description.
 
-Literal text is spelled out normally, along with `<required>` parameters and `[optional]` parameters.
+Literal text is spelled out normally. Placeholders are enclosed in `<angle brackets>`, and optional parameters are enclosed in `[square brackets]`.
 
 
-## add
+## Move the cursor and viewport
 
-```
-add [uri] [uri...]
-```
+These commands are split into `cursor` and `viewport` namespaces.
+`cursor` commands primarily move the cursor, and `viewport` commands primarily move the viewport.
 
-Adds one or more files or URI's to the queue. If no parameters are given, the current tracklist selection is assumed.
+* `cursor current`
 
-## bind
+  Move the cursor to MPD's current track.
 
-```
-bind <key sequence> <command>
-```
+* `cursor up`  
+  `cursor down`
 
-Configures a specific keyboard input sequence to execute a command.
+  Move the cursor up or down one row.
 
-The _key sequence_ may be either
-* a string of letters,
-* a string of `<special>` keys, such as `<space>` or `<f1>`
-* a string of keys with modifiers, such as `<Ctrl-X>`, `<Alt-A>`, or `<Shift-Escape>`,
-* or a combination of all three, such as `<Ctrl-X><Delete>quit`.
+* `cursor home`  
+  `cursor end`
 
-Modifier keys are `Ctrl`, `Alt`, `Meta`, and `Shift`. The first letter of these four words can also be used as a shorthand.
+  Move the cursor to the very first or last track in the current list.
 
-Special keys are too many to list here, but can be found in the [complete list of special keys](keysequence/names.go).
+* `cursor high`  
+  `cursor middle`  
+  `cursor low`
 
-Regular keys such as letters, numbers, symbols, unicode characters, etc. will never have the `Shift` modifier key. Generally, terminal applications have far less visibility into keyboard
-activity than graphical applications. Hence, you should avoid depending overly much on availability of modifiers, or the availability of any specific keys.
+  Move the cursor to the top, middle, or bottom of the current viewport.
 
-## copy
+* `cursor nextOf <tag> [<tag> [...]]`
 
-`copy` is an alias for [yank](#yank).
+  Move the cursor down to the next track on the list
+  where any of the given tags do not match the corresponding tag of the current track.
 
-## cursor
+  For example, `cursor nextOf album musicbrainz_albumid` will move to the first track of the next album;
+  more specifically, the first track where either the album title or the Musicbrainz album ID does not match the corresponding tag on the current track.
 
-```
-cursor current
-cursor down
-cursor end
-cursor high
-cursor home
-cursor low
-cursor middle
-cursor nextOf [tag] [tag...]
-cursor prevOf [tag] [tag...]
-cursor random
-cursor up
-cursor <+N>
-cursor <-N>
-cursor <N>
-```
+* `cursor prevOf <tag> [<tag> [...]]`
 
-Moves the cursor. `current` moves to the currently playing song. `random` picks a random song from the tracklist.
+  Move the cursor up to the last track on the list in sequence
+  where all of the given tags match the corresponding tags of the current track.
+  If the current song *was* the last match, continue searching upwards until the tags differ again.
 
-The `nextOf` and `prevOf` commands locates the next or previous track that has different tags from the track under the cursor. Multiple tags are allowed.
+  For example, `cursor prevOf artist musicbrainz_artistid` will move the cursor up the list
+  to the first track by the current artist;
+  more specifically, to the final track encountered in sequence where both of these tags match.
+  If used on the top track by an artist, the cursir will move up further to the first track of the previous artist.
 
-The cursor can also be set to a relative or absolute position using the three last forms.
+* `cursor random`
 
-See also [viewport][#viewport].
+  Move the cursor to a random position in the current list.
 
-## cut
+* `cursor +<N>`  
+  `cursor -<N>`
 
-```
-cut
-```
+  Move the cursor by a particular number of rows.
+  Negative numbers move the cursors up, and positive numbers move the cursor down.
 
-Removes the current selection from the tracklist, and replace the clipboard contents with the removed tracks.
+* `cursor <N>`
 
-## inputmode
+  Move the cursor to an absolute position in the current list, where `0` is the very first track.
 
-```
-inputmode normal
-inputmode input
-inputmode search
-```
+* `viewport up`  
+  `viewport down`
 
-Switches between modes. Normal mode is where key bindings take effect. Input mode allows commands to be typed in, while search mode executes searches while you type.
+  Move the viewport up or down one row;
+  leave the cursor on its current song if possible.
 
-## isolate
 
-```
-isolate <tag> [tag...]
-```
+* `viewport halfpageup`  
+  `viewport halfpgup`  
+  `viewport halfpaged[ow]n`  
+  `viewport halfpgdn`
 
-Searches for songs with similar tags as the current selection, and creates a new tracklist. The tracklist is sorted by the default sort criteria.
+  Move the viewport up or down a number of rows equal to half the viewport height.
+  Independently, move the cursor up or down the same number.
 
-## list
-## next
-## pause
-## paste
+* `viewport pageup`  
+  `viewport pgup`  
+  `viewport paged[ow]n`  
+  `viewport pgdn`
 
-```
-paste
-paste before
-paste after
-```
+  Move the viewport up or down one full page (actually slightly less in most cases),
+  leaving the cursor on its current song where possible.
 
-Insert the contents of the clipboard before or after the cursor position. If no position is given, `after` is assumed.
 
-## play
+## Manipulating lists
 
-```
-play
-play cursor
-play selection
-```
+These commands switch between, create, and edit lists.
 
-Start playing. Without any parameters, `play` will resume playing MPD's current song, or start from the beginning of the queue.
+* `list next`  
+  `list prev`
 
-If invoked with the `cursor` argument, `play` will add the song under the cursor to the queue if necessary, and start playing.
+  Switch to the next or previous list.
 
-The `selection` argument is like `cursor`, but adds the entire selection to the queue, and starts playing from the first selected song. If there is no selection, fall back to the cursor.
+* `list <N>`
 
-## prev
-## previous
-## print
-## q
+  Switch to the list with the given index.
 
-`q` is an alias for [quit](#quit).
+* `list duplicate`
 
-## quit
+  Duplicate the current list.
 
-```
-quit
-```
+* `list remove`
 
-Exit the program. Any unsaved changes will be lost.
+  Remove the currently visible list, if possible.
 
-## redraw
+* `isolate <tag> [<tag> [...]]`
 
-```
-redraw
-```
+  Search for tracks with similar tags to the current [selection](#selecting-tracks), and create a new tracklist with the results.
+  The tracklist is sorted by the default sort criteria.
 
-Force a screen redraw. Useful if rendering has gone wrong.
+  See also [`inputmode search`](#switching-input-modes) for another way to create new lists.
 
-## se
+* `sort [<tag> [...]]`
 
-`se` is an alias for [set](#set).
+  Sort the current tracklist by the tags specified in the `sort` option if no tags are given, or otherwise by the specified tags.
+  The most significant sort criterion is specified last.
 
-## select
+  The first sort is performed as an unstable sort, while the remainder use a stable sorting algorithm.
 
-```
-select toggle
-select visual
-select nearby <tag> [tag...]
-```
+### Adding, removing, and moving tracks
 
-Manipulate tracklist selection.
+* `add [<uri> [...]]`
 
-`visual` will toggle _visual mode_ and anchor the selection on the track under the cursor.
+  Add one or more files or URIs to the queue.
+  If no parameters are given, the current [selection](#selecting-tracks) is assumed.
 
-`toggle` will toggle selection status for the track under the cursor. If in visual mode when using `toggle`, the visual selection will be converted to manual selection, and visual mode switched off.
+  See also [`play cursor` and `play selection`](#controlling-playback).
 
-`nearby` will set the visual selection to nearby tracks having the same specified _tags_ as the track under the cursor. If there is already a visual selection, it will be cleared instead.
+* `yank`  
+  `copy`
 
-## seek
+  Replace the clipboard contents with the currently selected tracks.
 
-```
-seek <+N>
-seek <-N>
-seek <N>
-```
+* `cut`
 
-Skip forwards or backwards in the current track. It is also possible to seek to an absolute position.
+  Remove the current [selection](#selecting-tracks) from the tracklist, and replace the clipboard contents with the removed tracks.
 
-## set
+* `paste [after]`  
+  `paste before`
 
-```
-set option=value
-set option
-set nooption
-set invoption
-set option?
-set option!
-```
+  Insert the contents of the clipboard after (this is default) or before the cursor position.
 
-Change global program options. Boolean option are enabled with `set option` and disabled with `set nooption`. The value can be flipped using `set invoption` or `set option!`. Values can be queried using `set option?`.
 
-### single
+## Selecting tracks
 
-```
-single on
-single off
-single toggle
-```
+The `select` commands allow the tracklist selection to be manipulated.
 
-`single` is an alias for `single toggle`.
+* `select toggle`
 
-Turn MPD's single mode playback style on or off.
+  Toggle selection status for the track under the cursor.
 
-## sort
+  When used from visual mode, all tracks currently in the visual selection will have their manual selection status toggled, and visual mode is switched off.
 
-```
-sort
-sort <tag> [tag...]
-```
+* `select visual`
 
-Sort the current tracklist by the specified tags. The most significant sort criteria is specified last. The first sort is performed as an unstable sort, while the remainder is a stable sort.
+  Toggle _visual mode_ and anchor the selection on the track under the cursor.
 
-If no tags are given, the tracklist is sorted by the tags specified in the `sort` option.
+* `select nearby <tag> [<tag> [...]]`
 
-## stop
+  Set the visual selection to nearby tracks with the same specified tags as the track under the cursor.
+  If there is already a visual selection, it will be cleared instead.
 
-```
-stop
-```
 
-Stops playback.
+## Controlling playback
 
-## style
+* `prev[ious]`
 
-```
-style <name> [foreground [background]] [bold] [underline] [reverse] [blink]
-```
+  Skip back to the previous track.
 
-Specify the style of an UI item. Please see the [styling guide](styling.md#text-style) for details.
+* `next`
 
-The keywords `bold`, `underline`, `reverse`, and `blink` can be specified literally. Any keyword order is accepted, but the foreground color must come prior to the background color, if specified.
+  Skip to the next track.
 
-## unbind
+* `pause`
 
-```
-unbind <key sequence>
-```
+  Pause or resume playback.
 
-Unbind a given sequence.
+* `play`
 
-See [bind](#bind).
+  Play MPD's current song, or start from the beginning of the queue if there is none.
 
-## viewport
+* `play cursor`
 
-```
-viewport down
-viewport halfpagedn
-viewport halfpagedown
-viewport halfpageup
-viewport halfpgdn
-viewport halfpgup
-viewport pagedn
-viewport pagedown
-viewport pageup
-viewport pgdn
-viewport pgup
-viewport up
-```
+  Add the song under the cursor to the queue if necessary, and start playing.
 
-Moves the viewport.
-In most cases, these leave the cursor pointing to the same song as much as possible.
-With the half-page commands, the cursor is also moved half a page.
+* `play selection`
 
-See also [cursor][#cursor].
+  Add the entire [selection](#selecting-tracks) to the queue, and start playing from the first selected song.
+  If there is no selection, fall back to the song under the cursor.
 
-## volume
+* `seek +<N>`  
+  `seek -<N>`
 
-```
-volume <+N>
-volume <-N>
-volume <N>
-volume mute
-```
+  Seek relatively by a given number of seconds.
 
-Set or mute the volume, either to an absolute or relative value. The volume range is `0-100`.
+* `seek <N>`
 
-## yank
+  Seek to a particular point in the song, measured in seconds.
 
-```
-yank
-```
+* `stop`
 
-Replaces the clipboard contents with the currently selected tracks.
+  Stop playback.
+
+* `single [toggle]`  
+  `single on`  
+  `single off`
+
+  Toggle MPD's single mode playback style, or switch it on or off.
+
+### Controlling the volume
+
+These commands control the volume. The volume range is from 0 to 100.
+
+* `volume <N>`
+
+  Set the volume to an absolute value.
+
+* `volume +<N>`  
+  `volume -<N>`
+
+  Adjust the volume by a relative value.
+
+* `volume mute`
+
+  Toggle mute.
+
+
+## Switching input modes
+
+* `inputmode normal`
+
+  Switch to normal mode, where key bindings take effect.
+
+* `inputmode input`
+
+  Switch to input mode: focus the multibar, where commands can be typed in.
+
+* `inputmode search`
+
+  Switch to search mode, where searches execute as you type.
+
+  When `<Enter>` is pressed from search mode, the result is a new list containing the current search results.
+
+
+## Customizing PMS
+
+### Setting global options
+
+The command `set` or its shorthand `se` can be used to change global program options at runtime.
+The [list of available options](options.md) is documented elsewhere.
+
+* `set <option>=<value>`
+
+  Set a non-boolean option to a particular value.
+
+* `set <option>`  
+  `set no<option>`
+
+  Switch a boolean option on or off.
+
+* `set inv<option>`  
+  `set <option>!`
+
+  Toggle a boolean option.
+
+* `set <option>?`
+
+  Query the current value of an option.
+
+### Setting key sequences
+
+These commands bind and unbind key sequences to commands.
+
+A _key sequence_ can have any number of elements, each of which is any of:
+
+* a letter
+* a "special" key enclosed in angle brackets, such as `<space>` or `<f1>`
+* a key with modifiers, enclosed in angle brackets, such as `<Ctrl-X>`, `<Alt-A>`, or `<Shift-Escape>`
+
+Modifier keys are `Ctrl`, `Alt`, `Meta`, and `Shift`.
+The first letter of these four words can also be used as a shorthand.
+
+Special keys are too numerous to list here, but can be found in the [complete list of special keys](/keysequence/names.go).
+
+Regular keys such as letters, numbers, symbols, unicode characters, etc. will never have the `Shift` modifier key.
+Generally, terminal applications have far less insight into keyboard activity than graphical applications,
+and therefore you should avoid depending too much on availability of modifiers or any specific keys.
+
+* `bind <key sequence> <command>`
+
+  Configure a specific keyboard input sequence to execute a command.
+
+* `unbind <key sequence>`
+
+  Unbind a key sequence.
+
+### Setting styles
+
+* `style <name> [<foreground> [<background>]] [bold] [underline] [reverse] [blink]`
+
+  Specify the style of a UI item.
+  See the [styling guide](styling.md#text-style) for details.
+
+  The keywords `bold`, `underline`, `reverse`, and `blink` can be specified literally.
+  Any keyword order is accepted, but the background color, if specified, must come after the foreground color.
+
+
+## Miscellaneous
+
+* `print <tag>`
+
+  Show the contents of the given tag for the track under the cursor.
+
+* `redraw`
+
+  Force a screen redraw. Useful if rendering has gone wrong.
+
+* `q[uit]`
+
+  Exit the program. Any unsaved changes will be lost.
