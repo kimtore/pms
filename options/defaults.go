@@ -84,6 +84,12 @@ bind e cursor nextOf album
 bind H cursor high
 bind M cursor middle
 bind L cursor low
+bind zb viewport high
+bind z- viewport high
+bind zz viewport middle
+bind z. viewport middle
+bind zt viewport low
+bind z<Enter> viewport low
 
 # Keyboard bindings: input mode
 bind : inputmode input

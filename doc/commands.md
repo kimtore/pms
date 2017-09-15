@@ -89,6 +89,17 @@ These commands are split into `cursor` and `viewport` namespaces.
   Move the viewport up or down one full page (actually slightly less in most cases),
   leaving the cursor on its current song where possible.
 
+* `viewport high`  
+  `viewport low`
+
+  Move the viewport up as high or as low as possible while leaving the cursor in view,
+  still pointing to the same song.
+  (When `center` is set the cursor will not end up pointing to the same song.)
+
+* `viewport middle`
+
+  Move the viewport so that the cursor is in the middle of the viewport,
+  still pointing to the same song.
 
 ## Manipulating lists
 

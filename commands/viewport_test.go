@@ -21,6 +21,9 @@ var viewportTests = []commands.Test{
 	//{`halfpageup`, true},
 	//{`halfpagedn`, true},
 	//{`halfpagedown`, true},
+	//{`high`, true},
+	//{`middle`, true},
+	//{`low`, true},
 
 	// Invalid forms
 	{`up 1`, false, nil, nil, []string{}},
@@ -36,6 +39,9 @@ var viewportTests = []commands.Test{
 	//{`halfpageup 1`, false},
 	//{`halfpagedn 1`, false},
 	//{`halfpagedown 1`, false},
+	//{`high 1`, false},
+	//{`middle 1`, false},
+	//{`low 1`, false},
 	{`nonsense`, false, nil, nil, []string{}},
 
 	// Tab completion
@@ -46,6 +52,9 @@ var viewportTests = []commands.Test{
 		"halfpageup",
 		"halfpgdn",
 		"halfpgup",
+		"high",
+		"low",
+		"middle",
 		"pagedn",
 		"pagedown",
 		"pageup",

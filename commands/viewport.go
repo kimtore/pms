@@ -48,6 +48,12 @@ func (cmd *Viewport) Parse() error {
 		cmd.scrollFullPage(1)
 	case "pgup", "pageup":
 		cmd.scrollFullPage(-1)
+	case "high":
+		cmd.scrollToCursorAnchor(-1)
+	case "middle":
+		cmd.scrollToCursorAnchor(0)
+	case "low":
+		cmd.scrollToCursorAnchor(1)
 	default:
 		return fmt.Errorf("Viewport command '%s' not recognized", lit)
 	}
@@ -87,6 +93,27 @@ func (cmd *Viewport) scrollFullPage(direction int) {
 	cmd.movecursor = false
 }
 
+// scrollToCursorAnchor configures the command to scroll to a point
+// such that the cursor is left at the top, middle, or bottom.
+// The position parameter must be
+// positive to move the viewport low (scrolled further down; cursor high),
+// zero to leave it in the middle,
+// or negative to move the viewport high (scrolled further up; cursor low).
+func (cmd *Viewport) scrollToCursorAnchor(position int) {
+	widget := cmd.api.SonglistWidget()
+	ymin, ymax := widget.GetVisibleBoundaries()
+	cursor := widget.Songlist().Cursor()
+	if position < 0 {
+		cmd.relative = cursor - ymax
+	} else if position > 0 {
+		cmd.relative = cursor - ymin
+	} else {
+		_, y := widget.Size()
+		cmd.relative = cursor - y/2 - ymin
+	}
+	cmd.movecursor = false
+}
+
 // Exec implements Command.
 func (cmd *Viewport) Exec() error {
 	widget := cmd.api.SonglistWidget()
@@ -105,6 +132,9 @@ func (cmd *Viewport) setTabCompleteVerbs(lit string) {
 		"halfpageup",
 		"halfpgdn",
 		"halfpgup",
+		"high",
+		"low",
+		"middle",
 		"pagedn",
 		"pagedown",
 		"pageup",
