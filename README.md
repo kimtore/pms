@@ -71,6 +71,14 @@ PMS is multithreaded and benefits from multicore CPUs.
 
 There are bugs, and much of the expected functionality is missing. Code contributions are warmly received through merge requests on Github. You're also welcome to report any bugs or feature requests by using the Github issue tracker.
 
+If you want to work on PMS, fork this repository and clone the fork to your `$GOPATH` (`$GOPATH/src/github.com/[yourgithubhandlegoeshere]/pms`). Due to some hardcoded dependencies, cloning your fork into `$GOPATH` is not sufficient. Thus, you should also create a symlink to trick Go into looking for these dependencies in your fork. For example (make sure you create the `ambientsound` directory first):
+
+```
+ln -s $GOPATH/src/github.com/[yourgithubhandlegoeshere]/pms $GOPATH/src/github.com/ambientsound/pms
+```
+
+After this, `cd` into your fork and run `make`. Now the `pms` command should point to your fork.
+
 For general discussion about the project, or to contact the project devs, you can use the IRC channel `#pms` on Freenode.
 
 This project adheres to the [Contributor Covenant Code of Conduct](code_of_conduct.md). By participating, you are expected to uphold this code.
