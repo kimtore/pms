@@ -20,8 +20,6 @@ func (pms *PMS) Main() {
 			pms.handleEventLibrary()
 		case <-pms.EventQueue:
 			pms.handleEventQueue()
-		case <-pms.EventIndex:
-			pms.handleEventIndex()
 		case <-pms.EventList:
 			pms.handleEventList()
 		case <-pms.EventPlayer:
@@ -59,13 +57,6 @@ func (pms *PMS) handleEventQueue() {
 	console.Log("Queue updated in MPD, assigning to UI")
 	pms.ui.App.PostFunc(func() {
 		pms.ui.Songlist.ReplaceSonglist(pms.Queue)
-	})
-}
-
-func (pms *PMS) handleEventIndex() {
-	console.Log("Search index updated, assigning to UI")
-	pms.ui.App.PostFunc(func() {
-		pms.ui.SetIndex(pms.Index)
 	})
 }
 

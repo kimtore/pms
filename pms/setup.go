@@ -18,7 +18,6 @@ import (
 func New() *PMS {
 	pms := &PMS{}
 
-	pms.EventIndex = make(chan int, 1024)
 	pms.EventLibrary = make(chan int, 1024)
 	pms.EventList = make(chan int, 1024)
 	pms.EventMessage = make(chan message.Message, 1024)
@@ -53,7 +52,7 @@ func (pms *PMS) API() api.API {
 		pms.EventList,
 		pms.EventMessage,
 		pms.EventOption,
-		pms.CurrentIndex,
+		pms.CurrentLibrary,
 		pms.CurrentMpdClient,
 		pms.Multibar,
 		pms.Options,

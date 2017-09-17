@@ -32,9 +32,9 @@ func (cmd *Isolate) Parse() error {
 
 // Exec implements Command.
 func (cmd *Isolate) Exec() error {
-	index := cmd.api.Index()
-	if index == nil {
-		return fmt.Errorf("Search index is not operational.")
+	library := cmd.api.Library()
+	if library == nil {
+		return fmt.Errorf("Song library is not present.")
 	}
 
 	songlistWidget := cmd.api.SonglistWidget()
@@ -46,7 +46,7 @@ func (cmd *Isolate) Exec() error {
 		return fmt.Errorf("Isolate needs at least one track.")
 	}
 
-	result, err := index.Isolate(selection, cmd.tags)
+	result, err := library.Isolate(selection, cmd.tags)
 	if err != nil {
 		return err
 	}
