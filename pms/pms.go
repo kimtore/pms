@@ -9,6 +9,7 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/keys"
@@ -37,6 +38,9 @@ type PMS struct {
 	Sequencer   *keys.Sequencer
 	stylesheet  style.Stylesheet
 	mutex       sync.Mutex
+
+	// collection of data
+	database *db.Instance
 
 	// MPD connection object
 	Connection *Connection

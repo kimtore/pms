@@ -5,6 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/message"
@@ -17,6 +18,8 @@ import (
 
 func New() *PMS {
 	pms := &PMS{}
+
+	pms.database = db.New()
 
 	pms.EventLibrary = make(chan int, 1024)
 	pms.EventList = make(chan int, 1024)
