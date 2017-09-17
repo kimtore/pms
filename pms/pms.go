@@ -1,10 +1,7 @@
 package pms
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"path"
 	"strconv"
 	"strings"
 	"sync"
@@ -22,7 +19,6 @@ import (
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/widgets"
-	"github.com/ambientsound/pms/xdg"
 	"github.com/gdamore/tcell"
 
 	"github.com/ambientsound/gompd/mpd"
@@ -32,7 +28,6 @@ import (
 type PMS struct {
 	mpdStatus   pms_mpd.PlayerStatus
 	currentSong *song.Song
-	Index       *index.Index
 	CLI         *input.CLI
 	ui          *widgets.UI
 	Queue       *songlist.Queue
@@ -51,13 +46,10 @@ type PMS struct {
 	libraryVersion int
 	indexVersion   int
 
-	// EventIndex receives a signal when the search index has been updated.
-	EventIndex chan int
-
 	// EventList receives a signal when current songlist has been changed.
 	EventList chan int
 
-	// EventIndex receives a signal when MPD's library has been updated and retrieved.
+	// EventLibrary receives a signal when MPD's library has been updated and retrieved.
 	EventLibrary chan int
 
 	// EventMessage is used to display text in the statusbar.
@@ -76,56 +68,8 @@ type PMS struct {
 	QuitSignal chan int
 }
 
-func createDirectory(dir string) error {
-	dirMode := os.ModeDir | 0755
-	return os.MkdirAll(dir, dirMode)
-}
-
 func makeAddress(host, port string) string {
 	return fmt.Sprintf("%s:%s", host, port)
-}
-
-func indexDirectory(host, port string) string {
-	cacheDir := xdg.CacheDirectory()
-	indexDir := path.Join(cacheDir, host, port, "index")
-	return indexDir
-}
-
-func indexStateFile(host, port string) string {
-	cacheDir := xdg.CacheDirectory()
-	stateFile := path.Join(cacheDir, host, port, "state")
-	return stateFile
-}
-
-func (pms *PMS) writeIndexStateFile(version int) error {
-	path := indexStateFile(pms.Connection.Host, pms.Connection.Port)
-	file, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	str := fmt.Sprintf("%d\n", version)
-	file.WriteString(str)
-	return nil
-}
-
-func (pms *PMS) readIndexStateFile() (int, error) {
-	path := indexStateFile(pms.Connection.Host, pms.Connection.Port)
-	file, err := os.Open(path)
-	if err != nil {
-		return 0, err
-	}
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		version, err := strconv.Atoi(scanner.Text())
-		if err != nil {
-			return 0, err
-		}
-		return version, nil
-	}
-
-	return 0, fmt.Errorf("No data in index file")
 }
 
 func (pms *PMS) Message(format string, a ...interface{}) {
@@ -244,45 +188,29 @@ func (pms *PMS) SyncLibrary() error {
 		return fmt.Errorf("Error while retrieving library stats from MPD: %s", err)
 	}
 
-	libraryVersion, err := strconv.Atoi(stats["db_update"])
-	console.Log("Sync(): server reports library version %d", libraryVersion)
-	console.Log("Sync(): local version is %d", pms.libraryVersion)
+	version, _ := strconv.Atoi(stats["db_update"])
+	localVersion := pms.Library.Version()
+	console.Log("SyncLibrary(): server reports library version %d", version)
+	console.Log("SyncLibrary(): local version is %d", localVersion)
 
-	if libraryVersion != pms.libraryVersion {
-		pms.Message("Retrieving library metadata, %s songs...", stats["songs"])
+	if version != localVersion {
+		pms.Library.CloseIndex()
+		console.Log("Retrieving library metadata, %s songs...", stats["songs"])
 		library, err := pms.retrieveLibrary()
 		if err != nil {
 			return fmt.Errorf("Error while retrieving library from MPD: %s", err)
 		}
 		pms.Library = library
-		pms.libraryVersion = libraryVersion
-		pms.Message("Library metadata at version %d.", pms.libraryVersion)
+		pms.Library.SetVersion(version)
+		console.Log("Library metadata at version %d.", version)
 		pms.EventLibrary <- 1
+		pms.Library.OpenIndex(index.Path(pms.Connection.Host, pms.Connection.Port))
 	}
 
-	console.Log("Sync(): opening search index")
-	err = pms.openIndex()
-	if err != nil {
-		return fmt.Errorf("Error while opening index: %s", err)
+	if !pms.Library.IndexSynced() {
+		console.Log("Search index is not synchronized with library, rebuilding index...")
+		pms.Library.ReIndex()
 	}
-	console.Log("Sync(): index at version %d", pms.indexVersion)
-	pms.EventIndex <- 1
-
-	if libraryVersion != pms.indexVersion {
-		console.Log("Sync(): index version differs from library version, reindexing...")
-		err = pms.ReIndex()
-		if err != nil {
-			return fmt.Errorf("Failed to reindex: %s", err)
-		}
-
-		err = pms.writeIndexStateFile(pms.indexVersion)
-		if err != nil {
-			console.Log("Sync(): couldn't write index state file: %s", err)
-		}
-		console.Log("Sync(): index updated to version %d", pms.indexVersion)
-	}
-
-	console.Log("Sync(): finished.")
 
 	return nil
 }
@@ -362,33 +290,6 @@ func (pms *PMS) retrieveQueue() (*songlist.Queue, error) {
 	s := songlist.NewQueue(pms.CurrentMpdClient)
 	s.AddFromAttrlist(list)
 	return s, nil
-}
-
-func (pms *PMS) openIndex() error {
-	timer := time.Now()
-	indexDir := indexDirectory(pms.Connection.Host, pms.Connection.Port)
-	err := createDirectory(indexDir)
-	if err != nil {
-		return fmt.Errorf("Unable to create index directory %s!", indexDir)
-	}
-
-	if pms.Index != nil {
-		pms.Index.Close()
-	}
-
-	pms.Index, err = index.New(indexDir, pms.Library)
-	if err != nil {
-		return fmt.Errorf("Unable to acquire index: %s", err)
-	}
-
-	pms.indexVersion, err = pms.readIndexStateFile()
-	if err != nil {
-		console.Log("Sync(): couldn't read index state file: %s", err)
-	}
-
-	console.Log("Opened search index in %s", time.Since(timer).String())
-
-	return nil
 }
 
 func (pms *PMS) CurrentSong() *song.Song {
@@ -471,17 +372,6 @@ func (pms *PMS) UpdatePlayerStatus() error {
 		pms.Error(attrs["error"])
 	}
 
-	return nil
-}
-
-func (pms *PMS) ReIndex() error {
-	timer := time.Now()
-	if err := pms.Index.IndexFull(); err != nil {
-		return err
-	}
-	pms.indexVersion = pms.libraryVersion
-	pms.Message("Song library index complete, took %s", time.Since(timer).String())
-	pms.EventIndex <- 1
 	return nil
 }
 

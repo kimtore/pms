@@ -7,7 +7,6 @@ import (
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/constants"
-	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
@@ -33,7 +32,6 @@ type UI struct {
 
 	// Data resources
 	api          api.API
-	Index        *index.Index
 	options      *options.Options // FIXME: use api instead
 	searchResult songlist.Songlist
 
@@ -93,10 +91,6 @@ func (ui *UI) CreateLayout() {
 
 func (ui *UI) Refresh() {
 	ui.App.Refresh()
-}
-
-func (ui *UI) SetIndex(i *index.Index) {
-	ui.Index = i
 }
 
 func (ui *UI) CurrentSonglistWidget() api.SonglistWidget {
@@ -219,11 +213,12 @@ func (ui *UI) refreshPositionReadout() {
 func (ui *UI) runIndexSearch(term string) error {
 	var err error
 
-	if ui.Index == nil {
-		return fmt.Errorf("Search index is not operational")
+	library := ui.api.Library()
+	if library == nil {
+		return fmt.Errorf("Song library is not present.")
 	}
 
-	ui.searchResult, err = ui.Index.Search(term)
+	ui.searchResult, err = library.Search(term)
 
 	ui.showSearchResult()
 
