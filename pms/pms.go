@@ -172,7 +172,7 @@ func (pms *PMS) RunTicker() {
 	}
 }
 
-// Sync retrieves the MPD library and stores it as a Songlist in the
+// SyncLibrary retrieves the MPD library and stores it as a Songlist in the
 // PMS.Library variable. Furthermore, the search index is opened, and if it is
 // older than the database version, a reindex task is started.
 //

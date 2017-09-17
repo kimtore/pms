@@ -10,7 +10,7 @@ func (pms *PMS) Main() {
 	for {
 		select {
 		case <-pms.Connection.Connected:
-			pms.handleConnected()
+			go pms.handleConnected()
 		case subsystem := <-pms.Connection.IdleEvents:
 			pms.handleEventIdle(subsystem)
 		case <-pms.QuitSignal:
