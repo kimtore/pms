@@ -31,7 +31,7 @@ func New() *PMS {
 	pms.stylesheet = make(style.Stylesheet)
 
 	pms.database.SetQueue(songlist.NewQueue(pms.CurrentMpdClient))
-	pms.Library = songlist.NewLibrary()
+	pms.database.SetLibrary(songlist.NewLibrary())
 
 	pms.Options = options.New()
 	pms.Options.AddDefaultOptions()
@@ -55,7 +55,7 @@ func (pms *PMS) API() api.API {
 		pms.EventList,
 		pms.EventMessage,
 		pms.EventOption,
-		pms.CurrentLibrary,
+		pms.database.Library,
 		pms.CurrentMpdClient,
 		pms.Multibar,
 		pms.Options,
@@ -76,7 +76,7 @@ func (pms *PMS) setupUI() {
 	pms.ui = widgets.NewUI(pms.API())
 	pms.ui.Start()
 	pms.ui.Songlist.AddSonglist(queue)
-	pms.ui.Songlist.AddSonglist(pms.Library)
+	pms.ui.Songlist.AddSonglist(pms.database.Library())
 	pms.ui.Songlist.SetSonglist(queue)
 
 	console.Log("UI initialized in %s", time.Since(timer).String())

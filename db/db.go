@@ -36,3 +36,11 @@ func (db *Instance) Queue() *songlist.Queue {
 func (db *Instance) SetQueue(queue *songlist.Queue) {
 	db.queue = queue
 }
+
+func (db *Instance) Library() *songlist.Library {
+	return db.library
+}
+
+func (db *Instance) SetLibrary(library *songlist.Library) {
+	db.library = library
+}

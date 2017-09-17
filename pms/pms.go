@@ -31,7 +31,6 @@ type PMS struct {
 	currentSong *song.Song
 	CLI         *input.CLI
 	ui          *widgets.UI
-	Library     *songlist.Library
 	clipboards  map[string]songlist.Songlist
 	Options     *options.Options
 	Sequencer   *keys.Sequencer
@@ -130,11 +129,6 @@ func (pms *PMS) CurrentMpdClient() *mpd.Client {
 	return client
 }
 
-// CurrentLibrary returns the MPD library.
-func (pms *PMS) CurrentLibrary() *songlist.Library {
-	return pms.Library
-}
-
 // CurrentPlayerStatus returns a copy of the current MPD player status as seen by PMS.
 func (pms *PMS) CurrentPlayerStatus() pms_mpd.PlayerStatus {
 	return pms.mpdStatus
@@ -186,28 +180,37 @@ func (pms *PMS) SyncLibrary() error {
 		return fmt.Errorf("Error while retrieving library stats from MPD: %s", err)
 	}
 
+	currentLibrary := pms.database.Library()
 	version, _ := strconv.Atoi(stats["db_update"])
-	localVersion := pms.Library.Version()
+	localVersion := currentLibrary.Version()
 	console.Log("SyncLibrary(): server reports library version %d", version)
 	console.Log("SyncLibrary(): local version is %d", localVersion)
 
 	if version != localVersion {
-		pms.Library.CloseIndex()
+		console.Log("Switching MPD libraries.")
+		console.Log("Closing search index.")
+		currentLibrary.CloseIndex()
+
 		console.Log("Retrieving library metadata, %s songs...", stats["songs"])
 		library, err := pms.retrieveLibrary()
 		if err != nil {
 			return fmt.Errorf("Error while retrieving library from MPD: %s", err)
 		}
-		pms.Library = library
-		pms.Library.SetVersion(version)
+
+		library.SetVersion(version)
+		library.OpenIndex(index.Path(pms.Connection.Host, pms.Connection.Port))
+
+		pms.database.SetLibrary(library)
+
 		console.Log("Library metadata at version %d.", version)
+
 		pms.EventLibrary <- 1
-		pms.Library.OpenIndex(index.Path(pms.Connection.Host, pms.Connection.Port))
 	}
 
-	if !pms.Library.IndexSynced() {
+	library := pms.database.Library()
+	if !library.IndexSynced() {
 		console.Log("Search index is not synchronized with library, rebuilding index...")
-		pms.Library.ReIndex()
+		library.ReIndex()
 	}
 
 	return nil
