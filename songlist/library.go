@@ -42,3 +42,7 @@ func (s *Library) Remove(index int) error {
 func (s *Library) RemoveIndices(indices []int) error {
 	return fmt.Errorf("The song library is read-only.")
 }
+
+func (s *Library) Isolate(list Songlist, tags []string) (Songlist, error) {
+	return nil, fmt.Errorf("NOT IMPLEMENTED")
+}

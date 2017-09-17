@@ -3,7 +3,6 @@ package api
 
 import (
 	"github.com/ambientsound/gompd/mpd"
-	"github.com/ambientsound/pms/index"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/message"
 	pms_mpd "github.com/ambientsound/pms/mpd"
@@ -19,8 +18,8 @@ type API interface {
 	// Clipboard returns the default clipboard.
 	Clipboard() songlist.Songlist
 
-	// Index returns the current Bleve search index, or nil if the search index is not available.
-	Index() *index.Index
+	// Library returns the current MPD library, or nil if it has not been retrieved yet.
+	Library() *songlist.Library
 
 	// ListChanged notifies the UI that the current songlist has changed.
 	ListChanged()
@@ -75,7 +74,7 @@ type baseAPI struct {
 	eventList      chan int
 	eventMessage   chan message.Message
 	eventOption    chan string
-	index          func() *index.Index
+	library        func() *songlist.Library
 	mpdClient      func() *mpd.Client
 	multibar       func() MultibarWidget
 	options        *options.Options
@@ -94,7 +93,7 @@ func BaseAPI(
 	eventList chan int,
 	eventMessage chan message.Message,
 	eventOption chan string,
-	index func() *index.Index,
+	library func() *songlist.Library,
 	mpdClient func() *mpd.Client,
 	multibar func() MultibarWidget,
 	options *options.Options,
@@ -113,9 +112,9 @@ func BaseAPI(
 		eventList:      eventList,
 		eventMessage:   eventMessage,
 		eventOption:    eventOption,
-		index:          index,
 		mpdClient:      mpdClient,
 		multibar:       multibar,
+		library:        library,
 		options:        options,
 		playerStatus:   playerStatus,
 		queue:          queue,
@@ -132,8 +131,8 @@ func (api *baseAPI) Clipboard() songlist.Songlist {
 	return api.clipboard()
 }
 
-func (api *baseAPI) Index() *index.Index {
-	return api.index()
+func (api *baseAPI) Library() *songlist.Library {
+	return api.library()
 }
 
 func (api *baseAPI) ListChanged() {

@@ -183,6 +183,11 @@ func (pms *PMS) CurrentMpdClient() *mpd.Client {
 	return client
 }
 
+// CurrentLibrary returns the MPD library.
+func (pms *PMS) CurrentLibrary() *songlist.Library {
+	return pms.Library
+}
+
 // CurrentQueue returns the queue songlist.
 func (pms *PMS) CurrentQueue() *songlist.Queue {
 	return pms.Queue
@@ -191,11 +196,6 @@ func (pms *PMS) CurrentQueue() *songlist.Queue {
 // CurrentPlayerStatus returns a copy of the current MPD player status as seen by PMS.
 func (pms *PMS) CurrentPlayerStatus() pms_mpd.PlayerStatus {
 	return pms.mpdStatus
-}
-
-// CurrentIndex returns the Bleve search index.
-func (pms *PMS) CurrentIndex() *index.Index {
-	return pms.Index
 }
 
 // CurrentSonglistWidget returns the current songlist.

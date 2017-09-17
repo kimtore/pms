@@ -53,7 +53,7 @@ func (pms *PMS) API() api.API {
 		pms.EventList,
 		pms.EventMessage,
 		pms.EventOption,
-		pms.CurrentIndex,
+		pms.CurrentLibrary,
 		pms.CurrentMpdClient,
 		pms.Multibar,
 		pms.Options,
