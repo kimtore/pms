@@ -2,8 +2,6 @@ package songlist
 
 import (
 	"sort"
-
-	"github.com/ambientsound/pms/console"
 )
 
 // ManuallySelected returns true if the given song index is selected through manual selection.
@@ -78,15 +76,7 @@ func (s *BaseSonglist) ClearSelection() {
 // Selection returns the current selection as a new Songlist.
 func (s *BaseSonglist) Selection() Songlist {
 	indices := s.SelectionIndices()
-	dest := New()
-	for _, i := range indices {
-		if song := s.Song(i); song != nil {
-			dest.Add(song)
-		} else {
-			console.Log("SelectionIndices() returned an integer '%d' that resulted in a nil song, ignoring", i)
-		}
-	}
-	return dest
+	return s.Indices(indices)
 }
 
 // validateVisualSelection makes sure the visual selection stays in range of

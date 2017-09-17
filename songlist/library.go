@@ -2,10 +2,12 @@ package songlist
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/index"
+	"github.com/blevesearch/bleve"
 )
 
 // Library is a Songlist which represents the MPD song library.
@@ -118,17 +120,22 @@ func (s *Library) ReIndex() {
 // Search does a search in the Bleve index for a specific natural language
 // query string, and returns a new Songlist with the search results.
 func (s *Library) Search(q string) (Songlist, error) {
-	if s.index == nil {
+	if !s.HasIndex() {
 		return nil, fmt.Errorf("Search index is not open.")
 	}
 
-	ids, err := s.index.Search(q, s.Len())
+	query := bleve.NewQueryStringQuery(q)
+	request := bleve.NewSearchRequest(query)
+	request.Size = s.Len()
+
+	ids, _, err := s.index.Query(request)
 	if err != nil {
 		return nil, err
 	}
 
 	list := New()
 	list.SetName(q)
+
 	for _, id := range ids {
 		song := s.Song(id)
 		if song == nil {
@@ -140,12 +147,53 @@ func (s *Library) Search(q string) (Songlist, error) {
 	return list, nil
 }
 
-func (s *Library) Isolate(list Songlist, tags []string) (Songlist, error) {
-	//names := make([]string, 0)
-	//for k := range terms {
-	//names = append(names, k)
-	//}
-	//name := strings.Join(names, ", ")
-	//r.SetName(name)
-	return nil, fmt.Errorf("NOT IMPLEMENTED")
+// Isolate takes a songlist and a set of tag keys, and matches the tag values
+// of the songlist against the search index.
+func (s *Library) Isolate(songs Songlist, tags []string) (Songlist, error) {
+	if !s.HasIndex() {
+		return nil, fmt.Errorf("Search index is not open.")
+	}
+
+	terms := make(map[string]struct{})
+	query := bleve.NewBooleanQuery()
+
+	// Create a cartesian join for song values and tag list.
+	for _, song := range songs.Songs() {
+		subQuery := bleve.NewConjunctionQuery()
+
+		for _, tag := range tags {
+
+			// Ignore empty values
+			tagValue := song.StringTags[tag]
+			if len(tagValue) == 0 {
+				continue
+			}
+
+			// Name generation
+			terms[tagValue] = struct{}{}
+
+			field := strings.Title(tag)
+			query := bleve.NewMatchPhraseQuery(tagValue)
+			query.SetField(field)
+			subQuery.AddQuery(query)
+		}
+		query.AddShould(subQuery)
+	}
+
+	// Construct a fitting name for this track list
+	names := make([]string, 0)
+	for k := range terms {
+		names = append(names, k)
+	}
+	name := strings.Join(names, ", ")
+
+	// Make the search
+	request := bleve.NewSearchRequest(query)
+	request.Size = s.Len()
+	r, _, err := s.index.Query(request)
+	list := s.Indices(r)
+
+	list.SetName(name)
+
+	return list, err
 }

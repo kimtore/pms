@@ -220,61 +220,6 @@ outer:
 	return nil
 }
 
-// Search takes a natural language query string, matches it against the search
-// index, and returns a new Songlist with all matching songs.
-func (i *Index) Search(q string, size int) ([]int, error) {
-	query := bleve.NewQueryStringQuery(q)
-	request := bleve.NewSearchRequest(query)
-	request.Size = size
-
-	r, _, err := i.Query(request)
-
-	return r, err
-}
-
-//// Isolate takes a songlist and a set of tag keys, and matches the tag values
-//// of the songlist against the search index.
-//func (i *Index) Isolate(list songlist.Songlist, tags []string) (songlist.Songlist, error) {
-//terms := make(map[string]struct{})
-//query := bleve.NewBooleanQuery()
-//songs := list.Songs()
-
-//// Create a cartesian join for song values and tag list.
-//for _, song := range songs {
-//subQuery := bleve.NewConjunctionQuery()
-
-//for _, tag := range tags {
-
-//// Ignore empty values
-//tagValue := song.StringTags[tag]
-//if len(tagValue) == 0 {
-//continue
-//}
-
-//// Name generation
-//terms[tagValue] = struct{}{}
-
-//field := strings.Title(tag)
-//query := bleve.NewMatchPhraseQuery(tagValue)
-//query.SetField(field)
-//subQuery.AddQuery(query)
-//}
-//query.AddShould(subQuery)
-//}
-
-//request := bleve.NewSearchRequest(query)
-//r, _, err := i.Query(request)
-
-//names := make([]string, 0)
-//for k := range terms {
-//names = append(names, k)
-//}
-//name := strings.Join(names, ", ")
-//r.SetName(name)
-
-//return r, err
-//}
-
 // Query takes a Bleve search request and returns a songlist with all matching songs.
 func (i *Index) Query(request *bleve.SearchRequest) ([]int, *bleve.SearchResult, error) {
 	//request.Size = 1000

@@ -18,6 +18,7 @@ type Songlist interface {
 	Clear() error
 	Delete() error
 	Duplicate(Songlist) error
+	Indices([]int) Songlist
 	InRange(int) bool
 	Insert(*song.Song, int) error
 	InsertList(Songlist, int) error
@@ -241,6 +242,20 @@ func (s *BaseSonglist) Truncate(length int) error {
 	defer s.Unlock()
 	s.songs = s.songs[:length]
 	return nil
+}
+
+// Indices accepts a slice of integers pointing to song positions, returns a
+// new songlist with those songs. Any mismatching integers are ignored.
+func (s *BaseSonglist) Indices(indices []int) Songlist {
+	dest := New()
+	for _, i := range indices {
+		if song := s.Song(i); song != nil {
+			dest.Add(song)
+		} else {
+			console.Log("BUG: Indices() returned an integer '%d' that resulted in a nil song, ignoring", i)
+		}
+	}
+	return dest
 }
 
 func (s *BaseSonglist) Locate(match *song.Song) (int, error) {
