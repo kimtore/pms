@@ -28,3 +28,11 @@ func New() *Instance {
 		clipboards: make(map[string]songlist.Songlist, 0),
 	}
 }
+
+func (db *Instance) Queue() *songlist.Queue {
+	return db.queue
+}
+
+func (db *Instance) SetQueue(queue *songlist.Queue) {
+	db.queue = queue
+}

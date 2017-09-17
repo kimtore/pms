@@ -56,7 +56,7 @@ func (pms *PMS) handleEventLibrary() {
 func (pms *PMS) handleEventQueue() {
 	console.Log("Queue updated in MPD, assigning to UI")
 	pms.ui.App.PostFunc(func() {
-		pms.ui.Songlist.ReplaceSonglist(pms.Queue)
+		pms.ui.Songlist.ReplaceSonglist(pms.database.Queue())
 	})
 }
 

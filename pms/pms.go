@@ -31,7 +31,6 @@ type PMS struct {
 	currentSong *song.Song
 	CLI         *input.CLI
 	ui          *widgets.UI
-	Queue       *songlist.Queue
 	Library     *songlist.Library
 	clipboards  map[string]songlist.Songlist
 	Options     *options.Options
@@ -136,11 +135,6 @@ func (pms *PMS) CurrentLibrary() *songlist.Library {
 	return pms.Library
 }
 
-// CurrentQueue returns the queue songlist.
-func (pms *PMS) CurrentQueue() *songlist.Queue {
-	return pms.Queue
-}
-
 // CurrentPlayerStatus returns a copy of the current MPD player status as seen by PMS.
 func (pms *PMS) CurrentPlayerStatus() pms_mpd.PlayerStatus {
 	return pms.mpdStatus
@@ -226,13 +220,15 @@ func (pms *PMS) SyncQueue() error {
 	if pms.queueVersion == pms.mpdStatus.Playlist {
 		return nil
 	}
+	queue := pms.database.Queue()
+
 	console.Log("Retrieving changed songs in queue...")
 	queueChanges, err := pms.retrieveQueue()
 	if err != nil {
 		return fmt.Errorf("Error while retrieving queue from MPD: %s", err)
 	}
 	console.Log("Total of %d changed songs in queue.", queueChanges.Len())
-	newQueue, err := pms.Queue.Merge(queueChanges)
+	newQueue, err := queue.Merge(queueChanges)
 	if err != nil {
 		return fmt.Errorf("Error while merging queue changes: %s", err)
 	}
@@ -242,13 +238,11 @@ func (pms *PMS) SyncQueue() error {
 
 	// Replace list while preserving cursor position, either at song ID, or if
 	// that failed, place it at the nearest position.
-	song := pms.Queue.CursorSong()
-	cursor := pms.Queue.Cursor()
-	pms.Queue = newQueue
-	if err := pms.Queue.CursorToSong(song); err != nil {
-		pms.Queue.SetCursor(cursor)
+	if err := newQueue.CursorToSong(queue.CursorSong()); err != nil {
+		newQueue.SetCursor(queue.Cursor())
 	}
 
+	pms.database.SetQueue(newQueue)
 	pms.queueVersion = pms.mpdStatus.Playlist
 	console.Log("Queue at version %d.", pms.queueVersion)
 	pms.EventQueue <- 1

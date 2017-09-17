@@ -30,7 +30,7 @@ func New() *PMS {
 	pms.QuitSignal = make(chan int, 1)
 	pms.stylesheet = make(style.Stylesheet)
 
-	pms.Queue = songlist.NewQueue(pms.CurrentMpdClient)
+	pms.database.SetQueue(songlist.NewQueue(pms.CurrentMpdClient))
 	pms.Library = songlist.NewLibrary()
 
 	pms.Options = options.New()
@@ -60,7 +60,7 @@ func (pms *PMS) API() api.API {
 		pms.Multibar,
 		pms.Options,
 		pms.CurrentPlayerStatus,
-		pms.CurrentQueue,
+		pms.database.Queue,
 		pms.QuitSignal,
 		pms.Sequencer,
 		pms.CurrentSong,
@@ -72,11 +72,12 @@ func (pms *PMS) API() api.API {
 
 func (pms *PMS) setupUI() {
 	timer := time.Now()
+	queue := pms.database.Queue()
 	pms.ui = widgets.NewUI(pms.API())
 	pms.ui.Start()
-	pms.ui.Songlist.AddSonglist(pms.Queue)
+	pms.ui.Songlist.AddSonglist(queue)
 	pms.ui.Songlist.AddSonglist(pms.Library)
-	pms.ui.Songlist.SetSonglist(pms.Queue)
+	pms.ui.Songlist.SetSonglist(queue)
 
 	console.Log("UI initialized in %s", time.Since(timer).String())
 }
