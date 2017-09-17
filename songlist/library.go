@@ -11,12 +11,15 @@ import (
 // Library is a Songlist which represents the MPD song library.
 type Library struct {
 	BaseSonglist
-	index   *index.Index
-	version int
+	index           *index.Index
+	version         int
+	shutdownReIndex chan int
 }
 
 func NewLibrary() (s *Library) {
-	s = &Library{}
+	s = &Library{
+		shutdownReIndex: make(chan int, 1),
+	}
 	s.clear()
 	return
 }
@@ -65,6 +68,16 @@ func (s *Library) OpenIndex(path string) error {
 	return err
 }
 
+// HasIndex returns true if the library has a search index.
+func (s *Library) HasIndex() bool {
+	return s.index != nil
+}
+
+// IndexSynced returns true if the search index is up to date with the MPD version.
+func (s *Library) IndexSynced() bool {
+	return s.HasIndex() && s.index.Version() == s.version
+}
+
 // CloseIndex closes the Bleve search index.
 func (s *Library) CloseIndex() error {
 	if s.HasIndex() {
@@ -73,29 +86,32 @@ func (s *Library) CloseIndex() error {
 	return nil
 }
 
-func (s *Library) HasIndex() bool {
-	return s.index != nil
-}
-
+// SetVersion sets the library version. This is expected to be a UNIX timestamp.
 func (s *Library) SetVersion(version int) {
 	s.version = version
 }
 
+// Version returns the library version.
 func (s *Library) Version() int {
 	return s.version
 }
 
-func (s *Library) IndexSynced() bool {
-	return s.HasIndex() && s.index.Version() == s.version
-}
-
-// FIXME: ReIndex is not thread safe yet!!!
+// ReIndex starts an asynchronous reindexing job. In case this function is
+// called again before reindexing is done, ReIndex will abort the old
+// reindexing job.
 func (s *Library) ReIndex() {
+	s.shutdownReIndex <- 0
+	s.shutdownReIndex = make(chan int, 1)
 	go func() {
 		timer := time.Now()
-		s.index.IndexFull(s.Songs())
-		s.index.SetVersion(s.Version())
+		err := s.index.IndexFull(s.Songs(), s.shutdownReIndex)
 		console.Log("Song library index complete, took %s", time.Since(timer).String())
+
+		if err != nil {
+			console.Log("Error occurred during library reindex: %s", err)
+			return
+		}
+		s.index.SetVersion(s.Version())
 	}()
 }
 

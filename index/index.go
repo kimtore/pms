@@ -164,26 +164,53 @@ func (i *Index) Version() int {
 }
 
 // Index the entire Songlist.
-func (i *Index) IndexFull(songs []*song.Song) error {
+func (i *Index) IndexFull(songs []*song.Song, shutdown <-chan int) error {
+	songChan := make(chan *song.Song, len(songs))
+	console.Log("Feeding all songs into song queue...")
+	for _, s := range songs {
+		songChan <- s
+	}
+	console.Log("Done feeding songs.")
+	return fullIndex(i.bleveIndex, songChan, shutdown)
+}
+
+func fullIndex(index bleve.Index, songs <-chan *song.Song, shutdown <-chan int) error {
 	var err error
 
-	// All operations are batched, currently INDEX_BATCH_SIZE are committed each iteration.
-	b := i.bleveIndex.NewBatch()
+	count := 0
+	batch := make(chan int, 1)
+	size := len(songs)
+	console.Log("Start full index.")
 
-	for pos, s := range songs {
-		is := index_song.New(s)
-		err = b.Index(strconv.Itoa(pos), is)
-		if err != nil {
-			return err
-		}
-		if pos%INDEX_BATCH_SIZE == 0 {
-			console.Log("Indexing songs %d/%d...", pos, len(songs))
-			i.bleveIndex.Batch(b)
+	// All operations are batched, currently INDEX_BATCH_SIZE are committed each iteration.
+	b := index.NewBatch()
+
+outer:
+	for {
+		select {
+		case n := <-batch:
+			console.Log("Indexing songs %d/%d...", count, size)
+			index.Batch(b)
 			b.Reset()
+			if n < 0 {
+				break outer
+			}
+		case s := <-songs:
+			is := index_song.New(s)
+			err = b.Index(strconv.Itoa(count), is)
+			if err != nil {
+				return err
+			}
+			if count%INDEX_BATCH_SIZE == 0 {
+				batch <- count
+			}
+			count += 1
+		case _ = <-shutdown:
+			return fmt.Errorf("Aborting index batch at position %d", count)
+		default:
+			batch <- -1
 		}
 	}
-	console.Log("Indexing last batch...")
-	i.bleveIndex.Batch(b)
 
 	console.Log("Finished indexing.")
 
