@@ -159,6 +159,7 @@ func (i *Index) readVersion() (int, error) {
 	return 0, fmt.Errorf("No data in index mpd library state file")
 }
 
+// Version returns the index version. It should correspond to the MPD library version.
 func (i *Index) Version() int {
 	return i.version
 }
@@ -174,6 +175,8 @@ func (i *Index) IndexFull(songs []*song.Song, shutdown <-chan int) error {
 	return fullIndex(i.bleveIndex, songChan, shutdown)
 }
 
+// fullIndex indexes a stream of songs. This process can be aborted by sending
+// a message on the shutdown channel.
 func fullIndex(index bleve.Index, songs <-chan *song.Song, shutdown <-chan int) error {
 	var err error
 
