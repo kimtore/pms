@@ -120,6 +120,10 @@ errors:
 	pms.Connection.Close()
 }
 
+func (pms *PMS) Database() *db.Instance {
+	return pms.database
+}
+
 // CurrentMpdClient ensures there is a valid MPD connection, and returns the MPD client object.
 func (pms *PMS) CurrentMpdClient() *mpd.Client {
 	client, err := pms.Connection.MpdClient()

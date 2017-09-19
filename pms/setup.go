@@ -52,6 +52,7 @@ func New() *PMS {
 func (pms *PMS) API() api.API {
 	return api.BaseAPI(
 		pms.Clipboard,
+		pms.Database,
 		pms.EventList,
 		pms.EventMessage,
 		pms.EventOption,
@@ -75,9 +76,9 @@ func (pms *PMS) setupUI() {
 	queue := pms.database.Queue()
 	pms.ui = widgets.NewUI(pms.API())
 	pms.ui.Start()
-	pms.ui.Songlist.AddSonglist(queue)
-	pms.ui.Songlist.AddSonglist(pms.database.Library())
-	pms.ui.Songlist.SetSonglist(queue)
+	pms.database.Panel().Add(queue)
+	pms.database.Panel().Add(pms.database.Library())
+	pms.database.Panel().Activate(queue)
 
 	console.Log("UI initialized in %s", time.Since(timer).String())
 }

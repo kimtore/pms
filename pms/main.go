@@ -20,8 +20,6 @@ func (pms *PMS) Main() {
 			pms.handleEventLibrary()
 		case <-pms.EventQueue:
 			pms.handleEventQueue()
-		case <-pms.EventList:
-			pms.handleEventList()
 		case <-pms.EventPlayer:
 			pms.handleEventPlayer()
 		case key := <-pms.EventOption:
@@ -49,21 +47,14 @@ func (pms *PMS) handleQuitSignal() {
 func (pms *PMS) handleEventLibrary() {
 	console.Log("Song library updated in MPD, assigning to UI")
 	pms.ui.App.PostFunc(func() {
-		pms.ui.Songlist.ReplaceSonglist(pms.database.Library())
+		pms.database.Panel().Replace(pms.database.Library())
 	})
 }
 
 func (pms *PMS) handleEventQueue() {
 	console.Log("Queue updated in MPD, assigning to UI")
 	pms.ui.App.PostFunc(func() {
-		pms.ui.Songlist.ReplaceSonglist(pms.database.Queue())
-	})
-}
-
-func (pms *PMS) handleEventList() {
-	console.Log("Songlist changed, notifying UI")
-	pms.ui.App.PostFunc(func() {
-		pms.ui.Songlist.ListChanged()
+		pms.database.Panel().Replace(pms.database.Queue())
 	})
 }
 
@@ -73,9 +64,7 @@ func (pms *PMS) handleEventOption(key string) {
 	case "topbar":
 		pms.setupTopbar()
 	case "columns":
-		pms.ui.App.PostFunc(func() {
-			pms.ui.Songlist.ListChanged()
-		})
+		// list changed, FIXME
 	}
 }
 

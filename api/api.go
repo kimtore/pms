@@ -3,6 +3,7 @@ package api
 
 import (
 	"github.com/ambientsound/gompd/mpd"
+	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/message"
 	pms_mpd "github.com/ambientsound/pms/mpd"
@@ -17,6 +18,9 @@ import (
 type API interface {
 	// Clipboard returns the default clipboard.
 	Clipboard() songlist.Songlist
+
+	// Db returns the PMS database.
+	Db() *db.Instance
 
 	// Library returns the current MPD library, or nil if it has not been retrieved yet.
 	Library() *songlist.Library
@@ -71,6 +75,7 @@ type API interface {
 
 type baseAPI struct {
 	clipboard      func() songlist.Songlist
+	db             func() *db.Instance
 	eventList      chan int
 	eventMessage   chan message.Message
 	eventOption    chan string
@@ -90,6 +95,7 @@ type baseAPI struct {
 
 func BaseAPI(
 	clipboard func() songlist.Songlist,
+	db func() *db.Instance,
 	eventList chan int,
 	eventMessage chan message.Message,
 	eventOption chan string,
@@ -109,6 +115,7 @@ func BaseAPI(
 ) API {
 	return &baseAPI{
 		clipboard:      clipboard,
+		db:             db,
 		eventList:      eventList,
 		eventMessage:   eventMessage,
 		eventOption:    eventOption,
@@ -129,6 +136,10 @@ func BaseAPI(
 
 func (api *baseAPI) Clipboard() songlist.Songlist {
 	return api.clipboard()
+}
+
+func (api *baseAPI) Db() *db.Instance {
+	return api.db()
 }
 
 func (api *baseAPI) Library() *songlist.Library {
@@ -180,10 +191,7 @@ func (api *baseAPI) Song() *song.Song {
 }
 
 func (api *baseAPI) Songlist() songlist.Songlist {
-	if w := api.songlistWidget(); w != nil {
-		return w.Songlist()
-	}
-	return nil
+	return api.Db().Panel().Current()
 }
 
 func (api *baseAPI) SonglistWidget() SonglistWidget {

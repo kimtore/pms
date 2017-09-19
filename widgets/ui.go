@@ -128,15 +128,6 @@ func (ui *UI) Size() (int, int) {
 	return ui.view.Size()
 }
 
-func (ui *UI) Title() string {
-	index, err := ui.Songlist.SonglistIndex()
-	if err == nil {
-		return fmt.Sprintf("[%d/%d] %s", index+1, ui.Songlist.SonglistsLen(), ui.Songlist.Name())
-	} else {
-		return fmt.Sprintf("[...] %s", ui.Songlist.Name())
-	}
-}
-
 func (ui *UI) UpdateCursor() {
 	switch ui.Multibar.Mode() {
 	case constants.MultibarModeInput, constants.MultibarModeSearch:
@@ -157,7 +148,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 	// If a list was changed, make sure we obtain the correct column widths.
 	case *EventListChanged:
 		tags := strings.Split(ui.options.StringValue("columns"), ",")
-		cols := ui.Songlist.Songlist().Columns(tags)
+		cols := ui.api.Songlist().Columns(tags)
 		ui.Songlist.SetColumns(tags)
 		ui.Columnheaders.SetColumns(cols)
 		return true
@@ -183,7 +174,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 		case constants.MultibarModeSearch:
 			if ui.searchResult != nil {
 				if ui.searchResult.Len() > 0 {
-					ui.Songlist.AddSonglist(ui.searchResult)
+					ui.api.Db().Panel().Add(ui.searchResult)
 				} else {
 					ui.searchResult = nil
 				}
@@ -226,11 +217,12 @@ func (ui *UI) runIndexSearch(term string) error {
 }
 
 func (ui *UI) showSearchResult() {
+	panel := ui.api.Db().Panel()
 	if ui.searchResult != nil {
-		ui.Songlist.SetSonglist(ui.searchResult)
-	} else if ui.Songlist.FallbackSonglist() != nil {
-		ui.Songlist.SetSonglist(ui.Songlist.FallbackSonglist())
+		panel.Activate(ui.searchResult)
+	} else if panel.Last() != nil {
+		panel.Activate(panel.Last())
 	} else {
-		ui.Songlist.SetSonglistIndex(0)
+		panel.ActivateIndex(0)
 	}
 }

@@ -32,7 +32,7 @@ func (cmd *List) Execute(class int, s string) error {
 	var index int
 
 	ui := cmd.api.UI()
-	songlistWidget := cmd.api.SonglistWidget()
+	collection := cmd.api.Db().Panel()
 
 	switch class {
 
@@ -49,7 +49,7 @@ func (cmd *List) Execute(class int, s string) error {
 		case "home":
 			cmd.absolute = 0
 		case "end":
-			cmd.absolute = songlistWidget.SonglistsLen() - 1
+			cmd.absolute = collection.Len() - 1
 		default:
 			i, err := strconv.Atoi(s)
 			if err != nil {
@@ -69,7 +69,7 @@ func (cmd *List) Execute(class int, s string) error {
 		switch {
 		case cmd.duplicate:
 			console.Log("Duplicating current songlist.")
-			orig := songlistWidget.Songlist()
+			orig := collection.Current()
 			list := songlist.New()
 			err = orig.Duplicate(list)
 			if err != nil {
@@ -77,11 +77,11 @@ func (cmd *List) Execute(class int, s string) error {
 			}
 			name := fmt.Sprintf("%s (copy)", orig.Name())
 			list.SetName(name)
-			songlistWidget.AddSonglist(list)
-			index = songlistWidget.SonglistsLen() - 1
+			collection.Add(list)
+			index = collection.Len() - 1
 
 		case cmd.remove:
-			list := songlistWidget.Songlist()
+			list := collection.Current()
 			console.Log("Removing current songlist '%s'.", list.Name())
 
 			err = list.Delete()
@@ -89,40 +89,40 @@ func (cmd *List) Execute(class int, s string) error {
 				return fmt.Errorf("Cannot remove songlist: %s", err)
 			}
 
-			index, err = songlistWidget.SonglistIndex()
+			index, err = collection.Index()
 
 			// If we got an error here, it means that the current songlist is
 			// not in the list of songlists. In this case, we can reset to the
-			// fallback songlist.
+			// last used songlist.
 			if err != nil {
-				fallback := songlistWidget.FallbackSonglist()
+				fallback := collection.Last()
 				if fallback == nil {
 					return fmt.Errorf("No songlists left.")
 				}
 				console.Log("Songlist was not found in the list of songlists. Activating fallback songlist '%s'.", fallback.Name())
 				ui.PostFunc(func() {
-					songlistWidget.SetSonglist(fallback)
+					collection.Activate(fallback)
 				})
 				return nil
 			} else {
-				songlistWidget.RemoveSonglist(index)
+				collection.Remove(index)
 			}
 
 			// If removing the last songlist, we need to decrease the songlist index by one.
-			if index == songlistWidget.SonglistsLen() {
+			if index == collection.Len() {
 				index--
 			}
 
 			console.Log("Removed songlist, now activating songlist no. %d", index)
 
 		case cmd.relative != 0:
-			index, err = songlistWidget.SonglistIndex()
+			index, err = collection.Index()
 			if err != nil {
 				index = 0
 			}
 			index += cmd.relative
-			if !songlistWidget.ValidSonglistIndex(index) {
-				len := songlistWidget.SonglistsLen()
+			if !collection.ValidIndex(index) {
+				len := collection.Len()
 				index = (index + len) % len
 			}
 			console.Log("Switching songlist index to relative %d, equalling absolute %d", cmd.relative, index)
@@ -136,7 +136,7 @@ func (cmd *List) Execute(class int, s string) error {
 		}
 
 		ui.PostFunc(func() {
-			err = songlistWidget.SetSonglistIndex(index)
+			err = collection.ActivateIndex(index)
 		})
 
 	default:

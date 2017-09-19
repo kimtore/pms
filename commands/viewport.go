@@ -102,7 +102,7 @@ func (cmd *Viewport) scrollFullPage(direction int) {
 func (cmd *Viewport) scrollToCursorAnchor(position int) {
 	widget := cmd.api.SonglistWidget()
 	ymin, ymax := widget.GetVisibleBoundaries()
-	cursor := widget.Songlist().Cursor()
+	cursor := cmd.api.Songlist().Cursor()
 	if position < 0 {
 		cmd.relative = cursor - ymax
 	} else if position > 0 {

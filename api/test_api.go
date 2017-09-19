@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/ambientsound/gompd/mpd"
+	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/message"
 	pms_mpd "github.com/ambientsound/pms/mpd"
@@ -40,6 +41,10 @@ func NewTestAPI() API {
 
 func (api *testAPI) Clipboard() songlist.Songlist {
 	return api.clipboard
+}
+
+func (api *testAPI) Db() *db.Instance {
+	return nil // FIXME
 }
 
 func (api *testAPI) Library() *songlist.Library {
@@ -92,6 +97,10 @@ func (api *testAPI) Song() *song.Song {
 
 func (api *testAPI) Songlist() songlist.Songlist {
 	return api.songlist
+}
+
+func (api *testAPI) Songlists() []songlist.Songlist {
+	return nil // FIXME
 }
 
 func (api *testAPI) SonglistWidget() SonglistWidget {

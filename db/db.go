@@ -21,11 +21,17 @@ type Instance struct {
 	songlists  []songlist.Songlist
 	clipboards map[string]songlist.Songlist
 	options    *options.Options
+
+	// panels
+	left  *songlist.Collection
+	right *songlist.Collection
 }
 
 func New() *Instance {
 	return &Instance{
 		clipboards: make(map[string]songlist.Songlist, 0),
+		left:       songlist.NewCollection(),
+		right:      songlist.NewCollection(),
 	}
 }
 
@@ -43,4 +49,16 @@ func (db *Instance) Library() *songlist.Library {
 
 func (db *Instance) SetLibrary(library *songlist.Library) {
 	db.library = library
+}
+
+func (db *Instance) Panel() *songlist.Collection {
+	return db.Left()
+}
+
+func (db *Instance) Left() *songlist.Collection {
+	return db.left
+}
+
+func (db *Instance) Right() *songlist.Collection {
+	return db.right
 }

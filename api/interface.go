@@ -4,19 +4,22 @@ import (
 	"github.com/ambientsound/pms/songlist"
 )
 
+type Collection interface {
+	Activate(songlist.Songlist)
+	ActivateIndex(int) error
+	Add(songlist.Songlist)
+	Current() songlist.Songlist
+	Index() (int, error)
+	Last() songlist.Songlist
+	Len() int
+	Remove(int) error
+	ValidIndex(int) bool
+}
+
 type SonglistWidget interface {
-	AddSonglist(songlist.Songlist)
-	FallbackSonglist() songlist.Songlist
 	GetVisibleBoundaries() (int, int)
-	RemoveSonglist(int) error
-	SetSonglist(songlist.Songlist)
-	SetSonglistIndex(int) error
 	ScrollViewport(int, bool)
 	Size() (int, int)
-	Songlist() songlist.Songlist
-	SonglistIndex() (int, error)
-	SonglistsLen() int
-	ValidSonglistIndex(int) bool
 }
 
 type MultibarWidget interface {

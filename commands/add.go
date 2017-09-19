@@ -60,7 +60,7 @@ Loop:
 
 // Exec implements Command.
 func (cmd *Add) Exec() error {
-	list := cmd.api.SonglistWidget().Songlist()
+	list := cmd.api.Songlist()
 	queue := cmd.api.Queue()
 
 	err := queue.AddList(cmd.songlist)

@@ -37,7 +37,8 @@ func (cmd *Isolate) Exec() error {
 		return fmt.Errorf("Song library is not present.")
 	}
 
-	songlistWidget := cmd.api.SonglistWidget()
+	db := cmd.api.Db()
+	panel := db.Panel()
 	list := cmd.api.Songlist()
 	selection := list.Selection()
 	song := list.CursorSong()
@@ -62,8 +63,8 @@ func (cmd *Isolate) Exec() error {
 
 	// Clear selection in the source list, and add a new list to the index.
 	list.ClearSelection()
-	songlistWidget.AddSonglist(result)
-	songlistWidget.SetSonglist(result)
+	panel.Add(result)
+	panel.Activate(result)
 	list.CursorToSong(song)
 
 	return nil
