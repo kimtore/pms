@@ -2,7 +2,6 @@ package widgets
 
 import (
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
 	termbox "github.com/nsf/termbox-go"
 
@@ -22,7 +21,6 @@ type UI struct {
 
 	// Data resources
 	api          api.API
-	options      *options.Options // FIXME: use api instead
 	searchResult songlist.Songlist
 }
 
@@ -42,7 +40,6 @@ func NewUI(a api.API) *UI {
 	ui.EventKeyInput = make(chan *tcell.EventKey, 16)
 
 	ui.api = a
-	ui.options = ui.api.Options()
 
 	// Initialize widgets
 	ui.Topbar = NewTopbar()
