@@ -79,10 +79,6 @@ func (pms *PMS) Error(format string, a ...interface{}) {
 	pms.EventMessage <- message.Errorf(format, a...)
 }
 
-func (pms *PMS) Wait() {
-	pms.ui.Wait()
-}
-
 // handleConnected (re)synchronizes MPD's state with PMS.
 func (pms *PMS) handleConnected() {
 	var err error
@@ -147,7 +143,7 @@ func (pms *PMS) Multibar() api.MultibarWidget {
 
 // UI returns the tcell UI widget.
 func (pms *PMS) UI() api.UI {
-	return pms.ui
+	return nil
 }
 
 // RunTicker starts a ticker that will increase the elapsed time every second.

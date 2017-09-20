@@ -16,12 +16,6 @@ func (pms *PMS) Main() {
 		case <-pms.QuitSignal:
 			pms.handleQuitSignal()
 			return
-		case <-pms.EventLibrary:
-			pms.handleEventLibrary()
-		case <-pms.EventQueue:
-			pms.handleEventQueue()
-		case <-pms.EventPlayer:
-			pms.handleEventPlayer()
 		case key := <-pms.EventOption:
 			pms.handleEventOption(key)
 		case msg := <-pms.EventMessage:
@@ -31,31 +25,11 @@ func (pms *PMS) Main() {
 		case s := <-pms.ui.EventInputCommand:
 			pms.Execute(s)
 		}
-
-		// Draw missing parts after every iteration
-		pms.ui.App.PostFunc(func() {
-			pms.ui.App.Update()
-		})
 	}
 }
 
 func (pms *PMS) handleQuitSignal() {
 	console.Log("Received quit signal, exiting.")
-	pms.ui.Quit()
-}
-
-func (pms *PMS) handleEventLibrary() {
-	console.Log("Song library updated in MPD, assigning to UI")
-	pms.ui.App.PostFunc(func() {
-		pms.database.Panel().Replace(pms.database.Library())
-	})
-}
-
-func (pms *PMS) handleEventQueue() {
-	console.Log("Queue updated in MPD, assigning to UI")
-	pms.ui.App.PostFunc(func() {
-		pms.database.Panel().Replace(pms.database.Queue())
-	})
 }
 
 func (pms *PMS) handleEventOption(key string) {
@@ -68,14 +42,9 @@ func (pms *PMS) handleEventOption(key string) {
 	}
 }
 
-func (pms *PMS) handleEventPlayer() {
-}
-
 func (pms *PMS) handleEventMessage(msg message.Message) {
 	message.Log(msg)
-	pms.ui.App.PostFunc(func() {
-		pms.ui.Multibar.SetMessage(msg)
-	})
+	pms.ui.Multibar.SetMessage(msg)
 }
 
 // handleEventIdle triggers actions based on IDLE events.

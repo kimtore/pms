@@ -21,6 +21,12 @@ func New() *PMS {
 
 	pms.database = db.New()
 
+	pms.database.SetQueue(songlist.NewQueue(pms.CurrentMpdClient))
+	pms.database.SetLibrary(songlist.NewLibrary())
+	pms.database.Panel().Add(pms.database.Queue())
+	pms.database.Panel().Add(pms.database.Library())
+	pms.database.Panel().Activate(pms.database.Queue())
+
 	pms.EventLibrary = make(chan int, 1024)
 	pms.EventList = make(chan int, 1024)
 	pms.EventMessage = make(chan message.Message, 1024)
@@ -29,9 +35,6 @@ func New() *PMS {
 	pms.EventQueue = make(chan int, 1024)
 	pms.QuitSignal = make(chan int, 1)
 	pms.stylesheet = make(style.Stylesheet)
-
-	pms.database.SetQueue(songlist.NewQueue(pms.CurrentMpdClient))
-	pms.database.SetLibrary(songlist.NewLibrary())
 
 	pms.Options = options.New()
 	pms.Options.AddDefaultOptions()
@@ -69,13 +72,7 @@ func (pms *PMS) API() api.API {
 
 func (pms *PMS) setupUI() {
 	timer := time.Now()
-	queue := pms.database.Queue()
 	pms.ui = widgets.NewUI(pms.API())
-	pms.ui.Start()
-	pms.database.Panel().Add(queue)
-	pms.database.Panel().Add(pms.database.Library())
-	pms.database.Panel().Activate(queue)
-
 	console.Log("UI initialized in %s", time.Since(timer).String())
 }
 

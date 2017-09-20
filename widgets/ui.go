@@ -1,26 +1,16 @@
 package widgets
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/console"
-	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
-	"github.com/ambientsound/pms/style"
+	termbox "github.com/nsf/termbox-go"
 
 	"github.com/gdamore/tcell"
-	"github.com/gdamore/tcell/views"
 )
 
 type UI struct {
 	// UI elements
-	Screen tcell.Screen
-	App    *views.Application
-	Layout *views.BoxLayout
-
 	Topbar        *Topbar
 	Columnheaders *ColumnheadersWidget
 	Multibar      *MultibarWidget
@@ -34,11 +24,6 @@ type UI struct {
 	api          api.API
 	options      *options.Options // FIXME: use api instead
 	searchResult songlist.Songlist
-
-	// TCell
-	view views.View
-	style.Styled
-	views.WidgetWatchers
 }
 
 func NewUI(a api.API) *UI {
@@ -46,104 +31,64 @@ func NewUI(a api.API) *UI {
 
 	ui := &UI{}
 
-	ui.Screen, err = tcell.NewScreen()
+	err = termbox.Init()
 	if err != nil {
 		return nil
 	}
 
+	termbox.HideCursor()
+
 	ui.EventInputCommand = make(chan string, 16)
 	ui.EventKeyInput = make(chan *tcell.EventKey, 16)
 
-	ui.App = &views.Application{}
 	ui.api = a
 	ui.options = ui.api.Options()
 
+	// Initialize widgets
 	ui.Topbar = NewTopbar()
 	ui.Columnheaders = NewColumnheadersWidget()
 	ui.Multibar = NewMultibarWidget(ui.api, ui.EventKeyInput)
 	ui.Songlist = NewSonglistWidget(ui.api)
 
-	ui.Multibar.Watch(ui)
-	ui.Songlist.Watch(ui)
-
 	// Set styles
-	ui.SetStylesheet(ui.api.Styles())
 	ui.Topbar.SetStylesheet(ui.api.Styles())
 	ui.Columnheaders.SetStylesheet(ui.api.Styles())
 	ui.Songlist.SetStylesheet(ui.api.Styles())
 	ui.Multibar.SetStylesheet(ui.api.Styles())
 
-	ui.CreateLayout()
-	ui.App.SetScreen(ui.Screen)
-	ui.App.SetRootWidget(ui)
-
 	return ui
 }
 
-func (ui *UI) CreateLayout() {
-	ui.Layout = views.NewBoxLayout(views.Vertical)
-	ui.Layout.AddWidget(ui.Topbar, 1)
-	ui.Layout.AddWidget(ui.Columnheaders, 0)
-	ui.Layout.AddWidget(ui.Songlist, 2)
-	ui.Layout.AddWidget(ui.Multibar, 0)
-	ui.Layout.SetView(ui.view)
-}
-
 func (ui *UI) Refresh() {
-	ui.App.Refresh()
 }
 
 func (ui *UI) CurrentSonglistWidget() api.SonglistWidget {
 	return ui.Songlist
 }
 
-func (ui *UI) Start() {
-	ui.App.Start()
-}
-
-func (ui *UI) Wait() error {
-	return ui.App.Wait()
-}
-
-func (ui *UI) Quit() {
-	ui.App.Quit()
-}
-
-func (ui *UI) Draw() {
-	ui.Layout.Draw()
-}
-
 func (ui *UI) Resize() {
 	ui.api.Db().Left().SetUpdated()
 	ui.api.Db().Right().SetUpdated()
-	ui.CreateLayout()
-	ui.Layout.Resize()
-	ui.PostEventWidgetResize(ui)
-}
-
-func (ui *UI) SetView(v views.View) {
-	ui.view = v
-	ui.Layout.SetView(v)
-}
-
-func (ui *UI) Size() (int, int) {
-	return ui.view.Size()
+	/*
+		ui.CreateLayout()
+		ui.Layout.Resize()
+		ui.PostEventWidgetResize(ui)
+	*/
 }
 
 func (ui *UI) UpdateCursor() {
-	switch ui.Multibar.Mode() {
-	case constants.MultibarModeInput, constants.MultibarModeSearch:
-		_, ymax := ui.Screen.Size()
-		ui.Screen.ShowCursor(ui.Multibar.Cursor()+1, ymax-1)
-	default:
-		ui.Screen.HideCursor()
-	}
+	/*
+		switch ui.Multibar.Mode() {
+		case constants.MultibarModeInput, constants.MultibarModeSearch:
+			_, ymax := ui.Screen.Size()
+			ui.Screen.ShowCursor(ui.Multibar.Cursor()+1, ymax-1)
+		default:
+			ui.Screen.HideCursor()
+		}
+	*/
 }
 
-func (ui *UI) PostFunc(f func()) {
-	ui.App.PostFunc(f)
-}
-
+/*
 func (ui *UI) HandleEvent(ev tcell.Event) bool {
 	switch ev.(type) {
 
@@ -228,3 +173,4 @@ func (ui *UI) showSearchResult() {
 		panel.ActivateIndex(0)
 	}
 }
+*/

@@ -126,7 +126,6 @@ func main() {
 	go p.RunTicker()
 
 	p.Main()
-	p.Wait()
 
 	console.Log("Exiting normally.")
 }
