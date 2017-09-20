@@ -20,10 +20,12 @@ func (pms *PMS) Main() {
 			pms.handleEventOption(key)
 		case msg := <-pms.EventMessage:
 			pms.handleEventMessage(msg)
-		case ev := <-pms.ui.EventKeyInput:
-			pms.KeyInput(ev)
-		case s := <-pms.ui.EventInputCommand:
-			pms.Execute(s)
+			/*
+				case ev := <-pms.ui.EventKeyInput:
+					pms.KeyInput(ev)
+				case s := <-pms.ui.EventInputCommand:
+					pms.Execute(s)
+			*/
 		}
 	}
 }

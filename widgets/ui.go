@@ -4,8 +4,6 @@ import (
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/songlist"
 	termbox "github.com/nsf/termbox-go"
-
-	"github.com/gdamore/tcell"
 )
 
 type UI struct {
@@ -14,10 +12,6 @@ type UI struct {
 	Columnheaders *ColumnheadersWidget
 	Multibar      *MultibarWidget
 	Songlist      *SonglistWidget
-
-	// Input events
-	EventInputCommand chan string
-	EventKeyInput     chan *tcell.EventKey
 
 	// Data resources
 	api          api.API
@@ -36,15 +30,12 @@ func NewUI(a api.API) *UI {
 
 	termbox.HideCursor()
 
-	ui.EventInputCommand = make(chan string, 16)
-	ui.EventKeyInput = make(chan *tcell.EventKey, 16)
-
 	ui.api = a
 
 	// Initialize widgets
 	ui.Topbar = NewTopbar()
 	ui.Columnheaders = NewColumnheadersWidget()
-	ui.Multibar = NewMultibarWidget(ui.api, ui.EventKeyInput)
+	ui.Multibar = NewMultibarWidget(ui.api)
 	ui.Songlist = NewSonglistWidget(ui.api)
 
 	// Set styles

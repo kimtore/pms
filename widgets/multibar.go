@@ -30,7 +30,6 @@ type history struct {
 type MultibarWidget struct {
 	api         api.API
 	cursor      int
-	events      chan *tcell.EventKey
 	inputMode   int
 	msg         message.Message
 	runes       []rune
@@ -89,11 +88,10 @@ func (h *history) validateIndex() {
 	}
 }
 
-func NewMultibarWidget(a api.API, events chan *tcell.EventKey) *MultibarWidget {
+func NewMultibarWidget(a api.API) *MultibarWidget {
 	return &MultibarWidget{
-		api:    a,
-		runes:  make([]rune, 0),
-		events: events,
+		api:   a,
+		runes: make([]rune, 0),
 		history: [3]history{
 			{items: make([]string, 0)},
 			{items: make([]string, 0)},
@@ -438,7 +436,8 @@ func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 // handleNormalEvent is called when an input event is received during command mode.
 func (m *MultibarWidget) handleNormalEvent(ev *tcell.EventKey) bool {
 	//console.Log("Input event in command mode: %s %s", ke.Key, string(ke.Rune))
-	m.events <- ev
+	// FIXME
+	//m.events <- ev
 	return true
 }
 

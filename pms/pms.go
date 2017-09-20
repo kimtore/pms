@@ -389,7 +389,7 @@ func (pms *PMS) KeyInput(ev *tcell.EventKey) {
 	}
 
 	//console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, input.Command)
-	pms.ui.EventInputCommand <- input.Command
+	// FIXME: pms.ui.EventInputCommand <- input.Command
 }
 
 func (pms *PMS) Execute(cmd string) {
