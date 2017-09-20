@@ -72,22 +72,23 @@ func (w *SonglistWidget) List() songlist.Songlist {
 }
 
 func (w *SonglistWidget) Draw() {
-	console.Log("Draw() in songlist widget")
+	//console.Log("Draw() in songlist widget")
 	list := w.List()
 	if w.view == nil || list == nil || list.Songs() == nil {
-		console.Log(".. BUG: nil list, aborting draw!")
+		console.Log("BUG: nil list, aborting draw!")
 		return
 	}
 
+	// Make sure that the viewport matches the list size.
+	w.setViewportSize()
+
 	// Check if the current panel's songlist has changed.
 	if w.Panel().Updated().After(w.lastDraw) {
-		w.setViewportSize()
 		PostEventListChanged(w)
 	}
 
+	// Update draw time
 	w.lastDraw = time.Now()
-
-	w.validateViewport()
 
 	_, ymin, xmax, ymax := w.viewport.GetVisible()
 	currentSong := w.api.Song()
