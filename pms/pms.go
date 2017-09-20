@@ -27,14 +27,13 @@ import (
 
 // PMS is a kitchen sink of different objects, glued together as a singleton class.
 type PMS struct {
-	mpdStatus   pms_mpd.PlayerStatus
-	currentSong *song.Song
-	CLI         *input.CLI
-	ui          *widgets.UI
-	Options     *options.Options
-	Sequencer   *keys.Sequencer
-	stylesheet  style.Stylesheet
-	mutex       sync.Mutex
+	mpdStatus  pms_mpd.PlayerStatus
+	CLI        *input.CLI
+	ui         *widgets.UI
+	Options    *options.Options
+	Sequencer  *keys.Sequencer
+	stylesheet style.Stylesheet
+	mutex      sync.Mutex
 
 	// collection of data
 	database *db.Instance
@@ -147,7 +146,7 @@ func (pms *PMS) Stylesheet() style.Stylesheet {
 	return pms.stylesheet
 }
 
-// Stylesheet returns the global stylesheet.
+// Multibar returns the multibar widget.
 func (pms *PMS) Multibar() api.MultibarWidget {
 	return pms.ui.Multibar
 }
@@ -296,10 +295,6 @@ func (pms *PMS) retrieveQueue() (*songlist.Queue, error) {
 	return s, nil
 }
 
-func (pms *PMS) CurrentSong() *song.Song {
-	return pms.currentSong
-}
-
 // UpdateCurrentSong stores a local copy of the currently playing song.
 func (pms *PMS) UpdateCurrentSong() error {
 	client, err := pms.Connection.MpdClient()
@@ -316,7 +311,7 @@ func (pms *PMS) UpdateCurrentSong() error {
 
 	s := song.New()
 	s.SetTags(attrs)
-	pms.currentSong = s
+	pms.database.SetCurrentSong(s)
 
 	pms.EventPlayer <- 0
 

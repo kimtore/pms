@@ -60,7 +60,7 @@ func (pms *PMS) API() api.API {
 		pms.database.Queue,
 		pms.QuitSignal,
 		pms.Sequencer,
-		pms.CurrentSong,
+		pms.database.CurrentSong,
 		pms.CurrentSonglistWidget,
 		pms.Stylesheet(),
 		pms.UI,

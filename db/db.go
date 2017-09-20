@@ -45,6 +45,16 @@ func (db *Instance) Clipboard(key string) songlist.Songlist {
 	return db.clipboards[key]
 }
 
+// CurrentSong returns MPD's currently playing song.
+func (db *Instance) CurrentSong() *song.Song {
+	return db.currentSong
+}
+
+// SetCurrentSong sets MPD's currently playing song.
+func (db *Instance) SetCurrentSong(s *song.Song) {
+	db.currentSong = s
+}
+
 // Queue returns the MPD queue.
 func (db *Instance) Queue() *songlist.Queue {
 	return db.queue
