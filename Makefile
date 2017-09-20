@@ -11,8 +11,8 @@ test:
 	go test ./...
 
 get-deps:
-	go get github.com/ambientsound/gompd/mpd
-	go get github.com/blevesearch/bleve
-	go get github.com/gdamore/tcell
-	go get github.com/jessevdk/go-flags
-	go get github.com/stretchr/testify
+	go get -u github.com/ambientsound/gompd/mpd
+	go get -u github.com/blevesearch/bleve
+	go get -u github.com/jessevdk/go-flags
+	go get -u github.com/nsf/termbox-go
+	go get -u github.com/stretchr/testify
