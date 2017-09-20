@@ -79,13 +79,14 @@ func (w *SonglistWidget) Draw() {
 		return
 	}
 
-	// Make sure that the viewport matches the list size.
-	w.setViewportSize()
-
 	// Check if the current panel's songlist has changed.
 	if w.Panel().Updated().After(w.lastDraw) {
+		w.viewport.Resize(0, 0, -1, -1)
 		PostEventListChanged(w)
 	}
+
+	// Make sure that the viewport matches the list size.
+	w.setViewportSize()
 
 	// Update draw time
 	w.lastDraw = time.Now()
@@ -205,9 +206,6 @@ func (w *SonglistWidget) validateViewport() {
 }
 
 func (w *SonglistWidget) Resize() {
-	w.viewport.Resize(0, 0, -1, -1)
-	w.setViewportSize()
-	w.PostEventWidgetResize(w)
 }
 
 func (m *SonglistWidget) HandleEvent(ev tcell.Event) bool {

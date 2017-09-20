@@ -24,6 +24,8 @@ func (cmd *Redraw) Execute(class int, s string) error {
 	switch class {
 	case lexer.TokenEnd:
 		ui.PostFunc(func() {
+			cmd.api.Db().Left().SetUpdated()
+			cmd.api.Db().Right().SetUpdated()
 			ui.Refresh()
 		})
 		return nil

@@ -35,7 +35,7 @@ func (c *Collection) Activate(s Songlist) {
 	}
 	c.last = c.current
 	c.current = s
-	c.setUpdated()
+	c.SetUpdated()
 }
 
 // ActivateIndex activates the songlist pointed to by the specified index.
@@ -114,8 +114,8 @@ func (c *Collection) Replace(s Songlist) {
 	c.Add(s)
 }
 
-// setUpdated updates the version number of this data set.
-func (c *Collection) setUpdated() {
+// SetUpdated sets the update timestamp of the collection.
+func (c *Collection) SetUpdated() {
 	c.updated = time.Now()
 }
 

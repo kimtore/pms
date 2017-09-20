@@ -114,6 +114,8 @@ func (ui *UI) Draw() {
 }
 
 func (ui *UI) Resize() {
+	ui.api.Db().Left().SetUpdated()
+	ui.api.Db().Right().SetUpdated()
 	ui.CreateLayout()
 	ui.Layout.Resize()
 	ui.PostEventWidgetResize(ui)
