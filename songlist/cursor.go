@@ -29,6 +29,7 @@ func (s *BaseSonglist) SetCursor(i int) {
 	s.cursor = i
 	s.ValidateCursor(0, s.Len()-1)
 	s.expandVisualSelection()
+	s.SetUpdated()
 }
 
 // Cursor returns the cursor position.
@@ -50,8 +51,10 @@ func (s *BaseSonglist) CursorToSong(song *song.Song) error {
 func (s *BaseSonglist) ValidateCursor(ymin, ymax int) {
 	if s.Cursor() < ymin {
 		s.cursor = ymin
+		s.SetUpdated()
 	}
 	if s.Cursor() > ymax {
 		s.cursor = ymax
+		s.SetUpdated()
 	}
 }

@@ -114,11 +114,6 @@ func (c *Collection) Replace(s Songlist) {
 	c.Add(s)
 }
 
-// SetUpdated sets the update timestamp of the collection.
-func (c *Collection) SetUpdated() {
-	c.updated = time.Now()
-}
-
 func (c *Collection) Songlist(index int) (Songlist, error) {
 	if err := c.ValidateIndex(index); err != nil {
 		return nil, err
@@ -137,6 +132,12 @@ func (c *Collection) ValidateIndex(i int) error {
 	return nil
 }
 
+// Updated returns the timestamp of when this collection was last updated.
 func (c *Collection) Updated() time.Time {
 	return c.updated
+}
+
+// SetUpdated sets the update timestamp of the collection.
+func (c *Collection) SetUpdated() {
+	c.updated = time.Now()
 }

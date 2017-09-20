@@ -83,7 +83,12 @@ func (w *SonglistWidget) Draw() {
 	if w.Panel().Updated().After(w.lastDraw) {
 		w.viewport.Resize(0, 0, -1, -1)
 		PostEventListChanged(w)
+	} else if list.Updated().Before(w.lastDraw) {
+		//console.Log("SonglistWidget::Draw(): not drawing, already drawn")
+		//return
 	}
+
+	//console.Log("SonglistWidget::Draw()")
 
 	// Make sure that the viewport matches the list size.
 	w.setViewportSize()

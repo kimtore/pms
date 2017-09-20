@@ -53,15 +53,18 @@ type Songlist interface {
 	SelectionIndices() []int
 	SetCursor(int)
 	SetSelected(int, bool)
+	SetUpdated()
 	SetVisualSelection(int, int, int)
 	ToggleVisualSelection()
+	Updated() time.Time
 	ValidateCursor(int, int)
 }
 
 type BaseSonglist struct {
-	name  string
-	songs []*song.Song
-	mutex sync.Mutex
+	name    string
+	songs   []*song.Song
+	mutex   sync.Mutex
+	updated time.Time
 
 	columns         ColumnMap
 	cursor          int
@@ -385,4 +388,14 @@ func (s *BaseSonglist) AddFromAttrlist(attrlist []mpd.Attrs) {
 		newSong.SetTags(attrs)
 		s.add(newSong)
 	}
+}
+
+// Updated returns the timestamp of when this songlist was last updated.
+func (s *BaseSonglist) Updated() time.Time {
+	return s.updated
+}
+
+// SetUpdated sets the update timestamp of the songlist.
+func (s *BaseSonglist) SetUpdated() {
+	s.updated = time.Now()
 }
