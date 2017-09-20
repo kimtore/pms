@@ -63,6 +63,8 @@ func (db *Instance) Queue() *songlist.Queue {
 // SetQueue sets the MPD queue.
 func (db *Instance) SetQueue(queue *songlist.Queue) {
 	db.queue = queue
+	db.left.Replace(db.queue)
+	db.right.Replace(db.queue)
 }
 
 // Library returns the MPD library.
@@ -73,6 +75,8 @@ func (db *Instance) Library() *songlist.Library {
 // SetLibrary sets the MPD library.
 func (db *Instance) SetLibrary(library *songlist.Library) {
 	db.library = library
+	db.left.Replace(db.library)
+	db.right.Replace(db.library)
 }
 
 // PlayerStatus returns a copy of the current MPD player status as seen by PMS.
