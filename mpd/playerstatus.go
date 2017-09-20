@@ -41,9 +41,9 @@ func (p *PlayerStatus) Since() time.Duration {
 	return time.Since(p.updateTime)
 }
 
-func (p *PlayerStatus) Tick() {
+func (p PlayerStatus) Tick() PlayerStatus {
 	if p.State != StatePlay {
-		return
+		return p
 	}
 	diff := p.Since()
 	p.SetTime()
@@ -53,4 +53,5 @@ func (p *PlayerStatus) Tick() {
 	} else {
 		p.ElapsedPercentage = float64(100) * p.Elapsed / float64(p.Time)
 	}
+	return p
 }

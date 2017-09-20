@@ -27,7 +27,6 @@ import (
 
 // PMS is a kitchen sink of different objects, glued together as a singleton class.
 type PMS struct {
-	mpdStatus  pms_mpd.PlayerStatus
 	CLI        *input.CLI
 	ui         *widgets.UI
 	Options    *options.Options
@@ -131,11 +130,6 @@ func (pms *PMS) CurrentMpdClient() *mpd.Client {
 	return client
 }
 
-// CurrentPlayerStatus returns a copy of the current MPD player status as seen by PMS.
-func (pms *PMS) CurrentPlayerStatus() pms_mpd.PlayerStatus {
-	return pms.mpdStatus
-}
-
 // CurrentSonglistWidget returns the current songlist.
 func (pms *PMS) CurrentSonglistWidget() api.SonglistWidget {
 	return pms.ui.Songlist
@@ -161,7 +155,7 @@ func (pms *PMS) RunTicker() {
 	ticker := time.NewTicker(time.Millisecond * 1000)
 	defer ticker.Stop()
 	for range ticker.C {
-		pms.mpdStatus.Tick()
+		pms.database.SetPlayerStatus(pms.database.PlayerStatus().Tick())
 		pms.EventPlayer <- 0
 	}
 }
@@ -222,7 +216,9 @@ func (pms *PMS) SyncQueue() error {
 	if err := pms.UpdatePlayerStatus(); err != nil {
 		return err
 	}
-	if pms.queueVersion == pms.mpdStatus.Playlist {
+
+	status := pms.database.PlayerStatus()
+	if pms.queueVersion == status.Playlist {
 		return nil
 	}
 	queue := pms.database.Queue()
@@ -237,7 +233,7 @@ func (pms *PMS) SyncQueue() error {
 	if err != nil {
 		return fmt.Errorf("Error while merging queue changes: %s", err)
 	}
-	if err := newQueue.Truncate(pms.mpdStatus.PlaylistLength); err != nil {
+	if err := newQueue.Truncate(status.PlaylistLength); err != nil {
 		return fmt.Errorf("Error while truncating queue: %s", err)
 	}
 
@@ -248,7 +244,7 @@ func (pms *PMS) SyncQueue() error {
 	}
 
 	pms.database.SetQueue(newQueue)
-	pms.queueVersion = pms.mpdStatus.Playlist
+	pms.queueVersion = status.Playlist
 	console.Log("Queue at version %d.", pms.queueVersion)
 	pms.EventQueue <- 1
 	return nil
@@ -330,39 +326,40 @@ func (pms *PMS) UpdatePlayerStatus() error {
 		return err
 	}
 
-	pms.mpdStatus.SetTime()
+	status := pms_mpd.PlayerStatus{}
+	status.SetTime()
 
 	console.Log("MPD player status: %s", attrs)
 
-	pms.mpdStatus.Audio = attrs["audio"]
-	pms.mpdStatus.Err = attrs["err"]
-	pms.mpdStatus.State = attrs["state"]
+	status.Audio = attrs["audio"]
+	status.Err = attrs["err"]
+	status.State = attrs["state"]
 
 	// The time field is divided into ELAPSED:LENGTH.
 	// We only need the length field, since the elapsed field is sent as a
 	// floating point value.
 	split := strings.Split(attrs["time"], ":")
 	if len(split) == 2 {
-		pms.mpdStatus.Time, _ = strconv.Atoi(split[1])
+		status.Time, _ = strconv.Atoi(split[1])
 	} else {
-		pms.mpdStatus.Time = -1
+		status.Time = -1
 	}
 
-	pms.mpdStatus.Bitrate, _ = strconv.Atoi(attrs["bitrate"])
-	pms.mpdStatus.Playlist, _ = strconv.Atoi(attrs["playlist"])
-	pms.mpdStatus.PlaylistLength, _ = strconv.Atoi(attrs["playlistlength"])
-	pms.mpdStatus.Song, _ = strconv.Atoi(attrs["song"])
-	pms.mpdStatus.SongID, _ = strconv.Atoi(attrs["songid"])
-	pms.mpdStatus.Volume, _ = strconv.Atoi(attrs["volume"])
+	status.Bitrate, _ = strconv.Atoi(attrs["bitrate"])
+	status.Playlist, _ = strconv.Atoi(attrs["playlist"])
+	status.PlaylistLength, _ = strconv.Atoi(attrs["playlistlength"])
+	status.Song, _ = strconv.Atoi(attrs["song"])
+	status.SongID, _ = strconv.Atoi(attrs["songid"])
+	status.Volume, _ = strconv.Atoi(attrs["volume"])
 
-	pms.mpdStatus.Elapsed, _ = strconv.ParseFloat(attrs["elapsed"], 64)
-	pms.mpdStatus.ElapsedPercentage, _ = strconv.ParseFloat(attrs["elapsedpercentage"], 64)
-	pms.mpdStatus.MixRampDB, _ = strconv.ParseFloat(attrs["mixrampdb"], 64)
+	status.Elapsed, _ = strconv.ParseFloat(attrs["elapsed"], 64)
+	status.ElapsedPercentage, _ = strconv.ParseFloat(attrs["elapsedpercentage"], 64)
+	status.MixRampDB, _ = strconv.ParseFloat(attrs["mixrampdb"], 64)
 
-	pms.mpdStatus.Consume, _ = strconv.ParseBool(attrs["consume"])
-	pms.mpdStatus.Random, _ = strconv.ParseBool(attrs["random"])
-	pms.mpdStatus.Repeat, _ = strconv.ParseBool(attrs["repeat"])
-	pms.mpdStatus.Single, _ = strconv.ParseBool(attrs["single"])
+	status.Consume, _ = strconv.ParseBool(attrs["consume"])
+	status.Random, _ = strconv.ParseBool(attrs["random"])
+	status.Repeat, _ = strconv.ParseBool(attrs["repeat"])
+	status.Single, _ = strconv.ParseBool(attrs["single"])
 
 	pms.EventPlayer <- 0
 
@@ -370,6 +367,8 @@ func (pms *PMS) UpdatePlayerStatus() error {
 	if len(attrs["error"]) > 0 {
 		pms.Error(attrs["error"])
 	}
+
+	pms.database.SetPlayerStatus(status)
 
 	return nil
 }

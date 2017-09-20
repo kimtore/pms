@@ -56,7 +56,7 @@ func (pms *PMS) API() api.API {
 		pms.CurrentMpdClient,
 		pms.Multibar,
 		pms.Options,
-		pms.CurrentPlayerStatus,
+		pms.database.PlayerStatus,
 		pms.database.Queue,
 		pms.QuitSignal,
 		pms.Sequencer,

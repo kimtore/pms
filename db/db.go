@@ -75,6 +75,16 @@ func (db *Instance) SetLibrary(library *songlist.Library) {
 	db.library = library
 }
 
+// PlayerStatus returns a copy of the current MPD player status as seen by PMS.
+func (db *Instance) PlayerStatus() pms_mpd.PlayerStatus {
+	return db.mpdStatus
+}
+
+// SetPlayerStatus sets the MPD player status.
+func (db *Instance) SetPlayerStatus(p pms_mpd.PlayerStatus) {
+	db.mpdStatus = p
+}
+
 // Panel returns the active panel. At the moment, there is only one panel.
 func (db *Instance) Panel() *songlist.Collection {
 	return db.Left()
