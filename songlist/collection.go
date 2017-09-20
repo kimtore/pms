@@ -22,8 +22,9 @@ func NewCollection() *Collection {
 	}
 }
 
-// Activate activates the specified songlist. If the songlist is indexed, the
-// index is switched to that of the songlist.
+// Activate activates the specified songlist. The songlist is not added to the
+// collection. If the songlist is found in the collection, the index of that
+// songlist is activated.
 func (c *Collection) Activate(s Songlist) {
 	c.index = -1
 	for i, stored := range c.lists {
@@ -37,6 +38,7 @@ func (c *Collection) Activate(s Songlist) {
 	c.setUpdated()
 }
 
+// ActivateIndex activates the songlist pointed to by the specified index.
 func (c *Collection) ActivateIndex(i int) error {
 	list, err := c.Songlist(i)
 	if err != nil {
@@ -51,10 +53,12 @@ func (c *Collection) Add(s Songlist) {
 	c.lists = append(c.lists, s)
 }
 
+// Current returns the active songlist.
 func (c *Collection) Current() Songlist {
 	return c.current
 }
 
+// Index returns the current list cursor.
 func (c *Collection) Index() (int, error) {
 	if !c.ValidIndex(c.index) {
 		return 0, fmt.Errorf("Songlist index is out of range")
@@ -72,6 +76,7 @@ func (c *Collection) Len() int {
 	return len(c.lists)
 }
 
+// Remove removes a songlist from the collection.
 func (c *Collection) Remove(index int) error {
 	if err := c.ValidateIndex(index); err != nil {
 		return err
@@ -85,7 +90,8 @@ func (c *Collection) Remove(index int) error {
 }
 
 // Replace replaces an existing songlist with its new version. Checking
-// is done on a type-level, so only the queue and library will be replaced.
+// is done on a type-level, so this function should not be used for lists where
+// several of the same type is contained within the collection.
 func (c *Collection) Replace(s Songlist) {
 	for i := range c.lists {
 		if reflect.TypeOf(c.lists[i]) != reflect.TypeOf(s) {
@@ -108,7 +114,7 @@ func (c *Collection) Replace(s Songlist) {
 	c.Add(s)
 }
 
-// newVersion updates the version number of this data set.
+// setUpdated updates the version number of this data set.
 func (c *Collection) setUpdated() {
 	c.updated = time.Now()
 }

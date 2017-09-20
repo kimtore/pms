@@ -27,6 +27,7 @@ type Instance struct {
 	right *songlist.Collection
 }
 
+// New returns Instance.
 func New() *Instance {
 	return &Instance{
 		clipboards: make(map[string]songlist.Songlist, 0),
@@ -35,18 +36,7 @@ func New() *Instance {
 	}
 }
 
-func (db *Instance) Queue() *songlist.Queue {
-	return db.queue
-}
-
-func (db *Instance) SetQueue(queue *songlist.Queue) {
-	db.queue = queue
-}
-
-func (db *Instance) Library() *songlist.Library {
-	return db.library
-}
-
+// Clipboard returns a named clipboard.
 func (db *Instance) Clipboard(key string) songlist.Songlist {
 	_, ok := db.clipboards[key]
 	if !ok {
@@ -55,18 +45,37 @@ func (db *Instance) Clipboard(key string) songlist.Songlist {
 	return db.clipboards[key]
 }
 
+// Queue returns the MPD queue.
+func (db *Instance) Queue() *songlist.Queue {
+	return db.queue
+}
+
+// SetQueue sets the MPD queue.
+func (db *Instance) SetQueue(queue *songlist.Queue) {
+	db.queue = queue
+}
+
+// Library returns the MPD library.
+func (db *Instance) Library() *songlist.Library {
+	return db.library
+}
+
+// SetLibrary sets the MPD library.
 func (db *Instance) SetLibrary(library *songlist.Library) {
 	db.library = library
 }
 
+// Panel returns the active panel. At the moment, there is only one panel.
 func (db *Instance) Panel() *songlist.Collection {
 	return db.Left()
 }
 
+// Left returns the left panel.
 func (db *Instance) Left() *songlist.Collection {
 	return db.left
 }
 
+// Right returns the right panel.
 func (db *Instance) Right() *songlist.Collection {
 	return db.right
 }
