@@ -31,7 +31,6 @@ type PMS struct {
 	currentSong *song.Song
 	CLI         *input.CLI
 	ui          *widgets.UI
-	clipboards  map[string]songlist.Songlist
 	Options     *options.Options
 	Sequencer   *keys.Sequencer
 	stylesheet  style.Stylesheet
@@ -409,9 +408,4 @@ func (pms *PMS) Execute(cmd string) {
 	if err != nil {
 		pms.Error("%s", err)
 	}
-}
-
-// Clipboard returns the default clipboard.
-func (pms *PMS) Clipboard() songlist.Songlist {
-	return pms.clipboards["default"]
 }

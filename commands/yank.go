@@ -35,16 +35,16 @@ func (cmd *Yank) Exec() error {
 		return fmt.Errorf("No tracks selected.")
 	}
 
+	// Place songs in clipboard
+	clipboard := cmd.api.Db().Clipboard("default")
+	selection.Duplicate(clipboard)
+
 	// Print a message
 	if len == 1 {
 		cmd.api.Message("Yanked '%s'", selection.Song(0).StringTags["file"])
 	} else {
 		cmd.api.Message("%d tracks yanked to clipboard.", len)
 	}
-
-	// Place songs in clipboard
-	clipboard := cmd.api.Clipboard()
-	selection.Duplicate(clipboard)
 
 	// Clear selection and move cursor
 	list.ClearSelection()

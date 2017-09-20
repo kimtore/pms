@@ -56,7 +56,7 @@ func (cmd *Paste) Parse() error {
 func (cmd *Paste) Exec() error {
 	list := cmd.api.Songlist()
 	cursor := list.Cursor()
-	clipboard := cmd.api.Clipboard()
+	clipboard := cmd.api.Db().Clipboard("default")
 
 	err := list.InsertList(clipboard, cursor+cmd.position)
 	cmd.api.ListChanged()

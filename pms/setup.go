@@ -38,9 +38,6 @@ func New() *PMS {
 
 	pms.Sequencer = keys.NewSequencer()
 
-	pms.clipboards = make(map[string]songlist.Songlist)
-	pms.clipboards["default"] = songlist.New()
-
 	pms.setupUI()
 
 	pms.CLI = input.NewCLI(pms.API())
@@ -51,7 +48,6 @@ func New() *PMS {
 // setupAPI creates an API object
 func (pms *PMS) API() api.API {
 	return api.BaseAPI(
-		pms.Clipboard,
 		pms.Database,
 		pms.EventList,
 		pms.EventMessage,

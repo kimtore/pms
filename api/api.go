@@ -16,9 +16,6 @@ import (
 // API defines a set of commands that should be available to commands run
 // through the command-line interface.
 type API interface {
-	// Clipboard returns the default clipboard.
-	Clipboard() songlist.Songlist
-
 	// Db returns the PMS database.
 	Db() *db.Instance
 
@@ -74,7 +71,6 @@ type API interface {
 }
 
 type baseAPI struct {
-	clipboard      func() songlist.Songlist
 	db             func() *db.Instance
 	eventList      chan int
 	eventMessage   chan message.Message
@@ -94,7 +90,6 @@ type baseAPI struct {
 }
 
 func BaseAPI(
-	clipboard func() songlist.Songlist,
 	db func() *db.Instance,
 	eventList chan int,
 	eventMessage chan message.Message,
@@ -114,7 +109,6 @@ func BaseAPI(
 
 ) API {
 	return &baseAPI{
-		clipboard:      clipboard,
 		db:             db,
 		eventList:      eventList,
 		eventMessage:   eventMessage,
@@ -132,10 +126,6 @@ func BaseAPI(
 		styles:         styles,
 		ui:             ui,
 	}
-}
-
-func (api *baseAPI) Clipboard() songlist.Songlist {
-	return api.clipboard()
 }
 
 func (api *baseAPI) Db() *db.Instance {

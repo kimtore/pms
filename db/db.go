@@ -47,6 +47,14 @@ func (db *Instance) Library() *songlist.Library {
 	return db.library
 }
 
+func (db *Instance) Clipboard(key string) songlist.Songlist {
+	_, ok := db.clipboards[key]
+	if !ok {
+		db.clipboards[key] = songlist.New()
+	}
+	return db.clipboards[key]
+}
+
 func (db *Instance) SetLibrary(library *songlist.Library) {
 	db.library = library
 }

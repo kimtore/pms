@@ -36,10 +36,6 @@ func NewSonglistWidget(a api.API) (w *SonglistWidget) {
 	}
 }
 
-func (w *SonglistWidget) SetAPI(a api.API) {
-	w.api = a
-}
-
 func (w *SonglistWidget) drawNext(x, y, strmin, strmax int, runes []rune, style tcell.Style) int {
 	strmin = utils.Min(len(runes), strmin)
 	n := 0

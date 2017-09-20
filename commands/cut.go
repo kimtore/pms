@@ -54,7 +54,7 @@ func (cmd *Cut) Exec() error {
 	list.SetCursor(index)
 
 	// Place songs in clipboard
-	clipboard := cmd.api.Clipboard()
+	clipboard := cmd.api.Db().Clipboard("default")
 	selection.Duplicate(clipboard)
 	console.Log("Cut %d tracks into clipboard", clipboard.Len())
 
