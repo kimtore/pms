@@ -5,7 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/keysequence"
-	"github.com/gdamore/tcell"
+	"github.com/ambientsound/pms/term"
 )
 
 // Binding holds a parsed, user provided key sequence.
@@ -17,7 +17,7 @@ type Binding struct {
 // Sequencer holds all the keyboard bindings and their action mappings.
 type Sequencer struct {
 	binds []Binding
-	event *tcell.EventKey
+	event term.KeyPress
 	input keysequence.KeySequence
 }
 
@@ -56,8 +56,8 @@ func (s *Sequencer) RemoveBind(seq keysequence.KeySequence) error {
 }
 
 // KeyInput feeds a keypress to the sequencer. Returns true if there is one match or more, or false if there is no match.
-func (s *Sequencer) KeyInput(ev *tcell.EventKey) bool {
-	console.Log("Key event: %s", keysequence.FormatKey(ev))
+func (s *Sequencer) KeyInput(ev term.KeyPress) bool {
+	console.Log("Key event: %s", ev.Name())
 	s.input = append(s.input, ev)
 	if len(s.find(s.input)) == 0 {
 		s.input = make(keysequence.KeySequence, 0)

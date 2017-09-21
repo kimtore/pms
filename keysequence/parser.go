@@ -6,19 +6,20 @@ import (
 
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/parser"
-	"github.com/gdamore/tcell"
+	"github.com/ambientsound/pms/term"
+	termbox "github.com/nsf/termbox-go"
 )
 
 // modifiers maps modifier names to their integer representation.
-var modifiers = map[string]tcell.ModMask{
-	"s":     tcell.ModShift,
-	"c":     tcell.ModCtrl,
-	"a":     tcell.ModAlt,
-	"m":     tcell.ModMeta,
-	"shift": tcell.ModShift,
-	"ctrl":  tcell.ModCtrl,
-	"alt":   tcell.ModAlt,
-	"meta":  tcell.ModMeta,
+var modifiers = map[string]term.Modifier{
+	"s":     term.ModShift,
+	"c":     term.ModCtrl,
+	"a":     term.ModAlt,
+	"m":     term.ModMeta,
+	"shift": term.ModShift,
+	"ctrl":  term.ModCtrl,
+	"alt":   term.ModAlt,
+	"meta":  term.ModMeta,
 }
 
 // Parser is a key sequence parser. Key sequences consists of one or more
@@ -77,13 +78,13 @@ Parse:
 }
 
 // Parse a special key name, such as <space> or <C-M-a>.
-func (p *Parser) ParseSpecial() (key *tcell.EventKey, err error) {
-	var mod tcell.ModMask
+func (p *Parser) ParseSpecial() (key term.KeyPress, err error) {
+	var mod term.Modifier
 
 	// Scan the opening angle bracket
 	tok, lit := p.Scan()
 	if tok != lexer.TokenAngleLeft {
-		return nil, fmt.Errorf("Unexpected %v, expected left angle bracket", lit)
+		return key, fmt.Errorf("Unexpected %v, expected left angle bracket", lit)
 	}
 
 Scam:
@@ -92,7 +93,7 @@ Scam:
 		// S, C, A, M, or an actual key name such as 'space' or 'f1'.
 		tok, lit = p.Scan()
 		if tok != lexer.TokenIdentifier {
-			return nil, fmt.Errorf("Unexpected %v, expected identifier", lit)
+			return key, fmt.Errorf("Unexpected %v, expected identifier", lit)
 		}
 
 		// Turn key name into lowercase
@@ -108,66 +109,51 @@ Scam:
 		case lexer.TokenPlus, lexer.TokenMinus:
 			break
 		default:
-			return nil, fmt.Errorf("Unexpected '%s', expected >", lit)
+			return key, fmt.Errorf("Unexpected '%s', expected >", lit)
 		}
 
 		// Apply the modifier key
 		m, ok := modifiers[lit]
 		if !ok {
-			return nil, fmt.Errorf("Unexpected '%s', expected one of Shift, Ctrl, Alt, Meta", lit)
+			return key, fmt.Errorf("Unexpected '%s', expected one of Shift, Ctrl, Alt, Meta", lit)
 		}
 		mod |= m
 	}
 
-	// Look up the parsed key name.
-	ev, ok := keyNames[lit]
-	if !ok {
-
-		// If the key name is not found, it might be a letter.
-		if len(lit) != 1 {
-			return nil, fmt.Errorf("Unknown key name '%s'", lit)
+	// Look up the last part of the parsed key name.
+	ev, err := term.Key(lit)
+	if err == nil {
+		key = term.KeyPress{ev, 0, mod}
+		if ev == termbox.KeySpace {
+			key.Ch = ' '
 		}
-
-		// Return the rune and modifiers
-		for _, r := range lit {
-			return convertCtrlKey(tcell.NewEventKey(tcell.KeyRune, r, mod)), nil
-		}
+		return key, nil
 	}
 
-	// Make a copy of the key, and apply any modifiers
-	key = convertCtrlKey(tcell.NewEventKey(ev.Key(), ev.Rune(), mod))
+	// If the key name is not found, it is either incorrect, or a letter.
+	if len(lit) != 1 {
+		return key, fmt.Errorf("Unknown key name '%s'", lit)
+	}
+
+	// Return the rune and modifiers
+	for _, r := range lit {
+		key := termbox.Key(0)
+		if mod == term.ModCtrl {
+			key = termbox.Key(r - 96)
+		}
+		return term.KeyPress{key, r, mod}, nil
+	}
 
 	return key, nil
 }
 
-// runeEventKeys creates a slice of tcell.EventKey objects that corresponds to
+// runeEventKeys creates a slice ofterm.KeyPress objects that corresponds to
 // the literal runes in the string.
 func runeEventKeys(s string) KeySequence {
 	seq := make(KeySequence, 0)
 	for _, r := range s {
-		key := tcell.NewEventKey(tcell.KeyRune, r, tcell.ModNone)
+		key := term.KeyPress{0, r, 0}
 		seq = append(seq, key)
 	}
 	return seq
-}
-
-// convertCtrlKey handles some special cases with Ctrl modifier keys, which are
-// handled somewhat differently by tcell for a few specific cases.
-func convertCtrlKey(ev *tcell.EventKey) *tcell.EventKey {
-	modifiers := ev.Modifiers()
-	hasCtrl := modifiers&tcell.ModCtrl == tcell.ModCtrl
-
-	// If this is not a Ctrl+Rune event, return the original event.
-	if !hasCtrl || ev.Key() != tcell.KeyRune {
-		return ev
-	}
-
-	// Catch Ctrl+A through Ctrl+Z
-	if ev.Rune() >= 'a' || ev.Rune() <= 'z' {
-		ctrl := rune(tcell.KeyCtrlA) - 'a' + ev.Rune()
-		return tcell.NewEventKey(tcell.Key(ctrl), rune(ctrl), modifiers)
-	}
-
-	// No more special rules
-	return ev
 }

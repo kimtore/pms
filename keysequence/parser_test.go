@@ -6,7 +6,8 @@ import (
 
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/keysequence"
-	"github.com/gdamore/tcell"
+	"github.com/ambientsound/pms/term"
+	termbox "github.com/nsf/termbox-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,9 +22,9 @@ var parserTests = []struct {
 		"abc",
 		true,
 		keysequence.KeySequence{
-			tcell.NewEventKey(tcell.KeyRune, 'a', tcell.ModNone),
-			tcell.NewEventKey(tcell.KeyRune, 'b', tcell.ModNone),
-			tcell.NewEventKey(tcell.KeyRune, 'c', tcell.ModNone),
+			{0, 'a', 0},
+			{0, 'b', 0},
+			{0, 'c', 0},
 		},
 	},
 	{
@@ -31,10 +32,10 @@ var parserTests = []struct {
 		"<Ctrl-C>x<Shift-Alt-Meta-F1>f",
 		true,
 		keysequence.KeySequence{
-			tcell.NewEventKey(tcell.KeyCtrlC, rune(tcell.KeyCtrlC), tcell.ModCtrl),
-			tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModNone),
-			tcell.NewEventKey(tcell.KeyF1, 0, tcell.ModShift|tcell.ModMeta|tcell.ModAlt),
-			tcell.NewEventKey(tcell.KeyRune, 'f', tcell.ModNone),
+			{termbox.KeyCtrlC, 'c', term.ModCtrl},
+			{0, 'x', 0},
+			{termbox.KeyF1, 0, term.ModShift | term.ModMeta | term.ModAlt},
+			{0, 'f', 0},
 		},
 	},
 	{
@@ -42,7 +43,7 @@ var parserTests = []struct {
 		"<Alt-x>",
 		true,
 		keysequence.KeySequence{
-			tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModAlt),
+			{0, 'x', term.ModAlt},
 		},
 	},
 	{
@@ -50,8 +51,8 @@ var parserTests = []struct {
 		"<Ctrl-X>x",
 		true,
 		keysequence.KeySequence{
-			tcell.NewEventKey(tcell.KeyCtrlX, rune(tcell.KeyCtrlX), tcell.ModCtrl),
-			tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModNone),
+			{termbox.KeyCtrlX, 'x', term.ModCtrl},
+			{0, 'x', 0},
 		},
 	},
 	{
@@ -59,7 +60,7 @@ var parserTests = []struct {
 		"<Space>",
 		true,
 		keysequence.KeySequence{
-			tcell.NewEventKey(tcell.KeyRune, ' ', tcell.ModNone),
+			{termbox.KeySpace, ' ', 0},
 		},
 	},
 	{
@@ -67,8 +68,8 @@ var parserTests = []struct {
 		"<Space>X",
 		true,
 		keysequence.KeySequence{
-			tcell.NewEventKey(tcell.KeyRune, ' ', tcell.ModNone),
-			tcell.NewEventKey(tcell.KeyRune, 'X', tcell.ModNone),
+			{termbox.KeySpace, ' ', 0},
+			{0, 'X', 0},
 		},
 	},
 
@@ -110,13 +111,13 @@ func TestParser(t *testing.T) {
 		// Assert that key definitions are equal
 		assert.Equal(t, len(test.keyseq), len(seq), "Assert that key sequences have equal length")
 		for k := range seq {
-			t.Logf("Keyseq data in position %d: key=%d, rune='%s', mods=%d", k+1, seq[k].Key(), string(seq[k].Rune()), seq[k].Modifiers())
+			t.Logf("Keyseq data in position %d: key=%d, rune='%s', mods=%d", k+1, seq[k].Key, string(seq[k].Ch), seq[k].Mod)
 			if k >= len(test.keyseq) {
 				continue
 			}
-			assert.Equal(t, test.keyseq[k].Key(), seq[k].Key(), "Assert that key event has equal Key() in position %d", k+1)
-			assert.Equal(t, test.keyseq[k].Rune(), seq[k].Rune(), "Assert that key event has equal Rune() in position %d", k+1)
-			assert.Equal(t, test.keyseq[k].Modifiers(), seq[k].Modifiers(), "Assert that key event has equal Modifiers() in position %d", k+1)
+			assert.Equal(t, test.keyseq[k].Key, seq[k].Key, "Assert that key event has equal Key in position %d", k+1)
+			assert.Equal(t, test.keyseq[k].Ch, seq[k].Ch, "Assert that key event has equal Ch in position %d", k+1)
+			assert.Equal(t, test.keyseq[k].Mod, seq[k].Mod, "Assert that key event has equal Mod in position %d", k+1)
 		}
 	}
 }

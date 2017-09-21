@@ -37,8 +37,29 @@ func (pms *PMS) handleQuitSignal() {
 	console.Log("Received quit signal, exiting.")
 }
 
+// handleTerminalEvent receives key input signals, checks the sequencer for key
+// bindings, and runs commands if key bindings are found.
 func (pms *PMS) handleTerminalEvent(e term.Event) {
 	console.Log("%+v", e)
+
+	matches := pms.Sequencer.KeyInput(e.Key)
+	seqString := pms.Sequencer.String()
+	statusText := seqString
+
+	input := pms.Sequencer.Match()
+	if !matches || input != nil {
+		// Reset statusbar if there is either no match or a complete match.
+		statusText = ""
+	}
+
+	pms.EventMessage <- message.Sequencef(statusText)
+
+	if input == nil {
+		return
+	}
+
+	console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, input.Command)
+	// FIXME: pms.ui.EventInputCommand <- input.Command
 }
 
 func (pms *PMS) handleEventOption(key string) {

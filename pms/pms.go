@@ -21,7 +21,6 @@ import (
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/term"
 	"github.com/ambientsound/pms/widgets"
-	"github.com/gdamore/tcell"
 
 	"github.com/ambientsound/gompd/mpd"
 )
@@ -371,29 +370,6 @@ func (pms *PMS) UpdatePlayerStatus() error {
 	pms.database.SetPlayerStatus(status)
 
 	return nil
-}
-
-// KeyInput receives key input signals, checks the sequencer for key bindings,
-// and runs commands if key bindings are found.
-func (pms *PMS) KeyInput(ev *tcell.EventKey) {
-	matches := pms.Sequencer.KeyInput(ev)
-	seqString := pms.Sequencer.String()
-	statusText := seqString
-
-	input := pms.Sequencer.Match()
-	if !matches || input != nil {
-		// Reset statusbar if there is either no match or a complete match.
-		statusText = ""
-	}
-
-	pms.EventMessage <- message.Sequencef(statusText)
-
-	if input == nil {
-		return
-	}
-
-	//console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, input.Command)
-	// FIXME: pms.ui.EventInputCommand <- input.Command
 }
 
 func (pms *PMS) Execute(cmd string) {

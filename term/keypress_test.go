@@ -21,6 +21,11 @@ var keypressTests = []keypressTest{
 		"a",
 	},
 	{
+		termbox.Event{Key: termbox.KeySpace},
+		term.KeyPress{termbox.KeySpace, ' ', 0},
+		"<Space>",
+	},
+	{
 		termbox.Event{Key: termbox.KeyCtrlA},
 		term.KeyPress{termbox.KeyCtrlA, 'a', term.ModCtrl},
 		"<Ctrl-A>",
