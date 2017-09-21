@@ -12,6 +12,7 @@ import (
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
+	"github.com/ambientsound/pms/term"
 	"github.com/ambientsound/pms/topbar"
 	"github.com/ambientsound/pms/widgets"
 )
@@ -45,7 +46,21 @@ func New() *PMS {
 
 	pms.CLI = input.NewCLI(pms.API())
 
+	pms.terminal = term.New()
+
 	return pms
+}
+
+// StartThreads starts threads that allow PMS to operate asynchronously.
+func (pms *PMS) StartThreads() {
+	// Terminal input thread
+	go pms.terminal.Loop()
+
+	// MPD connection thread
+	go pms.Connection.Run()
+
+	// Every second counts
+	go pms.RunTicker()
 }
 
 // setupAPI creates an API object

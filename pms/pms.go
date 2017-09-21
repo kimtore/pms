@@ -19,6 +19,7 @@ import (
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
+	"github.com/ambientsound/pms/term"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/gdamore/tcell"
 
@@ -33,6 +34,9 @@ type PMS struct {
 	Sequencer  *keys.Sequencer
 	stylesheet style.Stylesheet
 	mutex      sync.Mutex
+
+	// Terminal event interface
+	terminal *term.Sampler
 
 	// collection of data
 	database *db.Instance

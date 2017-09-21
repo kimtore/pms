@@ -120,11 +120,8 @@ func main() {
 	// Set up the self-healing connection.
 	p.Connection = pms.NewConnection(p.EventMessage)
 	p.Connection.Open(host, port, password)
-	go p.Connection.Run()
 
-	// Every second counts
-	go p.RunTicker()
-
+	p.StartThreads()
 	p.Main()
 
 	console.Log("Exiting normally.")

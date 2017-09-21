@@ -3,6 +3,7 @@ package pms
 import (
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/message"
+	"github.com/ambientsound/pms/term"
 )
 
 // Main does (eventually) read, evaluate, print, loop
@@ -20,6 +21,8 @@ func (pms *PMS) Main() {
 			pms.handleEventOption(key)
 		case msg := <-pms.EventMessage:
 			pms.handleEventMessage(msg)
+		case e := <-pms.terminal.Events:
+			pms.handleTerminalEvent(e)
 			/*
 				case ev := <-pms.ui.EventKeyInput:
 					pms.KeyInput(ev)
@@ -32,6 +35,10 @@ func (pms *PMS) Main() {
 
 func (pms *PMS) handleQuitSignal() {
 	console.Log("Received quit signal, exiting.")
+}
+
+func (pms *PMS) handleTerminalEvent(e term.Event) {
+	console.Log("%+v", e)
 }
 
 func (pms *PMS) handleEventOption(key string) {
