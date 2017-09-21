@@ -27,13 +27,6 @@ const (
 	ModeBuffered             // Buffered mode will keep a buffer of text, and provide tab completion, history, and navigation.
 )
 
-// KeyPress represents a single keypress.
-type KeyPress struct {
-	Ch  rune
-	Key termbox.Key
-	Mod termbox.Modifier
-}
-
 // Event represents a
 type Event struct {
 	Type EventType
@@ -59,11 +52,7 @@ func (s *Sampler) bufferKey(te termbox.Event) Event {
 	case ModeDirect:
 		return Event{
 			Type: EventKey,
-			Key: KeyPress{
-				Ch:  te.Ch,
-				Key: te.Key,
-				Mod: te.Mod,
-			},
+			Key:  ParseKey(te),
 		}
 	default:
 		return Event{}

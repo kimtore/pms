@@ -24,6 +24,21 @@ var samplerTests = []sampleTest{
 			{Type: term.EventResize},
 		},
 	},
+	{
+		"Keypress event on 'a'",
+		[]termbox.Event{
+			{
+				Type: termbox.EventKey,
+				Ch:   'a',
+			},
+		},
+		[]term.Event{
+			{
+				Type: term.EventKey,
+				Key:  term.KeyPress{0, 'a', 0},
+			},
+		},
+	},
 }
 
 func TestSampler(t *testing.T) {
@@ -34,7 +49,8 @@ func TestSampler(t *testing.T) {
 
 		for i, input := range test.input {
 			output := sampler.SampleEvent(input)
-			assert.Equal(t, test.output[i], output)
+			assert.Equal(t, test.output[i].Type, output.Type)
+			assert.Equal(t, test.output[i].Key, output.Key)
 		}
 	}
 }
