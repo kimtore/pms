@@ -34,6 +34,7 @@ func New() *PMS {
 	pms.EventPlayer = make(chan int, 1024)
 	pms.EventOption = make(chan string, 1024)
 	pms.EventQueue = make(chan int, 1024)
+	pms.eventInputCommand = make(chan string, 1024)
 	pms.QuitSignal = make(chan int, 1)
 	pms.stylesheet = make(style.Stylesheet)
 

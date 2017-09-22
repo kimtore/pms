@@ -63,11 +63,14 @@ type PMS struct {
 	// EventPlayer receives a signal when MPD's "player" status changes in an IDLE event.
 	EventPlayer chan int
 
-	// EventPlayer receives a signal when MPD's "playlist" status changes in an IDLE event.
+	// EventQueue receives a signal when MPD's "playlist" status changes in an IDLE event.
 	EventQueue chan int
 
-	// EventPlayer receives a signal when PMS should quit.
+	// QuitSignal receives a signal when PMS should quit.
 	QuitSignal chan int
+
+	// eventInputCommand sends script lines to the evaluator.
+	eventInputCommand chan string
 }
 
 func makeAddress(host, port string) string {

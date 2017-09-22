@@ -23,12 +23,8 @@ func (pms *PMS) Main() {
 			pms.handleEventMessage(msg)
 		case e := <-pms.terminal.Events:
 			pms.handleTerminalEvent(e)
-			/*
-				case ev := <-pms.ui.EventKeyInput:
-					pms.KeyInput(ev)
-				case s := <-pms.ui.EventInputCommand:
-					pms.Execute(s)
-			*/
+		case s := <-pms.eventInputCommand:
+			pms.Execute(s)
 		}
 	}
 }
@@ -59,7 +55,7 @@ func (pms *PMS) handleTerminalEvent(e term.Event) {
 	}
 
 	console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, input.Command)
-	// FIXME: pms.ui.EventInputCommand <- input.Command
+	pms.eventInputCommand <- input.Command
 }
 
 func (pms *PMS) handleEventOption(key string) {
