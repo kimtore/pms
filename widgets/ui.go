@@ -1,8 +1,12 @@
 package widgets
 
 import (
+	"time"
+
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/term"
 	termbox "github.com/nsf/termbox-go"
 )
 
@@ -44,24 +48,40 @@ func NewUI(a api.API) *UI {
 	ui.Songlist.SetStylesheet(ui.api.Styles())
 	ui.Multibar.SetStylesheet(ui.api.Styles())
 
+	// Layout all widgets
+	ui.Resize()
+
 	return ui
 }
 
-func (ui *UI) Refresh() {
+// Resize calculates the size of all widgets.
+func (ui *UI) Resize() {
+	// FIXME: set dirty
+	//ui.api.Db().Left().SetUpdated()
+	//ui.api.Db().Right().SetUpdated()
+	w, h := termbox.Size()
+	console.Log("Terminal resized: %dx%d characters", w, h)
+	termbox.Flush()
+	ui.Topbar.SetCanvas(term.NewCanvas(0, 0, w, h))
+}
+
+func (ui *UI) Draw() {
+	timer := time.Now()
+	ui.Topbar.Draw()
+	termbox.Flush()
+	console.Log("UI::Draw() in %s", time.Since(timer).String())
+}
+
+// Loop is the main UI thread, which must never block.
+func (ui *UI) Loop() {
+	for {
+		ui.Draw()
+		time.Sleep(time.Second * 1)
+	}
 }
 
 func (ui *UI) CurrentSonglistWidget() api.SonglistWidget {
 	return ui.Songlist
-}
-
-func (ui *UI) Resize() {
-	ui.api.Db().Left().SetUpdated()
-	ui.api.Db().Right().SetUpdated()
-	/*
-		ui.CreateLayout()
-		ui.Layout.Resize()
-		ui.PostEventWidgetResize(ui)
-	*/
 }
 
 func (ui *UI) UpdateCursor() {

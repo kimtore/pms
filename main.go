@@ -10,6 +10,7 @@ import (
 	"github.com/ambientsound/pms/pms"
 	"github.com/ambientsound/pms/version"
 	"github.com/ambientsound/pms/xdg"
+	termbox "github.com/nsf/termbox-go"
 
 	"github.com/jessevdk/go-flags"
 )
@@ -92,6 +93,7 @@ func main() {
 	console.Log("Starting Practical Music Search.")
 
 	p := pms.New()
+	defer termbox.Close()
 	defer func() {
 		p.QuitSignal <- 0
 	}()

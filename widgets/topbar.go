@@ -3,9 +3,8 @@ package widgets
 import (
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/style"
+	"github.com/ambientsound/pms/term"
 	"github.com/ambientsound/pms/topbar"
-	"github.com/gdamore/tcell"
-	"github.com/gdamore/tcell/views"
 )
 
 // Pieces may be aligned to left, center or right.
@@ -22,9 +21,11 @@ type Topbar struct {
 	matrix *topbar.MatrixStatement
 	height int // height is both physical and matrix height
 
-	view views.View
+	// move to base class
+	canvas term.Canvas
+	dirty  bool
+
 	style.Styled
-	views.WidgetWatchers
 }
 
 // NewTopbar creates a new Topbar widget in the desired dimensions.
@@ -35,6 +36,13 @@ func NewTopbar() *Topbar {
 	}
 }
 
+// SetCanvas provides a new drawing area for the widget.
+func (w *Topbar) SetCanvas(c term.Canvas) {
+	w.canvas = c
+	console.Log("Topbar has new canvas: %+v", w.canvas)
+	w.SetDirty(true)
+}
+
 // Setup sets up the topbar using the provided configuration string.
 func (w *Topbar) SetMatrix(matrix *topbar.MatrixStatement) {
 	w.matrix = matrix
@@ -42,12 +50,17 @@ func (w *Topbar) SetMatrix(matrix *topbar.MatrixStatement) {
 	console.Log("Setting up new topbar with height %d", w.height)
 }
 
+func (w *Topbar) SetDirty(dirty bool) {
+	w.dirty = dirty
+	console.Log("Topbar sets dirty flag to %v", w.dirty)
+}
+
 // Draw draws all the pieces in the matrix, from top to bottom, right to left.
 func (w *Topbar) Draw() {
 	xmax, _ := w.Size()
 
 	// Blank screen first
-	w.view.Fill(' ', w.Style("topbar"))
+	w.canvas.Fill(' ', w.Style("topbar"))
 
 	for y, rowStmt := range w.matrix.Rows {
 		// Calculate window buffer width
@@ -69,19 +82,10 @@ func (w *Topbar) Draw() {
 				frag := fragmentStmt.Instance
 				text, styleStr := frag.Text()
 				style := w.Style(styleStr)
-				x = w.drawNext(x, y, text, style)
+				x = w.canvas.Print(x, y, text, style)
 			}
 		}
 	}
-}
-
-// drawNext draws a string and returns the resulting X position.
-func (w *Topbar) drawNext(x, y int, s string, style tcell.Style) int {
-	for _, r := range s {
-		w.view.SetContent(x, y, r, nil, style)
-		x++
-	}
-	return x
 }
 
 // autoAlign returns a best-guess align for a Piece: the outermost indices are
@@ -120,18 +124,8 @@ func pieceTextWidth(piece *topbar.PieceStatement) int {
 	return width
 }
 
-func (w *Topbar) HandleEvent(ev tcell.Event) bool {
-	return false
-}
-
+// Returns the requested size.
 func (w *Topbar) Size() (int, int) {
-	x, _ := w.view.Size()
+	x, _ := w.canvas.Size()
 	return x, w.height
-}
-
-func (w *Topbar) Resize() {
-}
-
-func (w *Topbar) SetView(v views.View) {
-	w.view = v
 }
