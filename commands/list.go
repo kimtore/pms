@@ -31,7 +31,6 @@ func (cmd *List) Execute(class int, s string) error {
 	var err error
 	var index int
 
-	ui := cmd.api.UI()
 	collection := cmd.api.Db().Panel()
 
 	switch class {
@@ -100,9 +99,7 @@ func (cmd *List) Execute(class int, s string) error {
 					return fmt.Errorf("No songlists left.")
 				}
 				console.Log("Songlist was not found in the list of songlists. Activating fallback songlist '%s'.", fallback.Name())
-				ui.PostFunc(func() {
-					collection.Activate(fallback)
-				})
+				collection.Activate(fallback)
 				return nil
 			} else {
 				collection.Remove(index)
@@ -135,9 +132,7 @@ func (cmd *List) Execute(class int, s string) error {
 			return fmt.Errorf("Unexpected END, expected position. Try one of: next prev <number>")
 		}
 
-		ui.PostFunc(func() {
-			err = collection.ActivateIndex(index)
-		})
+		err = collection.ActivateIndex(index)
 
 	default:
 		return fmt.Errorf("Unknown input '%s', expected END", s)

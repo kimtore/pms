@@ -82,7 +82,6 @@ func (pms *PMS) API() api.API {
 		pms.database.CurrentSong,
 		pms.CurrentSonglistWidget,
 		pms.Stylesheet(),
-		pms.UI,
 	)
 }
 

@@ -65,9 +65,6 @@ type API interface {
 
 	// Styles returns the current stylesheet.
 	Styles() style.Stylesheet
-
-	// UI returns the global UI object.
-	UI() UI
 }
 
 type baseAPI struct {
@@ -86,7 +83,6 @@ type baseAPI struct {
 	song           func() *song.Song
 	songlistWidget func() SonglistWidget
 	styles         style.Stylesheet
-	ui             func() UI
 }
 
 func BaseAPI(
@@ -105,7 +101,6 @@ func BaseAPI(
 	song func() *song.Song,
 	songlistWidget func() SonglistWidget,
 	styles style.Stylesheet,
-	ui func() UI,
 
 ) API {
 	return &baseAPI{
@@ -124,7 +119,6 @@ func BaseAPI(
 		song:           song,
 		songlistWidget: songlistWidget,
 		styles:         styles,
-		ui:             ui,
 	}
 }
 
@@ -190,8 +184,4 @@ func (api *baseAPI) SonglistWidget() SonglistWidget {
 
 func (api *baseAPI) Styles() style.Stylesheet {
 	return api.styles
-}
-
-func (api *baseAPI) UI() UI {
-	return api.ui()
 }

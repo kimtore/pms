@@ -1,35 +1,30 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/input/lexer"
+	termbox "github.com/nsf/termbox-go"
 )
 
-// Quit exits the program.
+// Redraw tries to synchronize the terminal backbuffer and the screen.
 type Redraw struct {
-	command
+	newcommand
 	api api.API
 }
 
+// NewRedraw returns Redraw.
 func NewRedraw(api api.API) Command {
 	return &Redraw{
 		api: api,
 	}
 }
 
-func (cmd *Redraw) Execute(class int, s string) error {
-	ui := cmd.api.UI()
-	switch class {
-	case lexer.TokenEnd:
-		ui.PostFunc(func() {
-			cmd.api.Db().Left().SetUpdated()
-			cmd.api.Db().Right().SetUpdated()
-			ui.Refresh()
-		})
-		return nil
-	default:
-		return fmt.Errorf("Unknown input '%s', expected END", s)
-	}
+// Parse implements Command.
+func (cmd *Redraw) Parse() error {
+	return cmd.ParseEnd()
+}
+
+// Exec implements Command.
+func (cmd *Redraw) Exec() error {
+	// FIXME: set all models as dirty
+	return termbox.Sync()
 }
