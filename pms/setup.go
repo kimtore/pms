@@ -59,12 +59,6 @@ func (pms *PMS) StartThreads() {
 
 	// MPD connection thread
 	go pms.Connection.Run()
-
-	// User interface thread
-	go pms.ui.Loop()
-
-	// Every second counts
-	go pms.RunTicker()
 }
 
 // setupAPI creates an API object

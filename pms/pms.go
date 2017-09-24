@@ -152,16 +152,6 @@ func (pms *PMS) UI() api.UI {
 	return nil
 }
 
-// RunTicker starts a ticker that will increase the elapsed time every second.
-func (pms *PMS) RunTicker() {
-	ticker := time.NewTicker(time.Millisecond * 1000)
-	defer ticker.Stop()
-	for range ticker.C {
-		pms.database.SetPlayerStatus(pms.database.PlayerStatus().Tick())
-		pms.EventPlayer <- 0
-	}
-}
-
 // SyncLibrary retrieves the MPD library and stores it as a Songlist in the
 // PMS.Library variable. Furthermore, the search index is opened, and if it is
 // older than the database version, a reindex task is started.

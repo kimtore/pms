@@ -1,6 +1,8 @@
 package pms
 
 import (
+	"time"
+
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/term"
@@ -8,8 +10,13 @@ import (
 
 // Main does (eventually) read, evaluate, print, loop
 func (pms *PMS) Main() {
+	ticker := time.NewTicker(time.Millisecond * 1000)
+	defer ticker.Stop()
+
 	for {
 		select {
+		case <-ticker.C:
+			pms.handleTicker()
 		case <-pms.Connection.Connected:
 			go pms.handleConnected()
 		case subsystem := <-pms.Connection.IdleEvents:
@@ -26,7 +33,13 @@ func (pms *PMS) Main() {
 		case s := <-pms.eventInputCommand:
 			pms.Execute(s)
 		}
+		pms.ui.Draw()
 	}
+}
+
+func (pms *PMS) handleTicker() {
+	pms.database.SetPlayerStatus(pms.database.PlayerStatus().Tick())
+	pms.EventPlayer <- 0
 }
 
 func (pms *PMS) handleQuitSignal() {

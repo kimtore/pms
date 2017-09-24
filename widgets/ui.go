@@ -73,14 +73,6 @@ func (ui *UI) Draw() {
 	console.Log("UI::Draw() in %s", time.Since(timer).String())
 }
 
-// Loop is the main UI thread, which must never block.
-func (ui *UI) Loop() {
-	for {
-		ui.Draw()
-		time.Sleep(time.Second * 1)
-	}
-}
-
 func (ui *UI) CurrentSonglistWidget() api.SonglistWidget {
 	return ui.Songlist
 }
