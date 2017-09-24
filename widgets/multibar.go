@@ -13,6 +13,7 @@ import (
 	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
+	"github.com/ambientsound/pms/term"
 	"github.com/ambientsound/pms/utils"
 
 	"github.com/gdamore/tcell"
@@ -34,7 +35,7 @@ type MultibarWidget struct {
 	msg         message.Message
 	runes       []rune
 	tabComplete *tabcomplete.TabComplete
-	textStyle   tcell.Style
+	textStyle   term.Style
 
 	// Three histories, one for each input mode
 	history [3]history
@@ -148,7 +149,7 @@ func (m *MultibarWidget) setRunes(r []rune) {
 
 // Draw the statusbar part of the Multibar.
 func (m *MultibarWidget) DrawStatusbar() {
-	var st tcell.Style
+	var st term.Style
 	var s string
 
 	switch m.inputMode {
@@ -168,7 +169,9 @@ func (m *MultibarWidget) DrawStatusbar() {
 		}
 	}
 
-	m.SetLeft(s, st)
+	_, _ = s, st
+
+	// FIXME: m.SetLeft(s, st)
 }
 
 func (m *MultibarWidget) RuneString() string {

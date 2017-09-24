@@ -1,7 +1,6 @@
 package term
 
 import (
-	"github.com/gdamore/tcell"
 	termbox "github.com/nsf/termbox-go"
 )
 
@@ -29,23 +28,20 @@ func NewCanvas(x, y, width, height int) Canvas {
 }
 
 // Fill the entire canvas with a character.
-func (c Canvas) Fill(r rune, s tcell.Style) {
-	var fg, bg termbox.Attribute
+func (c Canvas) Fill(r rune, s Style) {
+	fg, bg := s.Attr()
 	for y := c.y1; y <= c.y2; y++ {
 		for x := c.x1; x <= c.x2; x++ {
 			termbox.SetCell(x, y, r, fg, bg)
-			x++
 		}
-		y++
 	}
 }
 
 // Print text onto the canvas.
-func (c Canvas) Print(x, y int, s string, st tcell.Style) int {
-	var fg, bg termbox.Attribute
+func (c Canvas) Print(x, y int, s string, st Style) int {
 	x += c.x1
 	y += c.y1
-	//fg, bg, _ := s.Decompose()
+	fg, bg := st.Attr()
 	for _, ch := range s {
 		termbox.SetCell(x, y, ch, fg, bg)
 		x++

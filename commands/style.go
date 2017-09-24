@@ -6,7 +6,7 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/gdamore/tcell"
+	"github.com/ambientsound/pms/term"
 )
 
 // Style manipulates the style table, allowing to set colors and attributes for UI elements.
@@ -15,7 +15,7 @@ type Style struct {
 	api api.API
 
 	styleKey   string
-	styleValue tcell.Style
+	styleValue term.Style
 
 	background bool
 	foreground bool
@@ -87,9 +87,7 @@ func (cmd *Style) setTabCompleteNames(lit string) {
 // setTabCompleteStyles sets the tab complete list to available styles.
 func (cmd *Style) setTabCompleteStyles(lit string) {
 	list := []string{
-		"blink",
 		"bold",
-		"dim",
 		"reverse",
 		"underline",
 	}
@@ -98,12 +96,8 @@ func (cmd *Style) setTabCompleteStyles(lit string) {
 
 func (cmd *Style) mergeStyle(lit string) error {
 	switch lit {
-	case "blink":
-		cmd.styleValue = cmd.styleValue.Blink(true)
 	case "bold":
 		cmd.styleValue = cmd.styleValue.Bold(true)
-	case "dim":
-		cmd.styleValue = cmd.styleValue.Dim(true)
 	case "reverse":
 		cmd.styleValue = cmd.styleValue.Reverse(true)
 	case "underline":
@@ -112,7 +106,7 @@ func (cmd *Style) mergeStyle(lit string) error {
 		if lit[0] == '@' {
 			lit = "#" + lit[1:]
 		}
-		color := tcell.GetColor(lit)
+		color := term.GetColor(lit)
 		switch {
 		case !cmd.foreground:
 			cmd.styleValue = cmd.styleValue.Foreground(color)

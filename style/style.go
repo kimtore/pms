@@ -1,13 +1,13 @@
 package style
 
 import (
-	"github.com/gdamore/tcell"
+	"github.com/ambientsound/pms/term"
 )
 
-type Stylesheet map[string]tcell.Style
+type Stylesheet map[string]term.Style
 
 type Stylable interface {
-	Style(string) tcell.Style
+	Style(string) term.Style
 	SetStylesheet(Stylesheet)
 	Stylesheet() Stylesheet
 }
@@ -17,7 +17,7 @@ type Styled struct {
 	stylesheet Stylesheet
 }
 
-func (w *Styled) Style(s string) tcell.Style {
+func (w *Styled) Style(s string) term.Style {
 	return w.stylesheet[s]
 }
 

@@ -33,6 +33,7 @@ func NewUI(a api.API) *UI {
 	}
 
 	termbox.HideCursor()
+	termbox.SetOutputMode(termbox.Output256)
 
 	ui.api = a
 

@@ -35,7 +35,8 @@ func (c *ColumnheadersWidget) Draw() {
 		title := []rune(strings.Title(col.Tag()))
 		p := 0
 		for _, r := range title {
-			c.view.SetContent(x+p, y, r, nil, c.Style("header"))
+			// FIXME: c.view.SetContent(x+p, y, r, nil, c.Style("header"))
+			_, _ = y, r
 			p++
 		}
 		x += col.Width()

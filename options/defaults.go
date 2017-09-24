@@ -18,15 +18,15 @@ set sort=file,track,disc,album,year,albumartistsort
 set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed ${state} $time;|[${list|index}/${list|total}] ${list|title}||;;"
 
 # Song tag styles
-style album teal
+style album cyan
 style artist yellow
 style date green
-style time darkmagenta
+style time blue
 style title white bold
-style disc darkgreen
+style disc green
 style track green
 style year green
-style originalyear darkgreen
+style originalyear green
 
 # Tracklist styles
 style allTagsMissing red
@@ -39,16 +39,16 @@ style selection white blue
 # Topbar styles
 style elapsedTime green
 style elapsedPercentage green
-style listIndex darkblue
-style listTitle blue bold
-style listTotal darkblue
+style listIndex yellow
+style listTitle bold
+style listTotal yellow
 style mute red
 style shortName bold
 style state default
-style switches teal
+style switches cyan
 style tagMissing red
-style topbar darkgray
-style version gray
+style topbar default
+style version default
 style volume green
 
 # Other styles

@@ -10,6 +10,7 @@ import (
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
+	"github.com/ambientsound/pms/term"
 	"github.com/ambientsound/pms/utils"
 
 	"github.com/gdamore/tcell"
@@ -36,23 +37,23 @@ func NewSonglistWidget(a api.API) (w *SonglistWidget) {
 	}
 }
 
-func (w *SonglistWidget) drawNext(x, y, strmin, strmax int, runes []rune, style tcell.Style) int {
+func (w *SonglistWidget) drawNext(x, y, strmin, strmax int, runes []rune, style term.Style) int {
 	strmin = utils.Min(len(runes), strmin)
 	n := 0
 	for n < strmin {
-		w.viewport.SetContent(x, y, runes[n], nil, style)
+		// FIXME: w.viewport.SetContent(x, y, runes[n], nil, style)
 		n++
 		x++
 	}
 	for n < strmax {
-		w.viewport.SetContent(x, y, ' ', nil, style)
+		// FIXME: w.viewport.SetContent(x, y, ' ', nil, style)
 		n++
 		x++
 	}
 	return x
 }
 
-func (w *SonglistWidget) drawOneTagLine(x, y, xmax int, s *song.Song, tag string, defaultStyle string, style tcell.Style, lineStyled bool) int {
+func (w *SonglistWidget) drawOneTagLine(x, y, xmax int, s *song.Song, tag string, defaultStyle string, style term.Style, lineStyled bool) int {
 	if !lineStyled {
 		style = w.Style(defaultStyle)
 	}
