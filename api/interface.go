@@ -17,9 +17,10 @@ type Collection interface {
 }
 
 type SonglistWidget interface {
-	GetVisibleBoundaries() (int, int)
-	ScrollViewport(int, bool)
+	Bottom() int
+	Scroll(int, bool)
 	Size() (int, int)
+	Top() int
 }
 
 type MultibarWidget interface {

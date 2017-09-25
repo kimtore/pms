@@ -70,14 +70,11 @@ func (cmd *Cursor) Parse() error {
 	case "end":
 		cmd.absolute = list.Len() - 1
 	case "high":
-		ymin, _ := songlistWidget.GetVisibleBoundaries()
-		cmd.absolute = ymin
+		cmd.absolute = songlistWidget.Top()
 	case "middle":
-		ymin, ymax := songlistWidget.GetVisibleBoundaries()
-		cmd.absolute = (ymin + ymax) / 2
+		cmd.absolute = (songlistWidget.Top() + songlistWidget.Bottom()) / 2
 	case "low":
-		_, ymax := songlistWidget.GetVisibleBoundaries()
-		cmd.absolute = ymax
+		cmd.absolute = songlistWidget.Bottom()
 	case "current":
 		cmd.current = true
 	case "random":

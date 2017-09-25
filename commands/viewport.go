@@ -101,7 +101,8 @@ func (cmd *Viewport) scrollFullPage(direction int) {
 // or negative to move the viewport high (scrolled further up; cursor low).
 func (cmd *Viewport) scrollToCursorAnchor(position int) {
 	widget := cmd.api.SonglistWidget()
-	ymin, ymax := widget.GetVisibleBoundaries()
+	ymin := widget.Top()
+	ymax := widget.Bottom()
 	cursor := cmd.api.Songlist().Cursor()
 	if position < 0 {
 		cmd.relative = cursor - ymax
@@ -118,7 +119,7 @@ func (cmd *Viewport) scrollToCursorAnchor(position int) {
 func (cmd *Viewport) Exec() error {
 	widget := cmd.api.SonglistWidget()
 
-	widget.ScrollViewport(cmd.relative, cmd.movecursor)
+	widget.Scroll(cmd.relative, cmd.movecursor)
 
 	return nil
 }

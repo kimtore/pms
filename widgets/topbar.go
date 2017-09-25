@@ -3,7 +3,6 @@ package widgets
 import (
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/style"
-	"github.com/ambientsound/pms/term"
 	"github.com/ambientsound/pms/topbar"
 )
 
@@ -21,10 +20,7 @@ type Topbar struct {
 	matrix *topbar.MatrixStatement
 	height int // height is both physical and matrix height
 
-	// move to base class
-	canvas term.Canvas
-	dirty  bool
-
+	canvas
 	style.Styled
 }
 
@@ -36,13 +32,6 @@ func NewTopbar() *Topbar {
 	}
 }
 
-// SetCanvas provides a new drawing area for the widget.
-func (w *Topbar) SetCanvas(c term.Canvas) {
-	w.canvas = c
-	console.Log("Topbar has new canvas: %+v", w.canvas)
-	w.SetDirty(true)
-}
-
 // Setup sets up the topbar using the provided configuration string.
 func (w *Topbar) SetMatrix(matrix *topbar.MatrixStatement) {
 	w.matrix = matrix
@@ -50,17 +39,12 @@ func (w *Topbar) SetMatrix(matrix *topbar.MatrixStatement) {
 	console.Log("Setting up new topbar with height %d", w.height)
 }
 
-func (w *Topbar) SetDirty(dirty bool) {
-	w.dirty = dirty
-	console.Log("Topbar sets dirty flag to %v", w.dirty)
-}
-
 // Draw draws all the pieces in the matrix, from top to bottom, right to left.
 func (w *Topbar) Draw() {
-	xmax, _ := w.Size()
+	xmax, _ := w.c.Size()
 
 	// Blank screen first
-	w.canvas.Fill(' ', w.Style("topbar"))
+	w.c.Fill(' ', w.Style("topbar"))
 
 	for y, rowStmt := range w.matrix.Rows {
 		// Calculate window buffer width
@@ -82,7 +66,7 @@ func (w *Topbar) Draw() {
 				frag := fragmentStmt.Instance
 				text, styleStr := frag.Text()
 				style := w.Style(styleStr)
-				x = w.canvas.Print(x, y, text, style)
+				x = w.c.Print(x, y, text, style)
 			}
 		}
 	}
@@ -125,7 +109,6 @@ func pieceTextWidth(piece *topbar.PieceStatement) int {
 }
 
 // Returns the requested size.
-func (w *Topbar) Size() (int, int) {
-	x, _ := w.canvas.Size()
-	return x, w.height
+func (w *Topbar) Height() int {
+	return w.height
 }

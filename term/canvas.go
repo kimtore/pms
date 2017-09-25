@@ -21,7 +21,7 @@ func NewCanvas(x, y, width, height int) Canvas {
 		x1:     x,
 		y1:     y,
 		x2:     x + width,
-		y2:     y + width,
+		y2:     y + height,
 		width:  width,
 		height: height,
 	}
@@ -35,6 +35,15 @@ func (c Canvas) Fill(r rune, s Style) {
 			termbox.SetCell(x, y, r, fg, bg)
 		}
 	}
+}
+
+// Print text onto the canvas.
+func (c Canvas) SetCell(x, y int, r rune, st Style) int {
+	x += c.x1
+	y += c.y1
+	fg, bg := st.Attr()
+	termbox.SetCell(x, y, r, fg, bg)
+	return x + 1
 }
 
 // Print text onto the canvas.
@@ -54,7 +63,15 @@ func (c Canvas) Print(x, y int, s string, st Style) int {
 
 // Return the canvas size.
 func (c Canvas) Size() (width, height int) {
-	width = c.x2 - c.x1
-	height = c.y2 - c.y1
-	return
+	return c.Width(), c.Height()
+}
+
+// Return the canvas height.
+func (c Canvas) Height() int {
+	return c.y2 - c.y1
+}
+
+// Return the canvas width.
+func (c Canvas) Width() int {
+	return c.x2 - c.x1
 }

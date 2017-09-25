@@ -22,14 +22,14 @@ type UI struct {
 	searchResult songlist.Songlist
 }
 
-func NewUI(a api.API) *UI {
+func NewUI(a api.API) (*UI, error) {
 	var err error
 
 	ui := &UI{}
 
 	err = termbox.Init()
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	termbox.HideCursor()
@@ -52,7 +52,7 @@ func NewUI(a api.API) *UI {
 	// Layout all widgets
 	ui.Resize()
 
-	return ui
+	return ui, nil
 }
 
 // Resize calculates the size of all widgets.
@@ -60,17 +60,30 @@ func (ui *UI) Resize() {
 	// FIXME: set dirty
 	//ui.api.Db().Left().SetUpdated()
 	//ui.api.Db().Right().SetUpdated()
+	termbox.Flush()
 	w, h := termbox.Size()
 	console.Log("Terminal resized: %dx%d characters", w, h)
-	termbox.Flush()
-	ui.Topbar.SetCanvas(term.NewCanvas(0, 0, w, h))
+	ui.Topbar.SetCanvas(term.NewCanvas(0, 0, w, ui.Topbar.Height()))
+	ui.Songlist.SetCanvas(term.NewCanvas(0, ui.Topbar.Height(), w, h-ui.Topbar.Height()-1))
+	ui.Songlist.Resize()
 }
 
 func (ui *UI) Draw() {
 	timer := time.Now()
+
+	//t := time.Now()
 	ui.Topbar.Draw()
+	//console.Log("Topbar::Draw() in %s", time.Since(t).String())
+
+	//t = time.Now()
+	ui.Songlist.Draw()
+	//console.Log("Songlist::Draw() in %s", time.Since(t).String())
+
+	//t = time.Now()
 	termbox.Flush()
-	console.Log("UI::Draw() in %s", time.Since(timer).String())
+	//console.Log("Terminal flush in %s", time.Since(t).String())
+
+	console.Log("UI::Draw() total duration %s", time.Since(timer).String())
 }
 
 func (ui *UI) CurrentSonglistWidget() api.SonglistWidget {

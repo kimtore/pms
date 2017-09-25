@@ -92,7 +92,14 @@ func main() {
 
 	console.Log("Starting Practical Music Search.")
 
-	p := pms.New()
+	p, err := pms.New()
+	if err != nil {
+		termbox.Close()
+		fmt.Printf("%s", err)
+		console.Log("Could not initialize: %s", err)
+		os.Exit(1)
+	}
+
 	defer termbox.Close()
 	defer func() {
 		p.QuitSignal <- 0

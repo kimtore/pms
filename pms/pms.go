@@ -73,6 +73,75 @@ type PMS struct {
 	eventInputCommand chan string
 }
 
+func New() (*PMS, error) {
+	var err error
+
+	pms := &PMS{}
+
+	pms.database = db.New()
+
+	pms.database.SetQueue(songlist.NewQueue(pms.CurrentMpdClient))
+	pms.database.SetLibrary(songlist.NewLibrary())
+	pms.database.Panel().Add(pms.database.Queue())
+	pms.database.Panel().Add(pms.database.Library())
+	pms.database.Panel().Activate(pms.database.Queue())
+
+	pms.EventLibrary = make(chan int, 1024)
+	pms.EventList = make(chan int, 1024)
+	pms.EventMessage = make(chan message.Message, 1024)
+	pms.EventPlayer = make(chan int, 1024)
+	pms.EventOption = make(chan string, 1024)
+	pms.EventQueue = make(chan int, 1024)
+	pms.eventInputCommand = make(chan string, 1024)
+	pms.QuitSignal = make(chan int, 1)
+	pms.stylesheet = make(style.Stylesheet)
+
+	pms.Options = options.New()
+	pms.Options.AddDefaultOptions()
+
+	pms.Sequencer = keys.NewSequencer()
+
+	pms.ui, err = widgets.NewUI(pms.API())
+	if err != nil {
+		return nil, fmt.Errorf("Error while setting up graphical interface: %s", err)
+	}
+
+	pms.CLI = input.NewCLI(pms.API())
+
+	pms.terminal = term.New()
+
+	return pms, nil
+}
+
+// StartThreads starts threads that allow PMS to operate asynchronously.
+func (pms *PMS) StartThreads() {
+	// Terminal input thread
+	go pms.terminal.Loop()
+
+	// MPD connection thread
+	go pms.Connection.Run()
+}
+
+// setupAPI creates an API object
+func (pms *PMS) API() api.API {
+	return api.BaseAPI(
+		pms.Database,
+		pms.EventList,
+		pms.EventMessage,
+		pms.EventOption,
+		pms.database.Library,
+		pms.CurrentMpdClient,
+		pms.Multibar,
+		pms.Options,
+		pms.database.PlayerStatus,
+		pms.database.Queue,
+		pms.QuitSignal,
+		pms.Sequencer,
+		pms.database.CurrentSong,
+		pms.CurrentSonglistWidget,
+		pms.Stylesheet(),
+	)
+}
 func makeAddress(host, port string) string {
 	return fmt.Sprintf("%s:%s", host, port)
 }

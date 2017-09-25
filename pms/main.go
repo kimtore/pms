@@ -6,6 +6,7 @@ import (
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/message"
 	"github.com/ambientsound/pms/term"
+	"github.com/ambientsound/pms/topbar"
 )
 
 // Main does (eventually) read, evaluate, print, loop
@@ -50,6 +51,16 @@ func (pms *PMS) handleQuitSignal() {
 // bindings, and runs commands if key bindings are found.
 func (pms *PMS) handleTerminalEvent(e term.Event) {
 	console.Log("%+v", e)
+
+	switch e.Type {
+	case term.EventKey:
+		break
+	case term.EventResize:
+		pms.ui.Resize()
+		return
+	default:
+		return
+	}
 
 	matches := pms.Sequencer.KeyInput(e.Key)
 	seqString := pms.Sequencer.String()
@@ -114,5 +125,16 @@ func (pms *PMS) handleEventIdle(subsystem string) {
 	if err != nil {
 		pms.Error("Lost sync with MPD; reconnecting.")
 		pms.Connection.Close()
+	}
+}
+
+func (pms *PMS) setupTopbar() {
+	config := pms.Options.StringValue("topbar")
+	matrix, err := topbar.Parse(pms.API(), config)
+	if err == nil {
+		pms.ui.Topbar.SetMatrix(matrix)
+		pms.ui.Resize()
+	} else {
+		pms.Error("Error in topbar configuration: %s", err)
 	}
 }

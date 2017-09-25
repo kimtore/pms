@@ -1,8 +1,7 @@
 package widgets
 
 import (
-	"fmt"
-	"math"
+	"strings"
 	"time"
 
 	"github.com/ambientsound/pms/api"
@@ -12,41 +11,66 @@ import (
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/term"
 	"github.com/ambientsound/pms/utils"
-
-	"github.com/gdamore/tcell"
-	"github.com/gdamore/tcell/views"
 )
 
 // SonglistWidget is a tcell widget which draws a Songlist on the screen. It
 // maintains a list of songlists which can be cycled through.
 type SonglistWidget struct {
-	api     api.API
-	columns songlist.Columns
-
-	view     views.View
-	viewport views.ViewPort
+	api      api.API
+	columns  songlist.Columns
 	lastDraw time.Time
+	viewy    int
+	tags     []string
 
+	canvas
 	style.Styled
-	views.WidgetWatchers
 }
 
+// NewSonglistWidget returns SonglistWidget.
 func NewSonglistWidget(a api.API) (w *SonglistWidget) {
 	return &SonglistWidget{
 		api: a,
 	}
 }
 
+// Name returns a human-readable name for this songlist.
+func (w *SonglistWidget) Name() string {
+	return w.List().Name()
+}
+
+// SetColumns sets which columns that should be visible
+func (w *SonglistWidget) SetColumns(tags []string) {
+	w.tags = tags
+	w.Resize()
+}
+
+// Resize expands the tag column widths.
+func (w *SonglistWidget) Resize() {
+	w.columns = w.List().Columns(w.tags)
+	w.columns.Expand(w.c.Width())
+}
+
+// Panel is a shorthand function, returning the panel assigned to this songlist
+// widget (left or right).
+func (w *SonglistWidget) Panel() *songlist.Collection {
+	return w.api.Db().Panel()
+}
+
+// List returns the active panel's songlist.
+func (w *SonglistWidget) List() songlist.Songlist {
+	return w.Panel().Current()
+}
+
 func (w *SonglistWidget) drawNext(x, y, strmin, strmax int, runes []rune, style term.Style) int {
 	strmin = utils.Min(len(runes), strmin)
 	n := 0
 	for n < strmin {
-		// FIXME: w.viewport.SetContent(x, y, runes[n], nil, style)
+		w.c.SetCell(x, y, runes[n], style)
 		n++
 		x++
 	}
 	for n < strmax {
-		// FIXME: w.viewport.SetContent(x, y, ' ', nil, style)
+		w.c.SetCell(x, y, ' ', style)
 		n++
 		x++
 	}
@@ -64,63 +88,63 @@ func (w *SonglistWidget) drawOneTagLine(x, y, xmax int, s *song.Song, tag string
 	return w.drawNext(x, y, strmin, xmax+1, runes, style)
 }
 
-func (w *SonglistWidget) Panel() *songlist.Collection {
-	return w.api.Db().Panel()
-}
-
-func (w *SonglistWidget) List() songlist.Songlist {
-	return w.Panel().Current()
-}
-
 func (w *SonglistWidget) Draw() {
 	//console.Log("Draw() in songlist widget")
 	list := w.List()
-	if w.view == nil || list == nil || list.Songs() == nil {
+	if list == nil || list.Songs() == nil {
 		console.Log("BUG: nil list, aborting draw!")
 		return
 	}
 
+	// Blank screen first
+	w.c.Fill(' ', w.Style("default"))
+
 	// Check if the current panel's songlist has changed.
 	if w.Panel().Updated().After(w.lastDraw) {
-		w.viewport.Resize(0, 0, -1, -1)
-		PostEventListChanged(w)
+		tags := strings.Split(w.api.Options().StringValue("columns"), ",")
+		//cols := list.Columns(tags)
+		w.SetColumns(tags)
 	} else if list.Updated().Before(w.lastDraw) {
 		//console.Log("SonglistWidget::Draw(): not drawing, already drawn")
 		//return
 	}
 
-	//console.Log("SonglistWidget::Draw()")
-
-	// Make sure that the viewport matches the list size.
-	w.setViewportSize()
+	// Make sure viewport shows the cursor.
+	w.viewportToCursor()
 
 	// Update draw time
 	w.lastDraw = time.Now()
 
-	_, ymin, xmax, ymax := w.viewport.GetVisible()
-	currentSong := w.api.Song()
+	// Calculate boundaries
+	xmax, ymax := w.c.Size()
 	xmax += 1
+	ymax = w.Bottom()
+
+	currentSong := w.api.Song()
 	style := w.Style("default")
 	cursor := false
 
-	for y := ymin; y <= ymax; y++ {
+	y := 0
+
+	// Loop through top of viewport to end of viewport or end of list, whichever comes first.
+	for i := w.viewy; i <= ymax; i++ {
 
 		lineStyled := true
-		s := list.Song(y)
+		s := list.Song(i)
 		if s == nil {
 			// Sometimes happens under race conditions; just abort drawing
-			console.Log("Attempting to draw nil song, aborting draw due to possible race condition.")
+			console.Log("Attempting to draw nil song on index %d, aborting draw due to possible race condition.", i)
 			return
 		}
 
 		// Style based on song's role
-		cursor = y == list.Cursor()
+		cursor = i == list.Cursor()
 		switch {
 		case cursor:
 			style = w.Style("cursor")
-		case list.IndexAtSong(y, currentSong):
+		case list.IndexAtSong(i, currentSong):
 			style = w.Style("currentSong")
-		case list.Selected(y):
+		case list.Selected(i):
 			style = w.Style("selection")
 		default:
 			style = w.Style("default")
@@ -161,156 +185,98 @@ func (w *SonglistWidget) Draw() {
 
 			x = w.drawNext(x, y, strmin, strmax, runes, style)
 		}
+
+		y++
 	}
-
-	w.PostEventWidgetContent(w)
-	PostEventScroll(w)
 }
 
-func (w *SonglistWidget) GetVisibleBoundaries() (ymin, ymax int) {
-	_, ymin, _, ymax = w.viewport.GetVisible()
-	return
+// Size returns the dimensions of the widget.
+func (w *SonglistWidget) Size() (int, int) {
+	return w.c.Size()
 }
 
-// Width returns the widget width.
-func (w *SonglistWidget) Width() int {
-	_, _, xmax, _ := w.viewport.GetVisible()
-	return xmax
+// Top returns the index from the dataset that is at the top of the viewport.
+func (w *SonglistWidget) Top() int {
+	return w.viewy
 }
 
-// Height returns the widget height.
-func (w *SonglistWidget) Height() int {
-	_, ymin, _, ymax := w.viewport.GetVisible()
-	return ymax - ymin
+// Bottom returns the index from the dataset that is at the bottom of the
+// viewport. If the dataset is empty, return -1.
+func (w *SonglistWidget) Bottom() int {
+	return utils.Min(
+		w.viewy+w.c.Height()-1, // viewport end
+		w.List().Len()-1,       // dataset size
+	)
 }
 
-func (w *SonglistWidget) setViewportSize() {
-	x, y := w.Size()
-	w.viewport.SetContentSize(x, w.List().Len(), true)
-	w.viewport.SetSize(x, utils.Min(y, w.List().Len()))
-	w.validateViewport()
+// Scroll scrolls the viewport by delta rows, as far as possible.
+// If movecursor is false, the cursor is kept pointing at the same song where
+// possible. If true, the cursor is moved delta rows.
+func (w *SonglistWidget) Scroll(delta int, movecursor bool) {
+	if movecursor {
+		w.List().MoveCursor(delta)
+	}
+	w.SetViewport(w.viewy + delta)
+	console.Log("Scroll: top=%d, bottom=%d, cursor=%d", w.Top(), w.Bottom(), w.List().Cursor())
+	w.cursorToViewport()
+	console.Log("Scroll: top=%d, bottom=%d, cursor=%d", w.Top(), w.Bottom(), w.List().Cursor())
 }
 
-// validateViewport moves the visible viewport so that the cursor is made visible.
+// SetViewport sets the top position of the viewport.
+func (w *SonglistWidget) SetViewport(pos int) {
+	w.viewy = pos
+	w.Validate(0, w.Bottom())
+}
+
+// Validate ensures that the viewport dimensions are within boundaries.
+func (w *SonglistWidget) Validate(ymin, ymax int) {
+	if w.Bottom() > ymax {
+		w.viewy = ymax - w.c.Height()
+	}
+	if w.Top() < ymin {
+		w.viewy = ymin
+	}
+}
+
+// viewportToCursor moves the visible viewport so that the cursor is made visible.
 // If the 'center' option is enabled, the viewport is centered on the cursor.
-func (w *SonglistWidget) validateViewport() {
-	list := w.List()
-	cursor := list.Cursor()
+func (w *SonglistWidget) viewportToCursor() {
+	cursor := w.List().Cursor()
 
-	// Make the cursor visible
+	// Make the cursor visible.
 	if !w.api.Options().BoolValue("center") {
-		w.viewport.MakeVisible(0, cursor)
+		w.MakeVisible(cursor)
 		return
 	}
 
 	// If 'center' is on, make the cursor centered.
-	half := w.Height() / 2
+	_, height := w.c.Size()
+	half := height / 2
 	min := utils.Max(0, cursor-half)
-	max := utils.Min(list.Len()-1, cursor+half)
-	w.viewport.MakeVisible(0, min)
-	w.viewport.MakeVisible(0, max)
+	max := utils.Min(w.List().Len()-1, cursor+half)
+	w.MakeVisible(min)
+	w.MakeVisible(max)
 }
 
-func (w *SonglistWidget) Resize() {
-}
-
-func (m *SonglistWidget) HandleEvent(ev tcell.Event) bool {
-	return false
-}
-
-func (w *SonglistWidget) SetView(v views.View) {
-	w.view = v
-	w.viewport.SetView(w.view)
-}
-
-func (w *SonglistWidget) Size() (int, int) {
-	return w.view.Size()
-}
-
-func (w *SonglistWidget) Name() string {
-	return w.List().Name()
-}
-
-// PositionReadout returns a combination of PositionLongReadout() and PositionShortReadout().
-// FIXME: move this into a positionreadout fragment
-func (w *SonglistWidget) PositionReadout() string {
-	return fmt.Sprintf("%s    %s", w.PositionLongReadout(), w.PositionShortReadout())
-}
-
-// PositionLongReadout returns a formatted string containing the visible song
-// range as well as the total number of songs.
-// FIXME: move this into a positionreadout fragment
-func (w *SonglistWidget) PositionLongReadout() string {
-	ymin, ymax := w.GetVisibleBoundaries()
-	return fmt.Sprintf("%d,%d-%d/%d", w.List().Cursor()+1, ymin+1, ymax+1, w.List().Len())
-}
-
-// PositionShortReadout returns a percentage indicator on how far the songlist is scrolled.
-// FIXME: move this into a positionreadout fragment
-func (w *SonglistWidget) PositionShortReadout() string {
-	ymin, ymax := w.GetVisibleBoundaries()
-	if ymin == 0 && ymax+1 == w.List().Len() {
-		return `All`
-	}
-	if ymin == 0 {
-		return `Top`
-	}
-	if ymax+1 == w.List().Len() {
-		return `Bot`
-	}
-	fraction := float64(float64(ymin) / float64(w.List().Len()))
-	percent := int(math.Floor(fraction * 100))
-	return fmt.Sprintf("%2d%%", percent)
-}
-
-// SetColumns sets which columns that should be visible
-func (w *SonglistWidget) SetColumns(tags []string) {
-	xmax, _ := w.Size()
-	w.columns = w.List().Columns(tags)
-	w.columns.Expand(xmax)
-	//console.Log("SetColumns(%v) yields %+v", tags, w.columns)
-}
-
-// ScrollViewport scrolls the viewport by delta rows, as far as possible.
-// If movecursor is false, the cursor is kept pointing at the same song where
-// possible. If true, the cursor is moved delta rows.
-func (w *SonglistWidget) ScrollViewport(delta int, movecursor bool) {
-	// Do nothing if delta is zero
-	if delta == 0 {
-		return
-	}
-
-	if delta < 0 {
-		w.viewport.ScrollUp(-delta)
-	} else {
-		w.viewport.ScrollDown(delta)
-	}
-
-	if movecursor {
-		w.List().MoveCursor(delta)
-	}
-
-	w.validateCursor()
-}
-
-// validateCursor ensures the cursor is within the allowable area without moving
+// cursorToViewport ensures the cursor is within the allowable area without moving
 // the viewport.
-func (w *SonglistWidget) validateCursor() {
-	ymin, ymax := w.GetVisibleBoundaries()
+func (w *SonglistWidget) cursorToViewport() {
+	top := w.Top()
+	bottom := w.Bottom()
 	list := w.List()
 	cursor := list.Cursor()
 
 	if w.api.Options().BoolValue("center") {
 		// When 'center' is on, move cursor to the centre of the viewport
 		target := cursor
-		lowerbound := (ymin + ymax) / 2
+		lowerbound := (top + bottom) / 2
 		upperbound := lowerbound
-		if ymin <= 0 {
+		if top <= 0 {
 			// We are scrolled to the top, so the cursor is allowed to go above
 			// the middle of the viewport
 			lowerbound = 0
 		}
-		if ymax >= list.Len()-1 {
+		if bottom >= list.Len()-1 {
 			// We are scrolled to the bottom, so the cursor is allowed to go
 			// below the middle of the viewport
 			upperbound = list.Len() - 1
@@ -324,10 +290,59 @@ func (w *SonglistWidget) validateCursor() {
 		list.SetCursor(target)
 	} else {
 		// When 'center' is off, move cursor into the viewport
-		if cursor < ymin {
-			list.SetCursor(ymin)
-		} else if cursor > ymax {
-			list.SetCursor(ymax)
+		if cursor < top {
+			list.SetCursor(top)
+		} else if cursor > bottom {
+			list.SetCursor(bottom)
 		}
 	}
+}
+
+// MakeVisible adjusts the viewport by the minimal amount possible, to ensure
+// that a certain index is visible.
+func (w *SonglistWidget) MakeVisible(y int) {
+	height := w.c.Height()
+	if y < w.List().Len() && y >= w.viewy+height {
+		w.viewy = y - (height - 1)
+	}
+	if y >= 0 && y < w.viewy {
+		w.viewy = y
+	}
+}
+
+// PositionReadout returns a combination of PositionLongReadout() and PositionShortReadout().
+// FIXME: move this into a positionreadout fragment
+func (w *SonglistWidget) PositionReadout() string {
+	//return fmt.Sprintf("%s    %s", w.PositionLongReadout(), w.PositionShortReadout())
+	return ""
+}
+
+// PositionLongReadout returns a formatted string containing the visible song
+// range as well as the total number of songs.
+// FIXME: move this into a positionreadout fragment
+func (w *SonglistWidget) PositionLongReadout() string {
+	//ymin, ymax := w.GetVisibleBoundaries()
+	//return fmt.Sprintf("%d,%d-%d/%d", w.List().Cursor()+1, ymin+1, ymax+1, w.List().Len())
+	return ""
+}
+
+// PositionShortReadout returns a percentage indicator on how far the songlist is scrolled.
+// FIXME: move this into a positionreadout fragment
+func (w *SonglistWidget) PositionShortReadout() string {
+	/*
+		ymin, ymax := w.GetVisibleBoundaries()
+		if ymin == 0 && ymax+1 == w.List().Len() {
+			return `All`
+		}
+		if ymin == 0 {
+			return `Top`
+		}
+		if ymax+1 == w.List().Len() {
+			return `Bot`
+		}
+		fraction := float64(float64(ymin) / float64(w.List().Len()))
+		percent := int(math.Floor(fraction * 100))
+		return fmt.Sprintf("%2d%%", percent)
+	*/
+	return ""
 }
