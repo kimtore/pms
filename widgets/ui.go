@@ -12,10 +12,9 @@ import (
 
 type UI struct {
 	// UI elements
-	Topbar        *Topbar
-	Columnheaders *ColumnheadersWidget
-	Multibar      *MultibarWidget
-	Songlist      *SonglistWidget
+	Topbar   *Topbar
+	Multibar *MultibarWidget
+	Songlist *SonglistWidget
 
 	// Data resources
 	api          api.API
@@ -39,13 +38,11 @@ func NewUI(a api.API) (*UI, error) {
 
 	// Initialize widgets
 	ui.Topbar = NewTopbar()
-	ui.Columnheaders = NewColumnheadersWidget()
 	ui.Multibar = NewMultibarWidget(ui.api)
 	ui.Songlist = NewSonglistWidget(ui.api)
 
 	// Set styles
 	ui.Topbar.SetStylesheet(ui.api.Styles())
-	ui.Columnheaders.SetStylesheet(ui.api.Styles())
 	ui.Songlist.SetStylesheet(ui.api.Styles())
 	ui.Multibar.SetStylesheet(ui.api.Styles())
 

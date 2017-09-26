@@ -88,6 +88,16 @@ func (w *SonglistWidget) drawOneTagLine(x, y, xmax int, s *song.Song, tag string
 	return w.drawNext(x, y, strmin, xmax+1, runes, style)
 }
 
+func (w *SonglistWidget) drawColumnHeaders() {
+	x := 0
+	style := w.Style("header")
+	for _, col := range w.columns {
+		title := strings.Title(col.Tag())
+		w.c.Print(x, 0, title, style)
+		x += col.Width()
+	}
+}
+
 func (w *SonglistWidget) Draw() {
 	//console.Log("Draw() in songlist widget")
 	list := w.List()
@@ -95,9 +105,6 @@ func (w *SonglistWidget) Draw() {
 		console.Log("BUG: nil list, aborting draw!")
 		return
 	}
-
-	// Blank screen first
-	w.c.Fill(' ', w.Style("default"))
 
 	// Check if the current panel's songlist has changed.
 	if w.Panel().Updated().After(w.lastDraw) {
@@ -108,6 +115,12 @@ func (w *SonglistWidget) Draw() {
 		//console.Log("SonglistWidget::Draw(): not drawing, already drawn")
 		//return
 	}
+
+	// Blank screen first
+	w.c.Fill(' ', w.Style("default"))
+
+	// Draw column headers
+	w.drawColumnHeaders()
 
 	// Make sure viewport shows the cursor.
 	w.viewportToCursor()
@@ -128,6 +141,8 @@ func (w *SonglistWidget) Draw() {
 
 	// Loop through top of viewport to end of viewport or end of list, whichever comes first.
 	for i := w.viewy; i <= ymax; i++ {
+
+		y++
 
 		lineStyled := true
 		s := list.Song(i)
@@ -185,8 +200,6 @@ func (w *SonglistWidget) Draw() {
 
 			x = w.drawNext(x, y, strmin, strmax, runes, style)
 		}
-
-		y++
 	}
 }
 
@@ -204,7 +217,7 @@ func (w *SonglistWidget) Top() int {
 // viewport. If the dataset is empty, return -1.
 func (w *SonglistWidget) Bottom() int {
 	return utils.Min(
-		w.viewy+w.c.Height()-1, // viewport end
+		w.viewy+w.c.Height()-2, // viewport end
 		w.List().Len()-1,       // dataset size
 	)
 }
@@ -231,7 +244,7 @@ func (w *SonglistWidget) SetViewport(pos int) {
 // Validate ensures that the viewport dimensions are within boundaries.
 func (w *SonglistWidget) Validate(ymin, ymax int) {
 	if w.Bottom() > ymax {
-		w.viewy = ymax - w.c.Height()
+		w.viewy = ymax - w.c.Height() - 1
 	}
 	if w.Top() < ymin {
 		w.viewy = ymin
@@ -301,7 +314,7 @@ func (w *SonglistWidget) cursorToViewport() {
 // MakeVisible adjusts the viewport by the minimal amount possible, to ensure
 // that a certain index is visible.
 func (w *SonglistWidget) MakeVisible(y int) {
-	height := w.c.Height()
+	height := w.c.Height() - 1
 	if y < w.List().Len() && y >= w.viewy+height {
 		w.viewy = y - (height - 1)
 	}
