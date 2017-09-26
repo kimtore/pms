@@ -8,7 +8,16 @@ import (
 	termbox "github.com/nsf/termbox-go"
 )
 
+// Modifier represents a key modifier such as ctrl, alt, shift, and meta.
 type Modifier uint8
+
+// Keyboard modifiers. Currently, only Ctrl and Alt are detected.
+const (
+	ModCtrl Modifier = 1 << iota
+	ModAlt
+	ModShift
+	ModMeta
+)
 
 // KeyNames holds a mapping from string names to termbox key constants.
 var KeyNames = map[string]termbox.Key{
@@ -45,13 +54,6 @@ var KeyNames = map[string]termbox.Key{
 // lowerKeyNames is like KeyNames, but all keys are in lowercase.
 var lowerKeyNames = map[string]termbox.Key{}
 
-const (
-	ModCtrl Modifier = 1 << iota
-	ModAlt
-	ModShift
-	ModMeta
-)
-
 // KeyPress represents a single keypress.
 type KeyPress struct {
 	Key termbox.Key
@@ -70,7 +72,7 @@ func ParseKey(te termbox.Event) KeyPress {
 		k.Mod = ModAlt
 	}
 
-	k = convertCtrlKey(k)
+	k = k.ConvertCtrlKey()
 
 	if k.Key == termbox.KeySpace {
 		k.Ch = ' '
@@ -93,8 +95,18 @@ func Key(key string) (termbox.Key, error) {
 	return v, nil
 }
 
-// keyName returns a string representation of a termbox key constant.
-func (k *KeyPress) keyName() (string, error) {
+// ConvertCtrlKey returns a new KeyPress with the rune and modifier members set
+// accordingly if a keypress is Ctrl+A through Ctrl+Z.
+func (k KeyPress) ConvertCtrlKey() KeyPress {
+	if k.Key >= termbox.KeyCtrlA && k.Key <= termbox.KeyCtrlZ {
+		k.Ch = rune(k.Key + 96)
+		k.Mod |= ModCtrl
+	}
+	return k
+}
+
+// constName returns a string representation of a termbox key constant.
+func (k KeyPress) constName() (string, error) {
 	for key, val := range KeyNames {
 		if k.Key == val {
 			return key, nil
@@ -103,9 +115,8 @@ func (k *KeyPress) keyName() (string, error) {
 	return "", fmt.Errorf("No name for this key")
 }
 
-// FormatKey is similar to tcell.EventKey.Name(), which returns a printable
-// value of a key stroke. Format formats it according to PMS' key binding syntax.
-func (k *KeyPress) Name() string {
+// Name returns a human-readable, canonical representation of a key stroke.
+func (k KeyPress) Name() string {
 	s := ""
 	m := []string{}
 
@@ -124,7 +135,7 @@ func (k *KeyPress) Name() string {
 	}
 
 	// Check if the key has a pre-defined name. If not, use the correct rune. If there is no matching rune, fall back to a question mark.
-	s, err := k.keyName()
+	s, err := k.constName()
 	if err != nil {
 		if k.Ch == 0 {
 			s = fmt.Sprintf("<%d,%d>", k.Key, int(k.Ch))
@@ -148,13 +159,4 @@ func (k *KeyPress) Name() string {
 	}
 
 	return s
-}
-
-// convertCtrlKey sets the rune and modifier members if a keypress is Ctrl+A through Ctrl+Z.
-func convertCtrlKey(k KeyPress) KeyPress {
-	if k.Key >= termbox.KeyCtrlA && k.Key <= termbox.KeyCtrlZ {
-		k.Ch = rune(k.Key + 96)
-		k.Mod |= ModCtrl
-	}
-	return k
 }
