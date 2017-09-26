@@ -6,11 +6,10 @@ import (
 	termbox "github.com/nsf/termbox-go"
 )
 
+// EventType represents an event type such as keyboard, mouse, or resize.
 type EventType uint8
 
-type Mode uint8
-
-// Event types.
+// Event type constants.
 const (
 	EventNone         EventType = iota // no-op or unsupported events.
 	EventKey                           // pass-through keypress in direct mode.
@@ -20,6 +19,9 @@ const (
 	EventMouse                         // any mouse press.
 	EventResize                        // terminal resize.
 )
+
+// Mode represents an input mode, such as direct or buffered.
+type Mode uint8
 
 // Input modes.
 const (
@@ -33,14 +35,16 @@ type Event struct {
 	Key  KeyPress
 }
 
-// Sampler holds buffered input state.
+// Sampler reads all events from the terminal, including keyboard, mouse, and
+// resizes. The events are buffered if requested, and sent asynchronously on an
+// event channel.
 type Sampler struct {
 	Events chan Event
 	mode   Mode
 }
 
-// New returns Sampler. Input events are retrieved asynchronously using the Events channel.
-func New() *Sampler {
+// NewSampler returns Sampler.
+func NewSampler() *Sampler {
 	return &Sampler{
 		Events: make(chan Event, 1024),
 	}

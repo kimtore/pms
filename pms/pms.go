@@ -104,7 +104,7 @@ func New() (*PMS, error) {
 
 	pms.CLI = input.NewCLI(pms.API())
 
-	pms.terminal = term.New()
+	pms.terminal = term.NewSampler()
 
 	return pms, nil
 }
