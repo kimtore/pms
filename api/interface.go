@@ -32,3 +32,8 @@ type UI interface {
 	PostFunc(func())
 	Refresh()
 }
+
+type Buffer interface {
+	String() string
+	Cursor() int
+}

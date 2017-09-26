@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/bufin"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/index"
@@ -33,6 +34,9 @@ type PMS struct {
 	Sequencer  *keys.Sequencer
 	stylesheet style.Stylesheet
 	mutex      sync.Mutex
+
+	// Input buffers
+	inputBuffer *bufin.Buffer
 
 	// Terminal event interface
 	terminal *term.Sampler
@@ -105,6 +109,7 @@ func New() (*PMS, error) {
 	pms.CLI = input.NewCLI(pms.API())
 
 	pms.terminal = term.NewSampler()
+	pms.inputBuffer = bufin.New(pms.API())
 
 	return pms, nil
 }

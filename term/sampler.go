@@ -11,25 +11,13 @@ type EventType uint8
 
 // Event type constants.
 const (
-	EventNone         EventType = iota // no-op or unsupported events.
-	EventKey                           // pass-through keypress in direct mode.
-	EventBuffer                        // buffer or cursor is updated.
-	EventBufferReturn                  // user presses <Return> during buffered mode.
-	EventBufferCancel                  // user cancels buffered mode.
-	EventMouse                         // any mouse press.
-	EventResize                        // terminal resize.
+	EventNone   EventType = iota // no-op or unsupported events.
+	EventKey                     // pass-through keypress in direct mode.
+	EventMouse                   // any mouse press.
+	EventResize                  // terminal resize.
 )
 
-// Mode represents an input mode, such as direct or buffered.
-type Mode uint8
-
-// Input modes.
-const (
-	ModeDirect   Mode = iota // Direct mode will pass along any keyboard events as they arrive.
-	ModeBuffered             // Buffered mode will keep a buffer of text, and provide tab completion, history, and navigation.
-)
-
-// Event represents a
+// Event represents a terminal event.
 type Event struct {
 	Type EventType
 	Key  KeyPress
@@ -39,8 +27,7 @@ type Event struct {
 // resizes. The events are buffered if requested, and sent asynchronously on an
 // event channel.
 type Sampler struct {
-	Events chan Event
-	mode   Mode
+	Events chan Event // event channel, emitting terminal events as they arrive.
 }
 
 // NewSampler returns Sampler.
@@ -50,23 +37,12 @@ func NewSampler() *Sampler {
 	}
 }
 
-// bufferKey reads a keypress and returns a suitable event.
-func (s *Sampler) bufferKey(te termbox.Event) Event {
-	switch s.mode {
-	case ModeDirect:
-		return Event{
-			Type: EventKey,
-			Key:  ParseKey(te),
-		}
-	default:
-		return Event{}
-	}
-}
-
-// resize returns a terminal resize event.
-func (s *Sampler) resize() Event {
-	return Event{
-		Type: EventResize,
+// Loop samples keyboard events from the terminal library, and passes them on to the main thread.
+func (s *Sampler) Loop() {
+	for {
+		te := termbox.PollEvent()
+		e := s.SampleEvent(te)
+		s.Events <- e
 	}
 }
 
@@ -74,20 +50,16 @@ func (s *Sampler) resize() Event {
 func (s *Sampler) SampleEvent(te termbox.Event) Event {
 	switch te.Type {
 	case termbox.EventKey:
-		return s.bufferKey(te)
+		return Event{
+			Type: EventKey,
+			Key:  ParseKey(te),
+		}
 	case termbox.EventResize:
-		return s.resize()
+		return Event{
+			Type: EventResize,
+		}
 	default:
 		console.Log("Ignoring terminal event: %+v", te)
 		return Event{}
-	}
-}
-
-// Loop samples keyboard events from the terminal library, and passes them on to the main thread.
-func (s *Sampler) Loop() {
-	for {
-		te := termbox.PollEvent()
-		e := s.SampleEvent(te)
-		s.Events <- e
 	}
 }
