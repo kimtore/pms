@@ -40,7 +40,6 @@ func (pms *PMS) Main() {
 
 func (pms *PMS) handleTicker() {
 	pms.database.SetPlayerStatus(pms.database.PlayerStatus().Tick())
-	pms.EventPlayer <- 0
 }
 
 func (pms *PMS) handleQuitSignal() {

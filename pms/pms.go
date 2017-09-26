@@ -60,9 +60,6 @@ type PMS struct {
 	// EventOption receives a signal when options have been changed.
 	EventOption chan string
 
-	// EventPlayer receives a signal when MPD's "player" status changes in an IDLE event.
-	EventPlayer chan int
-
 	// EventQueue receives a signal when MPD's "playlist" status changes in an IDLE event.
 	EventQueue chan int
 
@@ -89,7 +86,6 @@ func New() (*PMS, error) {
 	pms.EventLibrary = make(chan int, 1024)
 	pms.EventList = make(chan int, 1024)
 	pms.EventMessage = make(chan message.Message, 1024)
-	pms.EventPlayer = make(chan int, 1024)
 	pms.EventOption = make(chan string, 1024)
 	pms.EventQueue = make(chan int, 1024)
 	pms.eventInputCommand = make(chan string, 1024)
@@ -370,8 +366,6 @@ func (pms *PMS) UpdateCurrentSong() error {
 	s.SetTags(attrs)
 	pms.database.SetCurrentSong(s)
 
-	pms.EventPlayer <- 0
-
 	return nil
 }
 
@@ -421,8 +415,6 @@ func (pms *PMS) UpdatePlayerStatus() error {
 	status.Random, _ = strconv.ParseBool(attrs["random"])
 	status.Repeat, _ = strconv.ParseBool(attrs["repeat"])
 	status.Single, _ = strconv.ParseBool(attrs["single"])
-
-	pms.EventPlayer <- 0
 
 	// Make sure any error messages are relayed to the user
 	if len(attrs["error"]) > 0 {
