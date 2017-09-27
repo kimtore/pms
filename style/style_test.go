@@ -1,16 +1,16 @@
-package term_test
+package style_test
 
 import (
 	"testing"
 
-	"github.com/ambientsound/pms/term"
+	"github.com/ambientsound/pms/style"
 	termbox "github.com/nsf/termbox-go"
 	"github.com/stretchr/testify/assert"
 )
 
 type styleTest struct {
-	input  term.Style
-	output term.Style
+	input  style.Style
+	output style.Style
 	fg     termbox.Attribute
 	bg     termbox.Attribute
 }
@@ -23,31 +23,31 @@ var styleTests = []styleTest{
 		termbox.ColorDefault,
 	},
 	{
-		term.Style(0).Foreground(term.ColorRed),
+		style.Style(0).Foreground(style.ColorRed),
 		0x00000002,
 		termbox.ColorRed,
 		termbox.ColorDefault,
 	},
 	{
-		term.Style(0).Foreground(term.ColorRed).Background(term.ColorBlue),
+		style.Style(0).Foreground(style.ColorRed).Background(style.ColorBlue),
 		0x00050002,
-		termbox.Attribute(term.ColorRed),
-		termbox.Attribute(term.ColorBlue),
+		termbox.Attribute(style.ColorRed),
+		termbox.Attribute(style.ColorBlue),
 	},
 	{
-		term.Style(0).Foreground(term.ColorGreen).Bold(true),
+		style.Style(0).Foreground(style.ColorGreen).Bold(true),
 		0x00000203,
-		termbox.Attribute(term.ColorGreen) | termbox.AttrBold,
+		termbox.Attribute(style.ColorGreen) | termbox.AttrBold,
 		termbox.ColorDefault,
 	},
 	{
-		term.Style(0).Underline(true),
+		style.Style(0).Underline(true),
 		0x00000400,
 		termbox.AttrUnderline,
 		termbox.ColorDefault,
 	},
 	{
-		term.Style(0).Background(term.ColorGreen).Reverse(true),
+		style.Style(0).Background(style.ColorGreen).Reverse(true),
 		0x00030800,
 		termbox.AttrReverse,
 		termbox.ColorGreen,

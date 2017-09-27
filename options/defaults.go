@@ -56,9 +56,9 @@ style commandText default
 style errorText white red bold
 style readout default
 style searchText white bold
-style sequenceText teal
+style sequenceText cyan
 style statusbar default
-style visualText teal
+style visualText cyan
 
 # Keyboard bindings: cursor and viewport movement
 bind <Up> cursor up

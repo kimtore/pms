@@ -6,7 +6,7 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/ambientsound/pms/term"
+	"github.com/ambientsound/pms/style"
 )
 
 // Style manipulates the style table, allowing to set colors and attributes for UI elements.
@@ -15,7 +15,7 @@ type Style struct {
 	api api.API
 
 	styleKey   string
-	styleValue term.Style
+	styleValue style.Style
 
 	background bool
 	foreground bool
@@ -106,7 +106,7 @@ func (cmd *Style) mergeStyle(lit string) error {
 		if lit[0] == '@' {
 			lit = "#" + lit[1:]
 		}
-		color := term.GetColor(lit)
+		color := style.GetColor(lit)
 		switch {
 		case !cmd.foreground:
 			cmd.styleValue = cmd.styleValue.Foreground(color)

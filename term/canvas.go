@@ -1,6 +1,7 @@
 package term
 
 import (
+	"github.com/ambientsound/pms/style"
 	termbox "github.com/nsf/termbox-go"
 )
 
@@ -28,7 +29,7 @@ func NewCanvas(x, y, width, height int) Canvas {
 }
 
 // Fill the entire canvas with a character.
-func (c Canvas) Fill(r rune, s Style) {
+func (c Canvas) Fill(r rune, s style.Style) {
 	fg, bg := s.Attr()
 	for y := c.y1; y <= c.y2; y++ {
 		for x := c.x1; x <= c.x2; x++ {
@@ -38,7 +39,7 @@ func (c Canvas) Fill(r rune, s Style) {
 }
 
 // Print text onto the canvas.
-func (c Canvas) SetCell(x, y int, r rune, st Style) int {
+func (c Canvas) SetCell(x, y int, r rune, st style.Style) int {
 	x += c.x1
 	y += c.y1
 	fg, bg := st.Attr()
@@ -47,7 +48,7 @@ func (c Canvas) SetCell(x, y int, r rune, st Style) int {
 }
 
 // Print text onto the canvas.
-func (c Canvas) Print(x, y int, s string, st Style) int {
+func (c Canvas) Print(x, y int, s string, st style.Style) int {
 	x += c.x1
 	y += c.y1
 	fg, bg := st.Attr()

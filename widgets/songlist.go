@@ -9,7 +9,6 @@ import (
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
-	"github.com/ambientsound/pms/term"
 	"github.com/ambientsound/pms/utils"
 )
 
@@ -61,7 +60,7 @@ func (w *SonglistWidget) List() songlist.Songlist {
 	return w.Panel().Current()
 }
 
-func (w *SonglistWidget) drawNext(x, y, strmin, strmax int, runes []rune, style term.Style) int {
+func (w *SonglistWidget) drawNext(x, y, strmin, strmax int, runes []rune, style style.Style) int {
 	strmin = utils.Min(len(runes), strmin)
 	n := 0
 	for n < strmin {
@@ -77,7 +76,7 @@ func (w *SonglistWidget) drawNext(x, y, strmin, strmax int, runes []rune, style 
 	return x
 }
 
-func (w *SonglistWidget) drawOneTagLine(x, y, xmax int, s *song.Song, tag string, defaultStyle string, style term.Style, lineStyled bool) int {
+func (w *SonglistWidget) drawOneTagLine(x, y, xmax int, s *song.Song, tag string, defaultStyle string, style style.Style, lineStyled bool) int {
 	if !lineStyled {
 		style = w.Style(defaultStyle)
 	}
