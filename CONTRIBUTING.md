@@ -25,7 +25,7 @@ dependencies in your fork. For example:
 ```
 cd $GOPATH/src/github.com
 mkdir -p ambientsound
-ln -s [YOUR_GITHUB_USERNAME]/pms ambientsound/pms
+ln -s ../[YOUR_GITHUB_USERNAME]/pms ambientsound/pms
 ```
 
 After this, `cd` into your fork and run `make`. Now the `pms` command is built
