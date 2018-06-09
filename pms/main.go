@@ -60,11 +60,22 @@ func (pms *PMS) handleEventQueue() {
 
 func (pms *PMS) handleEventOption(key string) {
 	console.Log("Option '%s' has been changed", key)
+
+	client := pms.CurrentMpdClient()
+
 	switch key {
 	case "topbar":
 		pms.setupTopbar()
 	case "columns":
 		// list changed, FIXME
+	case "consume":
+		client.Consume(pms.Options.BoolValue(key))
+	case "random":
+		client.Random(pms.Options.BoolValue(key))
+	case "single":
+		client.Single(pms.Options.BoolValue(key))
+	case "repeat":
+		client.Repeat(pms.Options.BoolValue(key))
 	}
 }
 
