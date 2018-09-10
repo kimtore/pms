@@ -428,7 +428,7 @@ func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 		m.handleDeleteWord()
 
 	default:
-		console.Log("Unhandled text input event in Multibar: %s", ev.Key())
+		console.Log("Unhandled text input event in Multibar: %v", ev.Key())
 		return false
 	}
 

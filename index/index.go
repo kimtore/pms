@@ -243,7 +243,7 @@ func (i *Index) Query(request *bleve.SearchRequest) ([]int, *bleve.SearchResult,
 		r = append(r, id)
 	}
 
-	console.Log("Query '%s' returned %d results over threshold of %.2f (total %d results) in %s", request, len(r), SEARCH_SCORE_THRESHOLD, sr.Total, sr.Took)
+	console.Log("Query '%v' returned %d results over threshold of %.2f (total %d results) in %s", request, len(r), SEARCH_SCORE_THRESHOLD, sr.Total, sr.Took)
 
 	return r, sr, nil
 }
