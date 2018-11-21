@@ -28,7 +28,9 @@ func (cmd *Update) Parse() error {
 func (cmd *Update) Exec() error {
 	if client := cmd.api.MpdClient(); client != nil {
 		jobID, err := client.Update("")
-		cmd.api.Message("Updating, jobID is %d", jobID)
+		if err != nil {
+			cmd.api.Message("Updating, jobID is %d", jobID)
+		}
 		return err
 	}
 	return fmt.Errorf("Unable to update database: cannot communicate with MPD")
