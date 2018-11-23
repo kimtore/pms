@@ -45,6 +45,7 @@ var Verbs = map[string]func(api.API) Command{
 	"stop":      NewStop,
 	"style":     NewStyle,
 	"unbind":    NewUnbind,
+	"update":    NewUpdate,
 	"viewport":  NewViewport,
 	"volume":    NewVolume,
 	"yank":      NewYank,
