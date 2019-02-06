@@ -7,7 +7,5 @@ go:
 
 script: ./test.sh
 
-install: make get-deps
-
 after_success:
 - bash <(curl -s https://codecov.io/bash)
