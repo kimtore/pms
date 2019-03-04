@@ -471,7 +471,9 @@ Pms::main()
 		printf(_("This mpd server requires a password.\n"));
 		printf(_("Password: "));
 
-		fgets(pass, 512, stdin) ? 1 : 0; //ternary here is a hack to get rid of a warn_unused_result warning
+		if (fgets(pass, 512, stdin) == 0) {
+			return PMS_EXIT_BADPASS;
+		}
 		if (pass[strlen(pass)-1] == '\n') {
 			pass[strlen(pass)-1] = '\0';
 		}
