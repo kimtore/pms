@@ -3,7 +3,7 @@
 language: go
 
 go:
-- 1.8
+- 1.13
 
 script: ./test.sh
 

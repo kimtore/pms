@@ -40,16 +40,17 @@ This functionality is present in the `0.42.x` branch, but missing in master:
 
 ## Getting started
 
-You’re assumed to have a working [Go development environment](https://golang.org/doc/install). PMS requires Go >= 1.8.
+You’re assumed to have a working [Go development environment](https://golang.org/doc/install). Building PMS requires Go version 1.13 or higher.
 
-To install the application and dependencies, and run PMS, assuming you have `$GOBIN` in your path:
+Assuming you have the `go` binary in your path, you can install PMS using:
 
 ```
-go get -u github.com/ambientsound/pms
-cd $GOPATH/src/github.com/ambientsound/pms
-make
-pms
+git clone https://github.com/ambientsound/pms
+cd pms
+make install
 ```
+
+This will put the binary in `$GOBIN/pms`, usually at `~/go/bin/pms`.
 
 If PMS crashes, and you want to report a bug, please include the debug log:
 
@@ -74,7 +75,7 @@ See [how to contribute to PMS](CONTRIBUTING.md).
 
 ## Authors
 
-Copyright (c) 2006-2017 Kim Tore Jensen <<kimtjen@gmail.com>>.
+Copyright (c) 2006-2019 Kim Tore Jensen <<kimtjen@gmail.com>>.
 
 * Kim Tore Jensen <<kimtjen@gmail.com>>
 * Bart Nagel <<bart@tremby.net>>
