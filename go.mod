@@ -21,6 +21,7 @@ require (
 	github.com/gdamore/tcell v1.3.0
 	github.com/glycerine/go-unsnap-stream v0.0.0-20180323001048-9f0cb55181dd // indirect
 	github.com/glycerine/goconvey v0.0.0-20180728074245-46e3a41ad493 // indirect
+	github.com/google/uuid v1.1.1 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jmhodges/levigo v0.0.0-20161115193449-c42d9e0ca023 // indirect
@@ -40,6 +41,7 @@ require (
 	github.com/tecbot/gorocksdb v0.0.0-20181010114359-8752a9433481 // indirect
 	github.com/tinylib/msgp v1.0.2 // indirect
 	github.com/willf/bitset v1.1.9 // indirect
+	github.com/zmb3/spotify v0.0.0-20191213135453-f2845aa57886 // indirect
 	golang.org/x/sys v0.0.0-20191210023423-ac6580df4449 // indirect
 	golang.org/x/text v0.3.2
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect

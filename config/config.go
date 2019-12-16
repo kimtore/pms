@@ -9,8 +9,10 @@ import (
 )
 
 type Spotify struct {
-	Username string
-	Password string
+	ClientID string
+	ClientSecret string
+	AccessToken string
+	RefreshToken string
 }
 
 type Config struct {
@@ -25,11 +27,13 @@ func decoderHook(dc *mapstructure.DecoderConfig) {
 func init() {
 	viper.SetConfigName("visp")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("/etc")
 	viper.AddConfigPath("$HOME/.config/visp")
+	viper.AddConfigPath("/etc")
 
-	flag.String("spotify.username", "", "Spotify username")
-	flag.String("spotify.password", "", "Spotify password")
+	flag.String("spotify.clientid", "", "Spotify app client ID")
+	flag.String("spotify.clientsecret", "", "Spotify app client secret")
+	flag.String("spotify.accesstoken", "", "Spotify access token")
+	flag.String("spotify.refreshtoken", "", "Spotify refresh token")
 }
 
 func Configuration() (*Config, error) {
