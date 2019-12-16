@@ -13,7 +13,6 @@ require (
 	github.com/cznic/b v0.0.0-20181122101859-a26611c4d92d // indirect
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
 	github.com/cznic/strutil v0.0.0-20181122101858-275e90344537 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712 // indirect
 	github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51 // indirect
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
@@ -31,6 +30,7 @@ require (
 	github.com/mschoch/smat v0.0.0-20160514031455-90eadee771ae // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446 // indirect
+	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/smartystreets/assertions v0.0.0-20190116191733-b6c0e53d7304 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20181108003508-044398e4856c // indirect
 	github.com/steveyen/gtreap v0.0.0-20150807155958-0abe01ef9be2 // indirect

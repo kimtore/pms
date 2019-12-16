@@ -1,6 +1,9 @@
 VERSION := $(shell git describe --always --long --dirty)
 
-.PHONY: all install test
+.PHONY: visp all install test
+
+visp:
+	go build -ldflags="-X main.buildVersion=${VERSION}" -o visp cmd/visp/visp.go
 
 all: test install
 
