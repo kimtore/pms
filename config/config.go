@@ -3,15 +3,16 @@
 package config
 
 import (
+	"github.com/ambientsound/pms/xdg"
 	"github.com/mitchellh/mapstructure"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
 type Spotify struct {
-	ClientID string
+	ClientID     string
 	ClientSecret string
-	AccessToken string
+	AccessToken  string
 	RefreshToken string
 }
 
@@ -27,8 +28,10 @@ func decoderHook(dc *mapstructure.DecoderConfig) {
 func init() {
 	viper.SetConfigName("visp")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("$HOME/.config/visp")
-	viper.AddConfigPath("/etc")
+
+	for _, dir := range xdg.ConfigDirectories() {
+		viper.AddConfigPath(dir)
+	}
 
 	flag.String("spotify.clientid", "", "Spotify app client ID")
 	flag.String("spotify.clientsecret", "", "Spotify app client secret")

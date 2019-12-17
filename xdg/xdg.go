@@ -10,9 +10,13 @@ import (
 	"strings"
 )
 
-// appendPmsDirectory adds "pms" to a directory tree.
-func appendPmsDirectory(dir string) string {
-	return path.Join(dir, "pms")
+const (
+	progName = "visp"
+)
+
+// appendProgDirectory adds "pms" to a directory tree.
+func appendProgDirectory(dir string) string {
+	return path.Join(dir, progName)
 }
 
 // ConfigDirectories returns a list of configuration directories. The least
@@ -33,7 +37,7 @@ func ConfigDirectories() []string {
 	configDirs := strings.Split(xdgConfigDirs, ":")
 	for i := len(configDirs) - 1; i >= 0; i-- {
 		if len(configDirs[i]) > 0 {
-			dir := appendPmsDirectory(configDirs[i])
+			dir := appendProgDirectory(configDirs[i])
 			dirs = append(dirs, dir)
 		}
 	}
@@ -45,7 +49,7 @@ func ConfigDirectories() []string {
 	if len(xdgConfigHome) == 0 {
 		xdgConfigHome = path.Join(os.Getenv("HOME"), ".config")
 	}
-	dir := appendPmsDirectory(xdgConfigHome)
+	dir := appendProgDirectory(xdgConfigHome)
 
 	// Add $XDG_CONFIG_HOME to directory list.
 	dirs = append(dirs, dir)

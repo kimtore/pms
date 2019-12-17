@@ -67,7 +67,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func run() (int, error) {
-	var token oauth2.Token
+	log.Infof("Visp starting up")
 
 	cfg, err := config.Configuration()
 	if err != nil {
@@ -97,7 +97,7 @@ func run() (int, error) {
 	go http.ListenAndServe("127.0.0.1:59999", handler)
 
 	if len(cfg.Spotify.AccessToken) > 0 && len(cfg.Spotify.RefreshToken) > 0 {
-		token = oauth2.Token{
+		handler.token <- oauth2.Token{
 			AccessToken:  cfg.Spotify.AccessToken,
 			RefreshToken: cfg.Spotify.RefreshToken,
 		}
@@ -106,21 +106,14 @@ func run() (int, error) {
 		log.Printf("Please visit this URL to authenticate to Spotify: %s", url)
 	}
 
-	err = viper.WriteConfig()
-	if err != nil {
-		log.Errorf("Unable to write configuration file: %s", err)
-		log.Infof("For quick startup next time, please add the following to your configuration file:")
-		log.Infof("spotify:")
-		log.Infof("  accesstoken: %s", token.AccessToken)
-		log.Infof("  refreshtoken: %s", token.RefreshToken)
-	}
-
 	env := Environment{
 		tokenCallbackHandler: handler,
 		signals:              make(chan os.Signal, 1),
 	}
 
 	signal.Notify(env.signals, syscall.SIGTERM, syscall.SIGINT)
+
+	log.Infof("Ready.")
 
 	return mainloop(env)
 }
@@ -139,6 +132,10 @@ func mainloop(env Environment) (int, error) {
 			env.client = env.tokenCallbackHandler.auth.NewClient(&token)
 			viper.Set("spotify.accesstoken", token.AccessToken)
 			viper.Set("spotify.refreshtoken", token.RefreshToken)
+			err := viper.WriteConfig()
+			if err != nil {
+				log.Errorf("Unable to write configuration file: %s", err)
+			}
 
 		case sig := <-env.signals:
 			log.Infof("Caught signal %d, exiting.", sig)
