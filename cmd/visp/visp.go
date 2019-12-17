@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/ambientsound/pms/config"
+	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -88,7 +89,7 @@ func logConfig(cfg config.Log) error {
 	if err != nil {
 		return err
 	}
-	log.SetOutput(w)
+	log.SetOutput(console.Writer(w))
 	log.SetLevel(level)
 	return nil
 }
@@ -186,5 +187,7 @@ func mainloop(env Environment) (int, error) {
 		case ev := <-env.ui.Events():
 			env.ui.HandleEvent(ev)
 		}
+
+		env.ui.Draw()
 	}
 }

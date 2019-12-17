@@ -1,39 +1,33 @@
-// Package console provides logging functions.
+// Package console wraps a console logger into a writer.
+// Program-wide logging will go both to a console and a file.
+
 package console
 
 import (
-	"fmt"
-	"os"
-	"time"
+	log "github.com/sirupsen/logrus"
+	"io"
 )
 
-var logFile *os.File
+var LogLines = make([]string, 0)
 
-var start = time.Now()
-
-// Open opens a log file for writing.
-func Open(logfile string) (err error) {
-	logFile, err = os.Create(logfile)
-	if err != nil {
-		return
-	}
-	return
+type writer struct {
+	w io.Writer
 }
 
-// Close closes an open log file.
-func Close() {
-	logFile.Close()
+var _ io.Writer = &writer{}
+
+func (w *writer) Write(data []byte) (int, error) {
+	LogLines = append(LogLines, string(data))
+	return w.w.Write(data)
+}
+
+func Writer(w io.Writer) io.Writer {
+	return &writer{w: w}
 }
 
 // Log writes a log line to the log file.
 // A timestamp and a newline is automatically added.
 // If the log file isn't open, nothing is done.
 func Log(format string, args ...interface{}) {
-	if logFile == nil {
-		return
-	}
-	since := time.Since(start)
-	text := fmt.Sprintf(format, args...)
-	text = fmt.Sprintf("[%.5f] %s\n", since.Seconds(), text)
-	logFile.WriteString(text)
+	log.Printf(format, args...)
 }
