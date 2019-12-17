@@ -16,7 +16,14 @@ type Spotify struct {
 	RefreshToken string
 }
 
+type Log struct {
+	File      string
+	Overwrite bool
+	Level string
+}
+
 type Config struct {
+	Log     Log
 	Spotify Spotify
 }
 
@@ -37,6 +44,10 @@ func init() {
 	flag.String("spotify.clientsecret", "", "Spotify app client secret")
 	flag.String("spotify.accesstoken", "", "Spotify access token")
 	flag.String("spotify.refreshtoken", "", "Spotify refresh token")
+
+	flag.String("log.file", "/dev/null", "Write program log to this file")
+	flag.String("log.level", "info", "Log level (error, warning, info, debug, trace)")
+	flag.Bool("log.overwrite", false, "Overwrite log file instead of appending")
 }
 
 func Configuration() (*Config, error) {
