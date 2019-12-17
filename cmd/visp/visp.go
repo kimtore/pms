@@ -11,6 +11,8 @@ import (
 	"golang.org/x/oauth2"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 var buildVersion = "undefined"
@@ -66,7 +68,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func run() (int, error) {
 	var token oauth2.Token
-	var client spotify.Client
 
 	cfg, err := config.Configuration()
 	if err != nil {
@@ -87,7 +88,6 @@ func run() (int, error) {
 
 	auth := spotify.NewAuthenticator("http://localhost:59999/callback", scopes...)
 	auth.SetAuthInfo(cfg.Spotify.ClientID, cfg.Spotify.ClientSecret)
-	url := auth.AuthURL(state)
 
 	handler := &Handler{
 		auth:  auth,
@@ -102,14 +102,10 @@ func run() (int, error) {
 			RefreshToken: cfg.Spotify.RefreshToken,
 		}
 	} else {
+		url := auth.AuthURL(state)
 		log.Printf("Please visit this URL to authenticate to Spotify: %s", url)
-		token = <-handler.token
 	}
 
-	client = auth.NewClient(&token)
-
-	viper.Set("spotify.accesstoken", token.AccessToken)
-	viper.Set("spotify.refreshtoken", token.RefreshToken)
 	err = viper.WriteConfig()
 	if err != nil {
 		log.Errorf("Unable to write configuration file: %s", err)
@@ -119,8 +115,34 @@ func run() (int, error) {
 		log.Infof("  refreshtoken: %s", token.RefreshToken)
 	}
 
-	user, err := client.CurrentUser()
-	log.Printf("Your user: %+v", *user)
+	env := Environment{
+		tokenCallbackHandler: handler,
+		signals:              make(chan os.Signal, 1),
+	}
 
-	return ExitSuccess, nil
+	signal.Notify(env.signals, syscall.SIGTERM, syscall.SIGINT)
+
+	return mainloop(env)
+}
+
+type Environment struct {
+	tokenCallbackHandler *Handler
+	signals              chan os.Signal
+	client               spotify.Client
+}
+
+func mainloop(env Environment) (int, error) {
+	for {
+		select {
+		case token := <-env.tokenCallbackHandler.token:
+			log.Infof("Received new Spotify token")
+			env.client = env.tokenCallbackHandler.auth.NewClient(&token)
+			viper.Set("spotify.accesstoken", token.AccessToken)
+			viper.Set("spotify.refreshtoken", token.RefreshToken)
+
+		case sig := <-env.signals:
+			log.Infof("Caught signal %d, exiting.", sig)
+			return ExitSuccess, nil
+		}
+	}
 }
