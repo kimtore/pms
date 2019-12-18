@@ -60,7 +60,7 @@ func NewUI(a api.API) *UI {
 
 	ui.Topbar = NewTopbar()
 	ui.Columnheaders = NewColumnheadersWidget()
-	ui.Multibar = NewMultibarWidget(ui.api, ui.EventKeyInput)
+	//ui.Multibar = NewMultibarWidget(ui.api, ui.EventKeyInput)
 	ui.Songlist = NewSonglistWidget(ui.api)
 
 	ui.Multibar.Watch(ui)

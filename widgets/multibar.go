@@ -30,7 +30,7 @@ type history struct {
 type MultibarWidget struct {
 	api         api.API
 	cursor      int
-	events      chan *tcell.EventKey
+	events      <-chan tcell.Event
 	inputMode   int
 	msg         message.Message
 	runes       []rune
@@ -89,7 +89,7 @@ func (h *history) validateIndex() {
 	}
 }
 
-func NewMultibarWidget(a api.API, events chan *tcell.EventKey) *MultibarWidget {
+func NewMultibarWidget(a api.API, events <-chan tcell.Event) *MultibarWidget {
 	return &MultibarWidget{
 		api:    a,
 		runes:  make([]rune, 0),
@@ -382,7 +382,7 @@ func (m *MultibarWidget) handleTab() {
 }
 
 // handleTextInputEvent is called when an input event is received during any of the text input modes.
-func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
+func (m *MultibarWidget) handleTextInputEvent(ev tcell.EventKey) bool {
 	switch ev.Key() {
 
 	// Alt keys has to be handled a bit differently than Ctrl keys.
@@ -435,23 +435,16 @@ func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 	return true
 }
 
-// handleNormalEvent is called when an input event is received during command mode.
-func (m *MultibarWidget) handleNormalEvent(ev *tcell.EventKey) bool {
-	//console.Log("Input event in command mode: %s %s", ke.Key, string(ke.Rune))
-	m.events <- ev
-	return true
-}
-
 func (m *MultibarWidget) HandleEvent(ev tcell.Event) bool {
 	switch ev := ev.(type) {
 	case *tcell.EventKey:
 		switch m.inputMode {
 		case constants.MultibarModeNormal:
-			return m.handleNormalEvent(ev)
+			return false
 		case constants.MultibarModeInput:
-			return m.handleTextInputEvent(ev)
+			return m.handleTextInputEvent(*ev)
 		case constants.MultibarModeSearch:
-			return m.handleTextInputEvent(ev)
+			return m.handleTextInputEvent(*ev)
 		}
 	}
 	return false

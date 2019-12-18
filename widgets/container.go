@@ -1,24 +1,30 @@
 package widgets
 
 import (
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/log"
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
 )
 
 type widgets struct {
-	console *views.TextArea
+	layout   *views.BoxLayout
+	console  *views.TextArea
+	topbar   *Topbar
+	multibar *MultibarWidget
+	songlist *SonglistWidget
 }
 
 type Application struct {
 	screen  tcell.Screen
 	events  chan tcell.Event
 	widgets widgets
+	api     api.API
 }
 
 var _ tcell.EventHandler = &Application{}
 
-func NewApplication() (*Application, error) {
+func NewApplication(a api.API) (*Application, error) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
 		return nil, err
@@ -32,39 +38,53 @@ func NewApplication() (*Application, error) {
 	screen.Clear()
 	screen.Show()
 
-	console := views.NewTextArea()
-	console.SetView(screen)
-
 	return &Application{
 		screen: screen,
 		events: make(chan tcell.Event, 1024),
-		widgets: widgets{
-			console: console,
-		},
+		api:    a,
 	}, nil
 }
 
+func (app *Application) Init() {
+
+	app.widgets.console = views.NewTextArea()
+
+	app.widgets.topbar = NewTopbar()
+
+	app.widgets.multibar = NewMultibarWidget(nil, app.Events())
+
+	app.widgets.layout = views.NewBoxLayout(views.Vertical)
+	app.widgets.layout.AddWidget(app.widgets.topbar, 1)
+	app.widgets.layout.AddWidget(app.widgets.console, 2)
+	// app.widgets.layout.AddWidget(app.widgets.songlist, 2)
+	app.widgets.layout.AddWidget(app.widgets.multibar, 0)
+	app.widgets.layout.SetView(app.screen)
+}
+
 func (app *Application) HandleEvent(ev tcell.Event) bool {
+	if app.widgets.multibar.HandleEvent(ev) {
+		return true
+	}
+
 	switch e := ev.(type) {
 	case *tcell.EventKey:
 		log.Debugf("keypress: name=%v key=%v modifiers=%v", e.Name(), e.Key(), e.Modifiers())
+		return false
 	case *tcell.EventResize:
 		cols, rows := e.Size()
 		log.Debugf("terminal resize: %dx%d", cols, rows)
 		app.screen.Sync()
 		app.widgets.console.Resize()
+		return true
 	default:
 		log.Debugf("unrecognized input event: %T %+v", e, e)
+		return true
 	}
-
-	app.widgets.console.HandleEvent(ev)
-
-	return true
 }
 
 func (app *Application) Draw() {
 	app.widgets.console.SetLines(log.Lines())
-	app.widgets.console.Draw()
+	app.widgets.layout.Draw()
 	app.screen.Show()
 }
 

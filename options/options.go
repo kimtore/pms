@@ -20,6 +20,7 @@ type Option interface {
 func New() *Options {
 	o := Options{}
 	o.opts = make(map[string]Option, 0)
+	o.AddDefaultOptions()
 	return &o
 }
 

@@ -1,15 +1,12 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Quit exits the program.
 type Quit struct {
-	command
+	newcommand
 	api api.API
 }
 
@@ -19,12 +16,12 @@ func NewQuit(api api.API) Command {
 	}
 }
 
-func (cmd *Quit) Execute(class int, s string) error {
-	switch class {
-	case lexer.TokenEnd:
-		cmd.api.Quit()
-		return nil
-	default:
-		return fmt.Errorf("Unknown input '%s', expected END", s)
-	}
+// Parse implements Command.
+func (cmd *Quit) Parse() error {
+	return cmd.ParseEnd()
+}
+
+func (cmd *Quit) Exec() error {
+	cmd.api.Quit()
+	return nil
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestCLISet tests that input.CLI registers a handler under the
+// TestCLISet tests that input.Interpreter registers a handler under the
 // verb "set", dispatches the input line to this handler, and correctly
 // manipulates the options table.
 func TestCLISet(t *testing.T) {

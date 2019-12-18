@@ -9,19 +9,19 @@ import (
 	"github.com/ambientsound/pms/input/lexer"
 )
 
-// CLI reads user input, tokenizes it, and dispatches the tokens to their respective commands.
-type CLI struct {
+// Interpreter reads user input, tokenizes it, and dispatches the tokens to their respective commands.
+type Interpreter struct {
 	api api.API
 }
 
-func NewCLI(api api.API) *CLI {
-	return &CLI{
+func NewCLI(api api.API) *Interpreter {
+	return &Interpreter{
 		api: api,
 	}
 }
 
 // Exec is the new Execute.
-func (i *CLI) Exec(line string) error {
+func (i *Interpreter) Exec(line string) error {
 
 	// Create the token scanner.
 	reader := strings.NewReader(line)
@@ -59,7 +59,7 @@ func (i *CLI) Exec(line string) error {
 // Execute sends scanned tokens to Command instances.
 // FIXME: this function is deprecated and must be remove when all Command
 // classes have been ported.
-func (i *CLI) Execute(line string) error {
+func (i *Interpreter) Execute(line string) error {
 	var cmd commands.Command
 	var err error
 

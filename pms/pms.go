@@ -27,7 +27,7 @@ import (
 
 // PMS is a kitchen sink of different objects, glued together as a singleton class.
 type PMS struct {
-	CLI        *input.CLI
+	CLI        *input.Interpreter
 	ui         *widgets.UI
 	Options    *options.Options
 	Sequencer  *keys.Sequencer

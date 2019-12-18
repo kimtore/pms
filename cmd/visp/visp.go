@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"github.com/ambientsound/pms/config"
 	"github.com/ambientsound/pms/log"
+	"github.com/ambientsound/pms/prog"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/google/uuid"
 	flag "github.com/spf13/pflag"
-	"github.com/spf13/viper"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
+	"runtime/debug"
 )
 
 var buildVersion = "undefined"
@@ -38,10 +37,20 @@ const (
 	ExitSuccess = iota
 	ExitConfiguration
 	ExitInternalError
+	ExitPanic
 	ExitLogging
 )
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Fprintln(os.Stderr, "****** Visp has crashed!!! ******")
+			fmt.Fprintln(os.Stderr, "Please report this bug at the Github project and include the following stack trace:")
+			fmt.Fprintln(os.Stderr, string(debug.Stack()))
+			os.Exit(ExitPanic)
+		}
+	}()
+
 	exitCode, err := run()
 	if exitCode != ExitSuccess {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -96,10 +105,12 @@ func run() (int, error) {
 	auth := spotify.NewAuthenticator("http://localhost:59999/callback", scopes...)
 	auth.SetAuthInfo(cfg.Spotify.ClientID, cfg.Spotify.ClientSecret)
 
+	tokens := make(chan oauth2.Token, 1)
+
 	handler := &Handler{
 		auth:  auth,
 		state: state,
-		token: make(chan oauth2.Token, 1),
+		token: tokens,
 	}
 	go http.ListenAndServe("127.0.0.1:59999", handler)
 
@@ -113,55 +124,34 @@ func run() (int, error) {
 		log.Printf("Please visit this URL to authenticate to Spotify: %s", url)
 	}
 
-	ui, err := widgets.NewApplication()
+	visp := &prog.Visp{
+		Auth:   auth,
+		Tokens: tokens,
+	}
+
+	ui, err := widgets.NewApplication(visp)
 	if err != nil {
 		return ExitInternalError, err
 	}
+
+	ui.Init()
 	defer ui.Finish()
 	go ui.Poll()
 
-	env := Environment{
-		tokenCallbackHandler: handler,
-		signals:              make(chan os.Signal, 1),
-		ui:                   ui,
-	}
+	visp.Termui = ui
+	visp.Init()
 
-	signal.Notify(env.signals, syscall.SIGTERM, syscall.SIGINT)
+	err = visp.SourceDefaultConfig()
+	if err != nil {
+		return ExitInternalError, fmt.Errorf("read default configuration: %s", err)
+	}
 
 	log.Infof("Ready.")
 
-	return mainloop(env)
-}
-
-type Environment struct {
-	tokenCallbackHandler *Handler
-	signals              chan os.Signal
-	client               spotify.Client
-	ui                   *widgets.Application
-}
-
-func mainloop(env Environment) (int, error) {
-	for {
-		select {
-		case token := <-env.tokenCallbackHandler.token:
-			log.Infof("Received new Spotify token")
-			env.client = env.tokenCallbackHandler.auth.NewClient(&token)
-			viper.Set("spotify.accesstoken", token.AccessToken)
-			viper.Set("spotify.refreshtoken", token.RefreshToken)
-			err := viper.WriteConfig()
-			if err != nil {
-				log.Errorf("Unable to write configuration file: %s", err)
-			}
-
-		case sig := <-env.signals:
-			env.ui.Finish()
-			log.Infof("Caught signal %d, exiting.", sig)
-			return ExitSuccess, nil
-
-		case ev := <-env.ui.Events():
-			env.ui.HandleEvent(ev)
-		}
-
-		env.ui.Draw()
+	err = visp.Main()
+	if err != nil {
+		return ExitInternalError, err
 	}
+
+	return ExitSuccess, nil
 }
