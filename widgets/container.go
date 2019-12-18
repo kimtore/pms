@@ -1,10 +1,9 @@
 package widgets
 
 import (
-	console2 "github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/log"
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
-	log "github.com/sirupsen/logrus"
 )
 
 type widgets struct {
@@ -48,14 +47,14 @@ func NewApplication() (*Application, error) {
 func (app *Application) HandleEvent(ev tcell.Event) bool {
 	switch e := ev.(type) {
 	case *tcell.EventKey:
-		log.Tracef("keypress: name=%v key=%v modifiers=%v", e.Name(), e.Key(), e.Modifiers())
+		log.Debugf("keypress: name=%v key=%v modifiers=%v", e.Name(), e.Key(), e.Modifiers())
 	case *tcell.EventResize:
 		cols, rows := e.Size()
-		log.Tracef("terminal resize: %dx%d", cols, rows)
+		log.Debugf("terminal resize: %dx%d", cols, rows)
 		app.screen.Sync()
 		app.widgets.console.Resize()
 	default:
-		log.Tracef("unrecognized input event: %T %+v", e, e)
+		log.Debugf("unrecognized input event: %T %+v", e, e)
 	}
 
 	app.widgets.console.HandleEvent(ev)
@@ -64,7 +63,7 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 }
 
 func (app *Application) Draw() {
-	app.widgets.console.SetLines(console2.LogLines)
+	app.widgets.console.SetLines(log.Lines())
 	app.widgets.console.Draw()
 	app.screen.Show()
 }

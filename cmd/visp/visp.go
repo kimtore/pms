@@ -3,15 +3,13 @@ package main
 import (
 	"fmt"
 	"github.com/ambientsound/pms/config"
-	"github.com/ambientsound/pms/console"
+	"github.com/ambientsound/pms/log"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
-	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -46,7 +44,7 @@ const (
 func main() {
 	exitCode, err := run()
 	if exitCode != ExitSuccess {
-		log.Error(err)
+		fmt.Fprintln(os.Stderr, err.Error())
 	}
 	os.Exit(exitCode)
 }
@@ -70,30 +68,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.token <- *token
 }
 
-func logWriter(cfg config.Log) (io.Writer, error) {
-	logMode := os.O_WRONLY | os.O_CREATE
-	if cfg.Overwrite {
-		logMode |= os.O_TRUNC
-	} else {
-		logMode |= os.O_APPEND
-	}
-	return os.OpenFile(cfg.File, logMode, 0666)
-}
-
-func logConfig(cfg config.Log) error {
-	w, err := logWriter(cfg)
-	if err != nil {
-		return err
-	}
-	level, err := log.ParseLevel(cfg.Level)
-	if err != nil {
-		return err
-	}
-	log.SetOutput(console.Writer(w))
-	log.SetLevel(level)
-	return nil
-}
-
 func run() (int, error) {
 	cfg, err := config.Configuration()
 	if err != nil {
@@ -101,9 +75,9 @@ func run() (int, error) {
 		return ExitConfiguration, err
 	}
 
-	err = logConfig(cfg.Log)
+	err = log.Configure(cfg.Log)
 	if err != nil {
-		return ExitLogging, err
+		return ExitLogging, fmt.Errorf("error in configuration: %s", err)
 	}
 
 	log.Infof("Visp starting up")
