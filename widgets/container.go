@@ -10,7 +10,7 @@ import (
 
 type widgets struct {
 	layout   *views.BoxLayout
-	console  *ConsoleWidget
+	console  *Console
 	topbar   *Topbar
 	multibar *Multibar
 	songlist *SonglistWidget
