@@ -3,7 +3,7 @@ package widgets
 import (
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/log"
-	"github.com/ambientsound/pms/utils"
+	"time"
 
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
@@ -37,8 +37,24 @@ func (w *ConsoleWidget) Size() (int, int) {
 
 func (w *ConsoleWidget) Draw() {
 	log.Debugf("console widget: draw")
-	w.viewport.Fill('-', tcell.StyleDefault)
-	w.drawNext(0, 0, 10, 10, []rune("foobar"), tcell.StyleDefault)
+
+	list := log.Messages(log.InfoLevel)
+	entries := len(list)
+	_, ymax := w.Size()
+	if entries > ymax {
+		list = list[entries-ymax:]
+	}
+
+	w.viewport.Clear()
+	st := tcell.StyleDefault
+
+	for y, msg := range list {
+		x := 0
+		ts := msg.Timestamp.Format(time.RFC822)
+		x = w.drawString(x, y, ts, st)
+		x = w.drawString(x+1, y, msg.Level.String(), st)
+		x = w.drawString(x+1, y, msg.Text, st)
+	}
 }
 
 func (w *ConsoleWidget) Resize() {
@@ -51,17 +67,9 @@ func (w *ConsoleWidget) HandleEvent(ev tcell.Event) bool {
 	return false
 }
 
-func (w *ConsoleWidget) drawNext(x, y, strmin, strmax int, runes []rune, style tcell.Style) int {
-	strmin = utils.Min(len(runes), strmin)
-	n := 0
-	for n < strmin {
-		w.view.SetContent(x, y, runes[n], nil, style)
-		n++
-		x++
-	}
-	for n < strmax {
-		w.view.SetContent(x, y, ' ', nil, style)
-		n++
+func (w *ConsoleWidget) drawString(x, y int, s string, style tcell.Style) int {
+	for _, r := range s {
+		w.view.SetContent(x, y, r, nil, style)
 		x++
 	}
 	return x
