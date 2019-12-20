@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
+	"strings"
 )
 
 var buildVersion = "undefined"
@@ -41,12 +42,22 @@ const (
 	ExitLogging
 )
 
+func logAndStderr(line string) {
+	log.Errorf(line)
+	fmt.Fprintln(os.Stderr,line)
+}
+
 func main() {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Fprintln(os.Stderr, "****** Visp has crashed!!! ******")
-			fmt.Fprintln(os.Stderr, "Please report this bug at the Github project and include the following stack trace:")
-			fmt.Fprintln(os.Stderr, string(debug.Stack()))
+			logAndStderr("*********************************")
+			logAndStderr("****** Visp has crashed!!! ******")
+			logAndStderr("*********************************")
+			logAndStderr("Please report this bug at the Github project and include the following stack trace:")
+			stacktrace := strings.Split(string(debug.Stack()), "\n")
+			for _, line := range stacktrace {
+				logAndStderr(line)
+			}
 			os.Exit(ExitPanic)
 		}
 	}()
