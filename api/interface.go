@@ -4,6 +4,13 @@ import (
 	"github.com/ambientsound/pms/songlist"
 )
 
+type Window int
+
+const (
+	WindowLogs Window = iota
+	WindowMusic
+)
+
 type Collection interface {
 	Activate(songlist.Songlist)
 	ActivateIndex(int) error
@@ -24,6 +31,6 @@ type SonglistWidget interface {
 }
 
 type UI interface {
-	PostFunc(func())
+	ActivateWindow(Window)
 	Refresh()
 }

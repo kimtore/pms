@@ -14,6 +14,7 @@ type widgets struct {
 	topbar   *Topbar
 	multibar *Multibar
 	songlist *SonglistWidget
+	active   views.Widget
 }
 
 type Application struct {
@@ -24,6 +25,8 @@ type Application struct {
 }
 
 var _ tcell.EventHandler = &Application{}
+
+var _ api.UI = &Application{}
 
 func NewApplication(a api.API) (*Application, error) {
 	screen, err := tcell.NewScreen()
@@ -47,19 +50,18 @@ func NewApplication(a api.API) (*Application, error) {
 }
 
 func (app *Application) Init() {
-
-	app.widgets.console = NewConsoleWidget()
-
 	app.widgets.topbar = NewTopbar()
-
+	app.widgets.console = NewConsoleWidget()
+	app.widgets.songlist = NewSonglistWidget(app.api)
 	app.widgets.multibar = NewMultibarWidget(app.api)
 
 	app.widgets.layout = views.NewBoxLayout(views.Vertical)
 	app.widgets.layout.AddWidget(app.widgets.topbar, 0)
 	app.widgets.layout.AddWidget(app.widgets.console, 1)
-	// app.widgets.layout.AddWidget(app.widgets.songlist, 2)
 	app.widgets.layout.AddWidget(app.widgets.multibar, 0)
 	app.widgets.layout.SetView(app.screen)
+
+	app.widgets.active = app.widgets.console
 }
 
 func (app *Application) HandleEvent(ev tcell.Event) bool {
@@ -68,8 +70,6 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 		cols, rows := e.Size()
 		log.Debugf("terminal resize: %dx%d", cols, rows)
 		app.screen.Sync()
-		// app.widgets.console.Resize()
-		// app.widgets.layout.HandleEvent(ev)
 		app.widgets.layout.Resize()
 		app.widgets.layout.SetView(app.screen)
 		return true
@@ -100,6 +100,29 @@ func (app *Application) Events() <-chan tcell.Event {
 
 func (app *Application) Finish() {
 	app.screen.Fini()
+}
+
+func (app *Application) Refresh() {
+	app.screen.Sync()
+}
+
+func (app *Application) ActivateWindow(window api.Window) {
+	var widget views.Widget
+
+	switch window {
+	case api.WindowLogs:
+		widget = app.widgets.console
+	case api.WindowMusic:
+		widget = app.widgets.songlist
+	}
+
+	log.Debugf("want to activate widget %#v", widget)
+	log.Debugf("first deactivating widget %#v", app.widgets.active)
+
+	app.widgets.layout.RemoveWidget(app.widgets.active)
+	app.widgets.layout.InsertWidget(1, widget, 1.0)
+
+	app.widgets.active = widget
 }
 
 // FIXME: remove this abomination

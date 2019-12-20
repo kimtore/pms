@@ -40,6 +40,7 @@ var Verbs = map[string]func(api.API) Command{
 	"select":    NewSelect,
 	"se":        NewSet,
 	"set":       NewSet,
+	"show":      NewShow,
 	"single":    NewSingle,
 	"sort":      NewSort,
 	"stop":      NewStop,

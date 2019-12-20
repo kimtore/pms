@@ -127,8 +127,7 @@ func (v *Visp) Styles() style.Stylesheet {
 }
 
 func (v *Visp) UI() api.UI {
-	log.Debugf("nil ui; might break")
-	return nil // FIXME
+	return v.Termui
 }
 
 func (v *Visp) Init() {

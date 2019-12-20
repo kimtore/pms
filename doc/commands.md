@@ -330,10 +330,16 @@ and therefore you should avoid depending too much on availability of modifiers o
 
   Show the contents of the given tag for the track under the cursor.
 
+* `q[uit]`
+
+  Exit the program. Any unsaved changes will be lost.
+
 * `redraw`
 
   Force a screen redraw. Useful if rendering has gone wrong.
 
-* `q[uit]`
+* `show logs`
+  `show music`
 
-  Exit the program. Any unsaved changes will be lost.
+  Switch between different views. `music` will enable you to cycle between song lists,
+  while `logs` shows an event log of what's happened so far in your session.
