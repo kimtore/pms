@@ -20,15 +20,14 @@ var strLevel = map[Level]string{
 	DebugLevel: "DEBUG",
 }
 
-var buffer []string
-
 var since time.Time
 
-func Lines() []string {
-	return buffer
-}
-
 var maxLevel Level
+
+func init() {
+	since = time.Now()
+	maxLevel = DebugLevel
+}
 
 func SetLevel(level Level) {
 	maxLevel = level
@@ -44,36 +43,20 @@ func ParseLevel(level string) (Level, error) {
 	return ErrorLevel, fmt.Errorf("no such level: %s", level)
 }
 
-func appendLine(data string) {
-	buffer = append(buffer, data)
-}
-
-func init() {
-	since = time.Now()
-	maxLevel = DebugLevel
-	Clear()
-}
-
-func Clear() {
-	buffer = make([]string, 0)
-}
-
-// Printf adds a line to the local buffer, and optionally prints it to an external log writer.
-func Printf(format string, args ...interface{}) (int, error) {
-	format = strings.Trim(format, " \t\n")
-	formatted := fmt.Sprintf(format, args...)
-	// TODO: split lines?
-	appendLine(formatted)
-	return writer.Write([]byte(formatted + "\n"))
-}
-
+// Logf adds a line to the local buffer, and optionally prints it to an external log writer.
 func Logf(format string, level Level, args ...interface{}) (int, error) {
 	if level > maxLevel {
 		return 0, nil
 	}
-	ts := time.Since(since).Seconds()
-	prefix := fmt.Sprintf("[%010.3f] [%s] ", ts, strLevel[level])
-	return Printf(prefix+format, args...)
+	format = strings.Trim(format, " \t\n")
+	formatted := fmt.Sprintf(format, args...)
+	msg := Message{
+		Timestamp: time.Now(),
+		Level:     level,
+		Text:      formatted,
+	}
+	appendMessage(msg)
+	return printMsg(msg)
 }
 
 func Errorf(format string, args ...interface{}) (int, error) {
@@ -87,3 +70,8 @@ func Infof(format string, args ...interface{}) (int, error) {
 func Debugf(format string, args ...interface{}) (int, error) {
 	return Logf(format, DebugLevel, args...)
 }
+func printMsg(msg Message) (int, error) {
+	prefix := fmt.Sprintf("[%010.3f] [%s] ", time.Now().Sub(msg.Timestamp).Seconds(), strLevel[msg.Level])
+	return writer.Write([]byte(prefix + msg.Text + "\n"))
+}
+

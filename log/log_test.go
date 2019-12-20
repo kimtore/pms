@@ -7,40 +7,28 @@ import (
 )
 
 func TestClear(t *testing.T) {
+	log.Clear()
+	assert.Len(t, log.Messages(log.InfoLevel), 0)
 	for i := 0; i < 10; i++ {
-		log.Printf("foo")
+		log.Infof("foo")
 	}
-	assert.Len(t, log.Lines(), 10)
+	assert.Len(t, log.Messages(log.InfoLevel), 10)
 	log.Clear()
-	assert.Len(t, log.Lines(), 0)
-}
-
-func TestPrintf(t *testing.T) {
-	log.Clear()
-
-	fmt := "this %s a string with %d"
-	n, err := log.Printf(fmt, "is", 645)
-
-	assert.NoError(t, err)
-
-	linebuffer := log.Lines()
-
-	assert.Len(t, linebuffer, 1)
-	assert.Len(t, linebuffer[0], n)
-	assert.Equal(t, "this is a string with 645", linebuffer[0])
+	assert.Len(t, log.Messages(log.InfoLevel), 0)
 }
 
 func TestErrorf(t *testing.T) {
 	log.Clear()
 
 	fmt := "this %s a string with %d"
-	n, err := log.Errorf(fmt, "is", 645)
+	_, err := log.Errorf(fmt, "is", 645)
 
 	assert.NoError(t, err)
 
-	linebuffer := log.Lines()
+	linebuffer := log.Messages(log.ErrorLevel)
 
 	assert.Len(t, linebuffer, 1)
-	assert.Len(t, linebuffer[0], n)
-	assert.Equal(t, "[000000.000] [ERROR] this is a string with 645", linebuffer[0])
+	assert.Len(t, linebuffer[0].Text, 25)
+	assert.Equal(t, "this is a string with 645", linebuffer[0].Text)
+	assert.Equal(t, log.ErrorLevel, linebuffer[0].Level)
 }
