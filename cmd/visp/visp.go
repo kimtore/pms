@@ -44,7 +44,7 @@ const (
 
 func logAndStderr(line string) {
 	log.Errorf(line)
-	fmt.Fprintln(os.Stderr,line)
+	fmt.Fprintln(os.Stderr, line)
 }
 
 func main() {
@@ -132,7 +132,7 @@ func run() (int, error) {
 		}
 	} else {
 		url := auth.AuthURL(state)
-		log.Printf("Please visit this URL to authenticate to Spotify: %s", url)
+		log.Infof("Please visit this URL to authenticate to Spotify: %s", url)
 	}
 
 	visp := &prog.Visp{

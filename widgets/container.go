@@ -10,7 +10,7 @@ import (
 
 type widgets struct {
 	layout   *views.BoxLayout
-	console  *views.TextArea
+	console  *ConsoleWidget
 	topbar   *Topbar
 	multibar *MultibarWidget
 	songlist *SonglistWidget
@@ -48,15 +48,15 @@ func NewApplication(a api.API) (*Application, error) {
 
 func (app *Application) Init() {
 
-	app.widgets.console = views.NewTextArea()
+	app.widgets.console = NewConsoleWidget()
 
 	app.widgets.topbar = NewTopbar()
 
 	app.widgets.multibar = NewMultibarWidget(app.api)
 
 	app.widgets.layout = views.NewBoxLayout(views.Vertical)
-	app.widgets.layout.AddWidget(app.widgets.topbar, 1)
-	app.widgets.layout.AddWidget(app.widgets.console, 2)
+	app.widgets.layout.AddWidget(app.widgets.topbar, 0)
+	app.widgets.layout.AddWidget(app.widgets.console, 1)
 	// app.widgets.layout.AddWidget(app.widgets.songlist, 2)
 	app.widgets.layout.AddWidget(app.widgets.multibar, 0)
 	app.widgets.layout.SetView(app.screen)
@@ -68,19 +68,21 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 		cols, rows := e.Size()
 		log.Debugf("terminal resize: %dx%d", cols, rows)
 		app.screen.Sync()
-		app.widgets.console.Resize()
+		// app.widgets.console.Resize()
+		//app.widgets.layout.HandleEvent(ev)
+		app.widgets.layout.Resize()
 		return true
 	case *tcell.EventKey:
 		return false
 	default:
 		log.Debugf("unrecognized input event: %T %+v", e, e)
+		app.widgets.layout.HandleEvent(ev)
 		return false
 	}
 }
 
 func (app *Application) Draw() {
 	app.widgets.multibar.Render()
-	app.widgets.console.SetLines(log.Lines())
 	app.widgets.layout.Draw()
 	app.updateCursor()
 	app.screen.Show()
