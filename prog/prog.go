@@ -66,10 +66,12 @@ func (v *Visp) Message(fmt string, a ...interface{}) {
 }
 
 func (v *Visp) MpdClient() *mpd.Client {
+	log.Debugf("nil mpd client; might break")
 	return nil // FIXME
 }
 
 func (v *Visp) Multibar() api.MultibarWidget {
+	log.Debugf("nil multibar; might break")
 	return nil // FIXME
 }
 
@@ -86,6 +88,7 @@ func (v *Visp) PlayerStatus() (p pms_mpd.PlayerStatus) {
 }
 
 func (v *Visp) Queue() *songlist.Queue {
+	log.Debugf("nil queue; might break")
 	return nil // FIXME
 }
 
@@ -98,18 +101,22 @@ func (v *Visp) Sequencer() *keys.Sequencer {
 }
 
 func (v *Visp) Song() *song.Song {
+	log.Debugf("nil song; might break")
 	return nil
 }
 
 func (v *Visp) Songlist() songlist.Songlist {
+	log.Debugf("nil songlist; might break")
 	return nil
 }
 
 func (v *Visp) Songlists() []songlist.Songlist {
+	log.Debugf("nil songlists; might break")
 	return nil // FIXME
 }
 
 func (v *Visp) SonglistWidget() api.SonglistWidget {
+	log.Debugf("nil songlist widget; might break")
 	return nil // FIXME
 }
 
@@ -118,6 +125,7 @@ func (v *Visp) Styles() style.Stylesheet {
 }
 
 func (v *Visp) UI() api.UI {
+	log.Debugf("nil ui; might break")
 	return nil // FIXME
 }
 
