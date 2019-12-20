@@ -2,7 +2,6 @@ package widgets
 
 import (
 	"fmt"
-	"github.com/ambientsound/pms/multibar"
 	"strings"
 
 	"github.com/ambientsound/pms/api"
@@ -131,6 +130,7 @@ func (ui *UI) Size() (int, int) {
 }
 
 func (ui *UI) UpdateCursor() {
+	/*
 	switch ui.Multibar.multibar.Mode() {
 	case multibar.ModeInput, multibar.ModeSearch:
 		_, ymax := ui.Screen.Size()
@@ -138,6 +138,7 @@ func (ui *UI) UpdateCursor() {
 	default:
 		ui.Screen.HideCursor()
 	}
+	*/
 }
 
 func (ui *UI) PostFunc(f func()) {

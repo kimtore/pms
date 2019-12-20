@@ -171,6 +171,16 @@ func (m *Multibar) Cursor() int {
 	return m.cursor
 }
 
+// Commands returns a channel sending any commands entered in input mode.
+func (m *Multibar) Commands() <-chan string {
+	return m.commands
+}
+
+// Searches returns a channel sending any search terms.
+func (m *Multibar) Searches() <-chan string {
+	return m.searches
+}
+
 func (m *Multibar) setRunes(r []rune) {
 	m.buffer = r
 	m.validateCursor()

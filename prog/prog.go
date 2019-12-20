@@ -31,6 +31,7 @@ type Visp struct {
 	Client spotify.Client
 	Termui *widgets.Application
 
+	commands    chan string
 	clipboard   *songlist.BaseSonglist
 	interpreter *input.Interpreter
 	multibar    *multibar.Multibar
@@ -98,8 +99,8 @@ func (v *Visp) Sequencer() *keys.Sequencer {
 	return v.sequencer
 }
 
-func (v *Visp) SetInputMode(mode multibar.InputMode) {
-	v.multibar.SetMode(mode)
+func (v *Visp) Multibar() *multibar.Multibar {
+	return v.multibar
 }
 
 func (v *Visp) Song() *song.Song {
@@ -135,6 +136,7 @@ func (v *Visp) Init() {
 	tcf := func(in string) multibar.TabCompleter {
 		return tabcomplete.New(in, v)
 	}
+	v.commands = make(chan string, 1024)
 	v.interpreter = input.NewCLI(v)
 	v.multibar = multibar.New(tcf)
 	v.options = options.New()
@@ -147,7 +149,7 @@ func (v *Visp) Main() error {
 	for {
 		select {
 		case token := <-v.Tokens:
-			log.Infof("Received new Spotify token")
+			log.Debugf("Received Spotify token.")
 			v.Client = v.Auth.NewClient(&token)
 			viper.Set("spotify.accesstoken", token.AccessToken)
 			viper.Set("spotify.refreshtoken", token.RefreshToken)
@@ -159,6 +161,22 @@ func (v *Visp) Main() error {
 		case <-v.quit:
 			log.Infof("Exiting.")
 			return nil
+
+		// Send commands from the multibar into the main command queue.
+		case command := <-v.multibar.Commands():
+			v.commands <- command
+
+		// Search input box. Discard for now.
+		case <-v.multibar.Searches():
+			log.Errorf("searches are not implemented")
+
+		// Process the command queue.
+		case command := <-v.commands:
+			err := v.Exec(command)
+			if err != nil {
+				log.Errorf(err.Error())
+				v.multibar.Error(err)
+			}
 
 		// Try handling the input event in the multibar.
 		// If multibar is disabled (input mode = normal), try handling the event in the UI layer.
@@ -174,12 +192,10 @@ func (v *Visp) Main() error {
 			if len(cmd) == 0 {
 				break
 			}
-			err := v.Exec(cmd)
-			if err != nil {
-				log.Errorf(err.Error())
-			}
+			v.commands <- cmd
 		}
 
+		// Draw UI after processing any event.
 		v.Termui.Draw()
 	}
 }

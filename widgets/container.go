@@ -17,11 +17,10 @@ type widgets struct {
 }
 
 type Application struct {
-	api      api.API
-	events   chan tcell.Event
-	multibar *multibar.Multibar
-	screen   tcell.Screen
-	widgets  widgets
+	api     api.API
+	events  chan tcell.Event
+	screen  tcell.Screen
+	widgets widgets
 }
 
 var _ tcell.EventHandler = &Application{}
@@ -53,7 +52,7 @@ func (app *Application) Init() {
 
 	app.widgets.topbar = NewTopbar()
 
-	app.widgets.multibar = NewMultibarWidget(app.api, app.multibar)
+	app.widgets.multibar = NewMultibarWidget(app.api)
 
 	app.widgets.layout = views.NewBoxLayout(views.Vertical)
 	app.widgets.layout.AddWidget(app.widgets.topbar, 1)
@@ -80,8 +79,10 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 }
 
 func (app *Application) Draw() {
+	app.widgets.multibar.Render()
 	app.widgets.console.SetLines(log.Lines())
 	app.widgets.layout.Draw()
+	app.updateCursor()
 	app.screen.Show()
 }
 
@@ -97,4 +98,14 @@ func (app *Application) Events() <-chan tcell.Event {
 
 func (app *Application) Finish() {
 	app.screen.Fini()
+}
+
+func (app *Application) updateCursor() {
+	switch app.api.Multibar().Mode() {
+	case multibar.ModeInput, multibar.ModeSearch:
+		_, ymax := app.screen.Size()
+		app.screen.ShowCursor(app.api.Multibar().Cursor()+1, ymax-1)
+	default:
+		app.screen.HideCursor()
+	}
 }

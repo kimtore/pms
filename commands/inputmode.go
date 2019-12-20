@@ -49,6 +49,6 @@ func (cmd *InputMode) Parse() error {
 }
 
 func (cmd *InputMode) Exec() error {
-	cmd.api.SetInputMode(cmd.mode)
+	cmd.api.Multibar().SetMode(cmd.mode)
 	return nil
 }

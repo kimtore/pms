@@ -11,8 +11,7 @@ import (
 
 // MultibarWidget receives keyboard events, displays status messages, and the position readout.
 type MultibarWidget struct {
-	api      api.API
-	multibar *multibar.Multibar
+	api api.API
 
 	views.TextBar
 	style.Styled
@@ -20,10 +19,9 @@ type MultibarWidget struct {
 
 var _ views.Widget = &MultibarWidget{}
 
-func NewMultibarWidget(a api.API, m *multibar.Multibar) *MultibarWidget {
+func NewMultibarWidget(a api.API) *MultibarWidget {
 	return &MultibarWidget{
-		api:      a,
-		multibar: m,
+		api: a,
 	}
 }
 
@@ -45,15 +43,15 @@ func (m *MultibarWidget) Render() {
 	var st tcell.Style
 	var s string
 
-	switch m.multibar.Mode() {
+	switch m.api.Multibar().Mode() {
 	case multibar.ModeInput:
-		s = ":" + m.multibar.String()
+		s = ":" + m.api.Multibar().String()
 		st = m.Style("commandText")
 	case multibar.ModeSearch:
-		s = "/" + m.multibar.String()
+		s = "/" + m.api.Multibar().String()
 		st = m.Style("searchText")
 	default:
-		msg := m.multibar.Message()
+		msg := m.api.Multibar().Message()
 		if len(msg.Text) == 0 && m.api.Songlist() != nil && m.api.Songlist().HasVisualSelection() {
 			s = "-- VISUAL --"
 			st = m.Style("visualText")

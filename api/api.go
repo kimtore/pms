@@ -22,10 +22,8 @@ type API interface {
 	// Exec executes a command through the command-line interface.
 	Exec(string) error
 
-	// SetInputMode family of functions switches the input mode.
-	// We don't use the multibar input mode here because multibar depends on API,
-	// which would trigger cyclical imports.
-	SetInputMode(mode multibar.InputMode)
+	// Return the global multibar instance.
+	Multibar() *multibar.Multibar
 
 	// Library returns the current MPD library, or nil if it has not been retrieved yet.
 	Library() *songlist.Library

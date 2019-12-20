@@ -52,7 +52,7 @@ func (api *testAPI) Exec(cmd string) error {
 	panic("not implemented")
 }
 
-func (api *testAPI) SetInputMode(mode multibar.InputMode) {
+func (api *testAPI) Multibar() *multibar.Multibar {
 	panic("not implemented")
 }
 
