@@ -21,7 +21,7 @@ type UI struct {
 
 	Topbar        *Topbar
 	Columnheaders *ColumnheadersWidget
-	Multibar      *MultibarWidget
+	Multibar      *Multibar
 	Songlist      *SonglistWidget
 
 	// Input events
@@ -169,8 +169,8 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 }
 
 func (ui *UI) refreshPositionReadout() {
-	str := ui.Songlist.PositionReadout()
-	ui.Multibar.SetRight(str, ui.Style("readout"))
+	//str := ui.Songlist.PositionReadout()
+	// ui.Multibar.SetRight(str, ui.Style("readout"))
 }
 
 func (ui *UI) runIndexSearch(term string) error {

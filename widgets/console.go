@@ -25,6 +25,7 @@ func NewConsoleWidget() *ConsoleWidget {
 
 func (w *ConsoleWidget) SetView(view views.View) {
 	w.view = view
+	w.viewport.SetView(view)
 	log.Debugf("console widget: set view %#v", view)
 }
 
@@ -36,12 +37,13 @@ func (w *ConsoleWidget) Size() (int, int) {
 
 func (w *ConsoleWidget) Draw() {
 	log.Debugf("console widget: draw")
-	w.view.Fill('-', tcell.StyleDefault)
+	w.viewport.Fill('-', tcell.StyleDefault)
 	w.drawNext(0, 0, 10, 10, []rune("foobar"), tcell.StyleDefault)
 }
 
 func (w *ConsoleWidget) Resize() {
 	log.Debugf("console widget: resize")
+	w.viewport.Resize(0, 0, -1, -1)
 }
 
 func (w *ConsoleWidget) HandleEvent(ev tcell.Event) bool {

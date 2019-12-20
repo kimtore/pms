@@ -12,7 +12,7 @@ type widgets struct {
 	layout   *views.BoxLayout
 	console  *ConsoleWidget
 	topbar   *Topbar
-	multibar *MultibarWidget
+	multibar *Multibar
 	songlist *SonglistWidget
 }
 
@@ -71,6 +71,7 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 		// app.widgets.console.Resize()
 		//app.widgets.layout.HandleEvent(ev)
 		app.widgets.layout.Resize()
+		app.widgets.layout.SetView(app.screen)
 		return true
 	case *tcell.EventKey:
 		return false
@@ -82,8 +83,9 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 }
 
 func (app *Application) Draw() {
-	app.widgets.multibar.Render()
+	//ui.Multibar.SetRight(str, ui.Style("readout"))
 	app.widgets.layout.Draw()
+	app.widgets.multibar.Draw()
 	app.updateCursor()
 	app.screen.Show()
 }

@@ -2,64 +2,89 @@ package widgets
 
 import (
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/message"
+	"github.com/ambientsound/pms/log"
 	"github.com/ambientsound/pms/multibar"
 	"github.com/ambientsound/pms/style"
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
 )
 
-// MultibarWidget receives keyboard events, displays status messages, and the position readout.
-type MultibarWidget struct {
-	api api.API
-
-	views.TextBar
+// Multibar receives keyboard events, displays status messages, and the position readout.
+type Multibar struct {
+	api  api.API
+	view views.View
+	views.WidgetWatchers
 	style.Styled
 }
 
-var _ views.Widget = &MultibarWidget{}
+var _ views.Widget = &Multibar{}
 
-func NewMultibarWidget(a api.API) *MultibarWidget {
-	return &MultibarWidget{
+func NewMultibarWidget(a api.API) *Multibar {
+	return &Multibar{
 		api: a,
 	}
 }
 
-func (m *MultibarWidget) messageStyle(msg message.Message) tcell.Style {
+func (w *Multibar) messageStyle(msg log.Message) tcell.Style {
 	switch {
-	case msg.Type == message.SequenceText:
-		return m.Style("sequenceText")
-	case msg.Severity == message.Info:
-		return m.Style("statusbar")
-	case msg.Severity == message.Error:
-		return m.Style("errorText")
+	case msg.Level == log.InfoLevel:
+		return w.Style("statusbar")
+	case msg.Level == log.ErrorLevel:
+		return w.Style("errorText")
 	default:
-		return m.Style("default")
+		return w.Style("default")
+	}
+}
+
+func (w *Multibar) SetView(view views.View) {
+	w.view = view
+}
+
+func (w *Multibar) Size() (int, int) {
+	x, _ := w.view.Size()
+	return x, 1
+}
+
+func (w *Multibar) Resize() {
+}
+
+func (w *Multibar) HandleEvent(ev tcell.Event) bool {
+	return false
+}
+
+// Figure out what the multibar should render, and return it with the corresponding style
+func (w *Multibar) textWithStyle() (string, tcell.Style) {
+	hasVisualSelection := w.api.Songlist() != nil && w.api.Songlist().HasVisualSelection()
+	sequenceText := w.api.Sequencer().String()
+	multibarMode := w.api.Multibar().Mode()
+	msg := log.Last(log.InfoLevel)
+
+	switch {
+	case multibarMode == multibar.ModeInput:
+		return ":" + w.api.Multibar().String(), w.Style("commandText")
+	case multibarMode == multibar.ModeSearch:
+		return "/" + w.api.Multibar().String(), w.Style("searchText")
+	case len(sequenceText) > 0:
+		return sequenceText, w.Style("sequenceText")
+	case hasVisualSelection:
+		return "-- VISUAL --", w.Style("visualText")
+	case msg != nil:
+		return msg.Text, w.messageStyle(*msg)
+	default:
+		return "", w.Style("default")
 	}
 }
 
 // Draw the statusbar part of the Multibar.
-func (m *MultibarWidget) Render() {
-	var st tcell.Style
-	var s string
+func (w *Multibar) Draw() {
+	w.view.Clear()
 
-	switch m.api.Multibar().Mode() {
-	case multibar.ModeInput:
-		s = ":" + m.api.Multibar().String()
-		st = m.Style("commandText")
-	case multibar.ModeSearch:
-		s = "/" + m.api.Multibar().String()
-		st = m.Style("searchText")
-	default:
-		msg := m.api.Multibar().Message()
-		if len(msg.Text) == 0 && m.api.Songlist() != nil && m.api.Songlist().HasVisualSelection() {
-			s = "-- VISUAL --"
-			st = m.Style("visualText")
-		} else {
-			s = msg.Text
-			st = m.messageStyle(msg)
-		}
+	text, st := w.textWithStyle()
+
+	log.Debugf("multibar draw in style %x: %s", st, text)
+	x, y := 0, 0
+	for _, r := range text {
+		w.view.SetContent(x, y, r, []rune{}, st)
+		x++
 	}
-
-	m.SetLeft(s, st)
 }
