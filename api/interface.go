@@ -20,6 +20,7 @@ type SonglistWidget interface {
 	GetVisibleBoundaries() (int, int)
 	ScrollViewport(int, bool)
 	Size() (int, int)
+	PositionReadout() string
 }
 
 type UI interface {

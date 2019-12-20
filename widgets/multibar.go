@@ -78,13 +78,31 @@ func (w *Multibar) textWithStyle() (string, tcell.Style) {
 // Draw the statusbar part of the Multibar.
 func (w *Multibar) Draw() {
 	w.view.Clear()
+	w.drawLeft()
+	w.drawRight()
+}
 
+// Draw the statusbar part of the Multibar.
+func (w *Multibar) drawLeft() {
 	text, st := w.textWithStyle()
 
 	log.Debugf("multibar draw in style %x: %s", st, text)
-	x, y := 0, 0
-	for _, r := range text {
-		w.view.SetContent(x, y, r, []rune{}, st)
+	for x, r := range text {
+		w.view.SetContent(x, 0, r, []rune{}, st)
 		x++
 	}
+}
+
+func (w *Multibar) drawRight() {
+	st := w.Style("readout")
+	// text := w.api.SonglistWidget().PositionReadout()
+	// FIXME
+	text := ""
+	x, _ := w.Size()
+	x -= len(text)
+	for _, r := range text {
+		w.view.SetContent(x, 0, r, []rune{}, st)
+		x++
+	}
+
 }

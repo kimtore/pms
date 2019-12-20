@@ -69,7 +69,7 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 		log.Debugf("terminal resize: %dx%d", cols, rows)
 		app.screen.Sync()
 		// app.widgets.console.Resize()
-		//app.widgets.layout.HandleEvent(ev)
+		// app.widgets.layout.HandleEvent(ev)
 		app.widgets.layout.Resize()
 		app.widgets.layout.SetView(app.screen)
 		return true
@@ -83,9 +83,7 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 }
 
 func (app *Application) Draw() {
-	//ui.Multibar.SetRight(str, ui.Style("readout"))
 	app.widgets.layout.Draw()
-	app.widgets.multibar.Draw()
 	app.updateCursor()
 	app.screen.Show()
 }
@@ -104,11 +102,17 @@ func (app *Application) Finish() {
 	app.screen.Fini()
 }
 
+// FIXME: remove this abomination
+func (app *Application) Songlist() *SonglistWidget {
+	return app.widgets.songlist
+}
+
 func (app *Application) updateCursor() {
 	switch app.api.Multibar().Mode() {
 	case multibar.ModeInput, multibar.ModeSearch:
 		_, ymax := app.screen.Size()
-		app.screen.ShowCursor(app.api.Multibar().Cursor()+1, ymax-1)
+		x := app.api.Multibar().Cursor() + 1
+		app.screen.ShowCursor(x, ymax-1)
 	default:
 		app.screen.HideCursor()
 	}
