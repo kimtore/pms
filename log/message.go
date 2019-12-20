@@ -28,6 +28,14 @@ func Clear() {
 	}
 }
 
+func Last(level Level) *Message {
+	n := len(messages[level])
+	if n == 0 {
+		return nil
+	}
+	return &messages[level][n-1]
+}
+
 func init() {
 	Clear()
 }

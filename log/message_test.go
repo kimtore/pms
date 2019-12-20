@@ -30,3 +30,21 @@ func TestLevels(t *testing.T) {
 	assert.Equal(t, 10, lens[log.InfoLevel])
 	assert.Equal(t, 10, lens[log.ErrorLevel])
 }
+
+// Test that Last() returns the last logged message.
+func TestLast(t *testing.T) {
+	log.Clear()
+	last := log.Last(log.DebugLevel)
+	assert.Nil(t, last)
+
+	log.Errorf("error")
+	last = log.Last(log.ErrorLevel)
+
+	assert.NotNil(t, last)
+	assert.Equal(t, "error", last.Text)
+
+	log.Infof("info")
+	last = log.Last(log.ErrorLevel)
+	assert.NotNil(t, last)
+	assert.Equal(t, "error", last.Text)
+}
