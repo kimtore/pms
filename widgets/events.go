@@ -15,16 +15,6 @@ type widgetEvent struct {
 	tcell.EventTime
 }
 
-type EventInputChanged struct {
-	widgetEvent
-}
-
-func PostEventInputChanged(w eventfulWidget) {
-	ev := &EventInputChanged{}
-	ev.SetWidget(w)
-	w.PostEvent(ev)
-}
-
 type EventListChanged struct {
 	widgetEvent
 }

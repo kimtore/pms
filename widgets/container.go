@@ -2,8 +2,8 @@ package widgets
 
 import (
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/log"
+	"github.com/ambientsound/pms/multibar"
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
 )
@@ -17,10 +17,11 @@ type widgets struct {
 }
 
 type Application struct {
-	screen  tcell.Screen
-	events  chan tcell.Event
-	widgets widgets
-	api     api.API
+	api      api.API
+	events   chan tcell.Event
+	multibar *multibar.Multibar
+	screen   tcell.Screen
+	widgets  widgets
 }
 
 var _ tcell.EventHandler = &Application{}
@@ -40,9 +41,9 @@ func NewApplication(a api.API) (*Application, error) {
 	screen.Show()
 
 	return &Application{
-		screen: screen,
-		events: make(chan tcell.Event, 1024),
 		api:    a,
+		events: make(chan tcell.Event, 1024),
+		screen: screen,
 	}, nil
 }
 
@@ -52,7 +53,7 @@ func (app *Application) Init() {
 
 	app.widgets.topbar = NewTopbar()
 
-	app.widgets.multibar = NewMultibarWidget(app.api, app.Events())
+	app.widgets.multibar = NewMultibarWidget(app.api, app.multibar)
 
 	app.widgets.layout = views.NewBoxLayout(views.Vertical)
 	app.widgets.layout.AddWidget(app.widgets.topbar, 1)
@@ -63,28 +64,19 @@ func (app *Application) Init() {
 }
 
 func (app *Application) HandleEvent(ev tcell.Event) bool {
-	if app.widgets.multibar.HandleEvent(ev) {
-		return true
-	}
-
 	switch e := ev.(type) {
-	case *tcell.EventKey:
-		log.Debugf("keypress: name=%v key=%v modifiers=%v", e.Name(), e.Key(), e.Modifiers())
-		return false
 	case *tcell.EventResize:
 		cols, rows := e.Size()
 		log.Debugf("terminal resize: %dx%d", cols, rows)
 		app.screen.Sync()
 		app.widgets.console.Resize()
 		return true
+	case *tcell.EventKey:
+		return false
 	default:
 		log.Debugf("unrecognized input event: %T %+v", e, e)
-		return true
+		return false
 	}
-}
-
-func (app *Application) SetInputMode(mode constants.InputMode) {
-	app.widgets.multibar.SetMode(mode)
 }
 
 func (app *Application) Draw() {

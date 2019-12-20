@@ -2,17 +2,16 @@ package commands
 
 import (
 	"fmt"
-
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/multibar"
 )
 
 // InputMode changes the Multibar's input mode.
 type InputMode struct {
 	newcommand
 	api  api.API
-	mode constants.InputMode
+	mode multibar.InputMode
 }
 
 func NewInputMode(api api.API) Command {
@@ -32,11 +31,11 @@ func (cmd *InputMode) Parse() error {
 
 	switch lit {
 	case "normal":
-		cmd.mode = constants.MultibarModeNormal
+		cmd.mode = multibar.ModeNormal
 	case "input":
-		cmd.mode = constants.MultibarModeInput
+		cmd.mode = multibar.ModeInput
 	case "search":
-		cmd.mode = constants.MultibarModeSearch
+		cmd.mode = multibar.ModeSearch
 	default:
 		return fmt.Errorf("invalid input mode '%s'; expected one of 'normal', 'input', 'search'")
 	}

@@ -8,7 +8,7 @@
 package multibar
 
 import (
-	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/log"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -16,15 +16,19 @@ import (
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/message"
-	"github.com/ambientsound/pms/tabcomplete"
 	"github.com/ambientsound/pms/utils"
 
 	"github.com/gdamore/tcell"
 )
 
+type TabCompleter interface {
+	Scan() (string, error)
+}
+
+type TabCompleterFactory func(input string) TabCompleter
+
 // Multibar implements a Vi-like combined statusbar and input box.
 type Multibar struct {
-	api         api.API
 	buffer      []rune
 	commands    chan string
 	cursor      int
@@ -32,16 +36,16 @@ type Multibar struct {
 	mode        InputMode
 	msg         message.Message
 	searches    chan string
-	tabComplete *tabcomplete.TabComplete
+	tabComplete TabCompleter
+	tcf         TabCompleterFactory
 }
 
-func New(a api.API) *Multibar {
+func New(tcf TabCompleterFactory) *Multibar {
 	hist := make([]*history, 3)
 	for i := range hist {
 		hist[i] = NewHistory()
 	}
 	return &Multibar{
-		api:      a,
 		history:  hist,
 		buffer:   make([]rune, 0),
 		commands: make(chan string, 1),
@@ -50,10 +54,17 @@ func New(a api.API) *Multibar {
 }
 
 // Input is called on keyboard events.
-func (m *Multibar) Input(ev tcell.EventKey) bool {
+func (m *Multibar) Input(event tcell.Event) bool {
+	ev, ok := event.(*tcell.EventKey)
+	if !ok {
+		return false
+	}
+
 	if m.mode == ModeNormal {
 		return false
 	}
+
+	log.Debugf("multibar keypress: name=%v key=%v modifiers=%v", ev.Name(), ev.Key(), ev.Modifiers())
 
 	switch ev.Key() {
 
@@ -126,6 +137,10 @@ func (m *Multibar) Error(err error) {
 		Severity: message.Error,
 		Text:     err.Error(),
 	})
+}
+
+func (m *Multibar) Message() message.Message {
+	return m.msg
 }
 
 func (m *Multibar) SetMessage(msg message.Message) {
@@ -294,7 +309,7 @@ func (m *Multibar) tab() {
 
 	// Initialize tabcomplete
 	if m.tabComplete == nil {
-		m.tabComplete = tabcomplete.New(m.String(), m.api)
+		m.tabComplete = m.tcf(m.String())
 	}
 
 	// Get next sentence, and abort on any errors.

@@ -3,10 +3,10 @@ package api
 
 import (
 	"github.com/ambientsound/gompd/mpd"
-	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
 	pms_mpd "github.com/ambientsound/pms/mpd"
+	"github.com/ambientsound/pms/multibar"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
@@ -22,8 +22,10 @@ type API interface {
 	// Exec executes a command through the command-line interface.
 	Exec(string) error
 
-	// SetInputMode switches the input mode.
-	SetInputMode(mode constants.InputMode)
+	// SetInputMode family of functions switches the input mode.
+	// We don't use the multibar input mode here because multibar depends on API,
+	// which would trigger cyclical imports.
+	SetInputMode(mode multibar.InputMode)
 
 	// Library returns the current MPD library, or nil if it has not been retrieved yet.
 	Library() *songlist.Library

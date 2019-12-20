@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/keys"
@@ -15,6 +14,7 @@ import (
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
+	"github.com/ambientsound/pms/tabcomplete"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/gdamore/tcell"
 	"github.com/spf13/viper"
@@ -98,8 +98,8 @@ func (v *Visp) Sequencer() *keys.Sequencer {
 	return v.sequencer
 }
 
-func (v *Visp) SetInputMode(mode constants.InputMode) {
-	v.Termui.SetInputMode(mode)
+func (v *Visp) SetInputMode(mode multibar.InputMode) {
+	v.multibar.SetMode(mode)
 }
 
 func (v *Visp) Song() *song.Song {
@@ -132,8 +132,11 @@ func (v *Visp) UI() api.UI {
 }
 
 func (v *Visp) Init() {
+	tcf := func(in string) multibar.TabCompleter {
+		return tabcomplete.New(in, v)
+	}
 	v.interpreter = input.NewCLI(v)
-	v.multibar = multibar.New(v)
+	v.multibar = multibar.New(tcf)
 	v.options = options.New()
 	v.quit = make(chan interface{}, 1)
 	v.sequencer = keys.NewSequencer()
@@ -157,9 +160,13 @@ func (v *Visp) Main() error {
 			log.Infof("Exiting.")
 			return nil
 
-		// Try handling the input event in the terminal layer.
-		// If the multibar is inactive, try searching keyboard bindings for commands.
+		// Try handling the input event in the multibar.
+		// If multibar is disabled (input mode = normal), try handling the event in the UI layer.
+		// If unhandled still, run it through the keyboard binding maps to try to get a command.
 		case ev := <-v.Termui.Events():
+			if v.multibar.Input(ev) {
+				break
+			}
 			if v.Termui.HandleEvent(ev) {
 				break
 			}

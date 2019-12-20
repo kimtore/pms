@@ -2,11 +2,10 @@ package widgets
 
 import (
 	"fmt"
+	"github.com/ambientsound/pms/multibar"
 	"strings"
 
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/console"
-	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
@@ -110,6 +109,7 @@ func (ui *UI) Quit() {
 }
 
 func (ui *UI) Draw() {
+	ui.UpdateCursor()
 	ui.Layout.Draw()
 }
 
@@ -131,10 +131,10 @@ func (ui *UI) Size() (int, int) {
 }
 
 func (ui *UI) UpdateCursor() {
-	switch ui.Multibar.Mode() {
-	case constants.MultibarModeInput, constants.MultibarModeSearch:
+	switch ui.Multibar.multibar.Mode() {
+	case multibar.ModeInput, multibar.ModeSearch:
 		_, ymax := ui.Screen.Size()
-		ui.Screen.ShowCursor(ui.Multibar.Cursor()+1, ymax-1)
+		ui.Screen.ShowCursor(ui.Multibar.multibar.Cursor()+1, ymax-1)
 	default:
 		ui.Screen.HideCursor()
 	}
@@ -153,18 +153,6 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 		cols := ui.api.Songlist().Columns(tags)
 		ui.Songlist.SetColumns(tags)
 		ui.Columnheaders.SetColumns(cols)
-		return true
-
-	case *EventInputChanged:
-		term := ui.Multibar.RuneString()
-		mode := ui.Multibar.Mode()
-		switch mode {
-		case constants.MultibarModeSearch:
-			if err := ui.runIndexSearch(term); err != nil {
-				console.Log("Error while searching: %s", err)
-			}
-		}
-		ui.UpdateCursor()
 		return true
 
 	case *EventScroll:

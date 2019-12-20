@@ -2,11 +2,11 @@ package api
 
 import (
 	"github.com/ambientsound/gompd/mpd"
-	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/message"
 	pms_mpd "github.com/ambientsound/pms/mpd"
+	"github.com/ambientsound/pms/multibar"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
@@ -52,7 +52,7 @@ func (api *testAPI) Exec(cmd string) error {
 	panic("not implemented")
 }
 
-func (api *testAPI) SetInputMode(mode constants.InputMode) {
+func (api *testAPI) SetInputMode(mode multibar.InputMode) {
 	panic("not implemented")
 }
 
