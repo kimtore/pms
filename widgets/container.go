@@ -4,6 +4,7 @@ import (
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/log"
 	"github.com/ambientsound/pms/multibar"
+	"github.com/ambientsound/pms/style"
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
 )
@@ -22,6 +23,7 @@ type Application struct {
 	events  chan tcell.Event
 	screen  tcell.Screen
 	widgets widgets
+	style.Styled
 }
 
 var _ tcell.EventHandler = &Application{}
@@ -51,7 +53,7 @@ func NewApplication(a api.API) (*Application, error) {
 
 func (app *Application) Init() {
 	app.widgets.topbar = NewTopbar()
-	app.widgets.console = NewConsoleWidget()
+	app.widgets.console = NewConsoleWidget(app.api)
 	app.widgets.songlist = NewSonglistWidget(app.api)
 	app.widgets.multibar = NewMultibarWidget(app.api)
 

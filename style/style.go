@@ -1,6 +1,7 @@
 package style
 
 import (
+	"github.com/ambientsound/pms/log"
 	"github.com/gdamore/tcell"
 )
 
@@ -27,4 +28,15 @@ func (w *Styled) SetStylesheet(stylesheet Stylesheet) {
 
 func (w *Styled) Stylesheet() Stylesheet {
 	return w.stylesheet
+}
+
+func (w *Styled) MessageStyle(msg log.Message) tcell.Style {
+	switch msg.Level {
+	case log.InfoLevel:
+		return w.Style("statusbar")
+	case log.ErrorLevel:
+		return w.Style("errorText")
+	default:
+		return w.Style("default")
+	}
 }

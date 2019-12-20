@@ -25,17 +25,6 @@ func NewMultibarWidget(a api.API) *Multibar {
 	}
 }
 
-func (w *Multibar) messageStyle(msg log.Message) tcell.Style {
-	switch {
-	case msg.Level == log.InfoLevel:
-		return w.Style("statusbar")
-	case msg.Level == log.ErrorLevel:
-		return w.Style("errorText")
-	default:
-		return w.Style("default")
-	}
-}
-
 func (w *Multibar) SetView(view views.View) {
 	w.view = view
 }
@@ -69,7 +58,7 @@ func (w *Multibar) textWithStyle() (string, tcell.Style) {
 	case hasVisualSelection:
 		return "-- VISUAL --", w.Style("visualText")
 	case msg != nil:
-		return msg.Text, w.messageStyle(*msg)
+		return msg.Text, w.MessageStyle(*msg)
 	default:
 		return "", w.Style("default")
 	}
@@ -77,6 +66,7 @@ func (w *Multibar) textWithStyle() (string, tcell.Style) {
 
 // Draw the statusbar part of the Multibar.
 func (w *Multibar) Draw() {
+	w.SetStylesheet(w.api.Styles())
 	w.view.Clear()
 	w.drawLeft()
 	w.drawRight()
