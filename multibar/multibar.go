@@ -50,6 +50,7 @@ func New(tcf TabCompleterFactory) *Multibar {
 		buffer:   make([]rune, 0),
 		commands: make(chan string, 1),
 		searches: make(chan string, 1),
+		tcf:      tcf,
 	}
 }
 
