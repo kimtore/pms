@@ -10,7 +10,7 @@ import (
 
 // InputMode changes the Multibar's input mode.
 type InputMode struct {
-	command
+	newcommand
 	api  api.API
 	mode int
 }
@@ -21,27 +21,35 @@ func NewInputMode(api api.API) Command {
 	}
 }
 
-func (cmd *InputMode) Execute(class int, s string) error {
-	multibar := cmd.api.Multibar()
-
-	switch class {
+func (cmd *InputMode) Parse() error {
+	tok, lit := cmd.ScanIgnoreWhitespace()
+	switch tok {
 	case lexer.TokenIdentifier:
-		switch s {
-		case "normal":
-			cmd.mode = constants.MultibarModeNormal
-		case "input":
-			cmd.mode = constants.MultibarModeInput
-		case "search":
-			cmd.mode = constants.MultibarModeSearch
-		default:
-			cmd.mode = multibar.Mode()
-		}
-	case lexer.TokenEnd:
-		multibar.SetMode(cmd.mode)
-
+		break
 	default:
-		return fmt.Errorf("Unknown input '%s', expected END", s)
+		return fmt.Errorf("unexpected '%s'; expected identifier", lit)
+	}
+
+	switch lit {
+	case "normal":
+		cmd.mode = constants.MultibarModeNormal
+	case "input":
+		cmd.mode = constants.MultibarModeInput
+	case "search":
+		cmd.mode = constants.MultibarModeSearch
+	default:
+		return fmt.Errorf("invalid input mode '%s'; expected one of 'normal', 'input', 'search'")
+	}
+
+	err := cmd.ParseEnd()
+	if err != nil {
+		return err
 	}
 
 	return nil
+}
+
+func (cmd *InputMode) Exec() error {
+	multibar := cmd.api.Multibar()
+	return multibar.SetMode(cmd.mode)
 }
