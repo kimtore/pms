@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/log"
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
@@ -51,7 +52,7 @@ func (app *Application) Init() {
 
 	app.widgets.topbar = NewTopbar()
 
-	app.widgets.multibar = NewMultibarWidget(nil, app.Events())
+	app.widgets.multibar = NewMultibarWidget(app.api, app.Events())
 
 	app.widgets.layout = views.NewBoxLayout(views.Vertical)
 	app.widgets.layout.AddWidget(app.widgets.topbar, 1)
@@ -80,6 +81,10 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 		log.Debugf("unrecognized input event: %T %+v", e, e)
 		return true
 	}
+}
+
+func (app *Application) SetInputMode(mode constants.InputMode) {
+	app.widgets.multibar.SetMode(mode)
 }
 
 func (app *Application) Draw() {

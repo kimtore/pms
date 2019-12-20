@@ -60,7 +60,7 @@ func NewUI(a api.API) *UI {
 
 	ui.Topbar = NewTopbar()
 	ui.Columnheaders = NewColumnheadersWidget()
-	//ui.Multibar = NewMultibarWidget(ui.api, ui.EventKeyInput)
+	// ui.Multibar = NewMultibarWidget(ui.api, ui.EventKeyInput)
 	ui.Songlist = NewSonglistWidget(ui.api)
 
 	ui.Multibar.Watch(ui)
@@ -165,25 +165,6 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 			}
 		}
 		ui.UpdateCursor()
-		return true
-
-	case *EventInputFinished:
-		term := ui.Multibar.RuneString()
-		mode := ui.Multibar.Mode()
-		switch mode {
-		case constants.MultibarModeInput:
-			ui.EventInputCommand <- term
-		case constants.MultibarModeSearch:
-			if ui.searchResult != nil {
-				if ui.searchResult.Len() > 0 {
-					ui.api.Db().Panel().Add(ui.searchResult)
-				} else {
-					ui.searchResult = nil
-				}
-			}
-			ui.showSearchResult()
-		}
-		ui.Multibar.SetMode(constants.MultibarModeNormal)
 		return true
 
 	case *EventScroll:

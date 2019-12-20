@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/ambientsound/gompd/mpd"
+	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/message"
@@ -47,6 +48,14 @@ func (api *testAPI) Db() *db.Instance {
 	return nil // FIXME
 }
 
+func (api *testAPI) Exec(cmd string) error {
+	panic("not implemented")
+}
+
+func (api *testAPI) SetInputMode(mode constants.InputMode) {
+	panic("not implemented")
+}
+
 func (api *testAPI) Library() *songlist.Library {
 	return nil // FIXME
 }
@@ -60,10 +69,6 @@ func (api *testAPI) Message(fmt string, a ...interface{}) {
 }
 
 func (api *testAPI) MpdClient() *mpd.Client {
-	return nil // FIXME
-}
-
-func (api *testAPI) Multibar() MultibarWidget {
 	return nil // FIXME
 }
 

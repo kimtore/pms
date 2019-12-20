@@ -31,7 +31,7 @@ type MultibarWidget struct {
 	api         api.API
 	cursor      int
 	events      <-chan tcell.Event
-	inputMode   int
+	inputMode   constants.InputMode
 	msg         message.Message
 	runes       []rune
 	tabComplete *tabcomplete.TabComplete
@@ -107,6 +107,20 @@ func (m *MultibarWidget) History() *history {
 	return &m.history[m.inputMode]
 }
 
+func (m *MultibarWidget) Clear() {
+	m.SetMessage(message.Message{
+		Severity: message.Info,
+		Text:     "",
+	})
+}
+
+func (m *MultibarWidget) Error(err error) {
+	m.SetMessage(message.Message{
+		Severity: message.Error,
+		Text:     err.Error(),
+	})
+}
+
 func (m *MultibarWidget) SetMessage(msg message.Message) {
 	switch {
 	case msg.Type == message.SequenceText:
@@ -122,23 +136,20 @@ func (m *MultibarWidget) SetMessage(msg message.Message) {
 	m.DrawStatusbar()
 }
 
-func (m *MultibarWidget) SetMode(mode int) error {
+func (m *MultibarWidget) SetMode(mode constants.InputMode) {
 	switch mode {
 	case constants.MultibarModeNormal:
 	case constants.MultibarModeInput:
 	case constants.MultibarModeSearch:
-	default:
-		return fmt.Errorf("Mode not supported")
 	}
 	console.Log("Switching input mode from %d to %d", m.inputMode, mode)
 	m.inputMode = mode
 	m.setRunes(make([]rune, 0))
 	m.History().Reset("")
 	PostEventInputChanged(m)
-	return nil
 }
 
-func (m *MultibarWidget) Mode() int {
+func (m *MultibarWidget) Mode() constants.InputMode {
 	return m.inputMode
 }
 
@@ -161,7 +172,7 @@ func (m *MultibarWidget) DrawStatusbar() {
 		s = "/" + m.RuneString()
 		st = m.Style("searchText")
 	default:
-		if len(m.msg.Text) == 0 && m.api.Songlist().HasVisualSelection() {
+		if len(m.msg.Text) == 0 && m.api.Songlist() != nil && m.api.Songlist().HasVisualSelection() {
 			s = "-- VISUAL --"
 			st = m.Style("visualText")
 		} else {
@@ -285,9 +296,27 @@ func (m *MultibarWidget) handleDeleteWord() {
 }
 
 func (m *MultibarWidget) handleFinished() {
+	var err error
+
+	input := m.RuneString()
 	m.tabComplete = nil
-	m.History().Add(m.RuneString())
-	PostEventInputFinished(m)
+	m.History().Add(input)
+
+	mode := m.inputMode
+	m.SetMode(constants.MultibarModeNormal)
+
+	switch mode {
+	case constants.MultibarModeInput:
+		err = m.api.Exec(input)
+	case constants.MultibarModeSearch:
+		err = fmt.Errorf("search not implemented")
+	}
+
+	if err != nil {
+		m.Error(err)
+	} else {
+		m.Clear()
+	}
 }
 
 func (m *MultibarWidget) handleAbort() {

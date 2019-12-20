@@ -22,11 +22,6 @@ type SonglistWidget interface {
 	Size() (int, int)
 }
 
-type MultibarWidget interface {
-	Mode() int
-	SetMode(int) error
-}
-
 type UI interface {
 	PostFunc(func())
 	Refresh()

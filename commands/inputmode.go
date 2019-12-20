@@ -12,7 +12,7 @@ import (
 type InputMode struct {
 	newcommand
 	api  api.API
-	mode int
+	mode constants.InputMode
 }
 
 func NewInputMode(api api.API) Command {
@@ -50,6 +50,6 @@ func (cmd *InputMode) Parse() error {
 }
 
 func (cmd *InputMode) Exec() error {
-	multibar := cmd.api.Multibar()
-	return multibar.SetMode(cmd.mode)
+	cmd.api.SetInputMode(cmd.mode)
+	return nil
 }

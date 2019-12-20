@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/keys"
@@ -70,11 +71,6 @@ func (v *Visp) MpdClient() *mpd.Client {
 	return nil // FIXME
 }
 
-func (v *Visp) Multibar() api.MultibarWidget {
-	log.Debugf("nil multibar; might break")
-	return nil // FIXME
-}
-
 func (v *Visp) OptionChanged(key string) {
 	// FIXME
 }
@@ -98,6 +94,10 @@ func (v *Visp) Quit() {
 
 func (v *Visp) Sequencer() *keys.Sequencer {
 	return v.sequencer
+}
+
+func (v *Visp) SetInputMode(mode constants.InputMode) {
+	v.Termui.SetInputMode(mode)
 }
 
 func (v *Visp) Song() *song.Song {

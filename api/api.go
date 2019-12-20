@@ -3,9 +3,9 @@ package api
 
 import (
 	"github.com/ambientsound/gompd/mpd"
+	"github.com/ambientsound/pms/constants"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
-	"github.com/ambientsound/pms/message"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
@@ -18,6 +18,12 @@ import (
 type API interface {
 	// Db returns the PMS database.
 	Db() *db.Instance
+
+	// Exec executes a command through the command-line interface.
+	Exec(string) error
+
+	// SetInputMode switches the input mode.
+	SetInputMode(mode constants.InputMode)
 
 	// Library returns the current MPD library, or nil if it has not been retrieved yet.
 	Library() *songlist.Library
@@ -33,9 +39,6 @@ type API interface {
 
 	// MpdClient returns the current MPD client, which is confirmed to be alive. If the MPD connection is not working, nil is returned.
 	MpdClient() *mpd.Client
-
-	// Multibar returns the Multibar widget.
-	Multibar() MultibarWidget
 
 	// Options returns PMS' global options.
 	Options() *options.Options
@@ -68,130 +71,4 @@ type API interface {
 
 	// UI returns the global UI object.
 	UI() UI
-}
-
-type baseAPI struct {
-	db             func() *db.Instance
-	eventList      chan int
-	eventMessage   chan message.Message
-	eventOption    chan string
-	library        func() *songlist.Library
-	mpdClient      func() *mpd.Client
-	multibar       func() MultibarWidget
-	options        *options.Options
-	playerStatus   func() pms_mpd.PlayerStatus
-	queue          func() *songlist.Queue
-	quitSignal     chan int
-	sequencer      *keys.Sequencer
-	song           func() *song.Song
-	songlistWidget func() SonglistWidget
-	styles         style.Stylesheet
-	ui             func() UI
-}
-
-func BaseAPI(
-	db func() *db.Instance,
-	eventList chan int,
-	eventMessage chan message.Message,
-	eventOption chan string,
-	library func() *songlist.Library,
-	mpdClient func() *mpd.Client,
-	multibar func() MultibarWidget,
-	options *options.Options,
-	playerStatus func() pms_mpd.PlayerStatus,
-	queue func() *songlist.Queue,
-	quitSignal chan int,
-	sequencer *keys.Sequencer,
-	song func() *song.Song,
-	songlistWidget func() SonglistWidget,
-	styles style.Stylesheet,
-	ui func() UI,
-
-) API {
-	return &baseAPI{
-		db:             db,
-		eventList:      eventList,
-		eventMessage:   eventMessage,
-		eventOption:    eventOption,
-		mpdClient:      mpdClient,
-		multibar:       multibar,
-		library:        library,
-		options:        options,
-		playerStatus:   playerStatus,
-		queue:          queue,
-		quitSignal:     quitSignal,
-		sequencer:      sequencer,
-		song:           song,
-		songlistWidget: songlistWidget,
-		styles:         styles,
-		ui:             ui,
-	}
-}
-
-func (api *baseAPI) Db() *db.Instance {
-	return api.db()
-}
-
-func (api *baseAPI) Library() *songlist.Library {
-	return api.library()
-}
-
-func (api *baseAPI) ListChanged() {
-	api.eventList <- 0
-}
-
-func (api *baseAPI) Message(fmt string, a ...interface{}) {
-	api.eventMessage <- message.Format(fmt, a...)
-}
-
-func (api *baseAPI) MpdClient() *mpd.Client {
-	return api.mpdClient()
-}
-
-func (api *baseAPI) Multibar() MultibarWidget {
-	return api.multibar()
-}
-
-func (api *baseAPI) OptionChanged(key string) {
-	api.eventOption <- key
-}
-
-func (api *baseAPI) Options() *options.Options {
-	return api.options
-}
-
-func (api *baseAPI) PlayerStatus() pms_mpd.PlayerStatus {
-	return api.playerStatus()
-}
-
-func (api *baseAPI) Queue() *songlist.Queue {
-	return api.queue()
-}
-
-func (api *baseAPI) Quit() {
-	api.quitSignal <- 0
-}
-
-func (api *baseAPI) Sequencer() *keys.Sequencer {
-	return api.sequencer
-}
-
-func (api *baseAPI) Song() *song.Song {
-	return api.song()
-}
-
-func (api *baseAPI) Songlist() songlist.Songlist {
-	return api.Db().Panel().Current()
-}
-
-func (api *baseAPI) SonglistWidget() SonglistWidget {
-	return api.songlistWidget()
-}
-
-func (api *baseAPI) Styles() style.Stylesheet {
-	return api.styles
-}
-
-func (api *baseAPI) UI() UI {
-	return api.ui()
 }
