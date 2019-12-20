@@ -10,6 +10,7 @@ import (
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/log"
 	pms_mpd "github.com/ambientsound/pms/mpd"
+	"github.com/ambientsound/pms/multibar"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
@@ -31,11 +32,12 @@ type Visp struct {
 	Termui *widgets.Application
 
 	clipboard   *songlist.BaseSonglist
-	options     *options.Options
-	sequencer   *keys.Sequencer
 	interpreter *input.Interpreter
-	stylesheet  style.Stylesheet
+	multibar    *multibar.Multibar
+	options     *options.Options
 	quit        chan interface{}
+	sequencer   *keys.Sequencer
+	stylesheet  style.Stylesheet
 }
 
 var _ api.API = &Visp{}
@@ -130,11 +132,12 @@ func (v *Visp) UI() api.UI {
 }
 
 func (v *Visp) Init() {
-	v.sequencer = keys.NewSequencer()
 	v.interpreter = input.NewCLI(v)
+	v.multibar = multibar.New(v)
 	v.options = options.New()
-	v.stylesheet = make(style.Stylesheet)
 	v.quit = make(chan interface{}, 1)
+	v.sequencer = keys.NewSequencer()
+	v.stylesheet = make(style.Stylesheet)
 }
 
 func (v *Visp) Main() error {
