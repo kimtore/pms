@@ -13,6 +13,7 @@ import (
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/spotify/aggregator"
 	"github.com/ambientsound/pms/spotify/auth"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
@@ -160,8 +161,14 @@ func (v *Visp) Main() error {
 			v.commands <- command
 
 		// Search input box. Discard for now.
-		case <-v.multibar.Searches():
-			log.Errorf("searches are not implemented")
+		case query := <-v.multibar.Searches():
+			lst, err := spotify_aggregator.Search(v.client, query)
+			if err != nil {
+				log.Errorf("spotify search: %s", err)
+				break
+			}
+			v.UI().TableWidget().SetList(lst)
+			v.UI().TableWidget().SetColumns(lst.ColumnNames())
 
 		// Process the command queue.
 		case command := <-v.commands:

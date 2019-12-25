@@ -27,10 +27,12 @@ type Collection interface {
 
 type TableWidget interface {
 	GetVisibleBoundaries() (int, int)
-	ScrollViewport(int, bool)
-	Size() (int, int)
-	PositionReadout() string
 	List() list.List
+	PositionReadout() string
+	ScrollViewport(int, bool)
+	SetColumns([]string)
+	SetList(list.List)
+	Size() (int, int)
 }
 
 type UI interface {
