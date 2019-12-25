@@ -42,6 +42,20 @@ All tag names are in lowercase.
 
   Color of the entire line in the tracklist, highlighting the cursor position.
 
+### Log console
+
+* `logLevel`
+
+  Log level, such as DEBUG, INFO, or ERROR.
+
+* `logMessage`
+
+  Log messages.
+
+* `timestamp`
+
+  Log timestamps
+
 ### Top bar
 
 See [below](#top-bar-variables) for corresponding variables.
