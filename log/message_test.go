@@ -20,6 +20,10 @@ func TestLevels(t *testing.T) {
 	assert.Len(t, log.Messages(log.InfoLevel), 20)
 	assert.Len(t, log.Messages(log.ErrorLevel), 10)
 
+	assert.Equal(t, 30, log.List(log.DebugLevel).Len())
+	assert.Equal(t, 20, log.List(log.InfoLevel).Len())
+	assert.Equal(t, 10, log.List(log.ErrorLevel).Len())
+
 	// Test that ten of each log level were logged.
 	lens := make(map[log.Level]int)
 	allMessages := log.Messages(log.DebugLevel)

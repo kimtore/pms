@@ -1,6 +1,7 @@
 package log
 
 import (
+	"github.com/ambientsound/pms/list"
 	"time"
 )
 
@@ -23,10 +24,12 @@ func Messages(level Level) []Message {
 
 func Clear() {
 	messages = make(map[Level][]Message)
+	logLineList = make(map[Level]list.List)
+
 	for level := range strLevel {
 		messages[level] = make([]Message, 0)
+		logLineList[level] = list.New()
 	}
-	logLineList.Clear()
 }
 
 func Last(level Level) *Message {
@@ -47,5 +50,10 @@ func appendMessage(msg Message) {
 			continue
 		}
 		messages[level] = append(messages[level], msg)
+		logLineList[level].Add(list.Row{
+			"logLevel":   msg.Level.String(),
+			"logMessage": msg.Text,
+			"timestamp":  msg.Timestamp.Format(time.RFC822),
+		})
 	}
 }

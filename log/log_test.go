@@ -15,7 +15,7 @@ func TestClear(t *testing.T) {
 	assert.Len(t, log.Messages(log.InfoLevel), 10)
 	log.Clear()
 	assert.Len(t, log.Messages(log.InfoLevel), 0)
-	assert.Equal(t, 0, log.List().Len())
+	assert.Equal(t, 0, log.List(log.InfoLevel).Len())
 }
 
 func TestErrorf(t *testing.T) {

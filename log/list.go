@@ -4,12 +4,8 @@ import (
 	"github.com/ambientsound/pms/list"
 )
 
-var logLineList list.List
+var logLineList map[Level]list.List
 
-func init() {
-	logLineList = list.New()
-}
-
-func List() list.List {
-	return logLineList
+func List(level Level) list.List {
+	return logLineList[level]
 }

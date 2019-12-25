@@ -2,7 +2,6 @@ package log
 
 import (
 	"fmt"
-	"github.com/ambientsound/pms/list"
 	"strings"
 	"time"
 )
@@ -27,11 +26,6 @@ func Logf(format string, level Level, args ...interface{}) (int, error) {
 		Text:      formatted,
 	}
 	appendMessage(msg)
-	logLineList.Add(list.Row{
-		"logLevel":   msg.Level.String(),
-		"logMessage": msg.Text,
-		"timestamp":  msg.Timestamp.Format(time.RFC822),
-	})
 	return printMsg(msg)
 }
 

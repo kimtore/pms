@@ -65,7 +65,7 @@ func (app *Application) Init() {
 	app.widgets.layout.AddWidget(app.widgets.multibar, 0)
 	app.widgets.layout.SetView(app.screen)
 
-	app.widgets.table.SetList(log.List())
+	app.widgets.table.SetList(log.List(log.InfoLevel))
 	app.widgets.table.SetColumns([]string{"timestamp", "logLevel", "logMessage"})
 
 	app.widgets.active = app.widgets.table
