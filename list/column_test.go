@@ -6,19 +6,13 @@ import (
 	"testing"
 )
 
-type stringItem string
-
-func (s stringItem) Len() int {
-	return len(s)
-}
-
 func TestColumn(t *testing.T) {
-	dataset := []list.Item{
-		stringItem("1"),
-		stringItem("12"),
-		stringItem("12345678"),
-		stringItem("123456789"),
-		stringItem("12345678901234567890123456789012345678901234567890123456789012345678901234567890"),
+	dataset := []string{
+		"1",
+		"12",
+		"12345678",
+		"123456789",
+		"12345678901234567890123456789012345678901234567890123456789012345678901234567890",
 	}
 
 	column := &list.Column{}
@@ -35,24 +29,29 @@ func TestColumn(t *testing.T) {
 func TestColumnAddRemove(t *testing.T) {
 	column := &list.Column{}
 
-	column.Add(stringItem("foo"))
+	column.Add(string("foo"))
 	assert.Equal(t, 3, column.Median())
 	assert.Equal(t, 3, column.Avg())
+	assert.Equal(t, 3, column.Max())
 
-	column.Remove(stringItem("foo"))
+	column.Remove(string("foo"))
 	assert.Equal(t, 0, column.Median())
 	assert.Equal(t, 0, column.Avg())
+	assert.Equal(t, 0, column.Max())
 
-	column.Add(stringItem("foo"))
-	column.Add(stringItem("foobarbaz"))
+	column.Add(string("foo"))
+	column.Add(string("foobarbaz"))
 	assert.Equal(t, 6, column.Median())
 	assert.Equal(t, 6, column.Avg())
+	assert.Equal(t, 9, column.Max())
 
-	column.Add(stringItem("foo"))
+	column.Add(string("foo"))
 	assert.Equal(t, 3, column.Median())
 	assert.Equal(t, 5, column.Avg())
+	assert.Equal(t, 9, column.Max())
 
-	column.Remove(stringItem("this item does not exist"))
+	column.Remove(string("this item does not exist"))
 	assert.Equal(t, 3, column.Median())
 	assert.Equal(t, 5, column.Avg())
+	assert.Equal(t, 9, column.Max())
 }

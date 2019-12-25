@@ -37,6 +37,8 @@ func (cmd *Show) Parse() error {
 		cmd.window = api.WindowLogs
 	case "music":
 		cmd.window = api.WindowMusic
+	case "playlists":
+		cmd.window = api.WindowPlaylists
 	default:
 		return fmt.Errorf("can't show '%s'; no such window", lit)
 	}
@@ -57,5 +59,6 @@ func (cmd *Show) setTabCompleteVerbs(lit string) {
 	cmd.setTabComplete(lit, []string{
 		"logs",
 		"music",
+		"playlists",
 	})
 }

@@ -14,6 +14,7 @@ type widgets struct {
 	console  *Console
 	topbar   *Topbar
 	multibar *Multibar
+	table    *Table
 	songlist *SonglistWidget
 	active   views.Widget
 }
@@ -55,15 +56,19 @@ func (app *Application) Init() {
 	app.widgets.topbar = NewTopbar()
 	app.widgets.console = NewConsoleWidget(app.api)
 	app.widgets.songlist = NewSonglistWidget(app.api)
+	app.widgets.table = NewTable(app.api)
 	app.widgets.multibar = NewMultibarWidget(app.api)
 
 	app.widgets.layout = views.NewBoxLayout(views.Vertical)
 	app.widgets.layout.AddWidget(app.widgets.topbar, 0)
-	app.widgets.layout.AddWidget(app.widgets.console, 1)
+	app.widgets.layout.AddWidget(app.widgets.table, 1)
 	app.widgets.layout.AddWidget(app.widgets.multibar, 0)
 	app.widgets.layout.SetView(app.screen)
 
-	app.widgets.active = app.widgets.console
+	app.widgets.table.SetList(log.List())
+	app.widgets.table.SetColumns([]string{"timestamp", "logLevel", "logMessage"})
+
+	app.widgets.active = app.widgets.table
 }
 
 func (app *Application) HandleEvent(ev tcell.Event) bool {
@@ -116,6 +121,10 @@ func (app *Application) ActivateWindow(window api.Window) {
 		widget = app.widgets.console
 	case api.WindowMusic:
 		widget = app.widgets.songlist
+	case api.WindowPlaylists:
+		widget = app.widgets.songlist
+	default:
+		panic("widget not implemented")
 	}
 
 	log.Debugf("want to activate widget %#v", widget)

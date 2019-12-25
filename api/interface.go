@@ -9,6 +9,7 @@ type Window int
 const (
 	WindowLogs Window = iota
 	WindowMusic
+	WindowPlaylists
 )
 
 type Collection interface {

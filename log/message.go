@@ -26,6 +26,7 @@ func Clear() {
 	for level := range strLevel {
 		messages[level] = make([]Message, 0)
 	}
+	logLineList.Clear()
 }
 
 func Last(level Level) *Message {

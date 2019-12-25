@@ -4,18 +4,28 @@ import (
 	"sort"
 )
 
+type Item interface {
+	Len() int
+}
+
 type Column struct {
-	name    string
 	total   int
 	sorted  bool
 	lengths sort.IntSlice
 }
 
-func (c *Column) Add(item Item) {
-	c.lengths = append(c.lengths, item.Len())
-	c.total += item.Len()
+func (c *Column) sort() {
+	if !c.sorted {
+		c.lengths.Sort()
+		c.sorted = true
+	}
+}
+
+func (c *Column) Add(item string) {
+	ln := len(item)
+	c.lengths = append(c.lengths, ln)
+	c.total += len(item)
 	c.sorted = false
-	c.lengths.Sort()
 }
 
 func (c *Column) Avg() int {
@@ -25,11 +35,16 @@ func (c *Column) Avg() int {
 	return c.total / c.lengths.Len()
 }
 
-func (c *Column) Median() int {
-	if !c.sorted {
-		c.lengths.Sort()
-		c.sorted = true
+func (c *Column) Max() int {
+	if len(c.lengths) == 0 {
+		return 0
 	}
+	c.sort()
+	return c.lengths[len(c.lengths)-1]
+}
+
+func (c *Column) Median() int {
+	c.sort()
 	ln := c.lengths.Len()
 	mid := ln / 2
 	if ln == 0 {
@@ -40,12 +55,8 @@ func (c *Column) Median() int {
 	return (c.lengths[mid-1] + c.lengths[mid]) / 2
 }
 
-func (c *Column) Name() string {
-	return c.name
-}
-
-func (c *Column) Remove(item Item) {
-	idx := c.lengths.Search(item.Len())
+func (c *Column) Remove(item string) {
+	idx := c.lengths.Search(len(item))
 	if idx >= c.lengths.Len() {
 		return
 	} else if idx == c.lengths.Len()-1 {
@@ -53,23 +64,20 @@ func (c *Column) Remove(item Item) {
 	} else {
 		c.lengths = append(c.lengths[:idx], c.lengths[idx+1:]...)
 	}
-	c.total -= item.Len()
+	c.total -= len(item)
 	c.sorted = false
 }
 
-func (c *Column) Set(items []Item) {
+func (c *Column) Set(items []string) {
 	c.lengths = make(sort.IntSlice, len(items))
+	c.sorted = false
 	c.total = 0
 
 	for i, item := range items {
-		c.lengths[i] = item.Len()
+		ln := len(item)
+		c.lengths[i] = ln
 		c.total += c.lengths[i]
 	}
 
-	c.lengths.Sort()
-	c.sorted = true
-}
-
-func (c *Column) SetName(name string) {
-	c.name = name
+	c.sort()
 }

@@ -54,10 +54,13 @@ style volume green
 # Other styles
 style commandText default
 style errorText white red bold
+style logLevel white
+style logMessage gray
 style readout default
 style searchText white bold
 style sequenceText teal
 style statusbar default
+style timestamp teal
 style visualText teal
 
 # Keyboard bindings: cursor and viewport movement
