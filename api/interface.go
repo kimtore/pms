@@ -24,7 +24,7 @@ type Collection interface {
 	ValidIndex(int) bool
 }
 
-type SonglistWidget interface {
+type TableWidget interface {
 	GetVisibleBoundaries() (int, int)
 	ScrollViewport(int, bool)
 	Size() (int, int)
@@ -34,4 +34,5 @@ type SonglistWidget interface {
 type UI interface {
 	ActivateWindow(Window)
 	Refresh()
+	TableWidget() TableWidget
 }

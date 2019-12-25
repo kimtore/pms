@@ -63,9 +63,6 @@ type API interface {
 	// Songlist returns the visible songlist.
 	Songlist() songlist.Songlist
 
-	// SonglistWidget returns the songlist widget.
-	SonglistWidget() SonglistWidget
-
 	// Styles returns the current stylesheet.
 	Styles() style.Stylesheet
 

@@ -108,10 +108,6 @@ func (api *testAPI) Songlists() []songlist.Songlist {
 	return nil // FIXME
 }
 
-func (api *testAPI) SonglistWidget() SonglistWidget {
-	return nil // FIXME
-}
-
 func (api *testAPI) Styles() style.Stylesheet {
 	return nil // FIXME
 }

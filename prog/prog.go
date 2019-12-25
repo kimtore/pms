@@ -117,10 +117,6 @@ func (v *Visp) Songlists() []songlist.Songlist {
 	return nil // FIXME
 }
 
-func (v *Visp) SonglistWidget() api.SonglistWidget {
-	return v.Termui.Songlist()
-}
-
 func (v *Visp) Styles() style.Stylesheet {
 	return v.stylesheet
 }

@@ -85,7 +85,7 @@ func (w *Multibar) drawLeft() {
 
 func (w *Multibar) drawRight() {
 	st := w.Style("readout")
-	// text := w.api.SonglistWidget().PositionReadout()
+	// text := w.api.TableWidget().PositionReadout()
 	// FIXME
 	text := ""
 	x, _ := w.Size()

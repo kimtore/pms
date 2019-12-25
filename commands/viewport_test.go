@@ -10,7 +10,7 @@ var viewportTests = []commands.Test{
 	// Valid forms
 	{`up`, true, nil, nil, []string{}},
 	{`down`, true, nil, nil, []string{}},
-	// FIXME: depends on SonglistWidget, which is not mocked
+	// FIXME: depends on TableWidget, which is not mocked
 	//{`pgup`, true},
 	//{`pgdn`, true},
 	//{`pageup`, true},
@@ -28,7 +28,7 @@ var viewportTests = []commands.Test{
 	// Invalid forms
 	{`up 1`, false, nil, nil, []string{}},
 	{`down 1`, false, nil, nil, []string{}},
-	// FIXME: depends on SonglistWidget, which is not mocked
+	// FIXME: depends on TableWidget, which is not mocked
 	//{`pgup 1`, false},
 	//{`pgdn 1`, false},
 	//{`pageup 1`, false},

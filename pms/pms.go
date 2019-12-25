@@ -131,7 +131,7 @@ func (pms *PMS) CurrentMpdClient() *mpd.Client {
 }
 
 // CurrentSonglistWidget returns the current songlist.
-func (pms *PMS) CurrentSonglistWidget() api.SonglistWidget {
+func (pms *PMS) CurrentSonglistWidget() api.TableWidget {
 	return pms.ui.Songlist
 }
 

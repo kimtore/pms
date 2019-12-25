@@ -33,7 +33,7 @@ func NewCursor(api api.API) Command {
 
 // Parse parses cursor movement.
 func (cmd *Cursor) Parse() error {
-	songlistWidget := cmd.api.SonglistWidget()
+	songlistWidget := cmd.api.UI().TableWidget()
 	list := cmd.api.Songlist()
 
 	tok, lit := cmd.ScanIgnoreWhitespace()

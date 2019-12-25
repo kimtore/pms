@@ -66,7 +66,7 @@ func (cmd *Viewport) Parse() error {
 // scrollHalfPage configures the command to scroll half a page up or down.
 // The direction parameter must be -1 for up or 1 for down.
 func (cmd *Viewport) scrollHalfPage(direction int) {
-	_, y := cmd.api.SonglistWidget().Size()
+	_, y := cmd.api.UI().TableWidget().Size()
 	if y <= 1 {
 		// Vim always moves at least one line
 		cmd.relative = direction
@@ -79,7 +79,7 @@ func (cmd *Viewport) scrollHalfPage(direction int) {
 // scrollFullPage configures the command to scroll a full page up or down.
 // The direction parameter must be -1 for up or 1 for down.
 func (cmd *Viewport) scrollFullPage(direction int) {
-	_, y := cmd.api.SonglistWidget().Size()
+	_, y := cmd.api.UI().TableWidget().Size()
 	if y <= 3 {
 		// Vim scrolls an entire page when 3 or fewer lines visible
 		cmd.relative = direction * y
@@ -100,7 +100,7 @@ func (cmd *Viewport) scrollFullPage(direction int) {
 // zero to leave it in the middle,
 // or negative to move the viewport high (scrolled further up; cursor low).
 func (cmd *Viewport) scrollToCursorAnchor(position int) {
-	widget := cmd.api.SonglistWidget()
+	widget := cmd.api.UI().TableWidget()
 	ymin, ymax := widget.GetVisibleBoundaries()
 	cursor := cmd.api.Songlist().Cursor()
 	if position < 0 {
@@ -116,7 +116,7 @@ func (cmd *Viewport) scrollToCursorAnchor(position int) {
 
 // Exec implements Command.
 func (cmd *Viewport) Exec() error {
-	widget := cmd.api.SonglistWidget()
+	widget := cmd.api.UI().TableWidget()
 
 	widget.ScrollViewport(cmd.relative, cmd.movecursor)
 

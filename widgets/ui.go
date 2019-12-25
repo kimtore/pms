@@ -22,7 +22,6 @@ type UI struct {
 	Topbar        *Topbar
 	Columnheaders *ColumnheadersWidget
 	Multibar      *Multibar
-	Songlist      *SonglistWidget
 
 	// Input events
 	EventInputCommand chan string
@@ -59,16 +58,13 @@ func NewUI(a api.API) *UI {
 	ui.Topbar = NewTopbar()
 	ui.Columnheaders = NewColumnheadersWidget()
 	// ui.Multibar = NewMultibarWidget(ui.api, ui.EventKeyInput)
-	ui.Songlist = NewSonglistWidget(ui.api)
 
 	ui.Multibar.Watch(ui)
-	ui.Songlist.Watch(ui)
 
 	// Set styles
 	ui.SetStylesheet(ui.api.Styles())
 	ui.Topbar.SetStylesheet(ui.api.Styles())
 	ui.Columnheaders.SetStylesheet(ui.api.Styles())
-	ui.Songlist.SetStylesheet(ui.api.Styles())
 	ui.Multibar.SetStylesheet(ui.api.Styles())
 
 	ui.CreateLayout()
@@ -82,7 +78,6 @@ func (ui *UI) CreateLayout() {
 	ui.Layout = views.NewBoxLayout(views.Vertical)
 	ui.Layout.AddWidget(ui.Topbar, 1)
 	ui.Layout.AddWidget(ui.Columnheaders, 0)
-	ui.Layout.AddWidget(ui.Songlist, 2)
 	ui.Layout.AddWidget(ui.Multibar, 0)
 	ui.Layout.SetView(ui.view)
 }
@@ -91,8 +86,8 @@ func (ui *UI) Refresh() {
 	ui.App.Refresh()
 }
 
-func (ui *UI) CurrentSonglistWidget() api.SonglistWidget {
-	return ui.Songlist
+func (ui *UI) CurrentSonglistWidget() api.TableWidget {
+	return nil
 }
 
 func (ui *UI) Start() {
@@ -152,7 +147,6 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 	case *EventListChanged:
 		tags := strings.Split(ui.options.StringValue("columns"), ",")
 		cols := ui.api.Songlist().Columns(tags)
-		ui.Songlist.SetColumns(tags)
 		ui.Columnheaders.SetColumns(cols)
 		return true
 
@@ -169,7 +163,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 }
 
 func (ui *UI) refreshPositionReadout() {
-	//str := ui.Songlist.PositionReadout()
+	// str := ui.Songlist.PositionReadout()
 	// ui.Multibar.SetRight(str, ui.Style("readout"))
 }
 

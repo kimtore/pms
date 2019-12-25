@@ -11,11 +11,9 @@ import (
 
 type widgets struct {
 	layout   *views.BoxLayout
-	console  *Console
 	topbar   *Topbar
 	multibar *Multibar
 	table    *Table
-	songlist *SonglistWidget
 	active   views.Widget
 }
 
@@ -54,8 +52,6 @@ func NewApplication(a api.API) (*Application, error) {
 
 func (app *Application) Init() {
 	app.widgets.topbar = NewTopbar()
-	app.widgets.console = NewConsoleWidget(app.api)
-	app.widgets.songlist = NewSonglistWidget(app.api)
 	app.widgets.table = NewTable(app.api)
 	app.widgets.multibar = NewMultibarWidget(app.api)
 
@@ -65,10 +61,9 @@ func (app *Application) Init() {
 	app.widgets.layout.AddWidget(app.widgets.multibar, 0)
 	app.widgets.layout.SetView(app.screen)
 
-	app.widgets.table.SetList(log.List(log.InfoLevel))
-	app.widgets.table.SetColumns([]string{"timestamp", "logLevel", "logMessage"})
-
 	app.widgets.active = app.widgets.table
+
+	app.ActivateWindow(api.WindowLogs)
 }
 
 func (app *Application) HandleEvent(ev tcell.Event) bool {
@@ -113,16 +108,24 @@ func (app *Application) Refresh() {
 	app.screen.Sync()
 }
 
+func (app *Application) TableWidget() api.TableWidget {
+	return app.widgets.table
+}
+
 func (app *Application) ActivateWindow(window api.Window) {
 	var widget views.Widget
 
 	switch window {
 	case api.WindowLogs:
-		widget = app.widgets.console
+		widget = app.widgets.table
+		app.widgets.table.SetList(log.List(log.InfoLevel))
+		app.widgets.table.SetColumns([]string{"timestamp", "logLevel", "logMessage"})
 	case api.WindowMusic:
-		widget = app.widgets.songlist
+		widget = app.widgets.table
+		app.widgets.table.SetList(nil)
 	case api.WindowPlaylists:
-		widget = app.widgets.songlist
+		widget = app.widgets.table
+		app.widgets.table.SetList(nil)
 	default:
 		panic("widget not implemented")
 	}
@@ -134,11 +137,6 @@ func (app *Application) ActivateWindow(window api.Window) {
 	app.widgets.layout.InsertWidget(1, widget, 1.0)
 
 	app.widgets.active = widget
-}
-
-// FIXME: remove this abomination
-func (app *Application) Songlist() *SonglistWidget {
-	return app.widgets.songlist
 }
 
 func (app *Application) updateCursor() {

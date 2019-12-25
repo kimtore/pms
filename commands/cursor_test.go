@@ -15,7 +15,7 @@ var cursorTests = []commands.Test{
 	{`-1`, true, nil, nil, []string{}},
 	{`up`, true, nil, nil, []string{}},
 	{`down`, true, nil, nil, []string{}},
-	// FIXME: depends on SonglistWidget, which is not mocked
+	// FIXME: depends on TableWidget, which is not mocked
 	//{`high`, true},
 	//{`middle`, true},
 	//{`low`, true},
@@ -29,7 +29,7 @@ var cursorTests = []commands.Test{
 	// Invalid forms
 	{`up 1`, false, nil, nil, []string{}},
 	{`down 1`, false, nil, nil, []string{}},
-	// FIXME: depends on SonglistWidget, which is not mocked
+	// FIXME: depends on TableWidget, which is not mocked
 	//{`high 1`, false},
 	//{`middle 1`, false},
 	//{`low 1`, false},
