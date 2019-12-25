@@ -13,24 +13,23 @@ import (
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/spotify/auth"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/gdamore/tcell"
 	"github.com/spf13/viper"
 	"github.com/zmb3/spotify"
-	"golang.org/x/oauth2"
 	"io"
 	"os"
 	"strings"
 )
 
 type Visp struct {
-	Auth   spotify.Authenticator
-	Tokens chan oauth2.Token
-	Client spotify.Client
+	Auth   *spotify_auth.Handler
 	Termui *widgets.Application
 
+	client      spotify.Client
 	commands    chan string
 	clipboard   *songlist.BaseSonglist
 	interpreter *input.Interpreter
@@ -146,9 +145,9 @@ func (v *Visp) Init() {
 func (v *Visp) Main() error {
 	for {
 		select {
-		case token := <-v.Tokens:
+		case token := <-v.Auth.Tokens():
 			log.Debugf("Received Spotify token.")
-			v.Client = v.Auth.NewClient(&token)
+			v.client = v.Auth.Client(token)
 			viper.Set("spotify.accesstoken", token.AccessToken)
 			viper.Set("spotify.refreshtoken", token.RefreshToken)
 			err := viper.WriteConfig()
