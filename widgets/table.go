@@ -72,6 +72,10 @@ func (w *Table) drawOneTagLine(x, y, xmax int, s *song.Song, tag string, default
 	return w.drawNext(x, y, strmin, xmax+1, runes, style)
 }
 
+func (w *Table) List() list.List {
+	return w.list
+}
+
 func (w *Table) SetList(lst list.List) {
 	w.list = lst
 	w.SetColumns(lst.ColumnNames())

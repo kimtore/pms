@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/songlist"
 )
 
@@ -29,6 +30,7 @@ type TableWidget interface {
 	ScrollViewport(int, bool)
 	Size() (int, int)
 	PositionReadout() string
+	List() list.List
 }
 
 type UI interface {

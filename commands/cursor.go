@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/ambientsound/pms/songlist"
 	"math/rand"
 	"strconv"
 	"time"
@@ -33,8 +34,8 @@ func NewCursor(api api.API) Command {
 
 // Parse parses cursor movement.
 func (cmd *Cursor) Parse() error {
-	songlistWidget := cmd.api.UI().TableWidget()
-	list := cmd.api.Songlist()
+	tableWidget := cmd.api.UI().TableWidget()
+	list := tableWidget.List()
 
 	tok, lit := cmd.ScanIgnoreWhitespace()
 	cmd.setTabCompleteVerbs(lit)
@@ -70,13 +71,13 @@ func (cmd *Cursor) Parse() error {
 	case "end":
 		cmd.absolute = list.Len() - 1
 	case "high":
-		ymin, _ := songlistWidget.GetVisibleBoundaries()
+		ymin, _ := tableWidget.GetVisibleBoundaries()
 		cmd.absolute = ymin
 	case "middle":
-		ymin, ymax := songlistWidget.GetVisibleBoundaries()
+		ymin, ymax := tableWidget.GetVisibleBoundaries()
 		cmd.absolute = (ymin + ymax) / 2
 	case "low":
-		_, ymax := songlistWidget.GetVisibleBoundaries()
+		_, ymax := tableWidget.GetVisibleBoundaries()
 		cmd.absolute = ymax
 	case "current":
 		cmd.current = true
@@ -103,7 +104,7 @@ func (cmd *Cursor) Parse() error {
 
 // Exec is the next Execute(), evading the old system
 func (cmd *Cursor) Exec() error {
-	list := cmd.api.Songlist()
+	list := cmd.api.UI().TableWidget().List()
 
 	switch {
 	case cmd.nextOfDirection != 0:
@@ -113,7 +114,11 @@ func (cmd *Cursor) Exec() error {
 		if currentSong == nil {
 			return fmt.Errorf("No song is currently playing.")
 		}
-		return list.CursorToSong(currentSong)
+		sl, ok := list.(songlist.Songlist)
+		if !ok {
+			return fmt.Errorf("not in a songlist")
+		}
+		return sl.CursorToSong(currentSong)
 	}
 
 	switch {
