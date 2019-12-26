@@ -115,6 +115,9 @@ func (cmd *Play) playSelection() error {
 		uris[i] = track.URI
 	}
 
+	// TODO: queue is unsupported by the Spotify Web API
+	// https://github.com/spotify/web-api/issues/462
+
 	// Start playing all the URIs
 	return cmd.client.PlayOpt(&spotify.PlayOptions{
 		URIs: uris,
