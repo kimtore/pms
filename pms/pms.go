@@ -185,7 +185,10 @@ func (pms *PMS) SyncLibrary() error {
 	if version != localVersion {
 		console.Log("Switching MPD libraries.")
 		console.Log("Closing search index.")
-		currentLibrary.CloseIndex()
+		err = currentLibrary.CloseIndex()
+		if err != nil {
+			console.Log("Error closing search index: %s", err)
+		}
 
 		console.Log("Retrieving library metadata, %s songs...", stats["songs"])
 		library, err := pms.retrieveLibrary()
@@ -194,7 +197,10 @@ func (pms *PMS) SyncLibrary() error {
 		}
 
 		library.SetVersion(version)
-		library.OpenIndex(index.Path(pms.Connection.Host, pms.Connection.Port))
+		err = library.OpenIndex(index.Path(pms.Connection.Host, pms.Connection.Port))
+		if err != nil {
+			console.Log("Error opening search index: %s", err)
+		}
 
 		pms.database.SetLibrary(library)
 
@@ -205,8 +211,12 @@ func (pms *PMS) SyncLibrary() error {
 
 	library := pms.database.Library()
 	if !library.IndexSynced() {
-		console.Log("Search index is not synchronized with library, rebuilding index...")
-		library.ReIndex()
+		if !library.HasIndex() {
+			console.Log("Want to synchronize index with library, but no index available!")
+		} else {
+			console.Log("Search index is not synchronized with library, rebuilding index...")
+			library.ReIndex()
+		}
 	}
 
 	return nil
@@ -392,7 +402,7 @@ func (pms *PMS) KeyInput(ev *tcell.EventKey) {
 		return
 	}
 
-	//console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, input.Command)
+	// console.Log("Input sequencer matches bind: '%s' -> '%s'", seqString, input.Command)
 	pms.ui.EventInputCommand <- input.Command
 }
 
