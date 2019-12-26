@@ -16,19 +16,11 @@ import (
 	"github.com/gdamore/tcell/views"
 )
 
-type column struct {
-	col          list.Column
-	key          string
-	rightPadding int
-	width        int
-}
-
 // Table is a tcell widget which draws a gridded table from a List instance.
 type Table struct {
-	api            api.API
-	visibleColumns []string
-	columns        []column
-	list           list.List
+	api     api.API
+	columns []column
+	list    list.List
 
 	view     views.View
 	viewport views.ViewPort
@@ -98,7 +90,7 @@ func (w *Table) Draw() {
 
 	x := 0
 	for _, col := range w.columns {
-		runes := []rune(col.key)
+		runes := []rune(col.title)
 		strmin := col.width - col.rightPadding
 		x = w.drawNext(w.view, x, 0, strmin, col.width, runes, st)
 	}
@@ -188,7 +180,11 @@ func (w *Table) validateViewport() {
 }
 
 func (w *Table) Resize() {
-	w.SetColumns(w.visibleColumns)
+	keys := make([]string, len(w.columns))
+	for i := range w.columns {
+		keys[i] = w.columns[i].key
+	}
+	w.SetColumns(keys)
 	w.SetView(w.view)
 }
 
@@ -253,11 +249,10 @@ func (w *Table) SetColumns(tags []string) {
 	for i, key := range tags {
 		w.columns[i].col = cols[i]
 		w.columns[i].key = key
+		w.columns[i].title = ColumnTitle(key)
 		w.columns[i].width = cols[i].Median()
 		usedWidth += w.columns[i].width
 	}
-
-	w.visibleColumns = tags
 
 	if len(tags) == 0 {
 		return
