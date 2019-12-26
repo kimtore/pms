@@ -2,12 +2,13 @@ package spotify_tracklist
 
 import (
 	"github.com/ambientsound/pms/list"
+	"github.com/ambientsound/pms/utils"
 	"github.com/zmb3/spotify"
 )
 
 type List struct {
 	list.Base
-	tracks   []spotify.FullTrack
+	tracks []spotify.FullTrack
 }
 
 var _ list.List = &List{}
@@ -18,15 +19,18 @@ func (l *List) Tracks() []spotify.FullTrack {
 
 func Row(track spotify.FullTrack) list.Row {
 	return list.Row{
-		"title": track.String(),
+		"album":  track.Album.Name,
+		"artist": track.Artists[0].Name,
+		"time":   utils.TimeString(track.Duration / 1000),
+		"title":  track.Name,
 	}
 }
 
-func New(client spotify.Client, source spotify.FullTrackPage) (*List, error) {
+func New(client spotify.Client, source *spotify.FullTrackPage) (*List, error) {
 	var err error
 
 	this := &List{
-		tracks:   make([]spotify.FullTrack, 0),
+		tracks: make([]spotify.FullTrack, 0),
 	}
 	this.Clear()
 

@@ -40,6 +40,9 @@ func NewTestAPI() API {
 	}
 }
 
+func (api *testAPI) Authenticate() {
+}
+
 func (api *testAPI) Clipboard() songlist.Songlist {
 	return api.clipboard
 }

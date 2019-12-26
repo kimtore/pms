@@ -16,6 +16,9 @@ import (
 // API defines a set of commands that should be available to commands run
 // through the command-line interface.
 type API interface {
+	// Authenticate starts OAuth authentication.
+	Authenticate()
+
 	// Db returns the PMS database.
 	Db() *db.Instance
 

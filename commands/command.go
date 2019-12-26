@@ -19,6 +19,7 @@ import (
 // Make sure to add commands here when implementing them.
 var Verbs = map[string]func(api.API) Command{
 	"add":       NewAdd,
+	"auth":      NewAuth,
 	"bind":      NewBind,
 	"copy":      NewYank,
 	"cursor":    NewCursor,

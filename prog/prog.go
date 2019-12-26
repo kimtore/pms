@@ -43,6 +43,11 @@ type Visp struct {
 
 var _ api.API = &Visp{}
 
+func (v *Visp) Authenticate() {
+	url := v.Auth.AuthURL()
+	log.Infof("Please authenticate with Spotify at: %s", url)
+}
+
 func (v *Visp) Clipboard() songlist.Songlist {
 	return v.clipboard
 }

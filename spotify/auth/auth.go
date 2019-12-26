@@ -10,6 +10,7 @@ import (
 
 const (
 	preState    = "Iaax5Uz/6vIB6cGItlnd/qbDFb/KGcJGmv5XsdD47+vJA6vGznkObqdvb+izbpw1"
+	authURL     = "http://localhost:59999/auth"
 	callbackURL = "http://localhost:59999/callback"
 	BindAddress = "127.0.0.1:59999"
 )
@@ -34,12 +35,16 @@ type Handler struct {
 	auth  spotify.Authenticator
 	token chan oauth2.Token
 	state string
+	url   string
 }
 
 // the user will eventually be redirected back to your redirect URL
-// typically you'll have a handler set up like the following:
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// use the same state string here that you used to generate the URL
+	if r.RequestURI == "/auth" {
+		http.Redirect(w, r, h.url, http.StatusTemporaryRedirect)
+		return
+	}
+
 	token, err := h.auth.Token(h.state, r)
 	if err != nil || token == nil {
 		http.Error(w, "Couldn't get token", http.StatusNotFound)
@@ -61,7 +66,8 @@ func (h *Handler) Client(token oauth2.Token) spotify.Client {
 
 func (h *Handler) AuthURL() string {
 	h.state = makeState()
-	return h.auth.AuthURL(h.state)
+	h.url = h.auth.AuthURL(h.state)
+	return authURL
 }
 
 func Authenticator() spotify.Authenticator {
