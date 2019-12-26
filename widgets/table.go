@@ -23,8 +23,7 @@ type column struct {
 	width        int
 }
 
-// Table is a tcell widget which draws a gridded table.
-// maintains a list of songlists which can be cycled through.
+// Table is a tcell widget which draws a gridded table from a List instance.
 type Table struct {
 	api            api.API
 	visibleColumns []string
@@ -45,16 +44,16 @@ func NewTable(a api.API) *Table {
 	}
 }
 
-func (w *Table) drawNext(x, y, strmin, strmax int, runes []rune, style tcell.Style) int {
+func (w *Table) drawNext(v views.View, x, y, strmin, strmax int, runes []rune, style tcell.Style) int {
 	strmin = utils.Min(len(runes), strmin)
 	n := 0
 	for n < strmin {
-		w.viewport.SetContent(x, y, runes[n], nil, style)
+		v.SetContent(x, y, runes[n], nil, style)
 		n++
 		x++
 	}
 	for n < strmax {
-		w.viewport.SetContent(x, y, ' ', nil, style)
+		v.SetContent(x, y, ' ', nil, style)
 		n++
 		x++
 	}
@@ -69,7 +68,7 @@ func (w *Table) drawOneTagLine(x, y, xmax int, s *song.Song, tag string, default
 	runes := s.Tags[tag]
 	strmin := len(runes)
 
-	return w.drawNext(x, y, strmin, xmax+1, runes, style)
+	return w.drawNext(&w.viewport, x, y, strmin, xmax+1, runes, style)
 }
 
 func (w *Table) List() list.List {
@@ -88,18 +87,23 @@ func (w *Table) Draw() {
 
 	// Make sure that the viewport matches the list size.
 	w.setViewportSize()
-	log.Debugf("%#v", w.viewport)
 
 	// Update draw time
 	w.lastDraw = time.Now()
 
 	_, ymin, xmax, ymax := w.viewport.GetVisible()
 	xmax += 1
-	st := w.Style("default")
+	st := w.Style("header")
 	cursor := false
 
-	for y := ymin; y <= ymax; y++ {
+	x := 0
+	for _, col := range w.columns {
+		runes := []rune(col.key)
+		strmin := col.width - col.rightPadding
+		x = w.drawNext(w.view, x, 0, strmin, col.width, runes, st)
+	}
 
+	for y := ymin; y <= ymax; y++ {
 		row := w.list.Row(y)
 		if row == nil {
 			panic("nil row")
@@ -120,24 +124,22 @@ func (w *Table) Draw() {
 		case w.list.Selected(y):
 			st = w.Style("selection")
 		default:
-			st = w.Style("default")
 			lineStyled = false
 		}
 
 		x := 0
 
 		// Draw each column separately
-		for col, name := range w.visibleColumns {
+		for _, col := range w.columns {
 
-			runes := []rune(row[name])
+			runes := []rune(row[col.key])
 			if !lineStyled {
-				st = w.Style(name)
+				st = w.Style(col.key)
 			}
 
-			strmax := w.columns[col].width
-			strmin := strmax - w.columns[col].rightPadding
+			strmin := col.width - col.rightPadding
 
-			x = w.drawNext(x, y, strmin, strmax, runes, st)
+			x = w.drawNext(&w.viewport, x, y, strmin, col.width, runes, st)
 		}
 	}
 }
@@ -162,7 +164,7 @@ func (w *Table) Height() int {
 func (w *Table) setViewportSize() {
 	x, y := w.Size()
 	w.viewport.SetContentSize(x, w.list.Len(), true)
-	w.viewport.SetSize(x, utils.Min(y, w.list.Len()))
+	w.viewport.SetSize(x, utils.Min(y-1, w.list.Len()))
 	w.validateViewport()
 }
 
@@ -187,6 +189,7 @@ func (w *Table) validateViewport() {
 
 func (w *Table) Resize() {
 	w.SetColumns(w.visibleColumns)
+	w.SetView(w.view)
 }
 
 func (w *Table) HandleEvent(ev tcell.Event) bool {
@@ -195,7 +198,7 @@ func (w *Table) HandleEvent(ev tcell.Event) bool {
 
 func (w *Table) SetView(v views.View) {
 	w.view = v
-	w.viewport.SetView(w.view)
+	w.viewport = *views.NewViewPort(v, 0, 1, -1, -1)
 }
 
 func (w *Table) Size() (int, int) {
@@ -318,8 +321,7 @@ func (w *Table) ScrollViewport(delta int, movecursor bool) {
 // the viewport.
 func (w *Table) validateCursor() {
 	ymin, ymax := w.GetVisibleBoundaries()
-	list := w.list
-	cursor := list.Cursor()
+	cursor := w.list.Cursor()
 
 	if w.api.Options().BoolValue("center") {
 		// When 'center' is on, move cursor to the centre of the viewport
@@ -331,10 +333,10 @@ func (w *Table) validateCursor() {
 			// the middle of the viewport
 			lowerbound = 0
 		}
-		if ymax >= list.Len()-1 {
+		if ymax >= w.list.Len()-1 {
 			// We are scrolled to the bottom, so the cursor is allowed to go
 			// below the middle of the viewport
-			upperbound = list.Len() - 1
+			upperbound = w.list.Len() - 1
 		}
 		if target < lowerbound {
 			target = lowerbound
@@ -342,13 +344,13 @@ func (w *Table) validateCursor() {
 		if target > upperbound {
 			target = upperbound
 		}
-		list.SetCursor(target)
+		w.list.SetCursor(target)
 	} else {
 		// When 'center' is off, move cursor into the viewport
 		if cursor < ymin {
-			list.SetCursor(ymin)
+			w.list.SetCursor(ymin)
 		} else if cursor > ymax {
-			list.SetCursor(ymax)
+			w.list.SetCursor(ymax)
 		}
 	}
 }
