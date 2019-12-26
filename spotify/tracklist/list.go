@@ -8,7 +8,7 @@ import (
 
 type List struct {
 	list.Base
-	tracks []spotify.FullTrack
+	tracks map[string]spotify.FullTrack
 }
 
 var _ list.List = &List{}
@@ -32,10 +32,11 @@ func New(client spotify.Client, source *spotify.FullTrackPage) (*List, error) {
 
 func NewFromTracks(tracks []spotify.FullTrack) *List {
 	this := &List{
-		tracks: tracks,
+		tracks: make(map[string]spotify.FullTrack, len(tracks)),
 	}
 	this.Clear()
-	for _, track := range this.tracks {
+	for _, track := range tracks {
+		this.tracks[track.ID.String()] = track
 		this.Add(Row(track))
 	}
 	return this
@@ -58,10 +59,12 @@ func (l *List) CursorSong() *spotify.FullTrack {
 
 // Song returns the song at a specific index.
 func (l *List) Song(index int) *spotify.FullTrack {
-	if !l.InRange(index) {
+	row := l.Row(index)
+	if row == nil {
 		return nil
 	}
-	return &l.tracks[index]
+	track := l.tracks[row.ID()]
+	return &track
 }
 
 // Selection returns all the selected songs as a new track list.
@@ -70,12 +73,16 @@ func (l *List) Selection() List {
 	tracks := make([]spotify.FullTrack, len(indices))
 
 	for i, index := range indices {
-		tracks[i] = l.tracks[index]
+		tracks[i] = *l.Song(index)
 	}
 
 	return *NewFromTracks(tracks)
 }
 
 func (l *List) Tracks() []spotify.FullTrack {
-	return l.tracks
+	tracks := make([]spotify.FullTrack, len(l.tracks))
+	for i := 0; i < l.Len(); i++ {
+		tracks[i] = *l.Song(i)
+	}
+	return tracks
 }
