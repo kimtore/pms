@@ -55,15 +55,15 @@ func (w *Topbar) Draw() {
 		if pieces == 0 {
 			continue
 		}
-		bufferWidth := xmax / pieces
 
 		for piece, pieceStmt := range rowStmt.Pieces {
 			// Reset X position to start of window buffer, and align left,
 			// center or right.
 			align := autoAlign(piece, pieces)
 			textWidth := pieceTextWidth(pieceStmt)
-			x := piece * bufferWidth
-			x = alignX(x, bufferWidth, textWidth, align)
+			x := getPiecesStartX(piece, pieces, xmax)
+			x2 := getPiecesStartX(piece+1, pieces, xmax)
+			x = alignX(x, x2-x, textWidth, align)
 
 			for _, fragmentStmt := range pieceStmt.Fragments {
 				frag := fragmentStmt.Instance
@@ -95,6 +95,18 @@ func autoAlign(index, total int) int {
 	default:
 		return AlignCenter
 	}
+}
+
+// getPiecesStartX calculates the start x-position for a given piece.
+//
+// Unused space is avoided by assigning extra space to the first pieces,
+// if (xmax / pieces) leaves a remainder.
+func getPiecesStartX(piece, pieces, xmax int) int {
+	x := piece * (xmax / pieces)
+	if piece <= (xmax % pieces) {
+		return x + piece
+	}
+	return x + (xmax % pieces)
 }
 
 // alignX returns the draw start position.
