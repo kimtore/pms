@@ -1,4 +1,3 @@
-// package db provides a shared object containing all of PMS' data.
 package db
 
 import (

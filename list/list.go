@@ -1,6 +1,7 @@
 package list
 
 import (
+	"sort"
 	"sync"
 	"time"
 )
@@ -57,6 +58,7 @@ type Base struct {
 	name            string
 	rows            []Row
 	selection       map[int]struct{}
+	sortKey         string
 	updated         time.Time
 	visualSelection [3]int
 }
@@ -115,8 +117,26 @@ func (s *Base) Len() int {
 	return len(s.rows)
 }
 
+// Implements sort.Interface
+func (s *Base) Less(i, j int) bool {
+	return s.rows[i][s.sortKey] < s.rows[j][s.sortKey]
+}
+
+// Implements sort.Interface
+func (s *Base) Swap(i, j int) {
+	row := s.rows[i]
+	s.rows[i] = s.rows[j]
+	s.rows[j] = row
+}
+
 func (s *Base) Sort(cols []string) error {
-	panic("no sort")
+	fn := sort.Sort
+	for _, key := range cols {
+		s.sortKey = key
+		fn(s)
+		fn = sort.Stable
+	}
+	return nil
 }
 
 // InRange returns true if the provided index is within list range, false otherwise.

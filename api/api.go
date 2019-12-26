@@ -5,6 +5,7 @@ import (
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
+	"github.com/ambientsound/pms/list"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/multibar"
 	"github.com/ambientsound/pms/options"
@@ -32,6 +33,9 @@ type API interface {
 
 	// Library returns the current MPD library, or nil if it has not been retrieved yet.
 	Library() *songlist.Library
+
+	// List returns the active list.
+	List() list.List
 
 	// ListChanged notifies the UI that the current songlist has changed.
 	ListChanged()

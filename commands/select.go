@@ -85,7 +85,7 @@ func (cmd *Select) parseNearby() error {
 	song := list.CursorSong()
 
 	// Retrieve a list of songs
-	tags, err := cmd.ParseTags(song)
+	tags, err := cmd.ParseTags(song.TagKeys())
 	if err != nil {
 		return err
 	}

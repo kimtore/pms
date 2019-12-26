@@ -164,7 +164,7 @@ func (cmd *Cursor) random() int {
 func (cmd *Cursor) parseNextOf() error {
 	var err error
 	song := cmd.api.Songlist().CursorSong()
-	cmd.nextOfTags, err = cmd.ParseTags(song)
+	cmd.nextOfTags, err = cmd.ParseTags(song.TagKeys())
 	return err
 }
 

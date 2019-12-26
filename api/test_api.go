@@ -4,6 +4,7 @@ import (
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
+	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/message"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/multibar"
@@ -59,6 +60,10 @@ func (api *testAPI) Exec(cmd string) error {
 
 func (api *testAPI) Multibar() *multibar.Multibar {
 	panic("not implemented")
+}
+
+func (api *testAPI) List() list.List {
+	return nil
 }
 
 func (api *testAPI) Library() *songlist.Library {

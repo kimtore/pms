@@ -11,7 +11,7 @@ import (
 
 type widgets struct {
 	layout   *views.BoxLayout
-	topbar   *Topbar
+	Topbar   *Topbar
 	multibar *Multibar
 	table    *Table
 	active   views.Widget
@@ -21,7 +21,7 @@ type Application struct {
 	api     api.API
 	events  chan tcell.Event
 	screen  tcell.Screen
-	widgets widgets
+	Widgets widgets
 	style.Styled
 }
 
@@ -51,17 +51,17 @@ func NewApplication(a api.API) (*Application, error) {
 }
 
 func (app *Application) Init() {
-	app.widgets.topbar = NewTopbar()
-	app.widgets.table = NewTable(app.api)
-	app.widgets.multibar = NewMultibarWidget(app.api)
+	app.Widgets.Topbar = NewTopbar()
+	app.Widgets.table = NewTable(app.api)
+	app.Widgets.multibar = NewMultibarWidget(app.api)
 
-	app.widgets.layout = views.NewBoxLayout(views.Vertical)
-	app.widgets.layout.AddWidget(app.widgets.topbar, 0)
-	app.widgets.layout.AddWidget(app.widgets.table, 1)
-	app.widgets.layout.AddWidget(app.widgets.multibar, 0)
-	app.widgets.layout.SetView(app.screen)
+	app.Widgets.layout = views.NewBoxLayout(views.Vertical)
+	app.Widgets.layout.AddWidget(app.Widgets.Topbar, 0)
+	app.Widgets.layout.AddWidget(app.Widgets.table, 1)
+	app.Widgets.layout.AddWidget(app.Widgets.multibar, 0)
+	app.Widgets.layout.SetView(app.screen)
 
-	app.widgets.active = app.widgets.table
+	app.Widgets.active = app.Widgets.table
 
 	app.ActivateWindow(api.WindowLogs)
 }
@@ -72,20 +72,20 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 		cols, rows := e.Size()
 		log.Debugf("terminal resize: %dx%d", cols, rows)
 		app.screen.Sync()
-		app.widgets.layout.Resize()
-		app.widgets.layout.SetView(app.screen)
+		app.Widgets.layout.Resize()
+		app.Widgets.layout.SetView(app.screen)
 		return true
 	case *tcell.EventKey:
 		return false
 	default:
 		log.Debugf("unrecognized input event: %T %+v", e, e)
-		app.widgets.layout.HandleEvent(ev)
+		app.Widgets.layout.HandleEvent(ev)
 		return false
 	}
 }
 
 func (app *Application) Draw() {
-	app.widgets.layout.Draw()
+	app.Widgets.layout.Draw()
 	app.updateCursor()
 	app.screen.Show()
 }
@@ -109,7 +109,7 @@ func (app *Application) Refresh() {
 }
 
 func (app *Application) TableWidget() api.TableWidget {
-	return app.widgets.table
+	return app.Widgets.table
 }
 
 func (app *Application) ActivateWindow(window api.Window) {
@@ -117,26 +117,26 @@ func (app *Application) ActivateWindow(window api.Window) {
 
 	switch window {
 	case api.WindowLogs:
-		widget = app.widgets.table
-		app.widgets.table.SetList(log.List(log.InfoLevel))
-		app.widgets.table.SetColumns([]string{"timestamp", "logLevel", "logMessage"})
+		widget = app.Widgets.table
+		app.Widgets.table.SetList(log.List(log.InfoLevel))
+		app.Widgets.table.SetColumns([]string{"timestamp", "logLevel", "logMessage"})
 	case api.WindowMusic:
-		widget = app.widgets.table
-		app.widgets.table.SetList(nil)
+		widget = app.Widgets.table
+		app.Widgets.table.SetList(nil)
 	case api.WindowPlaylists:
-		widget = app.widgets.table
-		app.widgets.table.SetList(nil)
+		widget = app.Widgets.table
+		app.Widgets.table.SetList(nil)
 	default:
 		panic("widget not implemented")
 	}
 
 	log.Debugf("want to activate widget %#v", widget)
-	log.Debugf("first deactivating widget %#v", app.widgets.active)
+	log.Debugf("first deactivating widget %#v", app.Widgets.active)
 
-	app.widgets.layout.RemoveWidget(app.widgets.active)
-	app.widgets.layout.InsertWidget(1, widget, 1.0)
+	app.Widgets.layout.RemoveWidget(app.Widgets.active)
+	app.Widgets.layout.InsertWidget(1, widget, 1.0)
 
-	app.widgets.active = widget
+	app.Widgets.active = widget
 }
 
 func (app *Application) updateCursor() {

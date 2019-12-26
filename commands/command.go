@@ -5,14 +5,11 @@ package commands
 
 import (
 	"fmt"
-	"sort"
-	"strings"
-
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/parser"
-	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/utils"
+	"sort"
 )
 
 // Verbs contain mappings from strings to Command constructors.
@@ -116,15 +113,6 @@ func (c *newcommand) setTabComplete(filter string, s []string) {
 	c.tabComplete = utils.TokenFilter(filter, s)
 }
 
-// setTabCompleteTag sets the tab complete list to a list of tag keys in a specific song.
-func (c *newcommand) setTabCompleteTag(lit string, song *song.Song) {
-	if song == nil {
-		c.setTabCompleteEmpty()
-		return
-	}
-	c.setTabComplete(lit, song.TagKeys())
-}
-
 // setTabCompleteEmpty removes all tab completions.
 func (c *newcommand) setTabCompleteEmpty() {
 	c.setTabComplete("", []string{})
@@ -132,7 +120,7 @@ func (c *newcommand) setTabCompleteEmpty() {
 
 // ParseTags parses a set of tags until the end of the line, and maintains the
 // tab complete list according to a specified song.
-func (c *newcommand) ParseTags(song *song.Song) ([]string, error) {
+func (c *newcommand) ParseTags(possibleTags []string) ([]string, error) {
 	c.setTabCompleteEmpty()
 	tags := make([]string, 0)
 	tag := ""
@@ -143,12 +131,12 @@ func (c *newcommand) ParseTags(song *song.Song) ([]string, error) {
 		switch tok {
 		case lexer.TokenWhitespace:
 			if len(tag) > 0 {
-				tags = append(tags, strings.ToLower(tag))
+				tags = append(tags, tag)
 			}
 			tag = ""
 		case lexer.TokenEnd, lexer.TokenComment:
 			if len(tag) > 0 {
-				tags = append(tags, strings.ToLower(tag))
+				tags = append(tags, tag)
 			}
 			if len(tags) == 0 {
 				return nil, fmt.Errorf("Unexpected END, expected tag")
@@ -158,7 +146,7 @@ func (c *newcommand) ParseTags(song *song.Song) ([]string, error) {
 			tag += lit
 		}
 
-		c.setTabCompleteTag(tag, song)
+		c.setTabComplete(tag, possibleTags)
 	}
 }
 

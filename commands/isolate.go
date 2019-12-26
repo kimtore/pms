@@ -26,7 +26,7 @@ func NewIsolate(api api.API) Command {
 func (cmd *Isolate) Parse() error {
 	var err error
 	list := cmd.api.Songlist()
-	cmd.tags, err = cmd.ParseTags(list.CursorSong())
+	cmd.tags, err = cmd.ParseTags(list.CursorSong().TagKeys())
 	return err
 }
 

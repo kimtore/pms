@@ -2,10 +2,12 @@ package commands
 
 import (
 	"fmt"
+	"github.com/ambientsound/pms/log"
 	"strings"
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/list"
 )
 
 // Sort sorts songlists.
@@ -13,6 +15,7 @@ type Sort struct {
 	newcommand
 	api  api.API
 	tags []string
+	list list.List
 }
 
 // NewSort returns Sort.
@@ -26,22 +29,21 @@ func NewSort(api api.API) Command {
 func (cmd *Sort) Parse() error {
 	var err error
 
-	// For tab completion
-	list := cmd.api.Songlist()
-	song := list.CursorSong()
+	cmd.list = cmd.api.List()
+	possibleTags := cmd.list.ColumnNames()
 
 	for {
 		tok, lit := cmd.Scan()
 		switch tok {
 		case lexer.TokenWhitespace:
 			// Initialize tab completion
-			cmd.setTabCompleteTag("", song)
+			cmd.setTabComplete("", possibleTags)
 			continue
 
 		case lexer.TokenIdentifier:
 			// Sort by tags specified on the command line
 			cmd.Unscan()
-			cmd.tags, err = cmd.ParseTags(song)
+			cmd.tags, err = cmd.ParseTags(possibleTags)
 			return err
 
 		case lexer.TokenEnd:
@@ -58,9 +60,7 @@ func (cmd *Sort) Parse() error {
 
 // Exec implements Command.
 func (cmd *Sort) Exec() error {
-	list := cmd.api.Songlist()
-	song := list.CursorSong()
-	err := list.Sort(cmd.tags)
-	list.CursorToSong(song)
-	return err
+	// FIXME: retain cursor
+	log.Debugf("sorting list by tags %v", cmd.tags)
+	return cmd.list.Sort(cmd.tags)
 }

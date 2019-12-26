@@ -7,6 +7,7 @@ import (
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/keys"
+	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/log"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/multibar"
@@ -18,6 +19,7 @@ import (
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
+	"github.com/ambientsound/pms/topbar"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/gdamore/tcell"
 	"github.com/spf13/viper"
@@ -66,6 +68,10 @@ func (v *Visp) Library() *songlist.Library {
 	return nil // FIXME
 }
 
+func (v *Visp) List() list.List {
+	return v.Termui.TableWidget().List()
+}
+
 func (v *Visp) ListChanged() {
 	// FIXME
 }
@@ -81,7 +87,18 @@ func (v *Visp) MpdClient() *mpd.Client {
 }
 
 func (v *Visp) OptionChanged(key string) {
-	// FIXME
+	switch key {
+	case "topbar":
+		config := v.options.StringValue("topbar")
+		matrix, err := topbar.Parse(v, config)
+		if err == nil {
+			_ = matrix
+			// FIXME
+			// v.Termui.Widgets.Topbar.SetMatrix(matrix)
+		} else {
+			log.Errorf("topbar configuration: %s", err)
+		}
+	}
 }
 
 func (v *Visp) Options() *options.Options {
