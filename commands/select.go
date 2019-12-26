@@ -52,7 +52,7 @@ func (cmd *Select) Parse() error {
 
 // Exec implements Command.
 func (cmd *Select) Exec() error {
-	list := cmd.api.Songlist()
+	list := cmd.api.UI().TableWidget().List()
 
 	switch {
 	case cmd.toggle && list.HasVisualSelection():
