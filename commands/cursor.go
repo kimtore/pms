@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/songlist"
 	"math/rand"
 	"strconv"
@@ -20,6 +21,7 @@ type Cursor struct {
 	absolute        int
 	current         bool
 	finished        bool
+	list            list.List
 	nextOfDirection int
 	nextOfTags      []string
 	relative        int
@@ -35,7 +37,7 @@ func NewCursor(api api.API) Command {
 // Parse parses cursor movement.
 func (cmd *Cursor) Parse() error {
 	tableWidget := cmd.api.UI().TableWidget()
-	list := tableWidget.List()
+	cmd.list = tableWidget.List()
 
 	tok, lit := cmd.ScanIgnoreWhitespace()
 	cmd.setTabCompleteVerbs(lit)
@@ -69,7 +71,7 @@ func (cmd *Cursor) Parse() error {
 	case "home":
 		cmd.absolute = 0
 	case "end":
-		cmd.absolute = list.Len() - 1
+		cmd.absolute = cmd.list.Len() - 1
 	case "high":
 		ymin, _ := tableWidget.GetVisibleBoundaries()
 		cmd.absolute = ymin
@@ -104,8 +106,6 @@ func (cmd *Cursor) Parse() error {
 
 // Exec is the next Execute(), evading the old system
 func (cmd *Cursor) Exec() error {
-	list := cmd.api.UI().TableWidget().List()
-
 	switch {
 	case cmd.nextOfDirection != 0:
 		cmd.absolute = cmd.runNextOf()
@@ -114,7 +114,7 @@ func (cmd *Cursor) Exec() error {
 		if currentSong == nil {
 			return fmt.Errorf("No song is currently playing.")
 		}
-		sl, ok := list.(songlist.Songlist)
+		sl, ok := cmd.list.(songlist.Songlist)
 		if !ok {
 			return fmt.Errorf("not in a songlist")
 		}
@@ -123,9 +123,9 @@ func (cmd *Cursor) Exec() error {
 
 	switch {
 	case cmd.relative != 0:
-		list.MoveCursor(cmd.relative)
+		cmd.list.MoveCursor(cmd.relative)
 	default:
-		list.SetCursor(cmd.absolute)
+		cmd.list.SetCursor(cmd.absolute)
 	}
 
 	return nil
@@ -163,14 +163,11 @@ func (cmd *Cursor) random() int {
 // no tags are specified.
 func (cmd *Cursor) parseNextOf() error {
 	var err error
-	song := cmd.api.Songlist().CursorSong()
-	cmd.nextOfTags, err = cmd.ParseTags(song.TagKeys())
+	cmd.nextOfTags, err = cmd.ParseTags(cmd.list.ColumnNames())
 	return err
 }
 
 // runNextOf finds the next song with different tags.
 func (cmd *Cursor) runNextOf() int {
-	list := cmd.api.Songlist()
-	index := list.Cursor()
-	return list.NextOf(cmd.nextOfTags, index, cmd.nextOfDirection)
+	return cmd.list.NextOf(cmd.nextOfTags, cmd.list.Cursor(), cmd.nextOfDirection)
 }

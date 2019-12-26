@@ -44,6 +44,7 @@ type List interface {
 	InRange(int) bool
 	Len() int
 	Lock()
+	NextOf([]string, int, int) int
 	Row(int) Row
 	RowNum(string) (int, error)
 	SetUpdated()
@@ -179,4 +180,30 @@ func (s *Base) Updated() time.Time {
 // SetUpdated sets the update timestamp of the songlist.
 func (s *Base) SetUpdated() {
 	s.updated = time.Now()
+}
+
+// NextOf searches forwards or backwards for rows having different values in the specified tags.
+// The index of the next song is returned.
+func (s *Base) NextOf(tags []string, index int, direction int) int {
+	offset := func(i int) int {
+		if direction > 0 || i == 0 {
+			return 0
+		}
+		return 1
+	}
+
+	ln := s.Len()
+	index -= offset(index)
+	row := s.Row(index)
+
+LOOP:
+	for ; index < ln && index >= 0; index += direction {
+		for _, tag := range tags {
+			if row[tag] != s.rows[index][tag] {
+				break LOOP
+			}
+		}
+	}
+
+	return index + offset(index)
 }

@@ -32,7 +32,7 @@ style originalyear darkgreen
 style allTagsMissing red
 style currentSong black yellow
 style cursor black white
-style header green bold
+style header teal bold
 style mostTagsMissing red
 style selection white blue
 
