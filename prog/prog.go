@@ -15,6 +15,7 @@ import (
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/aggregator"
 	"github.com/ambientsound/pms/spotify/auth"
+	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
 	"github.com/ambientsound/pms/widgets"
@@ -108,6 +109,10 @@ func (v *Visp) Multibar() *multibar.Multibar {
 	return v.multibar
 }
 
+func (v *Visp) Spotify() spotify.Client {
+	return v.client
+}
+
 func (v *Visp) Song() *song.Song {
 	log.Debugf("nil song; might break")
 	return nil
@@ -125,6 +130,15 @@ func (v *Visp) Songlists() []songlist.Songlist {
 
 func (v *Visp) Styles() style.Stylesheet {
 	return v.stylesheet
+}
+
+func (v *Visp) Tracklist() *spotify_tracklist.List {
+	switch v := v.UI().TableWidget().List().(type) {
+	case *spotify_tracklist.List:
+		return v
+	default:
+		return nil
+	}
 }
 
 func (v *Visp) UI() api.UI {

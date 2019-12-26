@@ -10,7 +10,9 @@ import (
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/style"
+	"github.com/zmb3/spotify"
 )
 
 type testAPI struct {
@@ -99,6 +101,10 @@ func (api *testAPI) Sequencer() *keys.Sequencer {
 	return nil // FIXME
 }
 
+func (api *testAPI) Spotify() spotify.Client {
+	return spotify.Client{}
+}
+
 func (api *testAPI) Song() *song.Song {
 	return api.song
 }
@@ -112,6 +118,10 @@ func (api *testAPI) Songlists() []songlist.Songlist {
 }
 
 func (api *testAPI) Styles() style.Stylesheet {
+	return nil // FIXME
+}
+
+func (api *testAPI) Tracklist() *spotify_tracklist.List {
 	return nil // FIXME
 }
 

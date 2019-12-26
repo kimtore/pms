@@ -10,7 +10,9 @@ import (
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/style"
+	"github.com/zmb3/spotify"
 )
 
 // API defines a set of commands that should be available to commands run
@@ -58,6 +60,9 @@ type API interface {
 	// Sequencer returns a pointer to the key sequencer that receives key events.
 	Sequencer() *keys.Sequencer
 
+	// Spotify returns a Spotify client.
+	Spotify() spotify.Client
+
 	// Song returns the currently playing song, or nil if no song is loaded.
 	// Note that the song might be stopped, and the play/pause/stop status should
 	// be checked using PlayerStatus().
@@ -68,6 +73,10 @@ type API interface {
 
 	// Styles returns the current stylesheet.
 	Styles() style.Stylesheet
+
+	// Tracklist returns the visible track list, if any.
+	// Will be nil if the active widget shows a different kind of list.
+	Tracklist() *spotify_tracklist.List
 
 	// UI returns the global UI object.
 	UI() UI

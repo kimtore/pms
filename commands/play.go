@@ -2,8 +2,9 @@ package commands
 
 import (
 	"fmt"
+	"github.com/ambientsound/pms/spotify/tracklist"
+	"github.com/zmb3/spotify"
 
-	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
@@ -14,6 +15,8 @@ type Play struct {
 	api       api.API
 	cursor    bool
 	selection bool
+	client    spotify.Client
+	tracklist *spotify_tracklist.List
 }
 
 // NewPlay returns Play.
@@ -56,81 +59,66 @@ func (cmd *Play) Parse() error {
 
 // Exec implements Command.
 func (cmd *Play) Exec() error {
-
-	// Ensure MPD connection.
-	client := cmd.api.MpdClient()
-	if client == nil {
-		return fmt.Errorf("Cannot play: not connected to MPD")
-	}
+	cmd.tracklist = cmd.api.Tracklist()
+	cmd.client = cmd.api.Spotify()
 
 	switch {
 	case cmd.cursor:
 		// Play song under cursor.
-		return cmd.playCursor(client)
+		return cmd.playCursor()
 	case cmd.selection:
 		// Play selected songs.
-		return cmd.playSelection(client)
+		return cmd.playSelection()
 	}
 
 	// If a selection is not given, start playing with default parameters.
-	return client.Play(-1)
+	return cmd.client.Play()
 }
 
 // playCursor plays the song under the cursor.
-func (cmd *Play) playCursor(client *mpd.Client) error {
+func (cmd *Play) playCursor() error {
+
+	if cmd.tracklist == nil {
+		return fmt.Errorf("cannot play cursor when not in a track list")
+	}
 
 	// Get the song under the cursor.
-	song := cmd.api.Songlist().CursorSong()
+	song := cmd.tracklist.CursorSong()
 	if song == nil {
 		return fmt.Errorf("Cannot play: no song under cursor")
 	}
 
-	// Check if the currently selected song has an ID. If it doesn't, it's not
-	// from the queue, and the song will have to be added beforehand.
-	id := song.ID
-	if song.NullID() {
-		var err error
-		id, err = client.AddID(song.StringTags["file"], -1)
-		if err != nil {
-			return err
-		}
-	}
-
 	// Play the correct song.
-	return client.PlayID(id)
+	return cmd.client.PlayOpt(&spotify.PlayOptions{
+		URIs: []spotify.URI{
+			song.URI,
+		},
+	})
 }
 
 // playSelection plays the currently selected songs.
-func (cmd *Play) playSelection(client *mpd.Client) error {
+func (cmd *Play) playSelection() error {
 
-	// Get the track selection.
-	selection := cmd.api.Songlist().Selection()
+	if cmd.tracklist == nil {
+		return fmt.Errorf("cannot play cursor when not in a track list")
+	}
+
+	selection := cmd.tracklist.Selection()
 	if selection.Len() == 0 {
-		return fmt.Errorf("Cannot play: no selection")
+		return fmt.Errorf("cannot play: no selection")
 	}
 
-	// Check if the first song has an ID. If it does, just start playing. The
-	// playback order cannot be guaranteed as the selection might be
-	// fragmented, so don't touch the selection.
-	first := selection.Song(0)
-	if !first.NullID() {
-		return client.PlayID(first.ID)
+	cmd.tracklist.ClearSelection()
+
+	uris := make([]spotify.URI, selection.Len())
+	for i, track := range selection.Tracks() {
+		uris[i] = track.URI
 	}
 
-	// We are not operating directly on the queue; add all songs to the queue now.
-	queue := cmd.api.Queue()
-	queueLen := queue.Len()
-	err := queue.AddList(selection)
-	if err != nil {
-		return err
-	}
-	cmd.api.Songlist().ClearSelection()
-	cmd.api.Message("Playing %d new songs", selection.Len())
-
-	// We haven't got the ID from the first added song, so use positions
-	// instead. In case of simultaneous operation with another client, this
-	// might lead to a race condition. Ignore this for now.
-	return client.Play(queueLen)
+	// Start playing all the URIs
+	return cmd.client.PlayOpt(&spotify.PlayOptions{
+		URIs: uris,
+	})
 }
 
 // setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.

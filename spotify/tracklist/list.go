@@ -13,8 +13,32 @@ type List struct {
 
 var _ list.List = &List{}
 
-func (l *List) Tracks() []spotify.FullTrack {
-	return l.tracks
+func New(client spotify.Client, source *spotify.FullTrackPage) (*List, error) {
+	var err error
+
+	tracks := make([]spotify.FullTrack, 0, source.Total)
+
+	for err == nil {
+		tracks = append(tracks, source.Tracks...)
+		err = client.NextPage(source)
+	}
+
+	if err != spotify.ErrNoMorePages {
+		return nil, err
+	}
+
+	return NewFromTracks(tracks), nil
+}
+
+func NewFromTracks(tracks []spotify.FullTrack) *List {
+	this := &List{
+		tracks: tracks,
+	}
+	this.Clear()
+	for _, track := range this.tracks {
+		this.Add(Row(track))
+	}
+	return this
 }
 
 func Row(track spotify.FullTrack) list.Row {
@@ -26,26 +50,31 @@ func Row(track spotify.FullTrack) list.Row {
 	}
 }
 
-func New(client spotify.Client, source *spotify.FullTrackPage) (*List, error) {
-	var err error
+// CursorSong returns the song currently selected by the cursor.
+func (l *List) CursorSong() *spotify.FullTrack {
+	return l.Song(l.Cursor())
+}
 
-	this := &List{
-		tracks: make([]spotify.FullTrack, 0),
+// Song returns the song at a specific index.
+func (l *List) Song(index int) *spotify.FullTrack {
+	if !l.InRange(index) {
+		return nil
 	}
-	this.Clear()
+	return &l.tracks[index]
+}
 
-	for err == nil {
-		this.tracks = append(this.tracks, source.Tracks...)
-		err = client.NextPage(source)
+// Selection returns all the selected songs as a new track list.
+func (l *List) Selection() List {
+	indices := l.SelectionIndices()
+	tracks := make([]spotify.FullTrack, len(indices))
+
+	for i, index := range indices {
+		tracks[i] = l.tracks[index]
 	}
 
-	if err != spotify.ErrNoMorePages {
-		return nil, err
-	}
+	return *NewFromTracks(tracks)
+}
 
-	for _, track := range this.tracks {
-		this.Add(Row(track))
-	}
-
-	return this, nil
+func (l *List) Tracks() []spotify.FullTrack {
+	return l.tracks
 }
