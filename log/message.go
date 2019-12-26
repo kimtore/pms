@@ -51,9 +51,10 @@ func appendMessage(msg Message) {
 		}
 		messages[level] = append(messages[level], msg)
 		logLineList[level].Add(list.Row{
-			"logLevel":   msg.Level.String(),
-			"logMessage": msg.Text,
-			"timestamp":  msg.Timestamp.Format(time.RFC822),
+			list.RowIDKey: string(logLineList[level].Len()),
+			"logLevel":    msg.Level.String(),
+			"logMessage":  msg.Text,
+			"timestamp":   msg.Timestamp.Format(time.RFC822),
 		})
 	}
 }

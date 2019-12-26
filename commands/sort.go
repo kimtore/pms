@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"github.com/ambientsound/pms/log"
 	"strings"
 
 	"github.com/ambientsound/pms/api"
@@ -60,7 +59,15 @@ func (cmd *Sort) Parse() error {
 
 // Exec implements Command.
 func (cmd *Sort) Exec() error {
-	// FIXME: retain cursor
-	log.Debugf("sorting list by tags %v", cmd.tags)
-	return cmd.list.Sort(cmd.tags)
+	rowID := cmd.list.Row(cmd.list.Cursor()).ID()
+	err := cmd.list.Sort(cmd.tags)
+	if err != nil {
+		return err
+	}
+	rowNum, err := cmd.list.RowNum(rowID)
+	if err != nil {
+		panic(err)
+	}
+	cmd.list.SetCursor(rowNum)
+	return nil
 }

@@ -1,6 +1,7 @@
 package list
 
 import (
+	"fmt"
 	"sort"
 	"sync"
 	"time"
@@ -44,6 +45,7 @@ type List interface {
 	Len() int
 	Lock()
 	Row(int) Row
+	RowNum(string) (int, error)
 	SetUpdated()
 	Sort([]string) error
 	Unlock()
@@ -111,6 +113,15 @@ func (s *Base) Row(n int) Row {
 		return nil
 	}
 	return s.rows[n]
+}
+
+func (s *Base) RowNum(id string) (int, error) {
+	for n, row := range s.rows {
+		if row.ID() == id {
+			return n, nil
+		}
+	}
+	return 0, fmt.Errorf("not found")
 }
 
 func (s *Base) Len() int {

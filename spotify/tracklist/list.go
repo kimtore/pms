@@ -43,10 +43,11 @@ func NewFromTracks(tracks []spotify.FullTrack) *List {
 
 func Row(track spotify.FullTrack) list.Row {
 	return list.Row{
-		"album":  track.Album.Name,
-		"artist": track.Artists[0].Name,
-		"time":   utils.TimeString(track.Duration / 1000),
-		"title":  track.Name,
+		list.RowIDKey: track.ID.String(),
+		"album":       track.Album.Name,
+		"artist":      track.Artists[0].Name,
+		"time":        utils.TimeString(track.Duration / 1000),
+		"title":       track.Name,
 	}
 }
 
