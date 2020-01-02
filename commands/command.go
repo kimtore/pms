@@ -18,6 +18,7 @@ var Verbs = map[string]func(api.API) Command{
 	"add":       NewAdd,
 	"auth":      NewAuth,
 	"bind":      NewBind,
+	"columns":   NewColumns,
 	"copy":      NewYank,
 	"cursor":    NewCursor,
 	"cut":       NewCut,
