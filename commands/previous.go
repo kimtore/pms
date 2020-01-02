@@ -1,15 +1,12 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/input/lexer"
 )
 
-// Previous switches to the previous song in MPD's queue.
+// Previous instructs the player to go to the previous song.
 type Previous struct {
-	command
+	newcommand
 	api api.API
 }
 
@@ -19,16 +16,14 @@ func NewPrevious(api api.API) Command {
 	}
 }
 
-func (cmd *Previous) Execute(class int, s string) error {
-	switch class {
-	case lexer.TokenEnd:
-		client := cmd.api.MpdClient()
-		if client == nil {
-			return fmt.Errorf("Unable to play previous song: cannot communicate with MPD")
-		}
-		return client.Previous()
+func (cmd *Previous) Parse() error {
+	return cmd.ParseEnd()
+}
 
-	default:
-		return fmt.Errorf("Unknown input '%s', expected END", s)
+func (cmd *Previous) Exec() error {
+	client, err := cmd.api.Spotify()
+	if err != nil {
+		return err
 	}
+	return client.Previous()
 }
