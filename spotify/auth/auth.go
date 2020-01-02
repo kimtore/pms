@@ -41,7 +41,7 @@ type Handler struct {
 // the user will eventually be redirected back to your redirect URL
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.RequestURI == "/auth" {
-		http.Redirect(w, r, h.url, http.StatusTemporaryRedirect)
+		http.Redirect(w, r, h.url, http.StatusFound)
 		return
 	}
 

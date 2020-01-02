@@ -127,6 +127,10 @@ func (v *Visp) Multibar() *multibar.Multibar {
 }
 
 func (v *Visp) Spotify() spotify.Client {
+	_, err := v.client.Token()
+	if err != nil {
+		log.Errorf("Unable to refresh Spotify token")
+	}
 	return v.client
 }
 
@@ -179,7 +183,7 @@ func (v *Visp) Main() error {
 	for {
 		select {
 		case token := <-v.Auth.Tokens():
-			log.Debugf("Received Spotify token.")
+			log.Infof("Received Spotify access token.")
 			v.client = v.Auth.Client(token)
 			viper.Set("spotify.accesstoken", token.AccessToken)
 			viper.Set("spotify.refreshtoken", token.RefreshToken)

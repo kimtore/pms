@@ -13,6 +13,7 @@ import (
 	"os"
 	"runtime/debug"
 	"strings"
+	"time"
 )
 
 var buildVersion = "undefined"
@@ -86,6 +87,8 @@ func run() (int, error) {
 		handler.Tokens() <- oauth2.Token{
 			AccessToken:  cfg.Spotify.AccessToken,
 			RefreshToken: cfg.Spotify.RefreshToken,
+			Expiry:       time.Now(),
+			TokenType:    "Bearer",
 		}
 	}
 
