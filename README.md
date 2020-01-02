@@ -51,6 +51,7 @@ make install
 ```
 
 This will put the binary in `$GOBIN/pms`, usually at `~/go/bin/pms`.
+You need to run PMS in a regular terminal with a TTY.
 
 If PMS crashes, and you want to report a bug, please include the debug log:
 

@@ -38,14 +38,14 @@ type UI struct {
 	views.WidgetWatchers
 }
 
-func NewUI(a api.API) *UI {
+func NewUI(a api.API) (*UI, error) {
 	var err error
 
 	ui := &UI{}
 
 	ui.Screen, err = tcell.NewScreen()
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	ui.EventInputCommand = make(chan string, 16)
@@ -71,7 +71,7 @@ func NewUI(a api.API) *UI {
 	ui.App.SetScreen(ui.Screen)
 	ui.App.SetRootWidget(ui)
 
-	return ui
+	return ui, nil
 }
 
 func (ui *UI) CreateLayout() {
