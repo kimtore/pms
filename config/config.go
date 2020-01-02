@@ -29,7 +29,6 @@ type Config struct {
 
 func decoderHook(dc *mapstructure.DecoderConfig) {
 	dc.TagName = "json"
-	dc.ErrorUnused = true
 }
 
 func init() {

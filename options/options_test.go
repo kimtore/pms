@@ -1,62 +1,43 @@
 package options_test
 
 import (
-	"testing"
-
 	"github.com/ambientsound/pms/options"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
-func TestStringOption(t *testing.T) {
-	opt := options.NewStringOption("foo")
-	err := opt.Set("bar")
-	require.Nil(t, err)
-	if opt.Key() != "foo" {
-		t.Fatalf("String option key is incorrect!")
-	}
-	val := opt.Value()
-	switch val := val.(type) {
-	case string:
-		if val != "bar" {
-			t.Fatalf("String option value is incorrect!")
-		}
-	default:
-		t.Fatalf("String option value is of wrong type %T!", val)
-	}
+type printTest struct {
+	key    string
+	value  interface{}
+	output string
 }
 
-func TestIntOption(t *testing.T) {
-	opt := options.NewIntOption("foo")
-	err := opt.Set("3984")
-	require.Nil(t, err)
-	if opt.Key() != "foo" {
-		t.Fatalf("Int option key is incorrect!")
-	}
-	val := opt.Value()
-	switch val := val.(type) {
-	case int:
-		if val != 3984 {
-			t.Fatalf("Int option value is incorrect!")
-		}
-	default:
-		t.Fatalf("Int option value is of wrong type %T!", val)
-	}
+var printTests = []printTest{
+	{
+		key:    `string`,
+		value:  `bar`,
+		output: `string="bar"`,
+	},
+	{
+		key:    `int`,
+		value:  56,
+		output: `int=56`,
+	},
+	{
+		key:    `bool`,
+		value:  true,
+		output: `bool`,
+	},
+	{
+		key:    `bool`,
+		value:  false,
+		output: `nobool`,
+	},
 }
 
-func TestBoolOption(t *testing.T) {
-	opt := options.NewBoolOption("foo")
-	err := opt.Set("true")
-	require.Nil(t, err)
-	if opt.Key() != "foo" {
-		t.Fatalf("Bool option key is incorrect!")
-	}
-	val := opt.Value()
-	switch val := val.(type) {
-	case bool:
-		if !val {
-			t.Fatalf("Bool option value is incorrect!")
-		}
-	default:
-		t.Fatalf("Bool option value is of wrong type %T!", val)
+func TestPrint(t *testing.T) {
+	for _, test := range printTests {
+		output := options.Print(test.key, test.value)
+		assert.Equal(t, test.output, output)
 	}
 }

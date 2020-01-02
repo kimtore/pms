@@ -2,7 +2,6 @@ package db
 
 import (
 	pms_mpd "github.com/ambientsound/pms/mpd"
-	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 )
@@ -19,7 +18,6 @@ type Instance struct {
 	library    *songlist.Library
 	songlists  []songlist.Songlist
 	clipboards map[string]songlist.Songlist
-	options    *options.Options
 
 	// panels
 	left  *songlist.Collection

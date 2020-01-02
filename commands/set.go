@@ -88,45 +88,50 @@ func (cmd *Set) Exec() error {
 		opt := cmd.api.Options().Get(tok.Key)
 
 		if opt == nil {
-			return fmt.Errorf("No such option: %s", tok.Key)
+			return fmt.Errorf("no such option: %s", tok.Key)
+		}
+
+		prnt := func() {
+			cmd.api.Message(options.Print(tok.Key, cmd.api.Options().Get(tok.Key)))
 		}
 
 		// Queries print options to the statusbar.
 		if tok.Query {
-			cmd.api.Message(opt.String())
+			prnt()
 			continue
 		}
 
 		switch opt := opt.(type) {
 
-		case *options.BoolOption:
+		case bool:
 			switch {
 			case !tok.Bool:
-				return fmt.Errorf("Attempting to give parameters to a boolean option (try 'set no%s' or 'set inv%s')", tok.Key, tok.Key)
+				return fmt.Errorf("attempting to give parameters to a boolean option (try 'set no%s' or 'set inv%s')", tok.Key, tok.Key)
 			case tok.Invert:
-				opt.SetBool(!opt.BoolValue())
-				cmd.api.Message(opt.String())
+				cmd.api.Options().Set(tok.Key, !opt)
 			case tok.Negate:
-				opt.SetBool(false)
+				cmd.api.Options().Set(tok.Key, false)
 			default:
-				opt.SetBool(true)
+				cmd.api.Options().Set(tok.Key, true)
 			}
+
+		case int:
+			if !tok.Int {
+				return fmt.Errorf("attempting to assign a non-integer value to an integer option")
+			}
+			cmd.api.Options().Set(tok.Key, tok.IntValue)
 
 		default:
-			if !tok.Bool {
-				if err := opt.Set(tok.Value); err != nil {
-					return err
-				}
-				break
-			}
-
 			// Not a boolean option, and no value. Print the value.
-			cmd.api.Message(opt.String())
-			continue
+			if tok.Bool {
+				prnt()
+				continue
+			}
+			cmd.api.Options().Set(tok.Key, tok.Value)
 		}
 
-		cmd.api.OptionChanged(opt.Key())
-		cmd.api.Message(opt.String())
+		cmd.api.OptionChanged(tok.Key)
+		prnt()
 	}
 
 	return nil
@@ -134,7 +139,7 @@ func (cmd *Set) Exec() error {
 
 // setTabCompleteVerbs sets the tab complete list to the list of option keys.
 func (cmd *Set) setTabCompleteVerbs(lit string) {
-	cmd.setTabComplete(lit, cmd.api.Options().Keys())
+	cmd.setTabComplete(lit, cmd.api.Options().AllKeys())
 }
 
 // setTabCompleteOption sets the tab complete list to an option value and a blank value.
@@ -157,7 +162,7 @@ func (cmd *Set) setTabCompleteOption(tok parser.OptionToken) {
 
 	// Return two items: the existing value, and the typed value.
 	cmd.setTabComplete("", []string{
-		fmt.Sprintf(`="%s"`, opt.StringValue()),
+		fmt.Sprintf(`="%s"`, cmd.api.Options().GetString(tok.Key)),
 		"=",
 	})
 }

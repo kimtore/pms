@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/log"
+	"github.com/ambientsound/pms/options"
 	"math"
 	"time"
 
@@ -166,7 +167,7 @@ func (w *Table) validateViewport() {
 	cursor := w.list.Cursor()
 
 	// Make the cursor visible
-	if !w.api.Options().BoolValue("center") {
+	if !w.api.Options().GetBool(options.Center) {
 		w.viewport.MakeVisible(0, cursor)
 		return
 	}
@@ -318,7 +319,7 @@ func (w *Table) validateCursor() {
 	ymin, ymax := w.GetVisibleBoundaries()
 	cursor := w.list.Cursor()
 
-	if w.api.Options().BoolValue("center") {
+	if w.api.Options().GetBool(options.Center) {
 		// When 'center' is on, move cursor to the centre of the viewport
 		target := cursor
 		lowerbound := (ymin + ymax) / 2

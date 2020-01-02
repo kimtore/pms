@@ -29,7 +29,6 @@ type UI struct {
 
 	// Data resources
 	api          api.API
-	options      *options.Options // FIXME: use api instead
 	searchResult songlist.Songlist
 
 	// TCell
@@ -53,7 +52,6 @@ func NewUI(a api.API) (*UI, error) {
 
 	ui.App = &views.Application{}
 	ui.api = a
-	ui.options = ui.api.Options()
 
 	ui.Topbar = NewTopbar()
 	ui.Columnheaders = NewColumnheadersWidget()
@@ -145,7 +143,7 @@ func (ui *UI) HandleEvent(ev tcell.Event) bool {
 
 	// If a list was changed, make sure we obtain the correct column widths.
 	case *EventListChanged:
-		tags := strings.Split(ui.options.StringValue("columns"), ",")
+		tags := strings.Split(ui.api.Options().GetString(options.Columns), ",")
 		cols := ui.api.Songlist().Columns(tags)
 		ui.Columnheaders.SetColumns(cols)
 		return true

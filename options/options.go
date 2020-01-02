@@ -2,80 +2,178 @@ package options
 
 import (
 	"fmt"
-	"sort"
+	"github.com/spf13/viper"
 )
 
-type Options struct {
-	opts map[string]Option
+// Option names.
+const (
+	Center  = "center"
+	Columns = "columns"
+	Limit   = "limit"
+	Sort    = "sort"
+	Topbar  = "topbar"
+)
+
+// Option types.
+const (
+	boolType   = false
+	intType    = 0
+	stringType = ""
+)
+
+// Initialize option types.
+// Default values must be defined in the Defaults string.
+func init() {
+	viper.Set(Center, boolType)
+	viper.Set(Columns, stringType)
+	viper.Set(Limit, intType)
+	viper.Set(Sort, stringType)
+	viper.Set(Topbar, stringType)
 }
 
-type Option interface {
-	Key() string
-	String() string
-	StringValue() string
-	Value() interface{}
-	Set(value string) error
-}
-
-func New() *Options {
-	o := Options{}
-	o.opts = make(map[string]Option, 0)
-	o.AddDefaultOptions()
-	return &o
-}
-
-func (o *Options) Add(opt Option) {
-	o.opts[opt.Key()] = opt
-}
-
-// Keys returns all registered option keys.
-func (o *Options) Keys() []string {
-	keys := make(sort.StringSlice, 0, len(o.opts))
-	for tag := range o.opts {
-		keys = append(keys, tag)
-	}
-	keys.Sort()
-	return keys
-}
-
-func (o *Options) Get(key string) Option {
-	return o.opts[key]
-}
-
-func (o *Options) Value(key string) interface{} {
-	v := o.Get(key)
-	if v == nil {
-		return nil
-	}
-	return v.Value()
-}
-
-func (o *Options) StringValue(key string) string {
-	val := o.Value(key)
-	switch val := val.(type) {
+// Return a human-readable representation of an option.
+// This string can be used in a config file.
+func Print(key string, opt interface{}) string {
+	switch v := opt.(type) {
 	case string:
-		return val
-	default:
-		panic(fmt.Errorf("Expected string option in StringValue(), got %T", val))
-	}
-}
-
-func (o *Options) IntValue(key string) int {
-	val := o.Value(key)
-	switch val := val.(type) {
+		return fmt.Sprintf("%s=\"%s\"", key, v)
 	case int:
-		return val
+		return fmt.Sprintf("%s=%d", key, v)
+	case bool:
+		if !v {
+			return fmt.Sprintf("no%s", key)
+		}
+		return fmt.Sprintf("%s", key)
 	default:
-		panic(fmt.Errorf("Expected integer option in IntValue(), got %T", val))
+		return fmt.Sprintf("%s=%v", key, v)
 	}
 }
 
-func (o *Options) BoolValue(key string) bool {
-	val := o.Value(key)
-	switch val := val.(type) {
-	case bool:
-		return val
-	default:
-		panic(fmt.Errorf("Expected boolean option in BoolValue(), got %T", val))
-	}
-}
+// Default configuration file.
+const Defaults string = `
+# Global options
+set nocenter
+set columns=artist,track,title,album,year,time
+set sort=file,track,disc,album,year,albumartistsort
+set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed ${state} $time;|[${list|index}/${list|total}] ${list|title}||;;"
+set limit=50
+
+# Song tag styles
+style album teal
+style artist yellow
+style date green
+style time darkmagenta
+style title white bold
+style disc darkgreen
+style track green
+style year green
+style originalyear darkgreen
+
+# Tracklist styles
+style allTagsMissing red
+style currentSong black yellow
+style cursor black white
+style header teal bold
+style mostTagsMissing red
+style selection white blue
+
+# Topbar styles
+style elapsedTime green
+style elapsedPercentage green
+style listIndex darkblue
+style listTitle blue bold
+style listTotal darkblue
+style mute red
+style shortName bold
+style state default
+style switches teal
+style tagMissing red
+style topbar darkgray
+style version gray
+style volume green
+
+# Other styles
+style commandText default
+style errorText white red bold
+style logLevel white
+style logMessage gray
+style readout default
+style searchText white bold
+style sequenceText teal
+style statusbar default
+style timestamp teal
+style visualText teal
+
+# Keyboard bindings: cursor and viewport movement
+bind <Up> cursor up
+bind k cursor up
+bind <Down> cursor down
+bind j cursor down
+bind <PgUp> viewport pgup
+bind <PgDn> viewport pgdn
+bind <C-b> viewport pgup
+bind <C-f> viewport pgdn
+bind <C-u> viewport halfpgup
+bind <C-d> viewport halfpgdn
+bind <C-y> viewport up
+bind <C-e> viewport down
+bind <Home> cursor home
+bind gg cursor home
+bind <End> cursor end
+bind G cursor end
+bind gc cursor current
+bind R cursor random
+bind b cursor prevOf album
+bind e cursor nextOf album
+bind H cursor high
+bind M cursor middle
+bind L cursor low
+bind zb viewport high
+bind z- viewport high
+bind zz viewport middle
+bind z. viewport middle
+bind zt viewport low
+bind z<Enter> viewport low
+
+# Keyboard bindings: input mode
+bind : inputmode input
+bind / inputmode search
+bind <F3> inputmode search
+bind v select visual
+bind V select visual
+
+# Keyboard bindings: player and mixer
+bind <Enter> play selection
+bind <Space> pause
+bind s stop
+bind h previous
+bind l next
+bind + volume +2
+bind - volume -2
+bind <left> seek -5
+bind <right> seek +5
+bind <Alt-M> volume mute
+bind S single
+
+# Keyboard bindings: other
+bind <C-c> quit
+bind <C-l> redraw
+bind <C-s> sort
+bind i print file
+bind gt list next
+bind gT list previous
+bind t list next
+bind T list previous
+bind <C-w>d list duplicate
+bind <C-g> list remove
+bind <C-j> isolate artist
+bind <C-t> isolate albumartist album
+bind & select nearby albumartist album
+bind m select toggle
+bind a add
+bind <Delete> cut
+bind x cut
+bind y yank
+bind p paste after
+bind P paste before
+`

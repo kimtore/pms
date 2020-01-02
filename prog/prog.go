@@ -38,7 +38,6 @@ type Visp struct {
 	clipboard   *songlist.BaseSonglist
 	interpreter *input.Interpreter
 	multibar    *multibar.Multibar
-	options     *options.Options
 	quit        chan interface{}
 	sequencer   *keys.Sequencer
 	stylesheet  style.Stylesheet
@@ -89,7 +88,7 @@ func (v *Visp) MpdClient() *mpd.Client {
 func (v *Visp) OptionChanged(key string) {
 	switch key {
 	case "topbar":
-		config := v.options.StringValue("topbar")
+		config := v.Options().GetString(options.Topbar)
 		matrix, err := topbar.Parse(v, config)
 		if err == nil {
 			_ = matrix
@@ -101,8 +100,8 @@ func (v *Visp) OptionChanged(key string) {
 	}
 }
 
-func (v *Visp) Options() *options.Options {
-	return v.options
+func (v *Visp) Options() api.Options {
+	return viper.GetViper()
 }
 
 func (v *Visp) PlayerStatus() (p pms_mpd.PlayerStatus) {
@@ -173,7 +172,6 @@ func (v *Visp) Init() {
 	v.commands = make(chan string, 1024)
 	v.interpreter = input.NewCLI(v)
 	v.multibar = multibar.New(tcf)
-	v.options = options.New()
 	v.quit = make(chan interface{}, 1)
 	v.sequencer = keys.NewSequencer()
 	v.stylesheet = make(style.Stylesheet)
@@ -202,7 +200,7 @@ func (v *Visp) Main() error {
 
 		// Search input box. Discard for now.
 		case query := <-v.multibar.Searches():
-			lst, err := spotify_aggregator.Search(v.client, query, v.options.IntValue(options.Limit))
+			lst, err := spotify_aggregator.Search(v.client, query, v.Options().GetInt(options.Limit))
 			if err != nil {
 				log.Errorf("spotify search: %s", err)
 				break

@@ -8,7 +8,6 @@ import (
 	"github.com/ambientsound/pms/list"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/multibar"
-	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/tracklist"
@@ -50,7 +49,7 @@ type API interface {
 	MpdClient() *mpd.Client
 
 	// Options returns PMS' global options.
-	Options() *options.Options
+	Options() Options
 
 	// PlayerStatus returns the current MPD player status.
 	PlayerStatus() pms_mpd.PlayerStatus

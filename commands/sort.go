@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/ambientsound/pms/options"
 	"strings"
 
 	"github.com/ambientsound/pms/api"
@@ -47,7 +48,7 @@ func (cmd *Sort) Parse() error {
 
 		case lexer.TokenEnd:
 			// Sort by default tags
-			sort := cmd.api.Options().StringValue("sort")
+			sort := cmd.api.Options().GetString(options.Sort)
 			cmd.tags = strings.Split(sort, ",")
 			return nil
 

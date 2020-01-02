@@ -2,16 +2,19 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 )
 
 // OptionToken represents a key=value string, which can have setting, inversion, negation, and queries.
 type OptionToken struct {
-	Key    string
-	Value  string
-	Bool   bool
-	Negate bool
-	Invert bool
-	Query  bool
+	Key      string
+	Value    string
+	Int      bool
+	IntValue int
+	Bool     bool
+	Negate   bool
+	Invert   bool
+	Query    bool
 }
 
 // Parse parses a option=value string.
@@ -52,6 +55,13 @@ func (t *OptionToken) Parse(runes []rune) error {
 	}
 	if parsingKey && !t.Query {
 		t.Bool = true
+	}
+	if !parsingKey && !t.Query {
+		i, err := strconv.Atoi(t.Value)
+		if err == nil {
+			t.IntValue = i
+			t.Int = true
+		}
 	}
 	if t.Query {
 		if t.Invert {

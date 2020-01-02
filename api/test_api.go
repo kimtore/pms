@@ -8,17 +8,16 @@ import (
 	"github.com/ambientsound/pms/message"
 	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/multibar"
-	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/style"
+	"github.com/spf13/viper"
 	"github.com/zmb3/spotify"
 )
 
 type testAPI struct {
 	messages  chan message.Message
-	options   *options.Options
 	song      *song.Song
 	songlist  songlist.Songlist
 	clipboard songlist.Songlist
@@ -37,7 +36,6 @@ func NewTestAPI() API {
 	return &testAPI{
 		clipboard: songlist.New(),
 		messages:  make(chan message.Message, 1024),
-		options:   options.New(),
 		song:      createTestSong(),
 		songlist:  songlist.New(),
 	}
@@ -86,8 +84,8 @@ func (api *testAPI) OptionChanged(key string) {
 	// FIXME
 }
 
-func (api *testAPI) Options() *options.Options {
-	return api.options
+func (api *testAPI) Options() Options {
+	return viper.GetViper()
 }
 
 func (api *testAPI) PlayerStatus() (p pms_mpd.PlayerStatus) {

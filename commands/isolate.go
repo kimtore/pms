@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/ambientsound/pms/options"
 	"strings"
 
 	"github.com/ambientsound/pms/api"
@@ -57,7 +58,7 @@ func (cmd *Isolate) Exec() error {
 	}
 
 	// Sort the new list.
-	sort := cmd.api.Options().StringValue("sort")
+	sort := cmd.api.Options().GetString(options.Sort)
 	fields := strings.Split(sort, ",")
 	result.Sort(fields)
 

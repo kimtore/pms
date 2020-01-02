@@ -28,6 +28,7 @@ func TestOptionParser(t *testing.T) {
 				Invert: false,
 				Negate: false,
 				Query:  false,
+				Int:    false,
 			},
 		},
 		{
@@ -40,6 +41,7 @@ func TestOptionParser(t *testing.T) {
 				Invert: false,
 				Negate: false,
 				Query:  true,
+				Int:    false,
 			},
 		},
 		{
@@ -52,6 +54,7 @@ func TestOptionParser(t *testing.T) {
 				Invert: false,
 				Negate: false,
 				Query:  false,
+				Int:    false,
 			},
 		},
 		{
@@ -64,6 +67,7 @@ func TestOptionParser(t *testing.T) {
 				Invert: false,
 				Negate: true,
 				Query:  false,
+				Int:    false,
 			},
 		},
 		{
@@ -76,6 +80,7 @@ func TestOptionParser(t *testing.T) {
 				Invert: true,
 				Negate: false,
 				Query:  false,
+				Int:    false,
 			},
 		},
 		{
@@ -88,6 +93,7 @@ func TestOptionParser(t *testing.T) {
 				Invert: true,
 				Negate: false,
 				Query:  false,
+				Int:    false,
 			},
 		},
 		{
@@ -100,6 +106,7 @@ func TestOptionParser(t *testing.T) {
 				Invert: false,
 				Negate: true,
 				Query:  false,
+				Int:    false,
 			},
 		},
 		{
@@ -112,6 +119,21 @@ func TestOptionParser(t *testing.T) {
 				Invert: false,
 				Negate: true,
 				Query:  true,
+				Int:    false,
+			},
+		},
+		{
+			Name:  "setting integer values",
+			Input: "foo=753",
+			Token: parser.OptionToken{
+				Key:      "foo",
+				Value:    "753",
+				Bool:     false,
+				Invert:   false,
+				Negate:   false,
+				Query:    false,
+				Int:      true,
+				IntValue: 753,
 			},
 		},
 
