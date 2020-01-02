@@ -11,3 +11,11 @@ func (r Row) ID() string {
 func (r *Row) SetID(id string) {
 	(*r)[RowIDKey] = id
 }
+
+func (r *Row) Keys() []string {
+	keys := make([]string, 0)
+	for k := range *r {
+		keys = append(keys, k)
+	}
+	return keys
+}

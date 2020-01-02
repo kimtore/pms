@@ -31,7 +31,7 @@ func (cmd *Select) Parse() error {
 	cmd.setTabCompleteVerbs(lit)
 
 	if tok != lexer.TokenIdentifier {
-		return fmt.Errorf("Unexpected '%s', expected identifier", lit)
+		return fmt.Errorf("unexpected '%s', expected identifier", lit)
 	}
 
 	switch lit {
@@ -42,7 +42,7 @@ func (cmd *Select) Parse() error {
 	case "nearby":
 		return cmd.parseNearby()
 	default:
-		return fmt.Errorf("Unexpected '%s', expected identifier", lit)
+		return fmt.Errorf("unexpected '%s', expected identifier", lit)
 	}
 
 	cmd.setTabCompleteEmpty()
@@ -81,11 +81,11 @@ func (cmd *Select) Exec() error {
 func (cmd *Select) parseNearby() error {
 
 	// Data initialization and sanity checks
-	list := cmd.api.Songlist()
-	song := list.CursorSong()
+	list := cmd.api.List()
+	row := list.Row(list.Cursor())
 
 	// Retrieve a list of songs
-	tags, err := cmd.ParseTags(song.TagKeys())
+	tags, err := cmd.ParseTags(row.Keys())
 	if err != nil {
 		return err
 	}
@@ -96,9 +96,9 @@ func (cmd *Select) parseNearby() error {
 
 // selectNearby selects tracks near the cursor with similar tags.
 func (cmd *Select) selectNearby() error {
-	list := cmd.api.Songlist()
+	list := cmd.api.List()
 	index := list.Cursor()
-	song := list.CursorSong()
+	row := list.Row(list.Cursor())
 
 	// In case the list has a visual selection, disable that selection instead.
 	if list.HasVisualSelection() {
@@ -106,8 +106,8 @@ func (cmd *Select) selectNearby() error {
 		return nil
 	}
 
-	if song == nil {
-		return fmt.Errorf("Can't select nearby songs; no song under cursor")
+	if row == nil {
+		return fmt.Errorf("can't select nearby rows; list is empty")
 	}
 
 	// Find the start and end positions
