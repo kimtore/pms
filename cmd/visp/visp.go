@@ -1,22 +1,29 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/ambientsound/pms/config"
 	"github.com/ambientsound/pms/log"
 	"github.com/ambientsound/pms/prog"
 	"github.com/ambientsound/pms/spotify/auth"
 	"github.com/ambientsound/pms/widgets"
+	"github.com/ambientsound/pms/xdg"
 	flag "github.com/spf13/pflag"
 	"golang.org/x/oauth2"
 	"net/http"
 	"os"
+	"path"
 	"runtime/debug"
 	"strings"
 	"time"
 )
 
 var buildVersion = "undefined"
+
+const (
+	ConfigFileName = "visp.conf"
+)
 
 const (
 	ExitSuccess = iota
@@ -111,6 +118,19 @@ func run() (int, error) {
 	err = visp.SourceDefaultConfig()
 	if err != nil {
 		return ExitInternalError, fmt.Errorf("read default configuration: %s", err)
+	}
+
+	// Source configuration files from all XDG standard directories.
+	for _, dir := range xdg.ConfigDirectories() {
+		configFile := path.Join(dir, ConfigFileName)
+
+		err = visp.SourceConfigFile(configFile)
+
+		if errors.Is(err, os.ErrNotExist) {
+			log.Debugf("Ignoring non-existing configuration file %s", configFile)
+		} else if err != nil {
+			log.Errorf("Error in configuration file %s: %s", configFile, err)
+		}
 	}
 
 	log.Infof("Ready.")
