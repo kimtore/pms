@@ -63,8 +63,8 @@ func Print(key string, opt interface{}) string {
 const Defaults string = `
 # Global options
 set nocenter
-set columns=artist,track,title,album,year,time,popularity
-set sort=track,disc,album,year,artist
+set columns=artist,title,track,album,year,time,popularity
+set sort=track,disc,album,year,albumArtist
 set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed ${state} $time;|[${list|index}/${list|total}] ${list|title}||;;"
 set limit=50
 
@@ -74,14 +74,15 @@ set logfile=
 
 # Song tag styles
 style album teal
-style artist yellow
+style albumArtist teal
+style artist teal
 style date green
+style disc darkgreen
+style popularity darkyellow
 style time darkmagenta
 style title white bold
-style disc darkgreen
 style track green
 style year green
-style originalyear darkgreen
 
 # Tracklist styles
 style allTagsMissing red

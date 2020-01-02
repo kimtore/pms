@@ -5,6 +5,7 @@ import (
 	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/utils"
 	"github.com/zmb3/spotify"
+	"strings"
 )
 
 type List struct {
@@ -47,7 +48,8 @@ func Row(track spotify.FullTrack) list.Row {
 	return list.Row{
 		list.RowIDKey: track.ID.String(),
 		"album":       track.Album.Name,
-		"artist":      track.Artists[0].Name,
+		"albumArtist": strings.Join(artistNames(track.Album.Artists), ", "),
+		"artist":      strings.Join(artistNames(track.Artists), ", "),
 		"date":        track.Album.ReleaseDateTime().Format("2006-01-02"),
 		"time":        utils.TimeString(track.Duration / 1000),
 		"title":       track.Name,
