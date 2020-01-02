@@ -1,7 +1,6 @@
 package log
 
 import (
-	"github.com/ambientsound/pms/config"
 	"io"
 	"os"
 )
@@ -17,26 +16,30 @@ func (b *blackhole) Write(data []byte) (int, error) {
 
 // Open a file for log writing. If successful, set the internal log writer
 // to that instance. Returns an error if unsuccessful.
-func Configure(cfg config.Log) error {
-	w, err := fileWriter(cfg)
+func Configure(filename string, overwrite bool) error {
+	w, err := fileWriter(filename, overwrite)
 	if err != nil {
 		return err
 	}
 	writer = w
-	lvl, err := ParseLevel(cfg.Level)
-	if err != nil {
-		return err
-	}
-	SetLevel(lvl)
+	SetLevel(DebugLevel)
+	writeHistory()
 	return nil
 }
 
-func fileWriter(cfg config.Log) (io.Writer, error) {
+func fileWriter(filename string, overwrite bool) (io.Writer, error) {
 	logMode := os.O_WRONLY | os.O_CREATE
-	if cfg.Overwrite {
+	if overwrite {
 		logMode |= os.O_TRUNC
 	} else {
 		logMode |= os.O_APPEND
 	}
-	return os.OpenFile(cfg.File, logMode, 0666)
+	return os.OpenFile(filename, logMode, 0666)
+}
+
+func writeHistory() {
+	messages := Messages(DebugLevel)
+	for _, msg := range messages {
+		_, _ = msg.Write(writer)
+	}
 }

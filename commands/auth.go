@@ -22,6 +22,5 @@ func (cmd *Auth) Parse() error {
 }
 
 func (cmd *Auth) Exec() error {
-	cmd.api.Authenticate()
-	return nil
+	return cmd.api.Authenticate()
 }

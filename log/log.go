@@ -26,7 +26,7 @@ func Logf(format string, level Level, args ...interface{}) (int, error) {
 		Text:      formatted,
 	}
 	appendMessage(msg)
-	return printMsg(msg)
+	return msg.Write(writer)
 }
 
 func Errorf(format string, args ...interface{}) (int, error) {
@@ -39,9 +39,4 @@ func Infof(format string, args ...interface{}) (int, error) {
 
 func Debugf(format string, args ...interface{}) (int, error) {
 	return Logf(format, DebugLevel, args...)
-}
-
-func printMsg(msg Message) (int, error) {
-	prefix := fmt.Sprintf("[%010.3f] [%s] ", msg.Timestamp.Sub(since).Seconds(), strLevel[msg.Level])
-	return writer.Write([]byte(prefix + msg.Text + "\n"))
 }

@@ -52,7 +52,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("Token successfully retrieved. You can close this window now."))
+	_, _ = w.Write([]byte("Token successfully retrieved. You can close this window now."))
 	h.token <- *token
 }
 
@@ -68,6 +68,10 @@ func (h *Handler) AuthURL() string {
 	h.state = makeState()
 	h.url = h.auth.AuthURL(h.state)
 	return authURL
+}
+
+func (h *Handler) SetCredentials(clientID, clientSecret string) {
+	h.auth.SetAuthInfo(clientID, clientSecret)
 }
 
 func Authenticator() spotify.Authenticator {

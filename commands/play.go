@@ -15,7 +15,7 @@ type Play struct {
 	api       api.API
 	cursor    bool
 	selection bool
-	client    spotify.Client
+	client    *spotify.Client
 	tracklist *spotify_tracklist.List
 }
 
@@ -59,8 +59,14 @@ func (cmd *Play) Parse() error {
 
 // Exec implements Command.
 func (cmd *Play) Exec() error {
+	var err error
+
 	cmd.tracklist = cmd.api.Tracklist()
-	cmd.client = cmd.api.Spotify()
+	cmd.client, err = cmd.api.Spotify()
+
+	if err != nil {
+		return err
+	}
 
 	switch {
 	case cmd.cursor:

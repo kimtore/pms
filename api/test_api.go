@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
@@ -41,7 +42,8 @@ func NewTestAPI() API {
 	}
 }
 
-func (api *testAPI) Authenticate() {
+func (api *testAPI) Authenticate() error {
+	return nil
 }
 
 func (api *testAPI) Clipboard() songlist.Songlist {
@@ -104,8 +106,8 @@ func (api *testAPI) Sequencer() *keys.Sequencer {
 	return nil // FIXME
 }
 
-func (api *testAPI) Spotify() spotify.Client {
-	return spotify.Client{}
+func (api *testAPI) Spotify() (*spotify.Client, error) {
+	return nil, fmt.Errorf("no spotify")
 }
 
 func (api *testAPI) Song() *song.Song {

@@ -19,7 +19,7 @@ import (
 // through the command-line interface.
 type API interface {
 	// Authenticate starts OAuth authentication.
-	Authenticate()
+	Authenticate() error
 
 	// Db returns the PMS database.
 	Db() *db.Instance
@@ -64,7 +64,7 @@ type API interface {
 	Sequencer() *keys.Sequencer
 
 	// Spotify returns a Spotify client.
-	Spotify() spotify.Client
+	Spotify() (*spotify.Client, error)
 
 	// Song returns the currently playing song, or nil if no song is loaded.
 	// Note that the song might be stopped, and the play/pause/stop status should

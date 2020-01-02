@@ -116,7 +116,10 @@ func (cmd *Set) Exec() error {
 			}
 
 		case int:
-			if !tok.Int {
+			if tok.Bool {
+				prnt()
+				continue
+			} else if !tok.Int {
 				return fmt.Errorf("attempting to assign a non-integer value to an integer option")
 			}
 			cmd.api.Options().Set(tok.Key, tok.IntValue)

@@ -1,7 +1,9 @@
 package log
 
 import (
+	"fmt"
 	"github.com/ambientsound/pms/list"
+	"io"
 	"time"
 )
 
@@ -17,6 +19,11 @@ type Message struct {
 // The level referred to contains all messages with AT LEAST that severy.
 // i.e., messages[INFO] will also contain messages with ERROR level.
 var messages map[Level][]Message
+
+func (msg Message) Write(w io.Writer) (int, error) {
+	prefix := fmt.Sprintf("[%010.3f] [%s] ", msg.Timestamp.Sub(since).Seconds(), strLevel[msg.Level])
+	return w.Write([]byte(prefix + msg.Text + "\n"))
+}
 
 func Messages(level Level) []Message {
 	return messages[level]

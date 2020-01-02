@@ -12,6 +12,12 @@ const (
 	Limit   = "limit"
 	Sort    = "sort"
 	Topbar  = "topbar"
+
+	SpotifyClientID     = "spotifyclientid"
+	SpotifyClientSecret = "spotifyclientsecret"
+
+	LogFile      = "logfile"
+	LogOverwrite = "logoverwrite"
 )
 
 // Option types.
@@ -27,7 +33,11 @@ func init() {
 	viper.Set(Center, boolType)
 	viper.Set(Columns, stringType)
 	viper.Set(Limit, intType)
+	viper.Set(LogFile, stringType)
+	viper.Set(LogOverwrite, boolType)
 	viper.Set(Sort, stringType)
+	viper.Set(SpotifyClientID, stringType)
+	viper.Set(SpotifyClientSecret, stringType)
 	viper.Set(Topbar, stringType)
 }
 
@@ -57,6 +67,10 @@ set columns=artist,track,title,album,year,time
 set sort=file,track,disc,album,year,albumartistsort
 set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed ${state} $time;|[${list|index}/${list|total}] ${list|title}||;;"
 set limit=50
+
+# Logging
+set nologoverwrite
+set logfile=
 
 # Song tag styles
 style album teal

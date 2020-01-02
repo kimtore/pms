@@ -2,6 +2,7 @@ package prog
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/db"
@@ -19,21 +20,24 @@ import (
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
+	"github.com/ambientsound/pms/tokencache"
 	"github.com/ambientsound/pms/topbar"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/gdamore/tcell"
 	"github.com/spf13/viper"
 	"github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
 	"io"
 	"os"
 	"strings"
 )
 
 type Visp struct {
-	Auth   *spotify_auth.Handler
-	Termui *widgets.Application
+	Auth       *spotify_auth.Handler
+	Termui     *widgets.Application
+	Tokencache tokencache.Tokencache
 
-	client      spotify.Client
+	client      *spotify.Client
 	commands    chan string
 	clipboard   *songlist.BaseSonglist
 	interpreter *input.Interpreter
@@ -45,9 +49,15 @@ type Visp struct {
 
 var _ api.API = &Visp{}
 
-func (v *Visp) Authenticate() {
+func (v *Visp) Authenticate() error {
+	err := v.SetupAuthenticator()
+	if err != nil {
+		return fmt.Errorf("cannot authenticate with Spotify: %s", err)
+	}
 	url := v.Auth.AuthURL()
 	log.Infof("Please authenticate with Spotify at: %s", url)
+
+	return nil
 }
 
 func (v *Visp) Clipboard() songlist.Songlist {
@@ -87,7 +97,21 @@ func (v *Visp) MpdClient() *mpd.Client {
 
 func (v *Visp) OptionChanged(key string) {
 	switch key {
-	case "topbar":
+	case options.LogFile:
+		logFile := v.Options().GetString(options.LogFile)
+		overwrite := v.Options().GetBool(options.LogOverwrite)
+		if len(logFile) == 0 {
+			break
+		}
+		err := log.Configure(logFile, overwrite)
+		if err != nil {
+			log.Errorf("log configuration: %s", err)
+			break
+		}
+		log.Infof("Note: log file will be backfilled with existing log")
+		log.Infof("Writing debug log to %s", logFile)
+
+	case options.Topbar:
 		config := v.Options().GetString(options.Topbar)
 		matrix, err := topbar.Parse(v, config)
 		if err == nil {
@@ -125,12 +149,20 @@ func (v *Visp) Multibar() *multibar.Multibar {
 	return v.multibar
 }
 
-func (v *Visp) Spotify() spotify.Client {
-	_, err := v.client.Token()
-	if err != nil {
-		log.Errorf("Unable to refresh Spotify token")
+func (v *Visp) Spotify() (*spotify.Client, error) {
+	if v.client == nil {
+		return nil, fmt.Errorf("please run `auth` to authenticate with Spotify")
 	}
-	return v.client
+	err := v.SetupAuthenticator()
+	if err != nil {
+		return nil, fmt.Errorf("unable to obtain Spotify client: %s", err.Error())
+	}
+	token, err := v.client.Token()
+	if err != nil {
+		return nil, fmt.Errorf("unable to refresh Spotify token: %s", err)
+	}
+	_ = v.Tokencache.Write(*token)
+	return v.client, nil
 }
 
 func (v *Visp) Song() *song.Song {
@@ -181,14 +213,7 @@ func (v *Visp) Main() error {
 	for {
 		select {
 		case token := <-v.Auth.Tokens():
-			log.Infof("Received Spotify access token.")
-			v.client = v.Auth.Client(token)
-			viper.Set("spotify.accesstoken", token.AccessToken)
-			viper.Set("spotify.refreshtoken", token.RefreshToken)
-			err := viper.WriteConfig()
-			if err != nil {
-				log.Errorf("Unable to write configuration file: %s", err)
-			}
+			v.SetToken(token)
 
 		case <-v.quit:
 			log.Infof("Exiting.")
@@ -198,9 +223,14 @@ func (v *Visp) Main() error {
 		case command := <-v.multibar.Commands():
 			v.commands <- command
 
-		// Search input box. Discard for now.
+		// Search input box.
 		case query := <-v.multibar.Searches():
-			lst, err := spotify_aggregator.Search(v.client, query, v.Options().GetInt(options.Limit))
+			client, err := v.Spotify()
+			if err != nil {
+				log.Errorf(err.Error())
+				break
+			}
+			lst, err := spotify_aggregator.Search(*client, query, v.Options().GetInt(options.Limit))
 			if err != nil {
 				log.Errorf("spotify search: %s", err)
 				break
@@ -279,6 +309,7 @@ func (v *Visp) SourceConfigFile(path string) error {
 		return err
 	}
 	defer file.Close()
+	log.Infof("Reading configuration file %s", path)
 	return v.SourceConfig(file)
 }
 
@@ -292,4 +323,31 @@ func (v *Visp) SourceConfig(reader io.Reader) error {
 		}
 	}
 	return nil
+}
+
+func (v *Visp) SetupAuthenticator() error {
+	clientID := v.Options().GetString(options.SpotifyClientID)
+	clientSecret := v.Options().GetString(options.SpotifyClientSecret)
+
+	if len(clientID) == 0 && len(clientSecret) == 0 {
+		return fmt.Errorf("you must configure `%s` and `%s`", options.SpotifyClientID, options.SpotifyClientSecret)
+	} else if len(clientID) == 0 {
+		return fmt.Errorf("you must configure `%s`", options.SpotifyClientID)
+	} else if len(clientSecret) == 0 {
+		return fmt.Errorf("you must configure `%s`", options.SpotifyClientSecret)
+	}
+
+	v.Auth.SetCredentials(clientID, clientSecret)
+
+	return nil
+}
+
+func (v *Visp) SetToken(token oauth2.Token) {
+	log.Infof("Received Spotify access token.")
+	cli := v.Auth.Client(token)
+	v.client = &cli
+	err := v.Tokencache.Write(token)
+	if err != nil {
+		log.Errorf("Unable to write Spotify token to file: %s", err)
+	}
 }
