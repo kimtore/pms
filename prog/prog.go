@@ -235,8 +235,9 @@ func (v *Visp) Main() error {
 				log.Errorf("spotify search: %s", err)
 				break
 			}
+			columns := v.Options().GetString(options.Columns)
 			v.UI().TableWidget().SetList(lst)
-			v.UI().TableWidget().SetColumns(lst.ColumnNames())
+			v.UI().TableWidget().SetColumns(strings.Split(columns, ","))
 
 		// Process the command queue.
 		case command := <-v.commands:

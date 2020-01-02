@@ -94,7 +94,9 @@ func (s *Base) ColumnNames() []string {
 func (s *Base) Columns(names []string) []Column {
 	cols := make([]Column, len(names))
 	for i, name := range names {
-		cols[i] = *s.columns[name]
+		if col, ok := s.columns[name]; ok {
+			cols[i] = *col
+		}
 	}
 	return cols
 }
