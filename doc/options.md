@@ -10,6 +10,17 @@ See the documentation on [setting options](commands.md#setting-global-options) f
   If set, the viewport is automatically moved so that the cursor stays in the center, if possible.
 
 
+## Spotify
+
+### Search results limit
+
+* `set limit=50`
+
+  Limit the number of search results returned from Spotify.
+
+  Lowering this number might decrease latency and will lower bandwidth usage.
+
+
 ## Visual options
 
 ### Visible columns of tracklist

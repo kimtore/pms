@@ -5,9 +5,7 @@ import (
 	"github.com/zmb3/spotify"
 )
 
-func Search(client spotify.Client, query string) (*spotify_tracklist.List, error) {
-	limit := 50
-
+func Search(client spotify.Client, query string, limit int) (*spotify_tracklist.List, error) {
 	results, err := client.SearchOpt(query, spotify.SearchTypeTrack, &spotify.Options{
 		Limit: &limit,
 	})

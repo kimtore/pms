@@ -1,12 +1,21 @@
 package options
 
+const (
+	Center  = "center"
+	Columns = "columns"
+	Limit   = "limit"
+	Sort    = "sort"
+	Topbar  = "topbar"
+)
+
 // AddDefaultOptions adds internal options that can be set by the user through
 // the command-line interface.
 func (o *Options) AddDefaultOptions() {
-	o.Add(NewBoolOption("center"))
-	o.Add(NewStringOption("columns"))
-	o.Add(NewStringOption("sort"))
-	o.Add(NewStringOption("topbar"))
+	o.Add(NewBoolOption(Center))
+	o.Add(NewStringOption(Columns))
+	o.Add(NewIntOption(Limit))
+	o.Add(NewStringOption(Sort))
+	o.Add(NewStringOption(Topbar))
 }
 
 // Defaults is the default, internal configuration file.
@@ -16,6 +25,7 @@ set nocenter
 set columns=artist,track,title,album,year,time
 set sort=file,track,disc,album,year,albumartistsort
 set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed ${state} $time;|[${list|index}/${list|total}] ${list|title}||;;"
+set limit=50
 
 # Song tag styles
 style album teal

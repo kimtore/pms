@@ -202,7 +202,7 @@ func (v *Visp) Main() error {
 
 		// Search input box. Discard for now.
 		case query := <-v.multibar.Searches():
-			lst, err := spotify_aggregator.Search(v.client, query)
+			lst, err := spotify_aggregator.Search(v.client, query, v.options.IntValue(options.Limit))
 			if err != nil {
 				log.Errorf("spotify search: %s", err)
 				break
