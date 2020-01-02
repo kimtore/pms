@@ -1,6 +1,7 @@
 package spotify_tracklist
 
 import (
+	"fmt"
 	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/utils"
 	"github.com/zmb3/spotify"
@@ -47,8 +48,13 @@ func Row(track spotify.FullTrack) list.Row {
 		list.RowIDKey: track.ID.String(),
 		"album":       track.Album.Name,
 		"artist":      track.Artists[0].Name,
+		"date":        track.Album.ReleaseDateTime().Format("2006-01-02"),
 		"time":        utils.TimeString(track.Duration / 1000),
 		"title":       track.Name,
+		"track":       fmt.Sprintf("%02d", track.TrackNumber),
+		"disc":        fmt.Sprintf("%d", track.DiscNumber),
+		"popularity":  fmt.Sprintf("%1.2f", float64(track.Popularity)/100),
+		"year":        track.Album.ReleaseDateTime().Format("2006"),
 	}
 }
 

@@ -236,6 +236,11 @@ func (v *Visp) Main() error {
 				break
 			}
 			columns := v.Options().GetString(options.Columns)
+			sort := v.Options().GetString(options.Sort)
+			err = lst.Sort(strings.Split(sort, ","))
+			if err != nil {
+				log.Errorf("sort search results: %s")
+			}
 			v.UI().TableWidget().SetList(lst)
 			v.UI().TableWidget().SetColumns(strings.Split(columns, ","))
 
