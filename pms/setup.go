@@ -16,7 +16,7 @@ import (
 	"github.com/ambientsound/pms/widgets"
 )
 
-func New() *PMS {
+func New() (*PMS, error) {
 	pms := &PMS{}
 
 	pms.database = db.New()
@@ -38,11 +38,14 @@ func New() *PMS {
 
 	pms.Sequencer = keys.NewSequencer()
 
-	pms.setupUI()
+	err := pms.setupUI()
+	if err != nil {
+		return nil, err
+	}
 
 	pms.CLI = input.NewCLI(pms.API())
 
-	return pms
+	return pms, nil
 }
 
 // setupAPI creates an API object
@@ -67,16 +70,23 @@ func (pms *PMS) API() api.API {
 	)
 }
 
-func (pms *PMS) setupUI() {
+func (pms *PMS) setupUI() error {
+	var err error
+
 	timer := time.Now()
 	queue := pms.database.Queue()
-	pms.ui = widgets.NewUI(pms.API())
+	pms.ui, err = widgets.NewUI(pms.API())
+	if err != nil {
+		return err
+	}
 	pms.ui.Start()
 	pms.database.Panel().Add(queue)
 	pms.database.Panel().Add(pms.database.Library())
 	pms.database.Panel().Activate(queue)
 
 	console.Log("UI initialized in %s", time.Since(timer).String())
+
+	return nil
 }
 
 func (pms *PMS) setupTopbar() {

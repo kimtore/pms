@@ -91,7 +91,12 @@ func main() {
 
 	console.Log("Starting Practical Music Search.")
 
-	p := pms.New()
+	p, err := pms.New()
+	if err != nil {
+		fmt.Printf("Error starting up: %s", err)
+		os.Exit(1)
+	}
+
 	defer func() {
 		p.QuitSignal <- 0
 	}()
