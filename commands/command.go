@@ -12,6 +12,18 @@ import (
 	"sort"
 )
 
+const (
+	GlobalContext    = "global"
+	ListContext      = "list"
+	TracklistContext = "tracklist"
+)
+
+// contexts are used to bind keyboard commands to a specific area of the program.
+// For instance, the <ENTER> key can be bound to `play` in track lists and `print _id` in other lists.
+var contexts = []string{
+	GlobalContext, ListContext, TracklistContext,
+}
+
 // Verbs contain mappings from strings to Command constructors.
 // Make sure to add commands here when implementing them.
 var Verbs = map[string]func(api.API) Command{
@@ -87,6 +99,20 @@ type newcommand struct {
 	parser.Parser
 	cmdline     string
 	tabComplete []string
+}
+
+// Return an ordered list of which program contexts active right now.
+// Local contexts take precedence over global contexts.
+func Contexts(a api.API) []string {
+	ctx := make([]string, 0, len(contexts))
+	if a.Tracklist() != nil {
+		ctx = append(ctx, TracklistContext)
+	}
+	if a.List() != nil {
+		ctx = append(ctx, ListContext)
+	}
+	ctx = append(ctx, GlobalContext)
+	return ctx
 }
 
 // New returns the Command associated with the given verb.

@@ -64,16 +64,6 @@ func (cmd *Bind) Parse() error {
 	return nil
 }
 
-const (
-	GlobalContext    = "global"
-	ListContext      = "list"
-	TracklistContext = "tracklist"
-)
-
-var contexts = []string{
-	GlobalContext, ListContext, TracklistContext,
-}
-
 func (cmd *Bind) ParseContext() error {
 	tok, lit := cmd.ScanIgnoreWhitespace()
 	cmd.setTabComplete(lit, contexts)
