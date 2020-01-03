@@ -83,6 +83,7 @@ func (s *Sequencer) dupes(bind Binding) bool {
 	return len(matches) > 0
 }
 
+// findAll returns a list of potential matches to key bindings, and looks in all contexts.
 func (s *Sequencer) findAll(seq keysequence.KeySequence, contexts []string) []Binding {
 	binds := make([]Binding, 0)
 	for _, context := range contexts {
@@ -102,16 +103,29 @@ func (s *Sequencer) find(seq keysequence.KeySequence, context string) []Binding 
 	return binds
 }
 
+// uniq returns one key binding from a list of key bindings.
+// the contexts array sets a ordered list of which key binding is preferred.
+func (s *Sequencer) uniq(bindings []Binding, contexts []string) *Binding {
+	for _, context := range contexts {
+		for _, binding := range bindings {
+			if binding.Context == context {
+				return &binding
+			}
+		}
+	}
+	return nil
+}
+
 // Match returns a key binding if the current input sequence is found.
 func (s *Sequencer) Match(contexts []string) *Binding {
 	binds := s.findAll(s.input, contexts)
-	if len(binds) != 1 {
+	bind := s.uniq(binds, contexts)
+	if bind == nil {
 		return nil
 	}
-	b := binds[0]
-	if !keysequence.Compare(b.Sequence, s.input) {
+	if !keysequence.Compare(bind.Sequence, s.input) {
 		return nil
 	}
 	s.input = make(keysequence.KeySequence, 0)
-	return &b
+	return bind
 }

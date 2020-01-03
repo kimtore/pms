@@ -43,6 +43,43 @@ func TestSequencer(t *testing.T) {
 		assert.Error(t, err)
 	})
 
+	t.Run("duplicate key bindings work if context is different", func(t *testing.T) {
+		sequencer := keys.NewSequencer()
+		err := sequencer.AddBind(keys.Binding{
+			Sequence: seq,
+			Command:  "foo bar",
+			Context:  commands.GlobalContext,
+		})
+		assert.NoError(t, err)
+
+		err = sequencer.AddBind(keys.Binding{
+			Sequence: seq,
+			Command:  "baz",
+			Context:  commands.ListContext,
+		})
+		assert.NoError(t, err)
+
+		// Test context preference way one
+		contexts := []string{commands.ListContext, commands.GlobalContext}
+		for i := range seq {
+			sequencer.KeyInput(seq[i], contexts)
+		}
+		match := sequencer.Match(contexts)
+		assert.NotNil(t, match)
+		assert.Equal(t, "baz", match.Command)
+		assert.Equal(t, commands.ListContext, match.Context)
+
+		// Test context preference way two
+		contexts = []string{commands.GlobalContext, commands.ListContext}
+		for i := range seq {
+			sequencer.KeyInput(seq[i], contexts)
+		}
+		match = sequencer.Match(contexts)
+		assert.NotNil(t, match)
+		assert.Equal(t, "foo bar", match.Command)
+		assert.Equal(t, commands.GlobalContext, match.Context)
+	})
+
 	t.Run("matching a key binding", func(t *testing.T) {
 		sequencer := keys.NewSequencer()
 		contexts := []string{commands.GlobalContext}
