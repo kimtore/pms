@@ -7,12 +7,14 @@ import (
 	"github.com/ambientsound/pms/style"
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
+	"time"
 )
 
 // Multibar receives keyboard events, displays status messages, and the position readout.
 type Multibar struct {
-	api  api.API
-	view views.View
+	api              api.API
+	view             views.View
+	messageTimestamp time.Time
 	views.WidgetWatchers
 	style.Styled
 }
@@ -50,14 +52,18 @@ func (w *Multibar) textWithStyle() (string, tcell.Style) {
 
 	switch {
 	case multibarMode == multibar.ModeInput:
+		w.messageTimestamp = time.Now()
 		return ":" + w.api.Multibar().String(), w.Style("commandText")
 	case multibarMode == multibar.ModeSearch:
+		w.messageTimestamp = time.Now()
 		return "/" + w.api.Multibar().String(), w.Style("searchText")
 	case len(sequenceText) > 0:
+		w.messageTimestamp = time.Now()
 		return sequenceText, w.Style("sequenceText")
 	case hasVisualSelection:
+		w.messageTimestamp = time.Now()
 		return "-- VISUAL --", w.Style("visualText")
-	case msg != nil:
+	case msg != nil && w.messageTimestamp.UnixNano() < msg.Timestamp.UnixNano():
 		return msg.Text, w.MessageStyle(*msg)
 	default:
 		return "", w.Style("default")
