@@ -92,7 +92,7 @@ func FormatKey(ev *tcell.EventKey) string {
 }
 
 // Format reverses a parsed key sequence into its string representation.
-func Format(seq KeySequence) string {
+func (seq KeySequence) String() string {
 	s := make([]string, len(seq))
 	for i := range seq {
 		s[i] = FormatKey(seq[i])

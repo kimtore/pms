@@ -74,7 +74,7 @@ func (s *Sequencer) KeyInput(ev *tcell.EventKey, contexts []string) bool {
 
 // String returns the current input sequence as a string.
 func (s *Sequencer) String() string {
-	return keysequence.Format(s.input)
+	return s.input.String()
 }
 
 // dupes returns true if binding the given key event sequence will conflict with any other bound sequences.
