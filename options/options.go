@@ -7,11 +7,12 @@ import (
 
 // Option names.
 const (
-	Center  = "center"
-	Columns = "columns"
-	Limit   = "limit"
-	Sort    = "sort"
-	Topbar  = "topbar"
+	Center       = "center"
+	Columns      = "columns"
+	Limit        = "limit"
+	Sort         = "sort"
+	Topbar       = "topbar"
+	PollInterval = "pollinterval"
 
 	SpotifyClientID     = "spotifyclientid"
 	SpotifyClientSecret = "spotifyclientsecret"
@@ -35,6 +36,7 @@ func init() {
 	viper.Set(Limit, intType)
 	viper.Set(LogFile, stringType)
 	viper.Set(LogOverwrite, boolType)
+	viper.Set(PollInterval, intType)
 	viper.Set(Sort, stringType)
 	viper.Set(SpotifyClientID, stringType)
 	viper.Set(SpotifyClientSecret, stringType)
@@ -67,6 +69,7 @@ set columns=artist,title,track,album,year,time,popularity
 set sort=track,disc,album,year,albumArtist
 set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed ${state} $time;|[${list|index}/${list|total}] ${list|title}||;;"
 set limit=50
+set pollinterval=10
 
 # Logging
 set nologoverwrite

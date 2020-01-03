@@ -12,6 +12,17 @@ See the documentation on [setting options](commands.md#setting-global-options) f
 
   Lowering this number might decrease latency and will lower bandwidth usage.
 
+### Polling interval
+
+* `set pollinterval=10`
+
+  The Spotify Web API offers no way to get automatically notified when the player status changes.
+  Thus, polling is neccessary. The default setting will poll Spotify every ten seconds to check for
+  player updates.
+
+  When a song finishes playing, or a command against Spotify is performed,
+  a poll will be made regardless of this setting.
+
 ### Authentication
 
 * `set spotifyclientid=<string>`  
