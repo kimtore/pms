@@ -95,11 +95,9 @@ func (s *Sequencer) Match() *Binding {
 		return nil
 	}
 	b := binds[0]
-	//console.Log("Possible match found: %+v ||| %+v", b.Sequence, s.input)
 	if !keysequence.Compare(b.Sequence, s.input) {
 		return nil
 	}
-	//console.Log("Match found: %+v", b)
 	s.input = make(keysequence.KeySequence, 0)
 	return &b
 }
