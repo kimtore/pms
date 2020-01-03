@@ -14,6 +14,7 @@ type Bind struct {
 	newcommand
 	api      api.API
 	sentence string
+	context  string
 	seq      keysequence.KeySequence
 }
 
@@ -26,6 +27,12 @@ func NewBind(api api.API) Command {
 
 // Parse implements Command.
 func (cmd *Bind) Parse() error {
+
+	// Bind keyboard sequence to a specific program context.
+	err := cmd.ParseContext()
+	if err != nil {
+		return err
+	}
 
 	// Use the key sequence parser for parsing the next token.
 	parser := keysequence.NewParser(cmd.S)
@@ -55,6 +62,34 @@ func (cmd *Bind) Parse() error {
 
 	cmd.sentence = strings.Join(sentence, "")
 	return nil
+}
+
+const (
+	GlobalContext    = "global"
+	ListContext      = "list"
+	TracklistContext = "tracklist"
+)
+
+var contexts = []string{
+	GlobalContext, ListContext, TracklistContext,
+}
+
+func (cmd *Bind) ParseContext() error {
+	tok, lit := cmd.ScanIgnoreWhitespace()
+	cmd.setTabComplete(lit, contexts)
+
+	if tok != lexer.TokenIdentifier {
+		return fmt.Errorf("unexpected '%s', expected identifier", lit)
+	}
+
+	switch lit {
+	case GlobalContext, ListContext, TracklistContext:
+		cmd.context = lit
+		cmd.setTabCompleteEmpty()
+		return nil
+	default:
+		return fmt.Errorf("unexpected '%s', expected one of %v", lit, contexts)
+	}
 }
 
 // Exec implements Command.

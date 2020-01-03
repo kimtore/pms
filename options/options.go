@@ -120,75 +120,77 @@ style timestamp teal
 style visualText teal
 
 # Keyboard bindings: cursor and viewport movement
-bind <Up> cursor up
-bind k cursor up
-bind <Down> cursor down
-bind j cursor down
-bind <PgUp> viewport pgup
-bind <PgDn> viewport pgdn
-bind <C-b> viewport pgup
-bind <C-f> viewport pgdn
-bind <C-u> viewport halfpgup
-bind <C-d> viewport halfpgdn
-bind <C-y> viewport up
-bind <C-e> viewport down
-bind <Home> cursor home
-bind gg cursor home
-bind <End> cursor end
-bind G cursor end
-bind gc cursor current
-bind R cursor random
-bind b cursor prevOf album
-bind e cursor nextOf album
-bind H cursor high
-bind M cursor middle
-bind L cursor low
-bind zb viewport high
-bind z- viewport high
-bind zz viewport middle
-bind z. viewport middle
-bind zt viewport low
-bind z<Enter> viewport low
+bind list <Up> cursor up
+bind list k cursor up
+bind list <Down> cursor down
+bind list j cursor down
+bind list <PgUp> viewport pgup
+bind list <PgDn> viewport pgdn
+bind list <C-b> viewport pgup
+bind list <C-f> viewport pgdn
+bind list <C-u> viewport halfpgup
+bind list <C-d> viewport halfpgdn
+bind list <C-y> viewport up
+bind list <C-e> viewport down
+bind list <Home> cursor home
+bind list gg cursor home
+bind list <End> cursor end
+bind list G cursor end
+bind list gc cursor current
+bind list R cursor random
+bind list H cursor high
+bind list M cursor middle
+bind list L cursor low
+bind list zb viewport high
+bind list z- viewport high
+bind list zz viewport middle
+bind list z. viewport middle
+bind list zt viewport low
+bind list z<Enter> viewport low
+
+# Tracklist specifics
+bind tracklist b cursor prevOf album
+bind tracklist e cursor nextOf album
 
 # Keyboard bindings: input mode
-bind : inputmode input
-bind / inputmode search
-bind <F3> inputmode search
-bind v select visual
-bind V select visual
+bind global : inputmode input
+bind global / inputmode search
+bind global <F3> inputmode search
+bind global v select visual
+bind global V select visual
 
 # Keyboard bindings: player and mixer
-bind <Enter> play selection
-bind <Space> pause
-bind s stop
-bind h previous
-bind l next
-bind + volume +2
-bind - volume -2
-bind <left> seek -5
-bind <right> seek +5
-bind <Alt-M> volume mute
-bind S single
+bind tracklist <Enter> play selection
+bind global <Space> pause
+bind global s stop
+bind global h previous
+bind global l next
+bind global + volume +2
+bind global - volume -2
+bind global <left> seek -5
+bind global <right> seek +5
+bind global <Alt-M> volume mute
+bind global S single
 
 # Keyboard bindings: other
-bind <C-c> quit
-bind <C-l> redraw
-bind <C-s> sort
-bind i print file
-bind gt list next
-bind gT list previous
-bind t list next
-bind T list previous
-bind <C-w>d list duplicate
-bind <C-g> list remove
-bind <C-j> isolate artist
-bind <C-t> isolate albumArtist album
-bind & select nearby albumArtist album
-bind m select toggle
-bind a add
-bind <Delete> cut
-bind x cut
-bind y yank
-bind p paste after
-bind P paste before
+bind global <C-c> quit
+bind global <C-l> redraw
+bind list <C-s> sort
+bind tracklist i print file
+bind global gt list next
+bind global gT list previous
+bind global t list next
+bind global T list previous
+bind list <C-w>d list duplicate
+bind list <C-g> list remove
+bind tracklist <C-j> isolate artist
+bind tracklist <C-t> isolate albumArtist album
+bind tracklist & select nearby albumArtist album
+bind list m select toggle
+bind tracklist a add
+bind tracklist <Delete> cut
+bind tracklist x cut
+bind tracklist y yank
+bind tracklist p paste after
+bind tracklist P paste before
 `
