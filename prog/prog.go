@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/keys"
@@ -282,10 +283,11 @@ func (v *Visp) keyEventCommand(event tcell.Event) string {
 		return ""
 	}
 
-	matches := v.sequencer.KeyInput(ev)
+	contexts := commands.Contexts(v)
+	matches := v.sequencer.KeyInput(ev, contexts)
 	seqString := v.sequencer.String()
 
-	match := v.sequencer.Match()
+	match := v.sequencer.Match(contexts)
 	if !matches || match != nil {
 		// Reset statusbar if there is either no match or a complete match.
 		seqString = ""

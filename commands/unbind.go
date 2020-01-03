@@ -8,8 +8,9 @@ import (
 // Unbind unmaps a key sequence.
 type Unbind struct {
 	command
-	api api.API
-	seq keysequence.KeySequence
+	api     api.API
+	context string
+	seq     keysequence.KeySequence
 }
 
 // NewUnbind returns Unbind.
@@ -21,6 +22,13 @@ func NewUnbind(api api.API) Command {
 
 // Parse implements Command.
 func (cmd *Unbind) Parse() error {
+	var err error
+
+	// Bind keyboard sequence to a specific program context.
+	cmd.context, err = cmd.ParseContext()
+	if err != nil {
+		return err
+	}
 
 	// Use the key sequence parser for parsing the next token.
 	parser := keysequence.NewParser(cmd.S)
@@ -39,5 +47,5 @@ func (cmd *Unbind) Parse() error {
 // Exec implements Command.
 func (cmd *Unbind) Exec() error {
 	sequencer := cmd.api.Sequencer()
-	return sequencer.RemoveBind(cmd.seq)
+	return sequencer.RemoveBind(cmd.context, cmd.seq)
 }

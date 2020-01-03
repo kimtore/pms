@@ -166,6 +166,24 @@ func (c *command) ParseTags(possibleTags []string) ([]string, error) {
 	}
 }
 
+// ParseContext parses a single identifier and verifies that it is a program context.
+func (c *command) ParseContext() (string, error) {
+	tok, lit := c.ScanIgnoreWhitespace()
+	c.setTabComplete(lit, contexts)
+
+	if tok != lexer.TokenIdentifier {
+		return "", fmt.Errorf("unexpected '%s', expected identifier", lit)
+	}
+
+	switch lit {
+	case GlobalContext, ListContext, TracklistContext:
+		c.setTabCompleteEmpty()
+		return lit, nil
+	default:
+		return "", fmt.Errorf("unexpected '%s', expected one of %v", lit, contexts)
+	}
+}
+
 // TabComplete implements Command.TabComplete.
 func (c *command) TabComplete() []string {
 	if c.tabComplete == nil {

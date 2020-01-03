@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/ambientsound/pms/input/keys"
 	"strings"
 
 	"github.com/ambientsound/pms/api"
@@ -27,9 +28,10 @@ func NewBind(api api.API) Command {
 
 // Parse implements Command.
 func (cmd *Bind) Parse() error {
+	var err error
 
 	// Bind keyboard sequence to a specific program context.
-	err := cmd.ParseContext()
+	cmd.context, err = cmd.ParseContext()
 	if err != nil {
 		return err
 	}
@@ -64,26 +66,12 @@ func (cmd *Bind) Parse() error {
 	return nil
 }
 
-func (cmd *Bind) ParseContext() error {
-	tok, lit := cmd.ScanIgnoreWhitespace()
-	cmd.setTabComplete(lit, contexts)
-
-	if tok != lexer.TokenIdentifier {
-		return fmt.Errorf("unexpected '%s', expected identifier", lit)
-	}
-
-	switch lit {
-	case GlobalContext, ListContext, TracklistContext:
-		cmd.context = lit
-		cmd.setTabCompleteEmpty()
-		return nil
-	default:
-		return fmt.Errorf("unexpected '%s', expected one of %v", lit, contexts)
-	}
-}
-
 // Exec implements Command.
 func (cmd *Bind) Exec() error {
 	sequencer := cmd.api.Sequencer()
-	return sequencer.AddBind(cmd.seq, cmd.sentence)
+	return sequencer.AddBind(keys.Binding{
+		Context:  cmd.context,
+		Sequence: cmd.seq,
+		Command:  cmd.sentence,
+	})
 }

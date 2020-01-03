@@ -2,8 +2,8 @@ package keys
 
 import (
 	"fmt"
+	"github.com/ambientsound/pms/log"
 
-	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/keysequence"
 	"github.com/gdamore/tcell"
 )
@@ -11,6 +11,7 @@ import (
 // Binding holds a parsed, user provided key sequence.
 type Binding struct {
 	Command  string
+	Context  string
 	Sequence keysequence.KeySequence
 }
 
@@ -30,36 +31,41 @@ func NewSequencer() *Sequencer {
 }
 
 // AddBind creates a new key mapping.
-func (s *Sequencer) AddBind(seq keysequence.KeySequence, command string) error {
-	if s.dupes(seq) {
-		return fmt.Errorf("Can't bind: conflicting with already bound key sequence")
+func (s *Sequencer) AddBind(binding Binding) error {
+	if s.dupes(binding) {
+		return fmt.Errorf("can't bind: conflicting with already bound key sequence")
 	}
-	s.binds = append(s.binds, Binding{Sequence: seq, Command: command})
+	s.binds = append(s.binds, binding)
 	return nil
 }
 
 // RemoveBind removes a key mapping.
-func (s *Sequencer) RemoveBind(seq keysequence.KeySequence) error {
+func (s *Sequencer) RemoveBind(context string, seq keysequence.KeySequence) error {
 	for i := range s.binds {
-		if keysequence.Compare(s.binds[i].Sequence, seq) {
-			// Overwrite this position with the last in the list
-			s.binds[i] = s.binds[len(s.binds)-1]
-
-			// Truncate to remove the (now duplicate) last entry
-			s.binds = s.binds[:len(s.binds)-1]
-
-			return nil
+		if context != s.binds[i].Context {
+			continue
 		}
+		if !keysequence.Compare(s.binds[i].Sequence, seq) {
+			continue
+		}
+
+		// Overwrite this position with the last in the list
+		s.binds[i] = s.binds[len(s.binds)-1]
+
+		// Truncate to remove the (now duplicate) last entry
+		s.binds = s.binds[:len(s.binds)-1]
+
+		return nil
 	}
 
-	return fmt.Errorf("Can't unbind: sequence not bound")
+	return fmt.Errorf("can't unbind: sequence not bound")
 }
 
 // KeyInput feeds a keypress to the sequencer. Returns true if there is one match or more, or false if there is no match.
-func (s *Sequencer) KeyInput(ev *tcell.EventKey) bool {
-	console.Log("Key event: %s", keysequence.FormatKey(ev))
+func (s *Sequencer) KeyInput(ev *tcell.EventKey, contexts []string) bool {
+	log.Debugf("Key event: %s", keysequence.FormatKey(ev))
 	s.input = append(s.input, ev)
-	if len(s.find(s.input)) == 0 {
+	if len(s.findAll(s.input, contexts)) == 0 {
 		s.input = make(keysequence.KeySequence, 0)
 		return false
 	}
@@ -72,16 +78,24 @@ func (s *Sequencer) String() string {
 }
 
 // dupes returns true if binding the given key event sequence will conflict with any other bound sequences.
-func (s *Sequencer) dupes(seq keysequence.KeySequence) bool {
-	matches := s.find(seq)
+func (s *Sequencer) dupes(bind Binding) bool {
+	matches := s.find(bind.Sequence, bind.Context)
 	return len(matches) > 0
 }
 
+func (s *Sequencer) findAll(seq keysequence.KeySequence, contexts []string) []Binding {
+	binds := make([]Binding, 0)
+	for _, context := range contexts {
+		binds = append(binds, s.find(seq, context)...)
+	}
+	return binds
+}
+
 // find returns a list of potential matches to key bindings.
-func (s *Sequencer) find(seq keysequence.KeySequence) []Binding {
+func (s *Sequencer) find(seq keysequence.KeySequence, context string) []Binding {
 	binds := make([]Binding, 0)
 	for i := range s.binds {
-		if keysequence.StartsWith(s.binds[i].Sequence, seq) {
+		if s.binds[i].Context == context && keysequence.StartsWith(s.binds[i].Sequence, seq) {
 			binds = append(binds, s.binds[i])
 		}
 	}
@@ -89,8 +103,8 @@ func (s *Sequencer) find(seq keysequence.KeySequence) []Binding {
 }
 
 // Match returns a key binding if the current input sequence is found.
-func (s *Sequencer) Match() *Binding {
-	binds := s.find(s.input)
+func (s *Sequencer) Match(contexts []string) *Binding {
+	binds := s.findAll(s.input, contexts)
 	if len(binds) != 1 {
 		return nil
 	}
