@@ -2,14 +2,6 @@
 
 See the documentation on [setting options](commands.md#setting-global-options) for more information on syntax.
 
-## Cursor position
-
-* `set center`  
-  `set nocenter`
-
-  If set, the viewport is automatically moved so that the cursor stays in the center, if possible.
-
-
 ## Spotify
 
 ### Search results limit
@@ -20,8 +12,41 @@ See the documentation on [setting options](commands.md#setting-global-options) f
 
   Lowering this number might decrease latency and will lower bandwidth usage.
 
+### Authentication
+
+* `set spotifyclientid=<string>`  
+  `set spotifyclientsecret=<string>`
+
+  Required in order to authenticate with Spotify. Your must register a Spotify application at
+  [Spotify developer portal](https://developer.spotify.com/documentation/web-api/quick-start/)
+  and retrieve your client ID and client secret from the portal page.
+
+
+## Logging
+
+### Log file
+
+* `set logoverwrite`  
+  `set nologoverwrite`
+
+  If set, the log file is truncated when opened. Defaults to false.
+  To have any effect, this option must be set before `logfile`.
+
+* `set logfile=/path/to/debug.log`
+
+  Writes debugging information to a file. Logging is disabled by default.
+  Setting this option or changinig the file name will write the entire log to that file.
+  Be careful to set `logoverwrite` or `nologoverwrite` before enabling this option.
+
 
 ## Visual options
+
+### Cursor position
+
+* `set center`  
+  `set nocenter`
+
+  If set, the viewport is automatically moved so that the cursor stays in the center, if possible.
 
 ### Visible columns of tracklist
 
@@ -29,7 +54,7 @@ See the documentation on [setting options](commands.md#setting-global-options) f
 
   Define which tags should be shown in the tracklist.
 
-  A comma-separated list of tag names must be given, such as the default `artist,track,title,album,year,time`.
+  A comma-separated list of tag names must be given, such as the default `artist,track,title,album,year,time,popularity`.
 
 ### Sort order
 
@@ -37,7 +62,7 @@ See the documentation on [setting options](commands.md#setting-global-options) f
 
   Set the default sort order, for when using the [`sort` command](commands.md#manipulating-lists) without any parameters.
 
-  A comma-separated list of tag names must be given, such as the default `file,track,disc,album,year,albumartistsort`.
+  A comma-separated list of tag names must be given, such as the default `track,disc,album,year,albumArtist`.
 
 ### Information bar ("top bar")
 
