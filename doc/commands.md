@@ -330,9 +330,9 @@ the `tracklist` context will always be attempted before `global`.
 
 ## Miscellaneous
 
-* `print <tag>`
+* `print [<tag> [...]]`
 
-  Show the contents of the given tag for the track under the cursor.
+  Show the contents of the given tag(s) for the track under the cursor.
 
 * `q[uit]`
 
@@ -342,7 +342,7 @@ the `tracklist` context will always be attempted before `global`.
 
   Force a screen redraw. Useful if rendering has gone wrong.
 
-* `show logs`
+* `show logs`  
   `show music`
 
   Switch between different views. `music` will enable you to cycle between song lists,
