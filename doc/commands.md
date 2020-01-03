@@ -305,11 +305,15 @@ Regular keys such as letters, numbers, symbols, unicode characters, etc. will ne
 Generally, terminal applications have far less insight into keyboard activity than graphical applications,
 and therefore you should avoid depending too much on availability of modifiers or any specific keys.
 
-* `bind <key sequence> <command>`
+Contexts are a way to make key bindings context sensitive. Choose between `global`, `list`, and `tracklist`.
+You can bind a key sequence to multiple contexts. The local context takes precedence, so a sequence bound to
+the `tracklist` context will always be attempted before `global`.
+
+* `bind <context> <key sequence> <command>`
 
   Configure a specific keyboard input sequence to execute a command.
 
-* `unbind <key sequence>`
+* `unbind <context> <key sequence>`
 
   Unbind a key sequence.
 
