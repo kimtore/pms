@@ -8,7 +8,7 @@ import (
 
 // Yank copies tracks from the songlist into the clipboard.
 type Yank struct {
-	newcommand
+	command
 	api api.API
 }
 

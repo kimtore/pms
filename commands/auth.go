@@ -6,7 +6,7 @@ import (
 
 // Auth runs OAuth2 authentication flow against Spotify.
 type Auth struct {
-	newcommand
+	command
 	api api.API
 }
 

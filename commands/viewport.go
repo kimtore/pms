@@ -9,7 +9,7 @@ import (
 
 // Viewport acts on the viewport, such as scrolling the current songlist.
 type Viewport struct {
-	newcommand
+	command
 	api        api.API
 	movecursor bool
 	relative   int

@@ -6,7 +6,7 @@ import (
 
 // Redraw forcefully redraws the screen.
 type Redraw struct {
-	newcommand
+	command
 	api api.API
 }
 

@@ -20,7 +20,8 @@ func NewCLI(api api.API) *Interpreter {
 	}
 }
 
-// Exec is the new Execute.
+// Exec scans an input line, finds the verb in the command directory,
+// and hands execution over to the command.
 func (i *Interpreter) Exec(line string) error {
 
 	// Create the token scanner.
@@ -36,13 +37,13 @@ func (i *Interpreter) Exec(line string) error {
 	case lexer.TokenIdentifier:
 		break
 	default:
-		return fmt.Errorf("Unexpected '%s', expected verb", verb)
+		return fmt.Errorf("unexpected '%s', expected verb", verb)
 	}
 
 	// Instantiate the command.
 	cmd := commands.New(verb, i.api)
 	if cmd == nil {
-		return fmt.Errorf("Not a command: %s", verb)
+		return fmt.Errorf("not a command: %s", verb)
 	}
 
 	// Parse the command into an AST.
@@ -54,63 +55,4 @@ func (i *Interpreter) Exec(line string) error {
 
 	// Execute the AST.
 	return cmd.Exec()
-}
-
-// Execute sends scanned tokens to Command instances.
-// FIXME: this function is deprecated and must be remove when all Command
-// classes have been ported.
-func (i *Interpreter) Execute(line string) error {
-	var cmd commands.Command
-	var err error
-
-	err = i.Exec(line)
-	if err != nil {
-		return err
-	}
-
-	reader := strings.NewReader(line)
-	scanner := lexer.NewScanner(reader)
-
-	for {
-		class, token := scanner.Scan()
-
-		// First identifier; try to find a command handler
-		if cmd == nil {
-			switch class {
-			case lexer.TokenIdentifier:
-				if ctor, ok := commands.Verbs[token]; ok {
-					cmd = ctor(i.api)
-					continue
-				}
-				return fmt.Errorf("Not a command: %s", token)
-			case lexer.TokenComment:
-				continue
-			case lexer.TokenEnd:
-				return nil
-			case lexer.TokenStop:
-				cmd = nil
-				continue
-			case lexer.TokenWhitespace:
-				continue
-			default:
-				return fmt.Errorf("Unexpected '%s', expected identifier", token)
-			}
-		}
-
-		if class == lexer.TokenWhitespace {
-			continue
-		}
-
-		err = cmd.Execute(class, token)
-
-		if err != nil {
-			return err
-		}
-
-		if class == lexer.TokenEnd {
-			break
-		}
-	}
-
-	return nil
 }

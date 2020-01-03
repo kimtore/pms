@@ -12,7 +12,7 @@ import (
 
 // Sort sorts songlists.
 type Sort struct {
-	newcommand
+	command
 	api  api.API
 	tags []string
 	list list.List

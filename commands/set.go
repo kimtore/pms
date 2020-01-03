@@ -12,7 +12,7 @@ import (
 
 // Set manipulates a Options table by parsing input tokens from the "set" command.
 type Set struct {
-	newcommand
+	command
 	api    api.API
 	tokens []parser.OptionToken
 }

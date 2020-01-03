@@ -12,7 +12,7 @@ import (
 
 // Add adds songs to MPD's queue.
 type Add struct {
-	newcommand
+	command
 	api      api.API
 	songlist songlist.Songlist
 }

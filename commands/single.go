@@ -9,7 +9,7 @@ import (
 
 // Single toggles MPD's single mode on and off.
 type Single struct {
-	newcommand
+	command
 	api    api.API
 	action string
 }

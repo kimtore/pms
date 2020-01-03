@@ -9,7 +9,7 @@ import (
 
 // Select manipulates song selection within a songlist.
 type Select struct {
-	newcommand
+	command
 	api    api.API
 	toggle bool
 	visual bool

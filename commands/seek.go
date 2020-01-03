@@ -8,7 +8,7 @@ import (
 
 // Seek seeks forwards or backwards in the currently playing track.
 type Seek struct {
-	newcommand
+	command
 	api      api.API
 	absolute int
 }

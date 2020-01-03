@@ -323,7 +323,7 @@ func (v *Visp) SourceConfigFile(path string) error {
 func (v *Visp) SourceConfig(reader io.Reader) error {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
-		err := v.interpreter.Execute(scanner.Text())
+		err := v.interpreter.Exec(scanner.Text())
 		if err != nil {
 			return err
 		}

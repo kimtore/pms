@@ -6,7 +6,7 @@ import (
 
 // Pause toggles play/paused state.
 type Pause struct {
-	newcommand
+	command
 	api api.API
 }
 

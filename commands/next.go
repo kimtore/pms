@@ -6,7 +6,7 @@ import (
 
 // Next instructs the player to go to the next song.
 type Next struct {
-	newcommand
+	command
 	api api.API
 }
 

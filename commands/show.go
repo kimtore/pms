@@ -9,7 +9,7 @@ import (
 
 // Show directs which window (main widget) to show.
 type Show struct {
-	newcommand
+	command
 	api    api.API
 	window api.Window
 }

@@ -8,7 +8,7 @@ import (
 
 // Columns sets which column headers should be visible for the current list.
 type Columns struct {
-	newcommand
+	command
 	api  api.API
 	tags []string
 }

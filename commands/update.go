@@ -8,7 +8,7 @@ import (
 
 // Update updates MPD database.
 type Update struct {
-	newcommand
+	command
 	api api.API
 }
 

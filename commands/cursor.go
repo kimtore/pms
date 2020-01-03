@@ -16,7 +16,7 @@ import (
 // parameters such as 'up' and 'down', and it also accepts relative positions
 // if a number is given.
 type Cursor struct {
-	newcommand
+	command
 	api             api.API
 	absolute        int
 	current         bool

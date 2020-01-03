@@ -11,7 +11,7 @@ var preMuteVolume int
 
 // Volume adjusts MPD's volume.
 type Volume struct {
-	newcommand
+	command
 	api      api.API
 	sign     int
 	volume   int

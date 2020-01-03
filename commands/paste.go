@@ -9,7 +9,7 @@ import (
 
 // Paste inserts songs from the clipboard.
 type Paste struct {
-	newcommand
+	command
 	api      api.API
 	position int
 }

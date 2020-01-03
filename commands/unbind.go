@@ -7,7 +7,7 @@ import (
 
 // Unbind unmaps a key sequence.
 type Unbind struct {
-	newcommand
+	command
 	api api.API
 	seq keysequence.KeySequence
 }

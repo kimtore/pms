@@ -11,7 +11,7 @@ import (
 
 // Play plays songs in the MPD playlist.
 type Play struct {
-	newcommand
+	command
 	api       api.API
 	cursor    bool
 	selection bool

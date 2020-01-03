@@ -12,7 +12,7 @@ import (
 
 // Print displays information about the selected song's tags.
 type Print struct {
-	newcommand
+	command
 	api  api.API
 	row  list.Row
 	tags []string

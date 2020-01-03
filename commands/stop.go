@@ -8,7 +8,7 @@ import (
 
 // Stop stops song playback in MPD.
 type Stop struct {
-	newcommand
+	command
 	api api.API
 }
 

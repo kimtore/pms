@@ -9,7 +9,7 @@ import (
 
 // Cut removes songs from songlists.
 type Cut struct {
-	newcommand
+	command
 	api api.API
 }
 
