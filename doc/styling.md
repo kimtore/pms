@@ -22,14 +22,6 @@ All tag names are in lowercase.
 
   Column headers showing tag names.
 
-* `allTagsMissing`
-
-  Song style in the tracklist when all the "essential" tags are missing (`artist`, `album`, and `title`).
-
-* `mostTagsMissing`
-
-  Song style in the tracklist when _most_ tags are missing (`artist` and `title`).
-
 * `currentSong`
 
   Color of the entire line in the tracklist, highlighting the currently playing song.

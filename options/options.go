@@ -75,21 +75,20 @@ set logfile=
 # Song tag styles
 style album teal
 style albumArtist teal
-style artist teal
+style artist yellow dim
 style date green
-style disc darkgreen
-style popularity darkyellow
+style disc default
+style popularity dim
 style time darkmagenta
-style title white bold
-style track green
-style year green
+style title white
+style track default
+style year default
+style _id gray
 
 # Tracklist styles
-style allTagsMissing red
 style currentSong black yellow
 style cursor black white
 style header teal bold
-style mostTagsMissing red
 style selection white blue
 
 # Topbar styles
@@ -109,7 +108,7 @@ style volume green
 
 # Other styles
 style commandText default
-style errorText white red bold
+style errorText black red
 style logLevel white
 style logMessage gray
 style readout default
