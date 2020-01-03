@@ -36,7 +36,6 @@ var Verbs = map[string]func(api.API) Command{
 	"cut":       NewCut,
 	"inputmode": NewInputMode,
 	"isolate":   NewIsolate,
-	"list":      NewList,
 	"next":      NewNext,
 	"paste":     NewPaste,
 	"pause":     NewPause,
@@ -61,6 +60,7 @@ var Verbs = map[string]func(api.API) Command{
 	"viewport":  NewViewport,
 	"volume":    NewVolume,
 	"yank":      NewYank,
+	// "list":      NewList,
 }
 
 // Command must be implemented by all commands.

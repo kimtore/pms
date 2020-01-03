@@ -1,5 +1,8 @@
 package commands
 
+/*
+FIXME: re-implement
+
 import (
 	"fmt"
 	"strconv"
@@ -144,3 +147,4 @@ func (cmd *List) Execute(class int, s string) error {
 
 	return err
 }
+*/

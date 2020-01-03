@@ -2,16 +2,19 @@ package commands
 
 import (
 	"fmt"
+	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/list"
+	"github.com/ambientsound/pms/log"
 	"strings"
 
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/input/lexer"
 )
 
 // Print displays information about the selected song's tags.
 type Print struct {
-	command
+	newcommand
 	api  api.API
+	row  list.Row
 	tags []string
 }
 
@@ -22,50 +25,43 @@ func NewPrint(api api.API) Command {
 	}
 }
 
-func (cmd *Print) Execute(class int, s string) error {
+func (cmd *Print) Parse() error {
 	var err error
 
-	switch class {
-	case lexer.TokenIdentifier:
-		if len(cmd.tags) > 0 {
-			return fmt.Errorf("Unexpected '%s', expected END", s)
-		}
-		cmd.tags = strings.Split(strings.ToLower(s), ",")
+	lst := cmd.api.List()
+	if lst.Len() == 0 {
+		return fmt.Errorf("cannot print anything for empty lists")
+	}
 
-	case lexer.TokenEnd:
-		if len(cmd.tags) == 0 {
-			return fmt.Errorf("Unexpected END, expected list of tags to print")
-		}
-		list := cmd.api.Songlist()
-		selection := list.Selection()
-		switch selection.Len() {
-		case 0:
-			return fmt.Errorf("Cannot print song tags; no song selected")
-		case 1:
-			song := selection.Song(0)
-			parts := make([]string, 0)
-			for _, tag := range cmd.tags {
-				msg := ""
-				value, ok := song.StringTags[tag]
-				if ok {
-					msg = fmt.Sprintf("%s: '%s'", tag, value)
-				} else {
-					msg = fmt.Sprintf("%s: <MISSING>", tag)
-				}
-				parts = append(parts, msg)
-			}
-			msg := strings.Join(parts, ", ")
-			cmd.api.Message(msg)
+	cmd.row = lst.Row(lst.Cursor())
 
-		default:
-			return fmt.Errorf("Multiple songs selected; cannot print song tags")
-		}
-
-		list.ClearSelection()
-
-	default:
-		return fmt.Errorf("Unknown input '%s', expected END", s)
+	tok, lit := cmd.ScanIgnoreWhitespace()
+	if tok == lexer.TokenEnd {
+		cmd.tags = cmd.row.Keys()
+		cmd.setTabComplete(lit, cmd.tags)
+	} else {
+		cmd.Unscan()
+		cmd.tags, err = cmd.ParseTags(cmd.row.Keys())
 	}
 
 	return err
+}
+
+func (cmd *Print) Exec() error {
+	parts := make([]string, 0)
+
+	for _, tag := range cmd.tags {
+		msg := ""
+		value, ok := cmd.row[tag]
+		if ok {
+			msg = fmt.Sprintf("%s: '%s'", tag, value)
+		} else {
+			msg = fmt.Sprintf("%s: <MISSING>", tag)
+		}
+		parts = append(parts, msg)
+	}
+
+	log.Infof(strings.Join(parts, ", "))
+
+	return nil
 }
