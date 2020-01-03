@@ -181,11 +181,7 @@ func (w *Table) validateViewport() {
 }
 
 func (w *Table) Resize() {
-	keys := make([]string, len(w.columns))
-	for i := range w.columns {
-		keys[i] = w.columns[i].key
-	}
-	w.SetColumns(keys)
+	w.SetColumns(w.ColumnNames())
 	w.SetView(w.view)
 }
 
@@ -236,6 +232,15 @@ func (w *Table) PositionShortReadout() string {
 	fraction := float64(float64(ymin) / float64(w.list.Len()))
 	percent := int(math.Floor(fraction * 100))
 	return fmt.Sprintf("%2d%%", percent)
+}
+
+// ColumnNames returns a list of the visible columns
+func (w *Table) ColumnNames() []string {
+	keys := make([]string, len(w.columns))
+	for i := range w.columns {
+		keys[i] = w.columns[i].key
+	}
+	return keys
 }
 
 // SetColumns sets which columns that should be visible, and adjusts the sizes so they

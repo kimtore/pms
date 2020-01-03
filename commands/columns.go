@@ -2,6 +2,8 @@ package commands
 
 import (
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/input/lexer"
+	"strings"
 )
 
 // Columns sets which column headers should be visible for the current list.
@@ -22,8 +24,18 @@ func NewColumns(api api.API) Command {
 // Parse implements Command.
 func (cmd *Columns) Parse() error {
 	var err error
+
 	list := cmd.api.List()
-	cmd.tags, err = cmd.ParseTags(list.ColumnNames())
+
+	tok, _ := cmd.ScanIgnoreWhitespace()
+	if tok == lexer.TokenEnd {
+		cmd.tags = cmd.api.UI().TableWidget().ColumnNames()
+		cmd.setTabComplete("", []string{strings.Join(cmd.tags, " ")})
+	} else {
+		cmd.Unscan()
+		cmd.tags, err = cmd.ParseTags(list.ColumnNames())
+	}
+
 	return err
 }
 

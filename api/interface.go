@@ -27,6 +27,7 @@ type Collection interface {
 }
 
 type TableWidget interface {
+	ColumnNames() []string
 	GetVisibleBoundaries() (int, int)
 	List() list.List
 	PositionReadout() string
