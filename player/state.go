@@ -1,6 +1,8 @@
 package player
 
 import (
+	"github.com/ambientsound/pms/list"
+	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/zmb3/spotify"
 	"time"
 )
@@ -10,19 +12,24 @@ type State struct {
 	spotify.PlayerState
 
 	CreateTime         time.Time
-	updateTime         time.Time
 	ProgressPercentage float64
+	TrackRow           list.Row
+	updateTime         time.Time
 }
 
 func NewState(state spotify.PlayerState) State {
+	row := list.Row{}
+	if state.Item != nil {
+		row = spotify_tracklist.Row(*state.Item)
+	}
 	return State{
 		PlayerState: state,
 		CreateTime:  time.Now(),
+		TrackRow:    row,
 		updateTime:  time.Now(),
 	}
 }
 
-// Strings found in the State.State variable.
 const (
 	StatePlay    string = "play"
 	StateStop    string = "stop"

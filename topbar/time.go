@@ -2,7 +2,6 @@ package topbar
 
 import (
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/utils"
 )
 
 // Time draws the current song's length.
@@ -18,5 +17,5 @@ func NewTime(a api.API, param string) Fragment {
 // Text implements Fragment.
 func (w *Time) Text() (string, string) {
 	playerStatus := w.api.PlayerStatus()
-	return utils.TimeString(playerStatus.Progress / 1000), `time`
+	return playerStatus.TrackRow["time"], `time`
 }

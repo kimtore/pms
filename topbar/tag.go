@@ -17,11 +17,7 @@ func NewTag(a api.API, param string) Fragment {
 
 // Text implements Fragment.
 func (w *Tag) Text() (string, string) {
-	song := w.api.Song()
-	if song == nil {
-		return `<none>`, `tagMissing`
-	}
-	if text, ok := song.StringTags[w.tag]; ok {
+	if text, ok := w.api.PlayerStatus().TrackRow[w.tag]; ok {
 		return text, w.tag
 	}
 	return `<unknown>`, `tagMissing`
