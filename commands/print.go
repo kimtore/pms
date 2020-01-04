@@ -33,7 +33,7 @@ func (cmd *Print) Parse() error {
 		return fmt.Errorf("cannot print anything for empty lists")
 	}
 
-	cmd.row = lst.Row(lst.Cursor())
+	cmd.row = lst.CursorRow()
 
 	tok, lit := cmd.ScanIgnoreWhitespace()
 	if tok == lexer.TokenEnd {

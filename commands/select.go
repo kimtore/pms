@@ -82,7 +82,7 @@ func (cmd *Select) parseNearby() error {
 
 	// Data initialization and sanity checks
 	list := cmd.api.List()
-	row := list.Row(list.Cursor())
+	row := list.CursorRow()
 
 	// Retrieve a list of songs
 	tags, err := cmd.ParseTags(row.Keys())
@@ -98,7 +98,7 @@ func (cmd *Select) parseNearby() error {
 func (cmd *Select) selectNearby() error {
 	list := cmd.api.List()
 	index := list.Cursor()
-	row := list.Row(list.Cursor())
+	row := list.CursorRow()
 
 	// In case the list has a visual selection, disable that selection instead.
 	if list.HasVisualSelection() {
