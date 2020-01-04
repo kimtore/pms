@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+// FloatTimeString formats length in seconds as H:mm:ss.
+func FloatTimeString(msecs float64) string {
+	return TimeString(int(msecs / 1000))
+}
+
 // TimeString formats length in seconds as H:mm:ss.
 func TimeString(secs int) string {
 	if secs < 0 {

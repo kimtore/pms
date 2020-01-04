@@ -32,10 +32,10 @@ func (w *Elapsed) Text() (string, string) {
 
 func (w *Elapsed) textTime() (string, string) {
 	playerStatus := w.api.PlayerStatus()
-	return utils.TimeString(int(playerStatus.Elapsed)), `elapsedTime`
+	return utils.TimeString(playerStatus.Progress / 1000), `elapsedTime`
 }
 
 func (w *Elapsed) textPercentage() (string, string) {
 	playerStatus := w.api.PlayerStatus()
-	return fmt.Sprintf("%d", int(playerStatus.ElapsedPercentage)), `elapsedPercentage`
+	return fmt.Sprintf("%3.f", playerStatus.ProgressPercentage*100), `elapsedPercentage`
 }

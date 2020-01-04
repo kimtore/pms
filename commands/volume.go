@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 )
@@ -51,7 +49,7 @@ func (cmd *Volume) Parse() error {
 	if absolute {
 		cmd.volume = ilit
 	} else {
-		cmd.volume = int(playerStatus.Volume) + ilit
+		cmd.volume = int(playerStatus.Device.Volume) + ilit
 	}
 
 	cmd.validateVolume()
@@ -71,20 +69,20 @@ func (cmd *Volume) validateVolume() {
 
 // Exec implements Command.
 func (cmd *Volume) Exec() error {
-	mpdClient := cmd.api.MpdClient()
-	if mpdClient == nil {
-		return fmt.Errorf("Unable to set volume: cannot communicate with MPD")
+	client, err := cmd.api.Spotify()
+	if err != nil {
+		return err
 	}
 
 	playerStatus := cmd.api.PlayerStatus()
 
 	switch {
-	case cmd.mute && playerStatus.Volume == 0:
+	case cmd.mute && playerStatus.Device.Volume == 0:
 		cmd.volume = preMuteVolume
-	case cmd.mute && playerStatus.Volume > 0:
-		preMuteVolume = playerStatus.Volume
+	case cmd.mute && playerStatus.Device.Volume > 0:
+		preMuteVolume = playerStatus.Device.Volume
 		cmd.volume = 0
 	}
 
-	return mpdClient.SetVolume(cmd.volume)
+	return client.Volume(cmd.volume)
 }

@@ -2,21 +2,21 @@ package topbar
 
 import (
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/mpd"
+	"github.com/ambientsound/pms/player"
 )
 
 var stateStrings = map[string]string{
-	mpd.StatePlay:    "|>",
-	mpd.StatePause:   "||",
-	mpd.StateStop:    "[]",
-	mpd.StateUnknown: "??",
+	player.StatePlay:    "|>",
+	player.StatePause:   "||",
+	player.StateStop:    "[]",
+	player.StateUnknown: "??",
 }
 
 var stateUnicodes = map[string]string{
-	mpd.StatePlay:    "\u25b6",
-	mpd.StatePause:   "\u23f8",
-	mpd.StateStop:    "\u23f9",
-	mpd.StateUnknown: "\u2bd1",
+	player.StatePlay:    "\u25b6",
+	player.StatePause:   "\u23f8",
+	player.StateStop:    "\u23f9",
+	player.StateUnknown: "\u2bd1",
 }
 
 // State draws the current player state as an ASCII symbol.
@@ -37,5 +37,5 @@ func NewState(a api.API, param string) Fragment {
 // Text implements Fragment.
 func (w *State) Text() (string, string) {
 	playerStatus := w.api.PlayerStatus()
-	return w.table[playerStatus.State], `state`
+	return w.table[playerStatus.State()], `state`
 }

@@ -51,7 +51,7 @@ func NewApplication(a api.API) (*Application, error) {
 }
 
 func (app *Application) Init() {
-	app.Widgets.Topbar = NewTopbar()
+	app.Widgets.Topbar = NewTopbar(app.api)
 	app.Widgets.table = NewTable(app.api)
 	app.Widgets.multibar = NewMultibarWidget(app.api)
 

@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/topbar"
@@ -19,8 +20,9 @@ const (
 // currently playing song. It is composed of several pieces to form a
 // two-dimensional matrix.
 type Topbar struct {
-	matrix *topbar.MatrixStatement
+	api    api.API
 	height int // height is both physical and matrix height
+	matrix *topbar.MatrixStatement
 
 	view views.View
 	style.Styled
@@ -28,8 +30,9 @@ type Topbar struct {
 }
 
 // NewTopbar creates a new Topbar widget in the desired dimensions.
-func NewTopbar() *Topbar {
+func NewTopbar(a api.API) *Topbar {
 	return &Topbar{
+		api:    a,
 		height: 0,
 		matrix: &topbar.MatrixStatement{},
 	}
@@ -44,6 +47,8 @@ func (w *Topbar) SetMatrix(matrix *topbar.MatrixStatement) {
 
 // Draw draws all the pieces in the matrix, from top to bottom, right to left.
 func (w *Topbar) Draw() {
+	w.SetStylesheet(w.api.Styles())
+
 	xmax, _ := w.Size()
 
 	// Blank screen first

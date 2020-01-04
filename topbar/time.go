@@ -18,5 +18,5 @@ func NewTime(a api.API, param string) Fragment {
 // Text implements Fragment.
 func (w *Time) Text() (string, string) {
 	playerStatus := w.api.PlayerStatus()
-	return utils.TimeString(playerStatus.Time), `time`
+	return utils.TimeString(playerStatus.Progress / 1000), `time`
 }

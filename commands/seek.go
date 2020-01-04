@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"fmt"
+	"github.com/ambientsound/pms/player"
 
 	"github.com/ambientsound/pms/api"
 )
@@ -9,8 +9,9 @@ import (
 // Seek seeks forwards or backwards in the currently playing track.
 type Seek struct {
 	command
-	api      api.API
-	absolute int
+	api          api.API
+	absolute     int
+	playerStatus player.State
 }
 
 // NewSeek returns Seek.
@@ -23,7 +24,7 @@ func NewSeek(api api.API) Command {
 // Parse implements Command.
 func (cmd *Seek) Parse() error {
 
-	playerStatus := cmd.api.PlayerStatus()
+	cmd.playerStatus = cmd.api.PlayerStatus()
 
 	_, lit, absolute, err := cmd.ParseInt()
 	if err != nil {
@@ -31,9 +32,9 @@ func (cmd *Seek) Parse() error {
 	}
 
 	if absolute {
-		cmd.absolute = lit
+		cmd.absolute = lit * 1000
 	} else {
-		cmd.absolute = int(playerStatus.Elapsed) + lit
+		cmd.absolute = cmd.playerStatus.Progress + lit*1000
 	}
 
 	return cmd.ParseEnd()
@@ -41,11 +42,10 @@ func (cmd *Seek) Parse() error {
 
 // Exec implements Command.
 func (cmd *Seek) Exec() error {
-	mpdClient := cmd.api.MpdClient()
-	if mpdClient == nil {
-		return fmt.Errorf("Unable to seek: cannot communicate with MPD")
+	client, err := cmd.api.Spotify()
+	if err != nil {
+		return err
 	}
 
-	playerStatus := cmd.api.PlayerStatus()
-	return mpdClient.Seek(playerStatus.Song, cmd.absolute)
+	return client.Seek(cmd.absolute)
 }

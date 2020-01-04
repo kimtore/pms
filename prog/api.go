@@ -8,9 +8,9 @@ import (
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/log"
-	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/multibar"
 	"github.com/ambientsound/pms/options"
+	"github.com/ambientsound/pms/player"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/tracklist"
@@ -18,7 +18,6 @@ import (
 	"github.com/ambientsound/pms/topbar"
 	"github.com/spf13/viper"
 	"github.com/zmb3/spotify"
-	"time"
 )
 
 func (v *Visp) Authenticate() error {
@@ -83,17 +82,11 @@ func (v *Visp) OptionChanged(key string) {
 		log.Infof("Note: log file will be backfilled with existing log")
 		log.Infof("Writing debug log to %s", logFile)
 
-	case options.PollInterval:
-		interval := v.Options().GetInt(options.PollInterval)
-		v.ticker = time.NewTicker(time.Duration(interval) * time.Second)
-
 	case options.Topbar:
 		config := v.Options().GetString(options.Topbar)
 		matrix, err := topbar.Parse(v, config)
 		if err == nil {
-			_ = matrix
-			// FIXME
-			// v.Termui.Widgets.Topbar.SetMatrix(matrix)
+			v.Termui.Widgets.Topbar.SetMatrix(matrix)
 		} else {
 			log.Errorf("topbar configuration: %s", err)
 		}
@@ -104,8 +97,8 @@ func (v *Visp) Options() api.Options {
 	return viper.GetViper()
 }
 
-func (v *Visp) PlayerStatus() (p pms_mpd.PlayerStatus) {
-	return // FIXME
+func (v *Visp) PlayerStatus() player.State {
+	return v.player
 }
 
 func (v *Visp) Queue() *songlist.Queue {

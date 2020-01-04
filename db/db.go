@@ -1,7 +1,7 @@
 package db
 
 import (
-	pms_mpd "github.com/ambientsound/pms/mpd"
+	"github.com/ambientsound/pms/player"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 )
@@ -10,7 +10,7 @@ import (
 // state of MPD, any songlists, clipboards, options.
 type Instance struct {
 	// mpd state
-	mpdStatus   pms_mpd.PlayerStatus
+	mpdStatus   player.State
 	currentSong *song.Song
 
 	// song lists
@@ -73,12 +73,12 @@ func (db *Instance) SetLibrary(library *songlist.Library) {
 }
 
 // PlayerStatus returns a copy of the current MPD player status as seen by PMS.
-func (db *Instance) PlayerStatus() pms_mpd.PlayerStatus {
+func (db *Instance) PlayerStatus() player.State {
 	return db.mpdStatus
 }
 
 // SetPlayerStatus sets the MPD player status.
-func (db *Instance) SetPlayerStatus(p pms_mpd.PlayerStatus) {
+func (db *Instance) SetPlayerStatus(p player.State) {
 	db.mpdStatus = p
 }
 

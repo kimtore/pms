@@ -7,8 +7,8 @@ import (
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/message"
-	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/multibar"
+	"github.com/ambientsound/pms/player"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/tracklist"
@@ -90,8 +90,8 @@ func (api *testAPI) Options() Options {
 	return viper.GetViper()
 }
 
-func (api *testAPI) PlayerStatus() (p pms_mpd.PlayerStatus) {
-	return // FIXME
+func (api *testAPI) PlayerStatus() player.State {
+	return player.State{}
 }
 
 func (api *testAPI) Queue() *songlist.Queue {

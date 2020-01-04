@@ -33,14 +33,24 @@ func (cmd *Single) Parse() error {
 	case lexer.TokenEnd:
 		return nil
 	default:
-		return fmt.Errorf("Unexpected '%v', expected identifier", lit)
+		return fmt.Errorf("unexpected '%v', expected identifier", lit)
 	}
 
+	playerStatus := cmd.api.PlayerStatus()
+
 	switch lit {
-	case "on", "off", "toggle":
-		break
+	case "on":
+		cmd.action = "single"
+	case "off":
+		cmd.action = "off"
+	case "toggle":
+		if playerStatus.RepeatState == "single" {
+			cmd.action = "off"
+		} else {
+			cmd.action = "single"
+		}
 	default:
-		return fmt.Errorf("Unexpected '%v', expected identifier", lit)
+		return fmt.Errorf("unexpected '%v', expected identifier", lit)
 	}
 
 	cmd.action = lit
@@ -53,23 +63,12 @@ func (cmd *Single) Parse() error {
 // Exec implements Command.
 func (cmd *Single) Exec() error {
 
-	client := cmd.api.MpdClient()
-	if client == nil {
-		return fmt.Errorf("Cannot change single mode: not connected to MPD.")
+	client, err := cmd.api.Spotify()
+	if err != nil {
+		return err
 	}
 
-	playerStatus := cmd.api.PlayerStatus()
-
-	switch cmd.action {
-	case "on":
-		return client.Single(true)
-	case "off":
-		return client.Single(false)
-	case "toggle", "":
-		return client.Single(!playerStatus.Single)
-	}
-
-	return nil
+	return client.Repeat(cmd.action)
 }
 
 // setTabCompleteAction sets the tab complete list to available actions.

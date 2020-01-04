@@ -20,12 +20,12 @@ func NewVolume(a api.API, param string) Fragment {
 func (w *Volume) Text() (string, string) {
 	playerStatus := w.api.PlayerStatus()
 	switch {
-	case playerStatus.Volume < 0:
+	case playerStatus.Device.Volume < 0:
 		return `!VOL!`, `mute`
-	case playerStatus.Volume == 0:
+	case playerStatus.Device.Volume == 0:
 		return `MUTE`, `mute`
 	default:
-		text := fmt.Sprintf("%d%%", playerStatus.Volume)
+		text := fmt.Sprintf("%d%%", playerStatus.Device.Volume)
 		return text, `volume`
 	}
 }

@@ -21,10 +21,9 @@ func (w *Mode) Text() (string, string) {
 	var buf bytes.Buffer
 	playerStatus := w.api.PlayerStatus()
 
-	buf.WriteRune(w.statusRune('c', playerStatus.Consume))
-	buf.WriteRune(w.statusRune('z', playerStatus.Random))
-	buf.WriteRune(w.statusRune('s', playerStatus.Single))
-	buf.WriteRune(w.statusRune('r', playerStatus.Repeat))
+	buf.WriteRune(w.statusRune('z', playerStatus.ShuffleState))
+	buf.WriteRune(w.statusRune('s', playerStatus.RepeatState == "track"))
+	buf.WriteRune(w.statusRune('r', playerStatus.RepeatState != "off"))
 
 	return buf.String(), `switches`
 }

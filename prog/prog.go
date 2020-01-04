@@ -10,6 +10,7 @@ import (
 	"github.com/ambientsound/pms/log"
 	"github.com/ambientsound/pms/multibar"
 	"github.com/ambientsound/pms/options"
+	"github.com/ambientsound/pms/player"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/aggregator"
 	"github.com/ambientsound/pms/spotify/auth"
@@ -36,6 +37,7 @@ type Visp struct {
 	clipboard   *songlist.BaseSonglist
 	interpreter *input.Interpreter
 	multibar    *multibar.Multibar
+	player      player.State
 	quit        chan interface{}
 	sequencer   *keys.Sequencer
 	stylesheet  style.Stylesheet
@@ -54,8 +56,7 @@ func (v *Visp) Init() {
 	v.quit = make(chan interface{}, 1)
 	v.sequencer = keys.NewSequencer()
 	v.stylesheet = make(style.Stylesheet)
-	v.ticker = time.NewTicker(time.Hour)
-	v.ticker.Stop()
+	v.ticker = time.NewTicker(time.Second)
 }
 
 func (v *Visp) Main() error {
@@ -69,7 +70,10 @@ func (v *Visp) Main() error {
 			return nil
 
 		case <-v.ticker.C:
-			// poll spotify
+			err := v.updatePlayer()
+			if err != nil {
+				log.Errorf("update player: %s", err)
+			}
 
 		// Send commands from the multibar into the main command queue.
 		case command := <-v.multibar.Commands():
@@ -127,6 +131,35 @@ func (v *Visp) Main() error {
 		// Draw UI after processing any event.
 		v.Termui.Draw()
 	}
+}
+
+func (v *Visp) updatePlayer() error {
+	var err error
+
+	now := time.Now()
+	pollInterval := time.Second * time.Duration(v.Options().GetInt(options.PollInterval))
+
+	// no time for polling yet; just increase the ticker.
+	if v.player.CreateTime.Add(pollInterval).After(now) {
+		v.player = v.player.Tick()
+		return nil
+	}
+
+	log.Debugf("fetching new player information")
+
+	client, err := v.Spotify()
+	if err != nil {
+		return err
+	}
+
+	state, err := client.PlayerState()
+	if err != nil {
+		return err
+	}
+
+	v.player = player.NewState(*state)
+
+	return nil
 }
 
 // KeyInput receives key input signals, checks the sequencer for key bindings,

@@ -6,8 +6,8 @@ import (
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/list"
-	pms_mpd "github.com/ambientsound/pms/mpd"
 	"github.com/ambientsound/pms/multibar"
+	"github.com/ambientsound/pms/player"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/tracklist"
@@ -52,7 +52,7 @@ type API interface {
 	Options() Options
 
 	// PlayerStatus returns the current MPD player status.
-	PlayerStatus() pms_mpd.PlayerStatus
+	PlayerStatus() player.State
 
 	// Queue returns MPD's song queue.
 	Queue() *songlist.Queue

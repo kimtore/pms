@@ -53,7 +53,7 @@ func NewUI(a api.API) (*UI, error) {
 	ui.App = &views.Application{}
 	ui.api = a
 
-	ui.Topbar = NewTopbar()
+	ui.Topbar = NewTopbar(a)
 	ui.Columnheaders = NewColumnheadersWidget()
 	// ui.Multibar = NewMultibarWidget(ui.api, ui.EventKeyInput)
 
