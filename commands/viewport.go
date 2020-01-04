@@ -30,7 +30,7 @@ func (cmd *Viewport) Parse() error {
 	switch tok {
 	case lexer.TokenIdentifier:
 	default:
-		return fmt.Errorf("Unexpected '%s', expected identifier", lit)
+		return fmt.Errorf("unexpected '%s', expected identifier", lit)
 	}
 
 	switch lit {
@@ -55,7 +55,7 @@ func (cmd *Viewport) Parse() error {
 	case "low":
 		cmd.scrollToCursorAnchor(1)
 	default:
-		return fmt.Errorf("Viewport command '%s' not recognized", lit)
+		return fmt.Errorf("viewport command '%s' not recognized", lit)
 	}
 
 	cmd.setTabCompleteEmpty()
@@ -102,7 +102,7 @@ func (cmd *Viewport) scrollFullPage(direction int) {
 func (cmd *Viewport) scrollToCursorAnchor(position int) {
 	widget := cmd.api.UI().TableWidget()
 	ymin, ymax := widget.GetVisibleBoundaries()
-	cursor := cmd.api.Songlist().Cursor()
+	cursor := cmd.api.List().Cursor()
 	if position < 0 {
 		cmd.relative = cursor - ymax
 	} else if position > 0 {

@@ -135,13 +135,11 @@ func (v *Visp) Spotify() (*spotify.Client, error) {
 }
 
 func (v *Visp) Song() *song.Song {
-	log.Debugf("nil song; might break")
-	return nil
+	panic("nil song; might break")
 }
 
 func (v *Visp) Songlist() songlist.Songlist {
-	log.Debugf("nil songlist; might break")
-	return nil
+	panic("nil songlist; might break")
 }
 
 func (v *Visp) Songlists() []songlist.Songlist {

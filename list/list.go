@@ -230,3 +230,35 @@ LOOP:
 
 	return index + offset(index)
 }
+
+func (s *Base) Remove(index int) error {
+	row := s.Row(index)
+	if row == nil {
+		return fmt.Errorf("out of bounds")
+	}
+
+	for k, v := range row {
+		s.columns[k].Remove(v)
+	}
+
+	if index+1 == s.Len() {
+		s.rows = s.rows[:index]
+	} else {
+		s.rows = append(s.rows[:index], s.rows[index+1:]...)
+	}
+
+	return nil
+}
+
+// RemoveIndices removes a selection of songs from the songlist, having the
+// index defined by the int slice parameter.
+func (s *Base) RemoveIndices(indices []int) error {
+	// Ensure that indices are removed in reverse order
+	sort.Sort(sort.Reverse(sort.IntSlice(indices)))
+	for _, i := range indices {
+		if err := s.Remove(i); err != nil {
+			return err
+		}
+	}
+	return nil
+}

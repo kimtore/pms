@@ -26,7 +26,10 @@ func (cmd *Yank) Parse() error {
 
 // Exec implements Command.
 func (cmd *Yank) Exec() error {
-	list := cmd.api.Songlist()
+	return fmt.Errorf("not implemented")
+	/*
+	FIXME
+	list := cmd.api.Tracklist()
 	selection := list.Selection()
 	indices := list.SelectionIndices()
 	len := len(indices)
@@ -51,4 +54,5 @@ func (cmd *Yank) Exec() error {
 	list.MoveCursor(1)
 
 	return nil
+	*/
 }

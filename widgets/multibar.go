@@ -45,7 +45,7 @@ func (w *Multibar) HandleEvent(ev tcell.Event) bool {
 
 // Figure out what the multibar should render, and return it with the corresponding style
 func (w *Multibar) textWithStyle() (string, tcell.Style) {
-	hasVisualSelection := w.api.Songlist() != nil && w.api.Songlist().HasVisualSelection()
+	hasVisualSelection := w.api.List() != nil && w.api.List().HasVisualSelection()
 	sequenceText := w.api.Sequencer().String()
 	multibarMode := w.api.Multibar().Mode()
 	msg := log.Last(log.InfoLevel)

@@ -36,7 +36,7 @@ func (cmd *Paste) Parse() error {
 		case "after":
 			cmd.position = 1
 		default:
-			return fmt.Errorf("Unexpected '%s', expected position", lit)
+			return fmt.Errorf("unexpected '%s', expected position", lit)
 		}
 		cmd.setTabCompleteEmpty()
 		return cmd.ParseEnd()
@@ -46,7 +46,7 @@ func (cmd *Paste) Parse() error {
 		cmd.position = 1
 
 	default:
-		return fmt.Errorf("Unexpected '%s', expected position", lit)
+		return fmt.Errorf("unexpected '%s', expected position", lit)
 	}
 
 	return nil
@@ -54,7 +54,11 @@ func (cmd *Paste) Parse() error {
 
 // Exec implements Command.
 func (cmd *Paste) Exec() error {
-	list := cmd.api.Songlist()
+	return fmt.Errorf("not implemented")
+
+	/*
+	FIXME
+	list := cmd.api.Tracklist()
 	cursor := list.Cursor()
 	clipboard := cmd.api.Db().Clipboard("default")
 
@@ -68,6 +72,7 @@ func (cmd *Paste) Exec() error {
 	cmd.api.Message("%d more tracks", clipboard.Len())
 
 	return nil
+	*/
 }
 
 // setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.

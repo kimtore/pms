@@ -71,9 +71,6 @@ type API interface {
 	// be checked using PlayerStatus().
 	Song() *song.Song
 
-	// Songlist returns the visible songlist.
-	Songlist() songlist.Songlist
-
 	// Styles returns the current stylesheet.
 	Styles() style.Stylesheet
 

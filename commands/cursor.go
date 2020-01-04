@@ -37,7 +37,7 @@ func NewCursor(api api.API) Command {
 // Parse parses cursor movement.
 func (cmd *Cursor) Parse() error {
 	tableWidget := cmd.api.UI().TableWidget()
-	cmd.list = tableWidget.List()
+	cmd.list = cmd.api.List()
 
 	tok, lit := cmd.ScanIgnoreWhitespace()
 	cmd.setTabCompleteVerbs(lit)
@@ -60,7 +60,7 @@ func (cmd *Cursor) Parse() error {
 
 	case lexer.TokenIdentifier:
 	default:
-		return fmt.Errorf("Unexpected '%v', expected number or identifier", lit)
+		return fmt.Errorf("unexpected '%v', expected number or identifier", lit)
 	}
 
 	switch lit {
@@ -94,7 +94,7 @@ func (cmd *Cursor) Parse() error {
 	default:
 		i, err := strconv.Atoi(lit)
 		if err != nil {
-			return fmt.Errorf("Cursor command '%s' not recognized, and is not a number", lit)
+			return fmt.Errorf("cursor command '%s' not recognized, and is not a number", lit)
 		}
 		cmd.relative = i
 	}
@@ -104,7 +104,7 @@ func (cmd *Cursor) Parse() error {
 	return cmd.ParseEnd()
 }
 
-// Exec is the next Execute(), evading the old system
+// Exec implements Command
 func (cmd *Cursor) Exec() error {
 	switch {
 	case cmd.nextOfDirection != 0:
@@ -112,7 +112,7 @@ func (cmd *Cursor) Exec() error {
 	case cmd.current:
 		currentSong := cmd.api.Song()
 		if currentSong == nil {
-			return fmt.Errorf("No song is currently playing.")
+			return fmt.Errorf("no song is currently playing")
 		}
 		sl, ok := cmd.list.(songlist.Songlist)
 		if !ok {
@@ -150,13 +150,13 @@ func (cmd *Cursor) setTabCompleteVerbs(lit string) {
 
 // random returns a random list index in the songlist.
 func (cmd *Cursor) random() int {
-	len := cmd.api.Songlist().Len()
-	if len == 0 {
+	ln := cmd.list.Len()
+	if ln == 0 {
 		return cmd.absolute
 	}
 	seed := time.Now().UnixNano()
 	r := rand.New(rand.NewSource(seed))
-	return r.Int() % len
+	return r.Int() % ln
 }
 
 // parseNextOf assigns the nextOf tags and directions, or returns an error if
