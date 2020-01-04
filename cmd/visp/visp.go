@@ -7,6 +7,7 @@ import (
 	"github.com/ambientsound/pms/prog"
 	"github.com/ambientsound/pms/spotify/auth"
 	"github.com/ambientsound/pms/tokencache"
+	"github.com/ambientsound/pms/version"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/ambientsound/pms/xdg"
 	"net/http"
@@ -15,8 +16,6 @@ import (
 	"runtime/debug"
 	"strings"
 )
-
-var buildVersion = "undefined"
 
 const (
 	ConfigFileName = "visp.conf"
@@ -57,7 +56,8 @@ func main() {
 }
 
 func run() (int, error) {
-	log.Infof("Visp starting up")
+	log.Infof("%s %s starting up", version.Program, version.Version)
+	log.Infof("This program was compiled on %s", version.BuildDate().String())
 
 	visp := &prog.Visp{
 		Auth: spotify_auth.New(spotify_auth.Authenticator()),

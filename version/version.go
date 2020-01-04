@@ -1,23 +1,19 @@
 // Package version provides access to the program name and compiled version.
 package version
 
-const shortName string = "PMS"
-const longName string = "Practical Music Search"
+import (
+	"strconv"
+	"time"
+)
 
-var version string = "undefined"
+var (
+	Program   = "Visp"
+	ShortName = "Visp"
+	buildDate = "0"
+	Version   = "unknown"
+)
 
-func ShortName() string {
-	return shortName
-}
-
-func LongName() string {
-	return longName
-}
-
-func Version() string {
-	return version
-}
-
-func SetVersion(v string) {
-	version = v
+func BuildDate() time.Time {
+	i, _ := strconv.ParseInt(buildDate, 10, 64)
+	return time.Unix(i, 0)
 }

@@ -12,7 +12,7 @@ type Version struct {
 
 // NewVersion returns Version.
 func NewVersion(a api.API, param string) Fragment {
-	return &Version{version.Version()}
+	return &Version{version.Version}
 }
 
 // Text implements Fragment.
