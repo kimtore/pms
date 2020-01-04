@@ -22,6 +22,7 @@ type Selectable interface {
 
 type Cursor interface {
 	Cursor() int
+	CursorRow() Row
 	MoveCursor(int)
 	SetCursor(int)
 	ValidateCursor(int, int)
@@ -143,13 +144,33 @@ func (s *Base) Swap(i, j int) {
 	s.rows[j] = row
 }
 
+// Sort first sorts unstable, then stable, by all columns provided.
+// Retains cursor position.
 func (s *Base) Sort(cols []string) error {
+	if s.Len() < 2 {
+		return nil
+	}
+
+	// Obtain row under cursor
+	cursorRow := s.CursorRow()
+
 	fn := sort.Sort
 	for _, key := range cols {
 		s.sortKey = key
 		fn(s)
 		fn = sort.Stable
 	}
+
+	// Restore cursor position to row previously selected
+	rowNum, err := s.RowNum(cursorRow.ID())
+	if err != nil {
+		// panics here because the row with this id must also be found in the sorted list,
+		// otherwise this is a bug.
+		panic(err)
+	}
+
+	s.SetCursor(rowNum)
+
 	return nil
 }
 

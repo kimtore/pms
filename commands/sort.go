@@ -60,22 +60,5 @@ func (cmd *Sort) Parse() error {
 
 // Exec implements Command.
 func (cmd *Sort) Exec() error {
-	if cmd.list.Len() == 0 {
-		return nil
-	}
-
-	rowID := cmd.list.Row(cmd.list.Cursor()).ID()
-	err := cmd.list.Sort(cmd.tags)
-	if err != nil {
-		return err
-	}
-
-	rowNum, err := cmd.list.RowNum(rowID)
-	if err != nil {
-		// panics here because the row with this id must also be found in the sorted list
-		panic(err)
-	}
-
-	cmd.list.SetCursor(rowNum)
-	return nil
+	return cmd.list.Sort(cmd.tags)
 }

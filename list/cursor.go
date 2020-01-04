@@ -18,6 +18,10 @@ func (s *Base) Cursor() int {
 	return s.cursor
 }
 
+func (s *Base) CursorRow() Row {
+	return s.Row(s.cursor)
+}
+
 // ValidateCursor makes sure the cursor is within minimum and maximum boundaries.
 func (s *Base) ValidateCursor(ymin, ymax int) {
 	if s.Cursor() < ymin {
