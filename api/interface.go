@@ -6,14 +6,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Window int
-
-const (
-	WindowLogs Window = iota
-	WindowMusic
-	WindowPlaylists
-)
-
 type Collection interface {
 	Activate(songlist.Songlist)
 	ActivateIndex(int) error
@@ -38,7 +30,6 @@ type TableWidget interface {
 }
 
 type UI interface {
-	ActivateWindow(Window)
 	Refresh()
 	TableWidget() TableWidget
 }

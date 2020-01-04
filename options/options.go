@@ -97,9 +97,9 @@ style selection white blue
 # Topbar styles
 style elapsedTime green
 style elapsedPercentage green
-style listIndex darkblue
-style listTitle blue bold
-style listTotal darkblue
+style listIndex teal
+style listTitle teal bold
+style listTotal teal
 style mute red
 style shortName bold
 style state default
@@ -122,33 +122,33 @@ style timestamp teal
 style visualText teal
 
 # Keyboard bindings: cursor and viewport movement
-bind list <Up> cursor up
-bind list k cursor up
-bind list <Down> cursor down
-bind list j cursor down
-bind list <PgUp> viewport pgup
-bind list <PgDn> viewport pgdn
-bind list <C-b> viewport pgup
-bind list <C-f> viewport pgdn
-bind list <C-u> viewport halfpgup
-bind list <C-d> viewport halfpgdn
-bind list <C-y> viewport up
-bind list <C-e> viewport down
-bind list <Home> cursor home
-bind list gg cursor home
-bind list <End> cursor end
-bind list G cursor end
-bind list gc cursor current
-bind list R cursor random
-bind list H cursor high
-bind list M cursor middle
-bind list L cursor low
-bind list zb viewport high
-bind list z- viewport high
-bind list zz viewport middle
-bind list z. viewport middle
-bind list zt viewport low
-bind list z<Enter> viewport low
+bind global <Up> cursor up
+bind global k cursor up
+bind global <Down> cursor down
+bind global j cursor down
+bind global <PgUp> viewport pgup
+bind global <PgDn> viewport pgdn
+bind global <C-b> viewport pgup
+bind global <C-f> viewport pgdn
+bind global <C-u> viewport halfpgup
+bind global <C-d> viewport halfpgdn
+bind global <C-y> viewport up
+bind global <C-e> viewport down
+bind global <Home> cursor home
+bind global gg cursor home
+bind global <End> cursor end
+bind global G cursor end
+bind global gc cursor current
+bind global R cursor random
+bind global H cursor high
+bind global M cursor middle
+bind global L cursor low
+bind global zb viewport high
+bind global z- viewport high
+bind global zz viewport middle
+bind global z. viewport middle
+bind global zt viewport low
+bind global z<Enter> viewport low
 
 # Tracklist specifics
 bind tracklist b cursor prevOf album
@@ -174,21 +174,26 @@ bind global <right> seek +5
 bind global <Alt-M> volume mute
 bind global S single
 
+# Library and window list
+bind global c show library
+bind global w show windows
+bind windows <Enter> show selected
+
 # Keyboard bindings: other
 bind global <C-c> quit
 bind global <C-l> redraw
-bind list <C-s> sort
+bind global <C-s> sort
 bind tracklist i print file
 bind global gt list next
 bind global gT list previous
 bind global t list next
 bind global T list previous
-bind list <C-w>d list duplicate
-bind list <C-g> list remove
+bind global <C-w>d list duplicate
+bind global <C-g> list remove
 bind tracklist <C-j> isolate artist
 bind tracklist <C-t> isolate albumArtist album
 bind tracklist & select nearby albumArtist album
-bind list m select toggle
+bind global m select toggle
 bind tracklist a add
 bind tracklist <Delete> cut
 bind tracklist x cut

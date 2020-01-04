@@ -25,7 +25,7 @@ type Instance struct {
 }
 
 // New returns Instance.
-func New() *Instance {
+func NewDeprecated() *Instance {
 	return &Instance{
 		clipboards: make(map[string]songlist.Songlist, 0),
 		left:       songlist.NewCollection(),

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/ambientsound/pms/log"
 	"strings"
 
 	"github.com/ambientsound/pms/api"
@@ -92,7 +93,7 @@ func (cmd *Set) Exec() error {
 		}
 
 		prnt := func() {
-			cmd.api.Message(options.Print(tok.Key, cmd.api.Options().Get(tok.Key)))
+			log.Infof(options.Print(tok.Key, cmd.api.Options().Get(tok.Key)))
 		}
 
 		// Queries print options to the statusbar.

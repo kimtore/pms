@@ -14,7 +14,6 @@ type widgets struct {
 	Topbar   *Topbar
 	multibar *Multibar
 	table    *Table
-	active   views.Widget
 }
 
 type Application struct {
@@ -60,10 +59,6 @@ func (app *Application) Init() {
 	app.Widgets.layout.AddWidget(app.Widgets.table, 1)
 	app.Widgets.layout.AddWidget(app.Widgets.multibar, 0)
 	app.Widgets.layout.SetView(app.screen)
-
-	app.Widgets.active = app.Widgets.table
-
-	app.ActivateWindow(api.WindowLogs)
 }
 
 func (app *Application) HandleEvent(ev tcell.Event) bool {
@@ -110,33 +105,6 @@ func (app *Application) Refresh() {
 
 func (app *Application) TableWidget() api.TableWidget {
 	return app.Widgets.table
-}
-
-func (app *Application) ActivateWindow(window api.Window) {
-	var widget views.Widget
-
-	switch window {
-	case api.WindowLogs:
-		widget = app.Widgets.table
-		app.Widgets.table.SetList(log.List(log.InfoLevel))
-		app.Widgets.table.SetColumns([]string{"timestamp", "logLevel", "logMessage"})
-	case api.WindowMusic:
-		widget = app.Widgets.table
-		app.Widgets.table.SetList(nil)
-	case api.WindowPlaylists:
-		widget = app.Widgets.table
-		app.Widgets.table.SetList(nil)
-	default:
-		panic("widget not implemented")
-	}
-
-	log.Debugf("want to activate widget %#v", widget)
-	log.Debugf("first deactivating widget %#v", app.Widgets.active)
-
-	app.Widgets.layout.RemoveWidget(app.Widgets.active)
-	app.Widgets.layout.InsertWidget(1, widget, 1.0)
-
-	app.Widgets.active = widget
 }
 
 func (app *Application) updateCursor() {

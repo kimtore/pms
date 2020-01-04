@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/commands"
+	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input"
 	"github.com/ambientsound/pms/input/keys"
+	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/log"
 	"github.com/ambientsound/pms/multibar"
 	"github.com/ambientsound/pms/options"
@@ -14,6 +16,7 @@ import (
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/aggregator"
 	"github.com/ambientsound/pms/spotify/auth"
+	"github.com/ambientsound/pms/spotify/library"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
 	"github.com/ambientsound/pms/tokencache"
@@ -33,9 +36,12 @@ type Visp struct {
 	Tokencache tokencache.Tokencache
 
 	client      *spotify.Client
-	commands    chan string
 	clipboard   *songlist.BaseSonglist
+	commands    chan string
+	db          *db.List
 	interpreter *input.Interpreter
+	library     *spotify_library.List
+	list        list.List
 	multibar    *multibar.Multibar
 	player      player.State
 	quit        chan interface{}
@@ -50,13 +56,17 @@ func (v *Visp) Init() {
 	tcf := func(in string) multibar.TabCompleter {
 		return tabcomplete.New(in, v)
 	}
+	v.db = db.New()
 	v.commands = make(chan string, 1024)
 	v.interpreter = input.NewCLI(v)
+	v.library = spotify_library.New()
 	v.multibar = multibar.New(tcf)
 	v.quit = make(chan interface{}, 1)
 	v.sequencer = keys.NewSequencer()
 	v.stylesheet = make(style.Stylesheet)
 	v.ticker = time.NewTicker(time.Second)
+
+	v.SetList(log.List(log.InfoLevel))
 }
 
 func (v *Visp) Main() error {
@@ -100,8 +110,8 @@ func (v *Visp) Main() error {
 			if err != nil {
 				log.Errorf("sort search results: %s")
 			}
-			v.UI().TableWidget().SetList(lst)
-			v.UI().TableWidget().SetColumns(strings.Split(columns, ","))
+			lst.SetVisibleColumns(strings.Split(columns, ","))
+			v.SetList(lst)
 
 		// Process the command queue.
 		case command := <-v.commands:

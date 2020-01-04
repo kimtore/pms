@@ -70,7 +70,9 @@ func (w *Table) List() list.List {
 
 func (w *Table) SetList(lst list.List) {
 	w.list = lst
-	w.SetColumns(lst.ColumnNames())
+	w.SetColumns(lst.VisibleColumns())
+	log.Debugf("SetList: %v", w.list.Name())
+	log.Debugf("SetColumns: %v", w.ColumnNames())
 }
 
 func (w *Table) Draw() {

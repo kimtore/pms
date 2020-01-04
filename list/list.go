@@ -31,9 +31,13 @@ type Cursor interface {
 type Metadata interface {
 	ColumnNames() []string
 	Columns([]string) []Column
+	ID() string
 	Name() string
 	SetColumnNames([]string)
+	SetID(string)
 	SetName(string)
+	SetVisibleColumns([]string)
+	VisibleColumns() []string
 }
 
 type List interface {
@@ -58,12 +62,14 @@ type Base struct {
 	columnNames     []string
 	columns         map[string]*Column
 	cursor          int
+	id              string
 	mutex           sync.Mutex
 	name            string
 	rows            []Row
 	selection       map[int]struct{}
 	sortKey         string
 	updated         time.Time
+	visibleColumns  []string
 	visualSelection [3]int
 }
 
@@ -76,12 +82,22 @@ func New() *Base {
 func (s *Base) Clear() {
 	s.rows = make([]Row, 0)
 	s.columnNames = make([]string, 0)
+	s.visibleColumns = make([]string, 0)
 	s.columns = make(map[string]*Column)
 	s.ClearSelection()
 }
 
+func (s *Base) ID() string {
+	return s.id
+}
+
+func (s *Base) SetID(id string) {
+	s.id = id
+}
+
 func (s *Base) SetColumnNames(names []string) {
-	s.columnNames = names
+	s.columnNames = make([]string, len(names))
+	copy(s.columnNames, names)
 }
 
 func (s *Base) ColumnNames() []string {
@@ -90,6 +106,15 @@ func (s *Base) ColumnNames() []string {
 		names = append(names, key)
 	}
 	return names
+}
+
+func (s *Base) SetVisibleColumns(names []string) {
+	s.visibleColumns = make([]string, len(names))
+	copy(s.visibleColumns, names)
+}
+
+func (s *Base) VisibleColumns() []string {
+	return s.visibleColumns
 }
 
 func (s *Base) Columns(names []string) []Column {

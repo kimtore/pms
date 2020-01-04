@@ -305,7 +305,7 @@ Regular keys such as letters, numbers, symbols, unicode characters, etc. will ne
 Generally, terminal applications have far less insight into keyboard activity than graphical applications,
 and therefore you should avoid depending too much on availability of modifiers or any specific keys.
 
-Contexts are a way to make key bindings context sensitive. Choose between `global`, `list`, and `tracklist`.
+Contexts are a way to make key bindings context sensitive. Choose between `global`, `library`, `tracklist`, and `windows`.
 You can bind a key sequence to multiple contexts. The local context takes precedence, so a sequence bound to
 the `tracklist` context will always be attempted before `global`.
 

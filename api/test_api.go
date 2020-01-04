@@ -11,6 +11,7 @@ import (
 	"github.com/ambientsound/pms/player"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/spotify/library"
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/style"
 	"github.com/spf13/viper"
@@ -52,7 +53,7 @@ func (api *testAPI) Clipboard() songlist.Songlist {
 	return api.clipboard
 }
 
-func (api *testAPI) Db() *db.Instance {
+func (api *testAPI) Db() *db.List {
 	return nil // FIXME
 }
 
@@ -68,7 +69,7 @@ func (api *testAPI) List() list.List {
 	return api.list
 }
 
-func (api *testAPI) Library() *songlist.Library {
+func (api *testAPI) Library() *spotify_library.List {
 	return nil // FIXME
 }
 
@@ -106,6 +107,9 @@ func (api *testAPI) Quit() {
 
 func (api *testAPI) Sequencer() *keys.Sequencer {
 	return nil // FIXME
+}
+
+func (api *testAPI) SetList(lst list.List) {
 }
 
 func (api *testAPI) Spotify() (*spotify.Client, error) {

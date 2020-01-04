@@ -13,6 +13,7 @@ import (
 	"github.com/ambientsound/pms/player"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/spotify/library"
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/topbar"
@@ -35,8 +36,8 @@ func (v *Visp) Clipboard() songlist.Songlist {
 	return v.clipboard
 }
 
-func (v *Visp) Db() *db.Instance {
-	return nil // FIXME
+func (v *Visp) Db() *db.List {
+	return v.db
 }
 
 func (v *Visp) Exec(command string) error {
@@ -44,12 +45,12 @@ func (v *Visp) Exec(command string) error {
 	return v.interpreter.Exec(command)
 }
 
-func (v *Visp) Library() *songlist.Library {
-	return nil // FIXME
+func (v *Visp) Library() *spotify_library.List {
+	return v.library
 }
 
 func (v *Visp) List() list.List {
-	return v.Termui.TableWidget().List()
+	return v.list
 }
 
 func (v *Visp) ListChanged() {
@@ -118,6 +119,13 @@ func (v *Visp) Multibar() *multibar.Multibar {
 	return v.multibar
 }
 
+func (v *Visp) SetList(lst list.List) {
+	c := v.db.Cache(lst)
+	v.db.SetCursor(c)
+	v.list = lst
+	v.Termui.TableWidget().SetList(lst)
+}
+
 func (v *Visp) Spotify() (*spotify.Client, error) {
 	if v.client == nil {
 		return nil, fmt.Errorf("please run `auth` to authenticate with Spotify")
@@ -152,7 +160,7 @@ func (v *Visp) Styles() style.Stylesheet {
 }
 
 func (v *Visp) Tracklist() *spotify_tracklist.List {
-	switch v := v.UI().TableWidget().List().(type) {
+	switch v := v.List().(type) {
 	case *spotify_tracklist.List:
 		return v
 	default:

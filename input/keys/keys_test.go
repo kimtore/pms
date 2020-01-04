@@ -55,22 +55,22 @@ func TestSequencer(t *testing.T) {
 		err = sequencer.AddBind(keys.Binding{
 			Sequence: seq,
 			Command:  "baz",
-			Context:  commands.ListContext,
+			Context:  commands.TracklistContext,
 		})
 		assert.NoError(t, err)
 
 		// Test context preference way one
-		contexts := []string{commands.ListContext, commands.GlobalContext}
+		contexts := []string{commands.TracklistContext, commands.GlobalContext}
 		for i := range seq {
 			sequencer.KeyInput(seq[i], contexts)
 		}
 		match := sequencer.Match(contexts)
 		assert.NotNil(t, match)
 		assert.Equal(t, "baz", match.Command)
-		assert.Equal(t, commands.ListContext, match.Context)
+		assert.Equal(t, commands.TracklistContext, match.Context)
 
 		// Test context preference way two
-		contexts = []string{commands.GlobalContext, commands.ListContext}
+		contexts = []string{commands.GlobalContext, commands.TracklistContext}
 		for i := range seq {
 			sequencer.KeyInput(seq[i], contexts)
 		}

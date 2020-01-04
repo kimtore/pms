@@ -6,22 +6,29 @@ package commands
 import (
 	"fmt"
 	"github.com/ambientsound/pms/api"
+	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/parser"
+	"github.com/ambientsound/pms/spotify/library"
+	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/utils"
 	"sort"
 )
 
 const (
 	GlobalContext    = "global"
-	ListContext      = "list"
+	LibraryContext   = "library"
 	TracklistContext = "tracklist"
+	WindowsContext   = "windows"
 )
 
 // contexts are used to bind keyboard commands to a specific area of the program.
 // For instance, the <ENTER> key can be bound to `play` in track lists and `print _id` in other lists.
 var contexts = []string{
-	GlobalContext, ListContext, TracklistContext,
+	GlobalContext,
+	LibraryContext,
+	TracklistContext,
+	WindowsContext,
 }
 
 // Verbs contain mappings from strings to Command constructors.
@@ -93,11 +100,14 @@ type command struct {
 // Local contexts take precedence over global contexts.
 func Contexts(a api.API) []string {
 	ctx := make([]string, 0, len(contexts))
-	if a.Tracklist() != nil {
+	lst := a.List()
+	switch lst.(type) {
+	case *db.List:
+		ctx = append(ctx, WindowsContext)
+	case *spotify_library.List:
+		ctx = append(ctx, LibraryContext)
+	case *spotify_tracklist.List:
 		ctx = append(ctx, TracklistContext)
-	}
-	if a.List() != nil {
-		ctx = append(ctx, ListContext)
 	}
 	ctx = append(ctx, GlobalContext)
 	return ctx
@@ -174,13 +184,14 @@ func (c *command) ParseContext() (string, error) {
 		return "", fmt.Errorf("unexpected '%s', expected identifier", lit)
 	}
 
-	switch lit {
-	case GlobalContext, ListContext, TracklistContext:
-		c.setTabCompleteEmpty()
-		return lit, nil
-	default:
-		return "", fmt.Errorf("unexpected '%s', expected one of %v", lit, contexts)
+	for _, ctx := range contexts {
+		if lit == ctx {
+			c.setTabCompleteEmpty()
+			return lit, nil
+		}
 	}
+
+	return "", fmt.Errorf("unexpected '%s', expected one of %v", lit, contexts)
 }
 
 // TabComplete implements Command.TabComplete.

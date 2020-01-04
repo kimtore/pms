@@ -59,7 +59,7 @@ func (cmd *Bind) Parse() error {
 	}
 
 	if len(sentence) == 0 {
-		return fmt.Errorf("Unexpected END, expected identifier")
+		return fmt.Errorf("unexpected END, expected identifier")
 	}
 
 	cmd.sentence = strings.Join(sentence, "")

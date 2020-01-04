@@ -3,6 +3,7 @@ package commands
 import (
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/ambientsound/pms/list"
 	"strings"
 )
 
@@ -10,6 +11,7 @@ import (
 type Columns struct {
 	command
 	api  api.API
+	list list.List
 	tags []string
 }
 
@@ -25,7 +27,7 @@ func NewColumns(api api.API) Command {
 func (cmd *Columns) Parse() error {
 	var err error
 
-	list := cmd.api.List()
+	cmd.list = cmd.api.List()
 
 	tok, _ := cmd.ScanIgnoreWhitespace()
 	if tok == lexer.TokenEnd {
@@ -33,7 +35,7 @@ func (cmd *Columns) Parse() error {
 		cmd.setTabComplete("", []string{strings.Join(cmd.tags, " ")})
 	} else {
 		cmd.Unscan()
-		cmd.tags, err = cmd.ParseTags(list.ColumnNames())
+		cmd.tags, err = cmd.ParseTags(cmd.list.ColumnNames())
 	}
 
 	return err
@@ -41,6 +43,7 @@ func (cmd *Columns) Parse() error {
 
 // Exec implements Command.
 func (cmd *Columns) Exec() error {
-	cmd.api.UI().TableWidget().SetColumns(cmd.tags)
+	cmd.list.SetVisibleColumns(cmd.tags)
+	cmd.api.SetList(cmd.list)
 	return nil
 }

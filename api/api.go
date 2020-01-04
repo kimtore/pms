@@ -10,6 +10,7 @@ import (
 	"github.com/ambientsound/pms/player"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/ambientsound/pms/spotify/library"
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/style"
 	"github.com/zmb3/spotify"
@@ -22,7 +23,7 @@ type API interface {
 	Authenticate() error
 
 	// Db returns the PMS database.
-	Db() *db.Instance
+	Db() *db.List
 
 	// Exec executes a command through the command-line interface.
 	Exec(string) error
@@ -30,8 +31,8 @@ type API interface {
 	// Return the global multibar instance.
 	Multibar() *multibar.Multibar
 
-	// Library returns the current MPD library, or nil if it has not been retrieved yet.
-	Library() *songlist.Library
+	// Library returns a list of entry points to the Spotify library.
+	Library() *spotify_library.List
 
 	// List returns the active list.
 	List() list.List
@@ -62,6 +63,9 @@ type API interface {
 
 	// Sequencer returns a pointer to the key sequencer that receives key events.
 	Sequencer() *keys.Sequencer
+
+	// SetList sets the active list.
+	SetList(list.List)
 
 	// Spotify returns a Spotify client.
 	Spotify() (*spotify.Client, error)

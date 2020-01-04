@@ -36,6 +36,9 @@ func Clear() {
 	for level := range strLevel {
 		messages[level] = make([]Message, 0)
 		logLineList[level] = list.New()
+		logLineList[level].SetID(level.String() + " logs")
+		logLineList[level].SetName("Log console")
+		logLineList[level].SetVisibleColumns([]string{"timestamp", "logLevel", "logMessage"})
 	}
 }
 
