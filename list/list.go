@@ -51,6 +51,7 @@ type List interface {
 	Lock()
 	NextOf([]string, int, int) int
 	Row(int) Row
+	RowByID(string) Row
 	RowNum(string) (int, error)
 	SetUpdated()
 	Sort([]string) error
@@ -151,6 +152,14 @@ func (s *Base) RowNum(id string) (int, error) {
 		}
 	}
 	return 0, fmt.Errorf("not found")
+}
+
+func (s *Base) RowByID(id string) Row {
+	rown, err := s.RowNum(id)
+	if err != nil {
+		return nil
+	}
+	return s.Row(rown)
 }
 
 func (s *Base) Len() int {

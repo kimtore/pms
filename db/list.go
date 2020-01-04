@@ -51,3 +51,15 @@ func (s *List) Current() list.List {
 	}
 	return s.lists[row.ID()]
 }
+
+func (s *List) List(id string) list.List {
+	return s.lists[id]
+}
+
+func (s *List) Keys() []string {
+	keys := make([]string, 0, len(s.lists))
+	for k := range s.lists {
+		keys = append(keys, k)
+	}
+	return keys
+}

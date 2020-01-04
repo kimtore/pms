@@ -18,10 +18,28 @@ const (
 	listName = "description"
 )
 
+const (
+	Categories          = "categories"
+	FeaturedPlaylists   = "featured-playlists"
+	FollowedArtists     = "followed-artists"
+	MyAlbums            = "my-albums"
+	MyFollowedPlaylists = "my-followed-playlists"
+	MyPlaylists         = "my-playlists"
+	MyPrivatePlaylists  = "my-private-playlists"
+	MyTracks            = "my-tracks"
+	NewReleases         = "new-releases"
+	TopArtists          = "top-artists"
+	TopTracks           = "top-tracks"
+)
+
 var rows = []list.Row{
 	{
-		list.RowIDKey: "my playlists",
+		list.RowIDKey: MyPrivatePlaylists,
 		listName:      "Personal playlists from my Spotify library",
+	},
+	{
+		list.RowIDKey: MyTracks,
+		listName:      "All liked songs from my library",
 	},
 }
 

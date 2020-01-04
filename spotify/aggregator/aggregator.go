@@ -13,5 +13,5 @@ func Search(client spotify.Client, query string, limit int) (*spotify_tracklist.
 		return nil, err
 	}
 
-	return spotify_tracklist.New(client, results.Tracks)
+	return spotify_tracklist.NewFromFullTrackPage(client, results.Tracks)
 }

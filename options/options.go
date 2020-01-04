@@ -178,6 +178,7 @@ bind global S single
 bind global c show library
 bind global w show windows
 bind windows <Enter> show selected
+bind library <Enter> show selected
 
 # Keyboard bindings: other
 bind global <C-c> quit

@@ -20,7 +20,7 @@ type State struct {
 func NewState(state spotify.PlayerState) State {
 	row := list.Row{}
 	if state.Item != nil {
-		row = spotify_tracklist.Row(*state.Item)
+		row = spotify_tracklist.FullTrackRow(*state.Item)
 	}
 	return State{
 		PlayerState: state,

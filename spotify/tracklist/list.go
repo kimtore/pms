@@ -15,7 +15,7 @@ type List struct {
 
 var _ list.List = &List{}
 
-func New(client spotify.Client, source *spotify.FullTrackPage) (*List, error) {
+func NewFromFullTrackPage(client spotify.Client, source *spotify.FullTrackPage) (*List, error) {
 	var err error
 
 	tracks := make([]spotify.FullTrack, 0, source.Total)
@@ -32,6 +32,26 @@ func New(client spotify.Client, source *spotify.FullTrackPage) (*List, error) {
 	return NewFromTracks(tracks), nil
 }
 
+func NewFromSavedTrackPage(client spotify.Client, source *spotify.SavedTrackPage) (*List, error) {
+	var err error
+
+	tracks := make([]spotify.FullTrack, 0, source.Total)
+
+	for err == nil {
+		for _, track := range source.Tracks {
+			tracks = append(tracks, track.FullTrack)
+		}
+		err = client.NextPage(source)
+	}
+
+	if err != spotify.ErrNoMorePages {
+		return nil, err
+	}
+
+	return NewFromTracks(tracks), nil
+
+}
+
 func NewFromTracks(tracks []spotify.FullTrack) *List {
 	this := &List{
 		tracks: make(map[string]spotify.FullTrack, len(tracks)),
@@ -39,12 +59,12 @@ func NewFromTracks(tracks []spotify.FullTrack) *List {
 	this.Clear()
 	for _, track := range tracks {
 		this.tracks[track.ID.String()] = track
-		this.Add(Row(track))
+		this.Add(FullTrackRow(track))
 	}
 	return this
 }
 
-func Row(track spotify.FullTrack) list.Row {
+func FullTrackRow(track spotify.FullTrack) list.Row {
 	return list.Row{
 		list.RowIDKey: track.ID.String(),
 		"album":       track.Album.Name,
