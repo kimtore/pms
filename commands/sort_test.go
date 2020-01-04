@@ -6,14 +6,13 @@ import (
 
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/commands"
-	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
 	"github.com/stretchr/testify/assert"
 )
 
 var sortTests = []commands.Test{
 	// Valid forms
-	{``, true, initSort, testSorting, []string{}},
+	{``, true, initSort, testSorting, []string{"artist", "title"}},
 	{`artist title`, true, initSort, testSorting, []string{"title"}},
 	{`complex-tag`, true, initSort, testSorting, []string{"complex-tag"}},
 	{`tag&|!{ more-tags "x y z"`, true, initSort, testSorting, []string{}},
@@ -36,8 +35,7 @@ func initSort(data *commands.TestData) {
 	// Set up the sort option
 	// FIXME
 	opts := data.Api.Options()
-	opts.Add(options.NewStringOption("sort"))
-	opts.Get("sort").Set("title")
+	opts.Set("sort", "title")
 
 	list := data.Api.Songlist()
 	for i := 0; i < 2; i++ {

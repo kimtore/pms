@@ -1,10 +1,10 @@
 package commands_test
 
 import (
+	"github.com/spf13/viper"
 	"testing"
 
 	"github.com/ambientsound/pms/commands"
-	"github.com/ambientsound/pms/options"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,12 +29,11 @@ func TestSet(t *testing.T) {
 }
 
 func testSetInit(test *commands.TestData) {
-	test.Api.Options().Add(options.NewStringOption("foo"))
-	test.Api.Options().Add(options.NewStringOption("bar"))
-	test.Api.Options().Add(options.NewStringOption("baz"))
-	test.Api.Options().Add(options.NewIntOption("int"))
-	test.Api.Options().Add(options.NewBoolOption("bool"))
-	test.Api.Options().Get("baz").Set("foobar")
+	viper.Set("foo", "")
+	viper.Set("bar", "")
+	viper.Set("baz", "foobar")
+	viper.Set("int", 0)
+	viper.Set("bool", false)
 }
 
 func testFooSet(key, check string, ok bool) func(*commands.TestData) {
@@ -44,7 +43,7 @@ func testFooSet(key, check string, ok bool) func(*commands.TestData) {
 		if err != nil {
 			return
 		}
-		val := test.Api.Options().StringValue(key)
+		val := test.Api.Options().GetString(key)
 		assert.Equal(test.T, check, val)
 	}
 }
@@ -53,9 +52,9 @@ func testMultiSet(test *commands.TestData) {
 	err := test.Cmd.Exec()
 	assert.Nil(test.T, err)
 	opts := test.Api.Options()
-	assert.Equal(test.T, "x", opts.StringValue("foo"))
-	assert.Equal(test.T, "x", opts.StringValue("bar"))
-	assert.Equal(test.T, "x", opts.StringValue("baz"))
-	assert.Equal(test.T, 4, opts.IntValue("int"))
-	assert.Equal(test.T, true, opts.BoolValue("bool"))
+	assert.Equal(test.T, "x", opts.GetString("foo"))
+	assert.Equal(test.T, "x", opts.GetString("bar"))
+	assert.Equal(test.T, "x", opts.GetString("baz"))
+	assert.Equal(test.T, 4, opts.GetInt("int"))
+	assert.Equal(test.T, true, opts.GetBool("bool"))
 }

@@ -19,6 +19,7 @@ import (
 
 type testAPI struct {
 	messages  chan message.Message
+	list      list.List
 	song      *song.Song
 	songlist  songlist.Songlist
 	clipboard songlist.Songlist
@@ -36,6 +37,7 @@ func createTestSong() *song.Song {
 func NewTestAPI() API {
 	return &testAPI{
 		clipboard: songlist.New(),
+		list:      list.New(),
 		messages:  make(chan message.Message, 1024),
 		song:      createTestSong(),
 		songlist:  songlist.New(),
@@ -63,7 +65,7 @@ func (api *testAPI) Multibar() *multibar.Multibar {
 }
 
 func (api *testAPI) List() list.List {
-	return nil
+	return api.list
 }
 
 func (api *testAPI) Library() *songlist.Library {

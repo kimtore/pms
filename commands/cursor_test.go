@@ -60,6 +60,7 @@ var cursorTests = []commands.Test{
 }
 
 func TestCursor(t *testing.T) {
+	t.Skipf("widget commands are not testable yet")
 	commands.TestVerb(t, "cursor", cursorTests)
 }
 

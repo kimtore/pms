@@ -37,7 +37,7 @@ func (cmd *InputMode) Parse() error {
 	case "search":
 		cmd.mode = multibar.ModeSearch
 	default:
-		return fmt.Errorf("invalid input mode '%s'; expected one of 'normal', 'input', 'search'")
+		return fmt.Errorf("invalid input mode '%s'; expected one of 'normal', 'input', 'search'", lit)
 	}
 
 	err := cmd.ParseEnd()

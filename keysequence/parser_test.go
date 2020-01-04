@@ -104,7 +104,7 @@ func TestParser(t *testing.T) {
 		}
 
 		// Assert that names are converted back
-		conv := keysequence.Format(seq)
+		conv := seq.String()
 		assert.Equal(t, test.output, conv, "Assert that reverse generated key sequence names are correct")
 
 		// Assert that key definitions are equal

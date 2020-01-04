@@ -8,13 +8,14 @@ import (
 
 var bindTests = []commands.Test{
 	// Valid forms
-	{`foo bar`, true, nil, nil, []string{}},
-	{`foo bar baz`, true, nil, nil, []string{}},
-	{`[]{}$|"test" foo bar`, true, nil, nil, []string{}},
+	{`global foo bar`, true, nil, nil, []string{}},
+	{`global foo bar baz`, true, nil, nil, []string{}},
+	{`global []{}$|"test" foo bar`, true, nil, nil, []string{}},
 
 	// Invalid forms
-	{``, false, nil, nil, []string{}},
+	{``, false, nil, nil, []string{"global", "list", "tracklist"}},
 	{`x`, false, nil, nil, []string{}},
+	{`global bar`, false, nil, nil, []string{}},
 }
 
 func TestBind(t *testing.T) {
