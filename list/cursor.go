@@ -1,5 +1,14 @@
 package list
 
+type Cursor interface {
+	Cursor() int
+	CursorRow() Row
+	MoveCursor(int)
+	SetCursor(int)
+	SetCursorByID(string) error
+	ValidateCursor(int, int)
+}
+
 // MoveCursor moves the cursor by the specified offset.
 func (s *Base) MoveCursor(i int) {
 	s.SetCursor(s.Cursor() + i)
@@ -11,6 +20,16 @@ func (s *Base) SetCursor(i int) {
 	s.ValidateCursor(0, s.Len()-1)
 	s.expandVisualSelection()
 	s.SetUpdated()
+}
+
+// SetCursor moves the cursor to the row with the specified ID.
+func (s *Base) SetCursorByID(id string) error {
+	rown, err := s.RowNum(id)
+	if err != nil {
+		return err
+	}
+	s.SetCursor(rown)
+	return nil
 }
 
 // Cursor returns the cursor position.

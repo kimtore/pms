@@ -20,14 +20,6 @@ type Selectable interface {
 	ToggleVisualSelection()
 }
 
-type Cursor interface {
-	Cursor() int
-	CursorRow() Row
-	MoveCursor(int)
-	SetCursor(int)
-	ValidateCursor(int, int)
-}
-
 type Metadata interface {
 	ColumnNames() []string
 	Columns([]string) []Column

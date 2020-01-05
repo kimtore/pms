@@ -90,6 +90,7 @@ func (cmd *Isolate) Exec() error {
 
 	result.SetVisibleColumns(list.VisibleColumns())
 	result.SetID(uuid.New().String())
+	_ = result.SetCursorByID(row.ID())
 
 	// Figure out a clever name
 	parts := make([]string, len(cmd.tags))

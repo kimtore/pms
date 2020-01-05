@@ -132,6 +132,9 @@ func (cmd *List) Goto(id string) error {
 		log.Errorf("unable to sort: %s", err)
 	}
 
+	// Reset cursor
+	lst.SetCursor(0)
+
 	cmd.api.SetList(lst)
 
 	return nil

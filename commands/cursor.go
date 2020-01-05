@@ -120,12 +120,11 @@ func (cmd *Cursor) Exec() error {
 			return fmt.Errorf("must be in a track list to locate current track")
 		}
 
-		rown, err := tl.RowNum(track.ID.String())
+		err := tl.SetCursorByID(track.ID.String())
 		if err != nil {
 			return fmt.Errorf("currently playing track is not in this list")
 		}
 
-		tl.SetCursor(rown)
 		return nil
 	}
 
