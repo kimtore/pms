@@ -39,6 +39,7 @@ type List interface {
 	Add(Row)
 	Clear()
 	InRange(int) bool
+	Keys() []string
 	Len() int
 	Lock()
 	NextOf([]string, int, int) int
@@ -152,6 +153,14 @@ func (s *Base) RowByID(id string) Row {
 		return nil
 	}
 	return s.Row(rown)
+}
+
+func (s *Base) Keys() []string {
+	keys := make([]string, s.Len())
+	for i := range s.rows {
+		keys[i] = s.rows[i].ID()
+	}
+	return keys
 }
 
 func (s *Base) Len() int {

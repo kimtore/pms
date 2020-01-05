@@ -63,23 +63,23 @@ func Row(device spotify.PlayerDevice) list.Row {
 }
 
 // CursorDevice returns the device currently selected by the cursor.
-func (l *List) CursorDevice() *spotify.PlayerDevice {
-	return l.Device(l.Cursor())
+func (s *List) CursorDevice() *spotify.PlayerDevice {
+	return s.Device(s.Cursor())
 }
 
 // Device returns the device at a specific index.
-func (l *List) Device(index int) *spotify.PlayerDevice {
-	row := l.Row(index)
+func (s *List) Device(index int) *spotify.PlayerDevice {
+	row := s.Row(index)
 	if row == nil {
 		return nil
 	}
-	device := l.devices[row.ID()]
+	device := s.devices[row.ID()]
 	return &device
 }
 
 // Device returns the device with a specific ID.
-func (l *List) DeviceByID(id string) *spotify.PlayerDevice {
-	device, ok := l.devices[id]
+func (s *List) DeviceByID(id string) *spotify.PlayerDevice {
+	device, ok := s.devices[id]
 	if !ok {
 		return nil
 	}
