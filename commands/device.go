@@ -27,6 +27,7 @@ func NewDevice(api api.API) Command {
 // Parse implements Command.
 func (cmd *Device) Parse() error {
 	tok, lit := cmd.ScanIgnoreWhitespace()
+	cmd.setTabCompleteVerbs(lit)
 
 	switch tok {
 	case lexer.TokenIdentifier:
@@ -42,10 +43,15 @@ func (cmd *Device) Parse() error {
 
 	switch tok {
 	case lexer.TokenEnd:
+		cmd.setTabCompleteEmpty()
+
 		lst, ok := cmd.api.List().(*spotify_devices.List)
 		if !ok {
 			return fmt.Errorf("must be run in the devices window unless device ID is specified")
 		}
+
+		cmd.setTabComplete(lit, lst.Keys())
+
 		device := lst.CursorDevice()
 		if device == nil {
 			return fmt.Errorf("no devices available")
@@ -73,4 +79,11 @@ func (cmd *Device) Exec() error {
 	log.Infof("Transferring playback to %s...", cmd.deviceName)
 
 	return client.TransferPlayback(cmd.deviceID, cmd.api.PlayerStatus().Playing)
+}
+
+// setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.
+func (cmd *Device) setTabCompleteVerbs(lit string) {
+	cmd.setTabComplete(lit, []string{
+		"activate",
+	})
 }
