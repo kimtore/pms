@@ -22,6 +22,7 @@ import (
 	"github.com/ambientsound/pms/tokencache"
 	"github.com/ambientsound/pms/widgets"
 	"github.com/gdamore/tcell"
+	"github.com/google/uuid"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 	"io"
@@ -105,11 +106,8 @@ func (v *Visp) Main() error {
 				break
 			}
 			columns := v.Options().GetString(options.Columns)
-			sort := v.Options().GetString(options.Sort)
-			err = lst.Sort(strings.Split(sort, ","))
-			if err != nil {
-				log.Errorf("sort search results: %s")
-			}
+			lst.SetID(uuid.New().String())
+			lst.SetName(fmt.Sprintf("Search for '%s'", query))
 			lst.SetVisibleColumns(strings.Split(columns, ","))
 			v.SetList(lst)
 
