@@ -90,6 +90,10 @@ func (w *Table) Draw() {
 	xmax += 1
 	st := w.Style("header")
 	cursor := false
+	trackID := ""
+	if w.api.PlayerStatus().Item != nil {
+		trackID = w.api.PlayerStatus().Item.ID.String()
+	}
 
 	x := 0
 	for _, col := range w.columns {
@@ -111,11 +115,8 @@ func (w *Table) Draw() {
 		switch {
 		case cursor:
 			st = w.Style("cursor")
-			/*
-			// FIXME: dealing with current song?
-		case w.list.IndexAtSong(y, currentSong):
+		case row[list.RowIDKey] == trackID:
 			st = w.Style("currentSong")
-			*/
 		case w.list.Selected(y):
 			st = w.Style("selection")
 		default:

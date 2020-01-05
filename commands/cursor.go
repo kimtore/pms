@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 	"github.com/ambientsound/pms/list"
-	"github.com/ambientsound/pms/songlist"
 	"math/rand"
 	"strconv"
 	"time"
@@ -109,16 +108,25 @@ func (cmd *Cursor) Exec() error {
 	switch {
 	case cmd.nextOfDirection != 0:
 		cmd.absolute = cmd.runNextOf()
+
 	case cmd.current:
-		currentSong := cmd.api.Song()
-		if currentSong == nil {
-			return fmt.Errorf("no song is currently playing")
+		track := cmd.api.PlayerStatus().Item
+		if track == nil {
+			return fmt.Errorf("no track is currently playing")
 		}
-		sl, ok := cmd.list.(songlist.Songlist)
-		if !ok {
-			return fmt.Errorf("not in a songlist")
+
+		tl := cmd.api.Tracklist()
+		if tl == nil {
+			return fmt.Errorf("must be in a track list to locate current track")
 		}
-		return sl.CursorToSong(currentSong)
+
+		rown, err := tl.RowNum(track.ID.String())
+		if err != nil {
+			return fmt.Errorf("currently playing track is not in this list")
+		}
+
+		tl.SetCursor(rown)
+		return nil
 	}
 
 	switch {
