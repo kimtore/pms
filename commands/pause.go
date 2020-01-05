@@ -26,6 +26,9 @@ func (cmd *Pause) Exec() error {
 		return err
 	}
 
-	// FIXME: play if paused
-	return client.Pause()
+	if cmd.api.PlayerStatus().Playing {
+		return client.Pause()
+	} else {
+		return client.Play()
+	}
 }
