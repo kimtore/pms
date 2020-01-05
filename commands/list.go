@@ -9,6 +9,7 @@ import (
 	"github.com/zmb3/spotify"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
@@ -81,9 +82,16 @@ func (cmd *List) Parse() error {
 	return cmd.ParseEnd()
 }
 
+// Goto loads an external list and applies default columns and sorting.
+// Local, cached versions are tried first.
 func (cmd *List) Goto(id string) error {
 	var err error
 	var lst list.List
+
+	// Set Spotify object request limit. Ignore user-defined max limit here,
+	// because big queries will always be faster and consume less bandwidth,
+	// when requesting all the data.
+	const limit = 50
 
 	// Try a cached version of a named list
 	lst = cmd.api.Db().List(cmd.name)
@@ -98,16 +106,20 @@ func (cmd *List) Goto(id string) error {
 		return err
 	}
 
+	t := time.Now()
 	switch id {
 	case spotify_library.MyTracks:
-		lst, err = cmd.gotoMyTracks()
+		lst, err = cmd.gotoMyTracks(limit)
 	default:
 		err = fmt.Errorf("no such stored list: %s", id)
 	}
+	dur := time.Since(t)
 
 	if err != nil {
 		return err
 	}
+
+	log.Debugf("Retrieved %s with %d tracks in %s", id, lst.Len(), dur.String())
 
 	// Show default columns for all named lists
 	cols := strings.Split(cmd.api.Options().GetString("columns"), ",")
@@ -125,8 +137,10 @@ func (cmd *List) Goto(id string) error {
 	return nil
 }
 
-func (cmd *List) gotoMyTracks() (list.List, error) {
-	tracks, err := cmd.client.CurrentUsersTracks()
+func (cmd *List) gotoMyTracks(limit int) (list.List, error) {
+	tracks, err := cmd.client.CurrentUsersTracksOpt(&spotify.Options{
+		Limit: &limit,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -147,86 +161,30 @@ func (cmd *List) gotoMyTracks() (list.List, error) {
 }
 
 func (cmd *List) Exec() error {
-	if cmd.goto_ {
-		return cmd.Goto(cmd.name)
-	}
-
-	return nil
-	/*
 	switch {
-	case cmd.duplicate:
-		console.Log("Duplicating current songlist.")
-		orig := collection.Current()
-		list := songlist.New()
-		err = orig.Duplicate(list)
-		if err != nil {
-			return fmt.Errorf("Error during songlist duplication: %s", err)
-		}
-		name := fmt.Sprintf("%s (copy)", orig.Name())
-		list.SetName(name)
-		collection.Add(list)
-		index = collection.Len() - 1
-
-	case cmd.remove:
-		list := collection.Current()
-		console.Log("Removing current songlist '%s'.", list.Name())
-
-		err = list.Delete()
-		if err != nil {
-			return fmt.Errorf("Cannot remove songlist: %s", err)
-		}
-
-		index, err = collection.Index()
-
-		// If we got an error here, it means that the current songlist is
-		// not in the list of songlists. In this case, we can reset to the
-		// last used songlist.
-		if err != nil {
-			fallback := collection.Last()
-			if fallback == nil {
-				return fmt.Errorf("No songlists left.")
-			}
-			console.Log("Songlist was not found in the list of songlists. Activating fallback songlist '%s'.", fallback.Name())
-			// ui.PostFunc(func() { //FIXME???
-			collection.Activate(fallback)
-			// })
-			return nil
-		} else {
-			collection.Remove(index)
-		}
-
-		// If removing the last songlist, we need to decrease the songlist index by one.
-		if index == collection.Len() {
-			index--
-		}
-
-		console.Log("Removed songlist, now activating songlist no. %d", index)
+	case cmd.goto_:
+		return cmd.Goto(cmd.name)
 
 	case cmd.relative != 0:
-		index, err = collection.Index()
-		if err != nil {
-			index = 0
-		}
-		index += cmd.relative
-		if !collection.ValidIndex(index) {
-			len := collection.Len()
-			index = (index + len) % len
-		}
-		console.Log("Switching songlist index to relative %d, equalling absolute %d", cmd.relative, index)
+		cmd.api.Db().MoveCursor(cmd.relative)
+		cmd.api.SetList(cmd.api.Db().Current())
 
 	case cmd.absolute >= 0:
-		console.Log("Switching songlist index to absolute %d", cmd.absolute)
-		index = cmd.absolute
+		cmd.api.Db().SetCursor(cmd.absolute)
+		cmd.api.SetList(cmd.api.Db().Current())
 
-	default:
-		return fmt.Errorf("Unexpected END, expected position. Try one of: next prev <number>")
+	case cmd.duplicate:
+		tracklist := cmd.api.Tracklist()
+		if tracklist == nil {
+			return fmt.Errorf("only track lists can be duplicated")
+		}
+		return fmt.Errorf("duplicate is not implemented")
+
+	case cmd.remove:
+		return fmt.Errorf("remove is not implemented")
 	}
 
 	return nil
-
-	// ui.PostFunc(func() {//FIXME???
-	err = collection.ActivateIndex(index)
-	*/
 }
 
 // setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.
