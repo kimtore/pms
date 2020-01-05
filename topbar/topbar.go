@@ -9,7 +9,6 @@ import (
 
 // Fragment is the smallest possible unit in a topbar.
 type Fragment interface {
-
 	// Text returns a string that should be drawn,
 	// along with its stylesheet identifier.
 	Text() (string, string)
@@ -19,6 +18,7 @@ type Fragment interface {
 // their textual representation. When implementing a new topbar fragment, place
 // its constructor in this map.
 var fragments = map[string]func(api.API, string) Fragment{
+	"device":    NewDevice,
 	"elapsed":   NewElapsed,
 	"list":      NewList,
 	"mode":      NewMode,

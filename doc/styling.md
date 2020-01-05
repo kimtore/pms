@@ -52,6 +52,14 @@ All tag names are in lowercase.
 
 See [below](#top-bar-variables) for corresponding variables.
 
+* `deviceName`
+
+  Corresponds to `${device}` or `${device|name}`.
+  
+* `deviceType`
+
+  Corresponds to `${device|type}`.
+  
 * `elapsedPercentage`
 
   Corresponds to `${elapsed|percentage}`.
@@ -213,6 +221,14 @@ Borders are added for emphasis, and are not part of the rendered text.
 * `${volume}`
 
   The current volume, or `MUTE` if the volume is zero.
+
+* `${device}` or `${device|name}`
+
+  Name of the Spotify device where music is being played.
+
+* `${device|type}`
+
+  Type of device currently playing.
 
 * `${tag|<tag>}`
 
