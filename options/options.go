@@ -113,6 +113,7 @@ style volume green
 
 # Other styles
 style commandText default
+style currentDevice white green
 style errorText black red
 style logLevel white
 style logMessage gray

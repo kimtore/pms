@@ -5,6 +5,8 @@ import (
 	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/log"
 	"github.com/ambientsound/pms/options"
+	"github.com/ambientsound/pms/spotify/devices"
+	"github.com/ambientsound/pms/spotify/tracklist"
 	"math"
 	"time"
 
@@ -16,6 +18,8 @@ import (
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/views"
 )
+
+type lineStyler func(row list.Row) (string, bool)
 
 // Table is a tcell widget which draws a gridded table from a List instance.
 type Table struct {
@@ -76,6 +80,10 @@ func (w *Table) SetList(lst list.List) {
 }
 
 func (w *Table) Draw() {
+	var styler lineStyler
+	var specialStyler lineStyler
+	var st tcell.Style
+
 	log.Debugf("table widget: draw")
 
 	w.SetStylesheet(w.api.Styles())
@@ -87,43 +95,59 @@ func (w *Table) Draw() {
 	w.lastDraw = time.Now()
 
 	_, ymin, xmax, ymax := w.viewport.GetVisible()
+	x, y := 0, 0
 	xmax += 1
-	st := w.Style("header")
 	cursor := false
-	trackID := ""
-	if w.api.PlayerStatus().Item != nil {
-		trackID = w.api.PlayerStatus().Item.ID.String()
+
+	_, isTracklist := w.list.(*spotify_tracklist.List)
+	_, isDevicelist := w.list.(*spotify_devices.List)
+
+	// Special line styling based on list type
+	switch {
+	case isTracklist && w.api.PlayerStatus().Item != nil:
+		trackID := w.api.PlayerStatus().Item.ID.String()
+		specialStyler = func(row list.Row) (string, bool) {
+			return `currentSong`, trackID == row[list.RowIDKey]
+		}
+	case isDevicelist:
+		id := w.api.PlayerStatus().Device.ID
+		deviceID := id.String()
+		specialStyler = func(row list.Row) (string, bool) {
+			return `currentDevice`, deviceID == row[list.RowIDKey]
+		}
+	default:
+		specialStyler = func(row list.Row) (string, bool) {
+			return ``, false
+		}
 	}
 
-	x := 0
-	for _, col := range w.columns {
-		runes := []rune(col.title)
-		strmin := col.width - col.rightPadding
-		x = w.drawNext(w.view, x, 0, strmin, col.width, runes, st)
+	// Generic line styling.
+	styler = func(row list.Row) (string, bool) {
+		st, special := specialStyler(row)
+		switch {
+		case cursor:
+			return `cursor`, true
+		case special:
+			return st, special
+		case w.list.Selected(y):
+			return `selection`, true
+		default:
+			return `default`, false
+		}
 	}
 
-	for y := ymin; y <= ymax; y++ {
+	w.drawHeaders()
+
+	for y = ymin; y <= ymax; y++ {
 		row := w.list.Row(y)
 		if row == nil {
 			panic("nil row")
 		}
 
-		lineStyled := true
-
-		// Style based on song's role
+		x = 0
 		cursor = y == w.list.Cursor()
-		switch {
-		case cursor:
-			st = w.Style("cursor")
-		case row[list.RowIDKey] == trackID:
-			st = w.Style("currentSong")
-		case w.list.Selected(y):
-			st = w.Style("selection")
-		default:
-			lineStyled = false
-		}
-
-		x := 0
+		styleName, lineStyled := styler(row)
+		st = w.Style(styleName)
 
 		// Draw each column separately
 		for _, col := range w.columns {
@@ -137,6 +161,16 @@ func (w *Table) Draw() {
 
 			x = w.drawNext(&w.viewport, x, y, strmin, col.width, runes, st)
 		}
+	}
+}
+
+func (w *Table) drawHeaders() {
+	x := 0
+	st := w.Style("header")
+	for _, col := range w.columns {
+		runes := []rune(col.title)
+		strmin := col.width - col.rightPadding
+		x = w.drawNext(w.view, x, 0, strmin, col.width, runes, st)
 	}
 }
 
