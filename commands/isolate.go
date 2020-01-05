@@ -5,6 +5,7 @@ import (
 	"github.com/ambientsound/pms/log"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/spotify/aggregator"
+	"github.com/google/uuid"
 	"strconv"
 	"strings"
 
@@ -79,8 +80,7 @@ func (cmd *Isolate) Exec() error {
 		return fmt.Errorf("no results found when isolating by %s", strings.Join(cmd.tags, ", "))
 	}
 
-	// Post-processing FIXME
-	columns := cmd.api.Options().GetString(options.Columns)
+	// Post-processing: sort in default order
 	sort := cmd.api.Options().GetString(options.Sort)
 
 	err = result.Sort(strings.Split(sort, ","))
@@ -88,15 +88,18 @@ func (cmd *Isolate) Exec() error {
 		log.Errorf("error sorting: %s", err)
 	}
 
-	cmd.api.UI().TableWidget().SetList(result)
-	cmd.api.UI().TableWidget().SetColumns(strings.Split(columns, ","))
+	result.SetVisibleColumns(list.VisibleColumns())
+	result.SetID(uuid.New().String())
 
-	// Clear selection in the source list, and add a new list to the index.
-	// list.ClearSelection()
-	// panel.Add(result)
-	// panel.Activate(result)
-	// list.CursorToSong(song)
-	// FIXME
+	// Figure out a clever name
+	parts := make([]string, len(cmd.tags))
+	for i, tag := range cmd.tags {
+		parts[i] = tag + ":" + row[tag]
+	}
+	result.SetName(strings.Join(parts, ", "))
+
+	// Activate results
+	cmd.api.SetList(result)
 
 	return nil
 }
