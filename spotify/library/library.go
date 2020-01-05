@@ -41,6 +41,10 @@ var rows = []list.Row{
 		list.RowIDKey: MyTracks,
 		listName:      "All liked songs from my library",
 	},
+	{
+		list.RowIDKey: TopTracks,
+		listName:      "Top tracks from my listening history",
+	},
 }
 
 func New() *List {

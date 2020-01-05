@@ -82,6 +82,33 @@ func (cmd *List) Parse() error {
 	return cmd.ParseEnd()
 }
 
+func (cmd *List) Exec() error {
+	switch {
+	case cmd.goto_:
+		return cmd.Goto(cmd.name)
+
+	case cmd.relative != 0:
+		cmd.api.Db().MoveCursor(cmd.relative)
+		cmd.api.SetList(cmd.api.Db().Current())
+
+	case cmd.absolute >= 0:
+		cmd.api.Db().SetCursor(cmd.absolute)
+		cmd.api.SetList(cmd.api.Db().Current())
+
+	case cmd.duplicate:
+		tracklist := cmd.api.Tracklist()
+		if tracklist == nil {
+			return fmt.Errorf("only track lists can be duplicated")
+		}
+		return fmt.Errorf("duplicate is not implemented")
+
+	case cmd.remove:
+		return fmt.Errorf("remove is not implemented")
+	}
+
+	return nil
+}
+
 // Goto loads an external list and applies default columns and sorting.
 // Local, cached versions are tried first.
 func (cmd *List) Goto(id string) error {
@@ -110,6 +137,8 @@ func (cmd *List) Goto(id string) error {
 	switch id {
 	case spotify_library.MyTracks:
 		lst, err = cmd.gotoMyTracks(limit)
+	case spotify_library.TopTracks:
+		lst, err = cmd.gotoTopTracks(limit)
 	default:
 		err = fmt.Errorf("no such stored list: %s", id)
 	}
@@ -120,17 +149,11 @@ func (cmd *List) Goto(id string) error {
 	}
 
 	log.Debugf("Retrieved %s with %d tracks in %s", id, lst.Len(), dur.String())
+	log.Infof("Loaded %s.", lst.Name())
 
 	// Show default columns for all named lists
 	cols := strings.Split(cmd.api.Options().GetString("columns"), ",")
 	lst.SetVisibleColumns(cols)
-
-	// Apply default sorting for all named lists
-	sort := strings.Split(cmd.api.Options().GetString("sort"), ",")
-	err = lst.Sort(sort)
-	if err != nil {
-		log.Errorf("unable to sort: %s", err)
-	}
 
 	// Reset cursor
 	lst.SetCursor(0)
@@ -148,46 +171,38 @@ func (cmd *List) gotoMyTracks(limit int) (list.List, error) {
 		return nil, err
 	}
 
-	log.Infof("Loading saved tracks...")
-
 	lst, err := spotify_tracklist.NewFromSavedTrackPage(*cmd.client, tracks)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Debugf("Loaded saved tracks.")
-
 	lst.SetName("Saved tracks")
 	lst.SetID(spotify_library.MyTracks)
+
+	// Apply default sorting
+	sort := strings.Split(cmd.api.Options().GetString("sort"), ",")
+	_ = lst.Sort(sort)
 
 	return lst, nil
 }
 
-func (cmd *List) Exec() error {
-	switch {
-	case cmd.goto_:
-		return cmd.Goto(cmd.name)
-
-	case cmd.relative != 0:
-		cmd.api.Db().MoveCursor(cmd.relative)
-		cmd.api.SetList(cmd.api.Db().Current())
-
-	case cmd.absolute >= 0:
-		cmd.api.Db().SetCursor(cmd.absolute)
-		cmd.api.SetList(cmd.api.Db().Current())
-
-	case cmd.duplicate:
-		tracklist := cmd.api.Tracklist()
-		if tracklist == nil {
-			return fmt.Errorf("only track lists can be duplicated")
-		}
-		return fmt.Errorf("duplicate is not implemented")
-
-	case cmd.remove:
-		return fmt.Errorf("remove is not implemented")
+func (cmd *List) gotoTopTracks(limit int) (list.List, error) {
+	tracks, err := cmd.client.CurrentUsersTopTracksOpt(&spotify.Options{
+		Limit: &limit,
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	lst, err := spotify_tracklist.NewFromFullTrackPage(*cmd.client, tracks)
+	if err != nil {
+		return nil, err
+	}
+
+	lst.SetName("Top tracks")
+	lst.SetID(spotify_library.TopTracks)
+
+	return lst, nil
 }
 
 // setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.
