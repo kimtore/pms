@@ -67,7 +67,7 @@ const Defaults string = `
 set nocenter
 set columns=artist,title,track,album,year,time,popularity
 set sort=track,disc,album,year,albumArtist
-set topbar="|$shortname $version||;${tag|artist} - ${tag|title}||\\#${tag|track} ${tag|album};$device $volume $mode $elapsed $state $time;|[${list|index}/${list|total}] ${list|title}||;;"
+set topbar="${tag|artist} - ${tag|title}|$shortname $version|$elapsed $state $time;\\#${tag|track} ${tag|album}|${list|title} [${list|index}/${list|total}]|$device $mode $volume;;"
 set limit=50
 set pollinterval=10
 

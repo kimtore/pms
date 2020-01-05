@@ -82,4 +82,4 @@ See the documentation on [setting options](commands.md#setting-global-options) f
   Define the layout and visible items in the _top bar_.
   See the [styling guide](styling.md#top-bar) for information on how to configure the top bar.
 
-  The default value is `"|$shortname $version||;${tag|artist} - ${tag|title}||${tag|album}, ${tag|year};$volume $mode $elapsed ${state} $time;|[${list|index}/${list|total}] ${list|title}||;;"`.
+  The default value is `"${tag|artist} - ${tag|title}|$shortname $version|$elapsed $state $time;\\#${tag|track} ${tag|album}|${list|title} [${list|index}/${list|total}]|$device $mode $volume;;"`
