@@ -9,6 +9,7 @@ import (
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/parser"
+	"github.com/ambientsound/pms/spotify/devices"
 	"github.com/ambientsound/pms/spotify/library"
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/utils"
@@ -16,6 +17,7 @@ import (
 )
 
 const (
+	DevicesContext   = "devices"
 	GlobalContext    = "global"
 	LibraryContext   = "library"
 	TracklistContext = "tracklist"
@@ -25,6 +27,7 @@ const (
 // contexts are used to bind keyboard commands to a specific area of the program.
 // For instance, the <ENTER> key can be bound to `play` in track lists and `print _id` in other lists.
 var contexts = []string{
+	DevicesContext,
 	GlobalContext,
 	LibraryContext,
 	TracklistContext,
@@ -40,6 +43,7 @@ var Verbs = map[string]func(api.API) Command{
 	"copy":      NewYank,
 	"cursor":    NewCursor,
 	"cut":       NewCut,
+	"device":    NewDevice,
 	"inputmode": NewInputMode,
 	"isolate":   NewIsolate,
 	"list":      NewList,
@@ -109,6 +113,8 @@ func Contexts(a api.API) []string {
 		ctx = append(ctx, LibraryContext)
 	case *spotify_tracklist.List:
 		ctx = append(ctx, TracklistContext)
+	case *spotify_devices.List:
+		ctx = append(ctx, DevicesContext)
 	}
 	ctx = append(ctx, GlobalContext)
 	return ctx

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/log"
+	"github.com/ambientsound/pms/spotify/devices"
 	"github.com/ambientsound/pms/spotify/library"
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/zmb3/spotify"
@@ -139,6 +140,8 @@ func (cmd *List) Goto(id string) error {
 		lst, err = cmd.gotoMyTracks(limit)
 	case spotify_library.TopTracks:
 		lst, err = cmd.gotoTopTracks(limit)
+	case spotify_library.Devices:
+		lst, err = cmd.gotoDevices()
 	default:
 		err = fmt.Errorf("no such stored list: %s", id)
 	}
@@ -150,10 +153,6 @@ func (cmd *List) Goto(id string) error {
 
 	log.Debugf("Retrieved %s with %d tracks in %s", id, lst.Len(), dur.String())
 	log.Infof("Loaded %s.", lst.Name())
-
-	// Show default columns for all named lists
-	cols := strings.Split(cmd.api.Options().GetString("columns"), ",")
-	lst.SetVisibleColumns(cols)
 
 	// Reset cursor
 	lst.SetCursor(0)
@@ -178,10 +177,8 @@ func (cmd *List) gotoMyTracks(limit int) (list.List, error) {
 
 	lst.SetName("Saved tracks")
 	lst.SetID(spotify_library.MyTracks)
-
-	// Apply default sorting
-	sort := strings.Split(cmd.api.Options().GetString("sort"), ",")
-	_ = lst.Sort(sort)
+	cmd.defaultSort(lst)
+	cmd.defaultColumns(lst)
 
 	return lst, nil
 }
@@ -201,8 +198,13 @@ func (cmd *List) gotoTopTracks(limit int) (list.List, error) {
 
 	lst.SetName("Top tracks")
 	lst.SetID(spotify_library.TopTracks)
+	cmd.defaultColumns(lst)
 
 	return lst, nil
+}
+
+func (cmd *List) gotoDevices() (list.List, error) {
+	return spotify_devices.New(*cmd.client)
 }
 
 // setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.
@@ -219,4 +221,16 @@ func (cmd *List) setTabCompleteVerbs(lit string) {
 		"remove",
 		"up",
 	})
+}
+
+// Apply default sorting to a list
+func (cmd *List) defaultSort(lst list.List) {
+	sort := strings.Split(cmd.api.Options().GetString("sort"), ",")
+	_ = lst.Sort(sort)
+}
+
+// Show default columns for all named lists
+func (cmd *List) defaultColumns(lst list.List) {
+	cols := strings.Split(cmd.api.Options().GetString("columns"), ",")
+	lst.SetVisibleColumns(cols)
 }

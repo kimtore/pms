@@ -20,6 +20,7 @@ const (
 
 const (
 	Categories          = "categories"
+	Devices             = "devices"
 	FeaturedPlaylists   = "featured-playlists"
 	FollowedArtists     = "followed-artists"
 	MyAlbums            = "my-albums"
@@ -33,6 +34,10 @@ const (
 )
 
 var rows = []list.Row{
+	{
+		list.RowIDKey: Devices,
+		listName:      "Player devices",
+	},
 	{
 		list.RowIDKey: MyPrivatePlaylists,
 		listName:      "Personal playlists from my Spotify library",

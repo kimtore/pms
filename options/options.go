@@ -176,11 +176,12 @@ bind global <right> seek +5
 bind global <Alt-M> volume mute
 bind global S single
 
-# Library and window list
+# Special windows
 bind global c show library
 bind global w show windows
 bind windows <Enter> show selected
 bind library <Enter> show selected
+bind devices <Enter> device activate
 
 # Keyboard bindings: other
 bind global <C-c> quit
