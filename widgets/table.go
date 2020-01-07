@@ -194,7 +194,7 @@ func (w *Table) Height() int {
 func (w *Table) setViewportSize() {
 	x, y := w.Size()
 	w.viewport.SetContentSize(x, w.list.Len(), true)
-	w.viewport.SetSize(x, utils.Min(y-1, w.list.Len()))
+	w.viewport.SetSize(x, utils.Min(y, w.list.Len()))
 	w.validateViewport()
 }
 
@@ -219,7 +219,6 @@ func (w *Table) validateViewport() {
 
 func (w *Table) Resize() {
 	w.SetColumns(w.ColumnNames())
-	w.SetView(w.view)
 }
 
 func (w *Table) HandleEvent(ev tcell.Event) bool {

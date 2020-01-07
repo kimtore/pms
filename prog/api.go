@@ -88,6 +88,7 @@ func (v *Visp) OptionChanged(key string) {
 		matrix, err := topbar.Parse(v, config)
 		if err == nil {
 			v.Termui.Widgets.Topbar.SetMatrix(matrix)
+			v.Termui.Resize()
 		} else {
 			log.Errorf("topbar configuration: %s", err)
 		}

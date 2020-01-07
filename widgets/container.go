@@ -53,7 +53,10 @@ func (app *Application) Init() {
 	app.Widgets.Topbar = NewTopbar(app.api)
 	app.Widgets.table = NewTable(app.api)
 	app.Widgets.multibar = NewMultibarWidget(app.api)
+	app.Resize()
+}
 
+func (app *Application) Resize() {
 	app.Widgets.layout = views.NewBoxLayout(views.Vertical)
 	app.Widgets.layout.AddWidget(app.Widgets.Topbar, 0)
 	app.Widgets.layout.AddWidget(app.Widgets.table, 1)
@@ -67,8 +70,7 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 		cols, rows := e.Size()
 		log.Debugf("terminal resize: %dx%d", cols, rows)
 		app.screen.Sync()
-		app.Widgets.layout.Resize()
-		app.Widgets.layout.SetView(app.screen)
+		app.Resize()
 		return true
 	case *tcell.EventKey:
 		return false
