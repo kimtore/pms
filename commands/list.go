@@ -6,6 +6,7 @@ import (
 	"github.com/ambientsound/pms/log"
 	"github.com/ambientsound/pms/spotify/devices"
 	"github.com/ambientsound/pms/spotify/library"
+	"github.com/ambientsound/pms/spotify/playlists"
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/zmb3/spotify"
 	"strconv"
@@ -136,6 +137,8 @@ func (cmd *List) Goto(id string) error {
 
 	t := time.Now()
 	switch id {
+	case spotify_library.MyPlaylists:
+		lst, err = cmd.gotoMyPrivatePlaylists(limit)
 	case spotify_library.MyTracks:
 		lst, err = cmd.gotoMyTracks(limit)
 	case spotify_library.TopTracks:
@@ -160,6 +163,26 @@ func (cmd *List) Goto(id string) error {
 	cmd.api.SetList(lst)
 
 	return nil
+}
+
+func (cmd *List) gotoMyPrivatePlaylists(limit int) (list.List, error) {
+	playlists, err := cmd.client.CurrentUsersPlaylistsOpt(&spotify.Options{
+		Limit: &limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	lst, err := spotify_playlists.New(*cmd.client, playlists)
+	if err != nil {
+		return nil, err
+	}
+
+	lst.SetName("My playlists")
+	lst.SetID(spotify_library.MyPlaylists)
+	lst.SetVisibleColumns(lst.ColumnNames())
+
+	return lst, nil
 }
 
 func (cmd *List) gotoMyTracks(limit int) (list.List, error) {

@@ -26,7 +26,6 @@ const (
 	MyAlbums            = "my-albums"
 	MyFollowedPlaylists = "my-followed-playlists"
 	MyPlaylists         = "my-playlists"
-	MyPrivatePlaylists  = "my-private-playlists"
 	MyTracks            = "my-tracks"
 	NewReleases         = "new-releases"
 	TopArtists          = "top-artists"
@@ -39,8 +38,8 @@ var rows = []list.Row{
 		listName:      "Player devices",
 	},
 	{
-		list.RowIDKey: MyPrivatePlaylists,
-		listName:      "Personal playlists from my Spotify library",
+		list.RowIDKey: MyPlaylists,
+		listName:      "Playlists from my Spotify library",
 	},
 	{
 		list.RowIDKey: MyTracks,
