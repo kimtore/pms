@@ -22,11 +22,12 @@ type List struct {
 	command
 	api       api.API
 	client    *spotify.Client
-	relative  int
 	absolute  int
 	duplicate bool
-	remove    bool
 	goto_     bool
+	open      bool
+	relative  int
+	remove    bool
 	name      string
 }
 
@@ -58,6 +59,8 @@ func (cmd *List) Parse() error {
 			cmd.absolute = cmd.api.Db().Len() - 1
 		case "goto":
 			cmd.goto_ = true
+		case "open":
+			cmd.open = true
 		default:
 			i, err := strconv.Atoi(lit)
 			if err != nil {
@@ -88,6 +91,13 @@ func (cmd *List) Exec() error {
 	switch {
 	case cmd.goto_:
 		return cmd.Goto(cmd.name)
+
+	case cmd.open:
+		row := cmd.api.List().CursorRow()
+		if row == nil {
+			return fmt.Errorf("no playlist selected")
+		}
+		return cmd.Goto(row[list.RowIDKey])
 
 	case cmd.relative != 0:
 		cmd.api.Db().MoveCursor(cmd.relative)
@@ -146,7 +156,7 @@ func (cmd *List) Goto(id string) error {
 	case spotify_library.Devices:
 		lst, err = cmd.gotoDevices()
 	default:
-		err = fmt.Errorf("no such stored list: %s", id)
+		lst, err = cmd.gotoListWithID(id, limit)
 	}
 	dur := time.Since(t)
 
@@ -154,7 +164,7 @@ func (cmd *List) Goto(id string) error {
 		return err
 	}
 
-	log.Debugf("Retrieved %s with %d tracks in %s", id, lst.Len(), dur.String())
+	log.Debugf("Retrieved %s with %d items in %s", id, lst.Len(), dur.String())
 	log.Infof("Loaded %s.", lst.Name())
 
 	// Reset cursor
@@ -163,6 +173,33 @@ func (cmd *List) Goto(id string) error {
 	cmd.api.SetList(lst)
 
 	return nil
+}
+
+func (cmd *List) gotoListWithID(id string, limit int) (list.List, error) {
+	sid := spotify.ID(id)
+
+	playlist, err := cmd.client.GetPlaylist(sid)
+	if err != nil {
+		return nil, err
+	}
+
+	tracks, err := cmd.client.GetPlaylistTracksOpt(sid, &spotify.Options{
+		Limit: &limit,
+	}, "")
+	if err != nil {
+		return nil, err
+	}
+
+	lst, err := spotify_tracklist.NewFromPlaylistTrackPage(*cmd.client, tracks)
+	if err != nil {
+		return nil, err
+	}
+
+	lst.SetName(fmt.Sprintf("%s by %s", playlist.Name, playlist.Owner.DisplayName))
+	lst.SetID(id)
+	cmd.defaultColumns(lst)
+
+	return lst, nil
 }
 
 func (cmd *List) gotoMyPrivatePlaylists(limit int) (list.List, error) {

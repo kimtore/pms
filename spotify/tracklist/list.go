@@ -49,6 +49,25 @@ func NewFromSavedTrackPage(client spotify.Client, source *spotify.SavedTrackPage
 	}
 
 	return NewFromTracks(tracks), nil
+}
+
+func NewFromPlaylistTrackPage(client spotify.Client, source *spotify.PlaylistTrackPage) (*List, error) {
+	var err error
+
+	tracks := make([]spotify.FullTrack, 0, source.Total)
+
+	for err == nil {
+		for _, track := range source.Tracks {
+			tracks = append(tracks, track.Track)
+		}
+		err = client.NextPage(source)
+	}
+
+	if err != spotify.ErrNoMorePages {
+		return nil, err
+	}
+
+	return NewFromTracks(tracks), nil
 
 }
 

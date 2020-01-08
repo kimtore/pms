@@ -11,6 +11,7 @@ import (
 	"github.com/ambientsound/pms/parser"
 	"github.com/ambientsound/pms/spotify/devices"
 	"github.com/ambientsound/pms/spotify/library"
+	"github.com/ambientsound/pms/spotify/playlists"
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/utils"
 	"sort"
@@ -20,6 +21,7 @@ const (
 	DevicesContext   = "devices"
 	GlobalContext    = "global"
 	LibraryContext   = "library"
+	PlaylistsContext = "playlists"
 	TracklistContext = "tracklist"
 	WindowsContext   = "windows"
 )
@@ -30,6 +32,7 @@ var contexts = []string{
 	DevicesContext,
 	GlobalContext,
 	LibraryContext,
+	PlaylistsContext,
 	TracklistContext,
 	WindowsContext,
 }
@@ -113,6 +116,8 @@ func Contexts(a api.API) []string {
 		ctx = append(ctx, LibraryContext)
 	case *spotify_tracklist.List:
 		ctx = append(ctx, TracklistContext)
+	case *spotify_playlists.List:
+		ctx = append(ctx, PlaylistsContext)
 	case *spotify_devices.List:
 		ctx = append(ctx, DevicesContext)
 	}

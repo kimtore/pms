@@ -183,6 +183,7 @@ bind global w show windows
 bind windows <Enter> show selected
 bind library <Enter> show selected
 bind devices <Enter> device activate
+bind playlists <Enter> list open
 
 # Keyboard bindings: other
 bind global <C-c> quit
