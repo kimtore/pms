@@ -68,7 +68,7 @@ func (app *Application) HandleEvent(ev tcell.Event) bool {
 	switch e := ev.(type) {
 	case *tcell.EventResize:
 		cols, rows := e.Size()
-		log.Debugf("terminal resize: %dx%d", cols, rows)
+		log.Debugf("Terminal resize: %dx%d", cols, rows)
 		app.screen.Sync()
 		app.Resize()
 		return true

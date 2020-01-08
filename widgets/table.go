@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/ambientsound/pms/api"
-	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/utils"
 
@@ -57,17 +56,6 @@ func (w *Table) drawNext(v views.View, x, y, strmin, strmax int, runes []rune, s
 	return x
 }
 
-func (w *Table) drawOneTagLine(x, y, xmax int, s *song.Song, tag string, defaultStyle string, style tcell.Style, lineStyled bool) int {
-	if !lineStyled {
-		style = w.Style(defaultStyle)
-	}
-
-	runes := s.Tags[tag]
-	strmin := len(runes)
-
-	return w.drawNext(&w.viewport, x, y, strmin, xmax+1, runes, style)
-}
-
 func (w *Table) List() list.List {
 	return w.list
 }
@@ -84,8 +72,6 @@ func (w *Table) Draw() {
 	var specialStyler lineStyler
 	var st tcell.Style
 
-	log.Debugf("table widget: draw")
-
 	w.SetStylesheet(w.api.Styles())
 
 	// Make sure that the viewport matches the list size.
@@ -94,6 +80,9 @@ func (w *Table) Draw() {
 	// Update draw time
 	w.lastDraw = time.Now()
 
+	// a, b, c, d := w.viewport.GetPhysical()
+	// log.Debugf("Drawing table widget on viewport: %#v", w.viewport)
+	// log.Debugf("Visible phys coordinates: (%v,%v) (%v,%v)", a, b, c, d)
 	_, ymin, xmax, ymax := w.viewport.GetVisible()
 	x, y := 0, 0
 	xmax += 1
@@ -141,7 +130,7 @@ func (w *Table) Draw() {
 	for y = ymin; y <= ymax; y++ {
 		row := w.list.Row(y)
 		if row == nil {
-			panic("nil row")
+			panic(fmt.Sprintf("nil row: %d", y))
 		}
 
 		x = 0
@@ -194,7 +183,7 @@ func (w *Table) Height() int {
 func (w *Table) setViewportSize() {
 	x, y := w.Size()
 	w.viewport.SetContentSize(x, w.list.Len(), true)
-	w.viewport.SetSize(x, utils.Min(y, w.list.Len()))
+	w.viewport.SetSize(x, utils.Min(y-1, w.list.Len()))
 	w.validateViewport()
 }
 
@@ -218,6 +207,8 @@ func (w *Table) validateViewport() {
 }
 
 func (w *Table) Resize() {
+	x, y := w.Size()
+	w.viewport.Resize(0, 1, x, y-1)
 	w.SetColumns(w.ColumnNames())
 }
 
@@ -227,7 +218,7 @@ func (w *Table) HandleEvent(ev tcell.Event) bool {
 
 func (w *Table) SetView(v views.View) {
 	w.view = v
-	w.viewport = *views.NewViewPort(v, 0, 1, -1, -1)
+	w.viewport = *views.NewViewPort(v, 0, 0, -1, -1)
 }
 
 func (w *Table) Size() (int, int) {
