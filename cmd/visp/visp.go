@@ -39,7 +39,8 @@ func main() {
 			logAndStderr("*********************************")
 			logAndStderr("****** Visp has crashed!!! ******")
 			logAndStderr("*********************************")
-			logAndStderr("Please report this bug at the Github project and include the following stack trace:")
+			logAndStderr("Please report this bug at the Github project and include the following information:")
+			logAndStderr(fmt.Sprintf("Error message: %s", err))
 			stacktrace := strings.Split(string(debug.Stack()), "\n")
 			for _, line := range stacktrace {
 				logAndStderr(line)
