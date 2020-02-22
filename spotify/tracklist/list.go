@@ -2,10 +2,11 @@ package spotify_tracklist
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/utils"
 	"github.com/zmb3/spotify"
-	"strings"
 )
 
 type List struct {
@@ -22,6 +23,25 @@ func NewFromFullTrackPage(client spotify.Client, source *spotify.FullTrackPage) 
 
 	for err == nil {
 		tracks = append(tracks, source.Tracks...)
+		err = client.NextPage(source)
+	}
+
+	if err != spotify.ErrNoMorePages {
+		return nil, err
+	}
+
+	return NewFromTracks(tracks), nil
+}
+
+func NewFromSimpleTrackPageAndAlbum(client spotify.Client, source *spotify.SimpleTrackPage, album spotify.SimpleAlbum) (*List, error) {
+	var err error
+
+	tracks := make([]spotify.FullTrack, 0, source.Total)
+
+	for err == nil {
+		for _, track := range source.Tracks {
+			tracks = append(tracks, AlbumTrack(track, album))
+		}
 		err = client.NextPage(source)
 	}
 
@@ -69,6 +89,40 @@ func NewFromPlaylistTrackPage(client spotify.Client, source *spotify.PlaylistTra
 
 	return NewFromTracks(tracks), nil
 
+}
+
+func AlbumTrack(track spotify.SimpleTrack, album spotify.SimpleAlbum) spotify.FullTrack {
+	return spotify.FullTrack{
+		SimpleTrack: track,
+		Album:       album,
+	}
+}
+
+func NewFromSimpleAlbumPage(client spotify.Client, source *spotify.SimpleAlbumPage) (*List, error) {
+	var err error
+
+	tracks := make([]spotify.FullTrack, 0, source.Total)
+
+	for err == nil {
+		for _, album := range source.Albums {
+			t, err := client.GetAlbumTracks(album.ID)
+			if err != nil {
+				break
+			}
+			lst, err := NewFromSimpleTrackPageAndAlbum(client, t, album)
+			if err != nil {
+				break
+			}
+			tracks = append(tracks, lst.Tracks()...)
+		}
+		err = client.NextPage(source)
+	}
+
+	if err != spotify.ErrNoMorePages {
+		return nil, err
+	}
+
+	return NewFromTracks(tracks), nil
 }
 
 func NewFromTracks(tracks []spotify.FullTrack) *List {

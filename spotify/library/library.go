@@ -42,6 +42,10 @@ var rows = []list.Row{
 		listName:      "Featured playlists",
 	},
 	{
+		list.RowIDKey: NewReleases,
+		listName:      "New releases",
+	},
+	{
 		list.RowIDKey: MyPlaylists,
 		listName:      "Playlists from my Spotify library",
 	},

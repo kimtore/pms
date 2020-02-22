@@ -130,3 +130,21 @@ func TopTracks(client spotify.Client, limit int) (*spotify_tracklist.List, error
 
 	return lst, nil
 }
+
+func NewReleases(client spotify.Client) (*spotify_tracklist.List, error) {
+	albums, err := client.NewReleases()
+	if err != nil {
+		return nil, err
+	}
+
+	lst, err := spotify_tracklist.NewFromSimpleAlbumPage(client, albums)
+	if err != nil {
+		return nil, err
+	}
+
+	lst.SetName("New releases")
+	lst.SetID(spotify_library.NewReleases)
+	lst.SetVisibleColumns(options.GetList(options.Columns))
+
+	return lst, nil
+}
