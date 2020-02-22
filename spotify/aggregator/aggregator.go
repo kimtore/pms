@@ -3,8 +3,9 @@ package spotify_aggregator
 import (
 	"fmt"
 
-	spotify_library "github.com/ambientsound/pms/spotify/library"
-	spotify_playlists "github.com/ambientsound/pms/spotify/playlists"
+	"github.com/ambientsound/pms/options"
+	"github.com/ambientsound/pms/spotify/library"
+	"github.com/ambientsound/pms/spotify/playlists"
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/zmb3/spotify"
 )
@@ -64,6 +65,7 @@ func ListWithID(client spotify.Client, id string, limit int) (*spotify_tracklist
 
 	lst.SetName(fmt.Sprintf("%s by %s", playlist.Name, playlist.Owner.DisplayName))
 	lst.SetID(id)
+	lst.SetVisibleColumns(options.GetList(options.Columns))
 
 	return lst, nil
 }
@@ -103,6 +105,8 @@ func MyTracks(client spotify.Client, limit int) (*spotify_tracklist.List, error)
 
 	lst.SetName("Saved tracks")
 	lst.SetID(spotify_library.MyTracks)
+	lst.SetVisibleColumns(options.GetList(options.Columns))
+	_ = lst.Sort(options.GetList(options.Sort))
 
 	return lst, nil
 }
@@ -122,6 +126,7 @@ func TopTracks(client spotify.Client, limit int) (*spotify_tracklist.List, error
 
 	lst.SetName("Top tracks")
 	lst.SetID(spotify_library.TopTracks)
+	lst.SetVisibleColumns(options.GetList(options.Columns))
 
 	return lst, nil
 }

@@ -3,12 +3,11 @@ package commands
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/log"
-	spotify_aggregator "github.com/ambientsound/pms/spotify/aggregator"
+	"github.com/ambientsound/pms/spotify/aggregator"
 	"github.com/ambientsound/pms/spotify/devices"
 	"github.com/ambientsound/pms/spotify/library"
 	"github.com/zmb3/spotify"
@@ -153,17 +152,8 @@ func (cmd *List) Goto(id string) error {
 		lst, err = spotify_aggregator.FeaturedPlaylists(*cmd.client, limit)
 	case spotify_library.MyTracks:
 		lst, err = spotify_aggregator.MyTracks(*cmd.client, limit)
-		if err != nil {
-			break
-		}
-		cmd.defaultSort(lst)
-		cmd.defaultColumns(lst)
 	case spotify_library.TopTracks:
 		lst, err = spotify_aggregator.TopTracks(*cmd.client, limit)
-		if err != nil {
-			break
-		}
-		cmd.defaultColumns(lst)
 	case spotify_library.Devices:
 		lst, err = spotify_devices.New(*cmd.client)
 	default:
@@ -171,7 +161,6 @@ func (cmd *List) Goto(id string) error {
 		if err != nil {
 			break
 		}
-		cmd.defaultColumns(lst)
 	}
 	dur := time.Since(t)
 
@@ -204,16 +193,4 @@ func (cmd *List) setTabCompleteVerbs(lit string) {
 		"remove",
 		"up",
 	})
-}
-
-// Apply default sorting to a list
-func (cmd *List) defaultSort(lst list.List) {
-	sort := strings.Split(cmd.api.Options().GetString("sort"), ",")
-	_ = lst.Sort(sort)
-}
-
-// Show default columns for all named lists
-func (cmd *List) defaultColumns(lst list.List) {
-	cols := strings.Split(cmd.api.Options().GetString("columns"), ",")
-	lst.SetVisibleColumns(cols)
 }

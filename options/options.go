@@ -2,6 +2,8 @@ package options
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/spf13/viper"
 )
 
@@ -41,6 +43,19 @@ func init() {
 	viper.Set(SpotifyClientID, stringType)
 	viper.Set(SpotifyClientSecret, stringType)
 	viper.Set(Topbar, stringType)
+}
+
+// Methods for getting options from Viper.
+var (
+	Get       = viper.Get
+	GetString = viper.Get
+	GetInt    = viper.GetInt
+	GetBool   = viper.GetBool
+)
+
+// Split a string option into a comma-delimited list.
+func GetList(key string) []string {
+	return strings.Split(viper.GetString(key), ",")
 }
 
 // Return a human-readable representation of an option.
