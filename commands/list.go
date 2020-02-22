@@ -8,6 +8,7 @@ import (
 
 	"github.com/ambientsound/pms/list"
 	"github.com/ambientsound/pms/log"
+	spotify_aggregator "github.com/ambientsound/pms/spotify/aggregator"
 	"github.com/ambientsound/pms/spotify/devices"
 	"github.com/ambientsound/pms/spotify/library"
 	"github.com/ambientsound/pms/spotify/playlists"
@@ -151,7 +152,7 @@ func (cmd *List) Goto(id string) error {
 	case spotify_library.MyPlaylists:
 		lst, err = cmd.gotoMyPrivatePlaylists(limit)
 	case spotify_library.FeaturedPlaylists:
-		lst, err = cmd.gotoFeaturedPlaylists(limit)
+		lst, err = spotify_aggregator.FeaturedPlaylists(*cmd.client, limit)
 	case spotify_library.MyTracks:
 		lst, err = cmd.gotoMyTracks(limit)
 	case spotify_library.TopTracks:
@@ -220,25 +221,6 @@ func (cmd *List) gotoMyPrivatePlaylists(limit int) (list.List, error) {
 
 	lst.SetName("My playlists")
 	lst.SetID(spotify_library.MyPlaylists)
-	lst.SetVisibleColumns(lst.ColumnNames())
-
-	return lst, nil
-}
-
-func (cmd *List) gotoFeaturedPlaylists(limit int) (list.List, error) {
-	message, playlists, err := cmd.client.FeaturedPlaylistsOpt(&spotify.PlaylistOptions{
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	lst, err := spotify_playlists.New(*cmd.client, playlists)
-	if err != nil {
-		return nil, err
-	}
-
-	lst.SetName(message)
-	lst.SetID(spotify_library.FeaturedPlaylists)
 	lst.SetVisibleColumns(lst.ColumnNames())
 
 	return lst, nil
