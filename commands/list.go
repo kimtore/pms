@@ -11,8 +11,6 @@ import (
 	spotify_aggregator "github.com/ambientsound/pms/spotify/aggregator"
 	"github.com/ambientsound/pms/spotify/devices"
 	"github.com/ambientsound/pms/spotify/library"
-	"github.com/ambientsound/pms/spotify/playlists"
-	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/zmb3/spotify"
 
 	"github.com/ambientsound/pms/api"
@@ -150,17 +148,30 @@ func (cmd *List) Goto(id string) error {
 	t := time.Now()
 	switch id {
 	case spotify_library.MyPlaylists:
-		lst, err = cmd.gotoMyPrivatePlaylists(limit)
+		lst, err = spotify_aggregator.MyPrivatePlaylists(*cmd.client, limit)
 	case spotify_library.FeaturedPlaylists:
 		lst, err = spotify_aggregator.FeaturedPlaylists(*cmd.client, limit)
 	case spotify_library.MyTracks:
-		lst, err = cmd.gotoMyTracks(limit)
+		lst, err = spotify_aggregator.MyTracks(*cmd.client, limit)
+		if err != nil {
+			break
+		}
+		cmd.defaultSort(lst)
+		cmd.defaultColumns(lst)
 	case spotify_library.TopTracks:
-		lst, err = cmd.gotoTopTracks(limit)
+		lst, err = spotify_aggregator.TopTracks(*cmd.client, limit)
+		if err != nil {
+			break
+		}
+		cmd.defaultColumns(lst)
 	case spotify_library.Devices:
-		lst, err = cmd.gotoDevices()
+		lst, err = spotify_devices.New(*cmd.client)
 	default:
-		lst, err = cmd.gotoListWithID(id, limit)
+		lst, err = spotify_aggregator.ListWithID(*cmd.client, id, limit)
+		if err != nil {
+			break
+		}
+		cmd.defaultColumns(lst)
 	}
 	dur := time.Since(t)
 
@@ -177,98 +188,6 @@ func (cmd *List) Goto(id string) error {
 	cmd.api.SetList(lst)
 
 	return nil
-}
-
-func (cmd *List) gotoListWithID(id string, limit int) (list.List, error) {
-	sid := spotify.ID(id)
-
-	playlist, err := cmd.client.GetPlaylist(sid)
-	if err != nil {
-		return nil, err
-	}
-
-	tracks, err := cmd.client.GetPlaylistTracksOpt(sid, &spotify.Options{
-		Limit: &limit,
-	}, "")
-	if err != nil {
-		return nil, err
-	}
-
-	lst, err := spotify_tracklist.NewFromPlaylistTrackPage(*cmd.client, tracks)
-	if err != nil {
-		return nil, err
-	}
-
-	lst.SetName(fmt.Sprintf("%s by %s", playlist.Name, playlist.Owner.DisplayName))
-	lst.SetID(id)
-	cmd.defaultColumns(lst)
-
-	return lst, nil
-}
-
-func (cmd *List) gotoMyPrivatePlaylists(limit int) (list.List, error) {
-	playlists, err := cmd.client.CurrentUsersPlaylistsOpt(&spotify.Options{
-		Limit: &limit,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	lst, err := spotify_playlists.New(*cmd.client, playlists)
-	if err != nil {
-		return nil, err
-	}
-
-	lst.SetName("My playlists")
-	lst.SetID(spotify_library.MyPlaylists)
-	lst.SetVisibleColumns(lst.ColumnNames())
-
-	return lst, nil
-}
-
-func (cmd *List) gotoMyTracks(limit int) (list.List, error) {
-	tracks, err := cmd.client.CurrentUsersTracksOpt(&spotify.Options{
-		Limit: &limit,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	lst, err := spotify_tracklist.NewFromSavedTrackPage(*cmd.client, tracks)
-	if err != nil {
-		return nil, err
-	}
-
-	lst.SetName("Saved tracks")
-	lst.SetID(spotify_library.MyTracks)
-	cmd.defaultSort(lst)
-	cmd.defaultColumns(lst)
-
-	return lst, nil
-}
-
-func (cmd *List) gotoTopTracks(limit int) (list.List, error) {
-	tracks, err := cmd.client.CurrentUsersTopTracksOpt(&spotify.Options{
-		Limit: &limit,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	lst, err := spotify_tracklist.NewFromFullTrackPage(*cmd.client, tracks)
-	if err != nil {
-		return nil, err
-	}
-
-	lst.SetName("Top tracks")
-	lst.SetID(spotify_library.TopTracks)
-	cmd.defaultColumns(lst)
-
-	return lst, nil
-}
-
-func (cmd *List) gotoDevices() (list.List, error) {
-	return spotify_devices.New(*cmd.client)
 }
 
 // setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.
