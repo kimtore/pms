@@ -38,6 +38,10 @@ var rows = []list.Row{
 		listName:      "Player devices",
 	},
 	{
+		list.RowIDKey: FeaturedPlaylists,
+		listName:      "Featured playlists",
+	},
+	{
 		list.RowIDKey: MyPlaylists,
 		listName:      "Playlists from my Spotify library",
 	},
