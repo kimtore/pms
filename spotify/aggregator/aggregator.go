@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ambientsound/pms/options"
+	spotify_albums "github.com/ambientsound/pms/spotify/albums"
 	"github.com/ambientsound/pms/spotify/library"
 	"github.com/ambientsound/pms/spotify/playlists"
 	"github.com/ambientsound/pms/spotify/tracklist"
@@ -107,6 +108,24 @@ func MyTracks(client spotify.Client, limit int) (*spotify_tracklist.List, error)
 	lst.SetID(spotify_library.MyTracks)
 	lst.SetVisibleColumns(options.GetList(options.Columns))
 	_ = lst.Sort(options.GetList(options.Sort))
+
+	return lst, nil
+}
+
+func MyAlbums(client spotify.Client) (*spotify_albums.List, error) {
+	albums, err := client.CurrentUsersAlbums()
+	if err != nil {
+		return nil, err
+	}
+
+	lst, err := spotify_albums.NewFromSavedAlbumPage(client, albums)
+	if err != nil {
+		return nil, err
+	}
+
+	lst.SetName("Saved albums")
+	lst.SetID(spotify_library.MyAlbums)
+	lst.SetVisibleColumns(lst.ColumnNames())
 
 	return lst, nil
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ambientsound/pms/list"
+	spotify_albums "github.com/ambientsound/pms/spotify/albums"
 	"github.com/ambientsound/pms/utils"
 	"github.com/zmb3/spotify"
 )
@@ -102,20 +103,22 @@ func NewFromSimpleAlbumPage(client spotify.Client, source *spotify.SimpleAlbumPa
 	var err error
 
 	tracks := make([]spotify.FullTrack, 0, source.Total)
+	albums, err := spotify_albums.NewFromSimpleAlbumPage(client, source)
+	if err != nil {
+		return nil, err
+	}
 
-	for err == nil {
-		for _, album := range source.Albums {
-			t, err := client.GetAlbumTracks(album.ID)
-			if err != nil {
-				break
-			}
-			lst, err := NewFromSimpleTrackPageAndAlbum(client, t, album)
-			if err != nil {
-				break
-			}
-			tracks = append(tracks, lst.Tracks()...)
+	for i := 0; i < albums.Len(); i++ {
+		album := albums.Album(i)
+		t, err := client.GetAlbumTracks(album.ID)
+		if err != nil {
+			break
 		}
-		err = client.NextPage(source)
+		lst, err := NewFromSimpleTrackPageAndAlbum(client, t, *album)
+		if err != nil {
+			break
+		}
+		tracks = append(tracks, lst.Tracks()...)
 	}
 
 	if err != spotify.ErrNoMorePages {

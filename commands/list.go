@@ -156,6 +156,8 @@ func (cmd *List) Goto(id string) error {
 		lst, err = spotify_aggregator.TopTracks(*cmd.client, limit)
 	case spotify_library.NewReleases:
 		lst, err = spotify_aggregator.NewReleases(*cmd.client)
+	case spotify_library.MyAlbums:
+		lst, err = spotify_aggregator.MyAlbums(*cmd.client)
 	case spotify_library.Devices:
 		lst, err = spotify_devices.New(*cmd.client)
 	default:

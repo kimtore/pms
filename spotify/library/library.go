@@ -54,6 +54,10 @@ var rows = []list.Row{
 		listName:      "All liked songs from my library",
 	},
 	{
+		list.RowIDKey: MyAlbums,
+		listName:      "All saved albums in my library",
+	},
+	{
 		list.RowIDKey: TopTracks,
 		listName:      "Top tracks from my listening history",
 	},
