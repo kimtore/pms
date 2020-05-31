@@ -67,8 +67,17 @@ type PMS struct {
 	QuitSignal chan int
 }
 
-func makeAddress(host, port string) string {
-	return fmt.Sprintf("%s:%s", host, port)
+type Address struct {
+	network string
+	addr    string
+}
+
+func makeAddress(host, port string) Address {
+	if strings.HasPrefix(host, "/") {
+		return Address{"unix", host}
+	} else {
+		return Address{"tcp", fmt.Sprintf("%s:%s", host, port)}
+	}
 }
 
 func (pms *PMS) Message(format string, a ...interface{}) {
