@@ -55,9 +55,9 @@ func (c *Connection) MpdClient() (*mpd.Client, error) {
 		console.Log("MPD control connection timeout.")
 	}
 
-	console.Log("Establishing MPD control connection to %s...", addr)
+	console.Log("Establishing MPD control connection to %+v...", addr)
 
-	c.mpdClient, err = mpd.DialAuthenticated(`tcp`, addr, c.Password)
+	c.mpdClient, err = mpd.DialAuthenticated(addr.network, addr.addr, c.Password)
 	if err != nil {
 		return nil, fmt.Errorf("MPD control connection error: %s", err)
 	}
@@ -134,9 +134,9 @@ func (c *Connection) connectIdle() error {
 
 	addr := makeAddress(c.Host, c.Port)
 
-	c.Message("Establishing MPD IDLE connection to %s...", addr)
+	c.Message("Establishing MPD IDLE connection to %+v...", addr)
 
-	c.mpdIdle, err = mpd.NewWatcher(`tcp`, addr, c.Password)
+	c.mpdIdle, err = mpd.NewWatcher(addr.network, addr.addr, c.Password)
 	if err != nil {
 		return fmt.Errorf("MPD connection error: %s", err)
 	}
