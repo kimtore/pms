@@ -2,9 +2,11 @@ package log
 
 import (
 	"fmt"
-	"github.com/ambientsound/pms/list"
 	"io"
+	"strconv"
 	"time"
+
+	"github.com/ambientsound/pms/list"
 )
 
 // Message is a message passed from anywhere inside PMS, relayed to the user
@@ -61,7 +63,7 @@ func appendMessage(msg Message) {
 		}
 		messages[level] = append(messages[level], msg)
 		logLineList[level].Add(list.Row{
-			list.RowIDKey: string(logLineList[level].Len()),
+			list.RowIDKey: strconv.Itoa(logLineList[level].Len()),
 			"logLevel":    msg.Level.String(),
 			"logMessage":  msg.Text,
 			"timestamp":   msg.Timestamp.Format(time.RFC822),
