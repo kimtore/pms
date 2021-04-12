@@ -15,7 +15,6 @@ type Instance struct {
 
 	// song lists
 	queue      *songlist.Queue
-	library    *songlist.Library
 	songlists  []songlist.Songlist
 	clipboards map[string]songlist.Songlist
 
@@ -60,16 +59,6 @@ func (db *Instance) Queue() *songlist.Queue {
 // SetQueue sets the MPD queue.
 func (db *Instance) SetQueue(queue *songlist.Queue) {
 	db.queue = queue
-}
-
-// Library returns the MPD library.
-func (db *Instance) Library() *songlist.Library {
-	return db.library
-}
-
-// SetLibrary sets the MPD library.
-func (db *Instance) SetLibrary(library *songlist.Library) {
-	db.library = library
 }
 
 // PlayerStatus returns a copy of the current MPD player status as seen by PMS.
