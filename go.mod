@@ -48,4 +48,4 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 )
 
-go 1.13
+go 1.16
