@@ -1,9 +1,9 @@
 package prog
 
 import (
-	"encoding/base64"
-	"encoding/json"
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/api"
@@ -17,6 +17,7 @@ import (
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/library"
+	"github.com/ambientsound/pms/spotify/proxyclient"
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/topbar"
@@ -25,19 +26,24 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func (v *Visp) Authenticate(token string) error {
-	data, err := base64.RawURLEncoding.DecodeString(token)
+func (v *Visp) Authenticate(token *oauth2.Token) error {
+	log.Infof("Configured Spotify access token, expires at %s", token.Expiry.Format(time.RFC1123))
+
+	cli := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(token))
+	scli := spotify.NewClient(cli)
+
+	v.client = &scli
+
+	next := spotify_proxyclient.TokenTTL(token)
+
+	v.tokenRefresh = time.After(next)
+
+	err := v.Tokencache.Write(*token)
 	if err != nil {
-		return fmt.Errorf("decode base64 string: %w", err)
+		return fmt.Errorf("write Spotify token to file: %s", err)
 	}
 
-	tok := &oauth2.Token{}
-	err = json.Unmarshal(data, tok)
-	if err != nil {
-		return fmt.Errorf("token error: %w", err)
-	}
-
-	return v.SetToken(tok)
+	return nil
 }
 
 func (v *Visp) Clipboard() songlist.Songlist {

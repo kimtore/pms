@@ -14,13 +14,14 @@ import (
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/style"
 	"github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
 )
 
 // API defines a set of commands that should be available to commands run
 // through the command-line interface.
 type API interface {
 	// Authenticate starts OAuth authentication.
-	Authenticate(token string) error
+	Authenticate(token *oauth2.Token) error
 
 	// Db returns the PMS database.
 	Db() *db.List

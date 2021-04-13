@@ -2,9 +2,9 @@ package prog
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -22,6 +22,7 @@ import (
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/aggregator"
 	"github.com/ambientsound/pms/spotify/library"
+	spotify_proxyclient "github.com/ambientsound/pms/spotify/proxyclient"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
 	"github.com/ambientsound/pms/tokencache"
@@ -29,26 +30,31 @@ import (
 	"github.com/gdamore/tcell"
 	"github.com/google/uuid"
 	"github.com/zmb3/spotify"
-	"golang.org/x/oauth2"
+)
+
+const (
+	refreshTokenTimeout       = time.Second * 5
+	refreshTokenRetryInterval = time.Second * 30
 )
 
 type Visp struct {
 	Termui     *widgets.Application
 	Tokencache tokencache.Tokencache
 
-	client      *spotify.Client
-	clipboard   *songlist.BaseSonglist
-	commands    chan string
-	db          *db.List
-	interpreter *input.Interpreter
-	library     *spotify_library.List
-	list        list.List
-	multibar    *multibar.Multibar
-	player      player.State
-	quit        chan interface{}
-	sequencer   *keys.Sequencer
-	stylesheet  style.Stylesheet
-	ticker      *time.Ticker
+	client       *spotify.Client
+	clipboard    *songlist.BaseSonglist
+	commands     chan string
+	db           *db.List
+	interpreter  *input.Interpreter
+	library      *spotify_library.List
+	list         list.List
+	multibar     *multibar.Multibar
+	player       player.State
+	quit         chan interface{}
+	sequencer    *keys.Sequencer
+	stylesheet   style.Stylesheet
+	ticker       *time.Ticker
+	tokenRefresh <-chan time.Time
 }
 
 var _ api.API = &Visp{}
@@ -66,6 +72,7 @@ func (v *Visp) Init() {
 	v.sequencer = keys.NewSequencer()
 	v.stylesheet = make(style.Stylesheet)
 	v.ticker = time.NewTicker(time.Second)
+	v.tokenRefresh = make(chan time.Time)
 
 	v.SetList(log.List(log.InfoLevel))
 }
@@ -81,6 +88,13 @@ func (v *Visp) Main() error {
 			err := v.updatePlayer()
 			if err != nil {
 				log.Errorf("update player: %s", err)
+			}
+
+		case <-v.tokenRefresh:
+			log.Infof("Spotify access token is too old, refreshing...")
+			err := v.refreshToken()
+			if err != nil {
+				log.Errorf("Refresh Spotify access token: %s", err)
 			}
 
 		// Send commands from the multibar into the main command queue.
@@ -217,18 +231,15 @@ func (v *Visp) SourceConfig(reader io.Reader) error {
 	return nil
 }
 
-func (v *Visp) SetToken(token *oauth2.Token) error {
-	log.Infof("Received Spotify access token.")
-
-	cli := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(token))
-	scli := spotify.NewClient(cli)
-
-	v.client = &scli
-
-	err := v.Tokencache.Write(*token)
-	if err != nil {
-		return fmt.Errorf("write Spotify token to file: %s", err)
+func (v *Visp) refreshToken() error {
+	server := v.Options().GetString(options.SpotifyAuthServer)
+	client := &http.Client{
+		Timeout: refreshTokenTimeout,
 	}
-
-	return nil
+	token, err := spotify_proxyclient.RefreshToken(server, client, v.Tokencache.Cached())
+	if err != nil {
+		v.tokenRefresh = time.After(refreshTokenRetryInterval)
+		return err
+	}
+	return v.Authenticate(token)
 }

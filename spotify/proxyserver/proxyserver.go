@@ -1,6 +1,7 @@
-package spotify_auth
+package spotify_proxyserver
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -11,7 +12,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var Scopes = []string{
+// https://developer.spotify.com/documentation/general/guides/scopes/
+var scopes = []string{
 	"playlist-modify-private",
 	"playlist-modify-public",
 	"playlist-read-collaborative",
@@ -31,6 +33,7 @@ const (
 	cookieName  = "token"
 	loginURL    = "/oauth/login"
 	callbackURL = "/oauth/callback"
+	RefreshURL  = "/oauth/refresh"
 )
 
 type Handler struct {
@@ -43,7 +46,7 @@ type Renderer interface {
 }
 
 func New(clientID, clientSecret, redirectURL string, renderer Renderer) *Handler {
-	authenticator := spotify.NewAuthenticator(redirectURL, Scopes...)
+	authenticator := spotify.NewAuthenticator(redirectURL, scopes...)
 	authenticator.SetAuthInfo(clientID, clientSecret)
 
 	return &Handler{
@@ -52,6 +55,9 @@ func New(clientID, clientSecret, redirectURL string, renderer Renderer) *Handler
 	}
 }
 
+// First step of oauth2 client credentials flow.
+// Store a cookie in the user's browser with the XSRF protection token,
+// then redirect to Spotify's authentication URL.
 func (h *Handler) ServeLogin(w http.ResponseWriter, r *http.Request) {
 	u, err := uuid.NewRandom()
 	if err != nil {
@@ -71,6 +77,10 @@ func (h *Handler) ServeLogin(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// Callback URL of oauth2 client credentials flow.
+// Check the XSRF cookie and exchange the authentication code from the URL with
+// an access token using Spotify's oauth2 API.
+// The token is returned back to the user, for use in the client.
 func (h *Handler) ServeCallback(w http.ResponseWriter, r *http.Request) {
 	// Get state parameter from cookie
 	cookie, err := r.Cookie(cookieName)
@@ -90,12 +100,39 @@ func (h *Handler) ServeCallback(w http.ResponseWriter, r *http.Request) {
 	h.renderer.Render(w, http.StatusOK, nil, token)
 }
 
+// Token refresh helper endpoint. Takes a valid oauth2 token containing an
+// access code and a refresh token, and returns a fresh token in return.
+func (h *Handler) RefreshCallback(w http.ResponseWriter, r *http.Request) {
+	token := &oauth2.Token{}
+	err := json.NewDecoder(r.Body).Decode(token)
+
+	if err != nil {
+		h.renderer.Render(w, http.StatusBadRequest, err, nil)
+		return
+	}
+
+	// force token expiration
+	token.Expiry = time.Now().Add(-time.Hour)
+
+	// retrieve new token through automatic refresh
+	cli := h.auth.NewClient(token)
+	token, err = cli.Token()
+
+	if err != nil {
+		h.renderer.Render(w, http.StatusInternalServerError, err, nil)
+		return
+	}
+
+	h.renderer.Render(w, http.StatusOK, nil, token)
+}
+
 func Router(handler *Handler) chi.Router {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)
 	router.Get(loginURL, handler.ServeLogin)
 	router.Get(callbackURL, handler.ServeCallback)
+	router.Post(RefreshURL, handler.RefreshCallback)
 
 	return router
 }

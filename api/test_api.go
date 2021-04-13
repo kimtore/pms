@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
@@ -16,6 +17,7 @@ import (
 	"github.com/ambientsound/pms/style"
 	"github.com/spf13/viper"
 	"github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
 )
 
 type testAPI struct {
@@ -45,7 +47,7 @@ func NewTestAPI() API {
 	}
 }
 
-func (api *testAPI) Authenticate(token string) error {
+func (api *testAPI) Authenticate(token *oauth2.Token) error {
 	return nil
 }
 

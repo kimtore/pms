@@ -5,6 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
+	spotify_proxyclient "github.com/ambientsound/pms/spotify/proxyclient"
 )
 
 // Auth runs OAuth2 authentication flow against Spotify.
@@ -32,5 +33,9 @@ func (cmd *Auth) Parse() error {
 }
 
 func (cmd *Auth) Exec() error {
-	return cmd.api.Authenticate(cmd.token)
+	token, err := spotify_proxyclient.DecodeTokenString(cmd.token)
+	if err != nil {
+		return err
+	}
+	return cmd.api.Authenticate(token)
 }

@@ -103,7 +103,7 @@ func run() (int, error) {
 	}
 
 	if token != nil {
-		err = visp.SetToken(token)
+		err = visp.Authenticate(token)
 		if err != nil {
 			log.Errorf(err.Error())
 		}

@@ -2,8 +2,9 @@ package tokencache
 
 import (
 	"encoding/json"
-	"golang.org/x/oauth2"
 	"os"
+
+	"golang.org/x/oauth2"
 )
 
 type Tokencache struct {
@@ -49,4 +50,8 @@ func (t *Tokencache) Write(token oauth2.Token) error {
 		t.cached = token
 	}
 	return err
+}
+
+func (t *Tokencache) Cached() *oauth2.Token {
+	return &t.cached
 }

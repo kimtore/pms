@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ambientsound/pms/spotify/auth"
+	"github.com/ambientsound/pms/spotify/proxyserver"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -17,12 +17,12 @@ func main() {
 	redirectURL := os.Getenv("VISP_OAUTH_REDIRECT_URL")
 	listenAddr := os.Getenv("VISP_OAUTH_LISTEN_ADDR")
 
-	renderer := &spotify_auth.JSONRenderer{}
-	server := spotify_auth.New(clientID, clientSecret, redirectURL, renderer)
+	renderer := &spotify_proxyserver.JSONRenderer{}
+	server := spotify_proxyserver.New(clientID, clientSecret, redirectURL, renderer)
 
 	log.Infof("Visp oauth proxy starting")
 	log.Infof("Listening for connections on %s...\n", listenAddr)
-	handler := spotify_auth.Router(server)
+	handler := spotify_proxyserver.Router(server)
 	err := http.ListenAndServe(listenAddr, handler)
 
 	if err != nil {
