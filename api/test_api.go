@@ -45,7 +45,7 @@ func NewTestAPI() API {
 	}
 }
 
-func (api *testAPI) Authenticate() error {
+func (api *testAPI) Authenticate(token string) error {
 	return nil
 }
 

@@ -3,18 +3,17 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/ambientsound/pms/log"
-	"github.com/ambientsound/pms/prog"
-	"github.com/ambientsound/pms/spotify/localauth"
-	"github.com/ambientsound/pms/tokencache"
-	"github.com/ambientsound/pms/version"
-	"github.com/ambientsound/pms/widgets"
-	"github.com/ambientsound/pms/xdg"
-	"net/http"
 	"os"
 	"path/filepath"
 	"runtime/debug"
 	"strings"
+
+	"github.com/ambientsound/pms/log"
+	"github.com/ambientsound/pms/prog"
+	"github.com/ambientsound/pms/tokencache"
+	"github.com/ambientsound/pms/version"
+	"github.com/ambientsound/pms/widgets"
+	"github.com/ambientsound/pms/xdg"
 )
 
 const (
@@ -60,9 +59,7 @@ func run() (int, error) {
 	log.Infof("%s %s starting up", version.Program, version.Version)
 	log.Infof("This program was compiled on %s", version.BuildDate().String())
 
-	visp := &prog.Visp{
-		Auth: spotify_local_auth.New(spotify_local_auth.Authenticator()),
-	}
+	visp := &prog.Visp{}
 
 	ui, err := widgets.NewApplication(visp)
 	if err != nil {
@@ -99,19 +96,18 @@ func run() (int, error) {
 	tokenFile := filepath.Join(configDirs[len(configDirs)-1], TokenFileName)
 	visp.Tokencache = tokencache.New(tokenFile)
 	token, err := visp.Tokencache.Read()
-	if err == nil && token != nil {
-		visp.SetToken(*token)
-	} else {
+
+	if err != nil {
 		log.Debugf("Unable to read cached Spotify token: %s", err)
+		token = nil
 	}
 
-	// Set up a listener for oauth2 authorization code flow.
-	go func() {
-		err := http.ListenAndServe(spotify_local_auth.BindAddress, visp.Auth)
+	if token != nil {
+		err = visp.SetToken(token)
 		if err != nil {
-			panic(err)
+			log.Errorf(err.Error())
 		}
-	}()
+	}
 
 	log.Infof("Ready.")
 

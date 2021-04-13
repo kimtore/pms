@@ -1,7 +1,10 @@
 package prog
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+
 	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/db"
@@ -19,17 +22,22 @@ import (
 	"github.com/ambientsound/pms/topbar"
 	"github.com/spf13/viper"
 	"github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
 )
 
-func (v *Visp) Authenticate() error {
-	err := v.setupAuthenticator()
+func (v *Visp) Authenticate(token string) error {
+	data, err := base64.RawURLEncoding.DecodeString(token)
 	if err != nil {
-		return fmt.Errorf("cannot authenticate with Spotify: %s", err)
+		return fmt.Errorf("decode base64 string: %w", err)
 	}
-	url := v.Auth.AuthURL()
-	log.Infof("Please authenticate with Spotify at: %s", url)
 
-	return nil
+	tok := &oauth2.Token{}
+	err = json.Unmarshal(data, tok)
+	if err != nil {
+		return fmt.Errorf("token error: %w", err)
+	}
+
+	return v.SetToken(tok)
 }
 
 func (v *Visp) Clipboard() songlist.Songlist {
@@ -129,11 +137,7 @@ func (v *Visp) SetList(lst list.List) {
 
 func (v *Visp) Spotify() (*spotify.Client, error) {
 	if v.client == nil {
-		return nil, fmt.Errorf("please run `auth` to authenticate with Spotify")
-	}
-	err := v.setupAuthenticator()
-	if err != nil {
-		return nil, fmt.Errorf("unable to obtain Spotify client: %s", err.Error())
+		return nil, fmt.Errorf("please authenticate with Spotify at: %s", v.Options().GetString("spotifyauthserver"))
 	}
 	token, err := v.client.Token()
 	if err != nil {

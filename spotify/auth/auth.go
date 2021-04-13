@@ -11,7 +11,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var scopes = []string{
+var Scopes = []string{
 	"playlist-modify-private",
 	"playlist-modify-public",
 	"playlist-read-collaborative",
@@ -43,7 +43,7 @@ type Renderer interface {
 }
 
 func New(clientID, clientSecret, redirectURL string, renderer Renderer) *Handler {
-	authenticator := spotify.NewAuthenticator(redirectURL, scopes...)
+	authenticator := spotify.NewAuthenticator(redirectURL, Scopes...)
 	authenticator.SetAuthInfo(clientID, clientSecret)
 
 	return &Handler{

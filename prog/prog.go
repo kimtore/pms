@@ -2,7 +2,13 @@ package prog
 
 import (
 	"bufio"
+	"context"
 	"fmt"
+	"io"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/db"
@@ -15,7 +21,6 @@ import (
 	"github.com/ambientsound/pms/player"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/aggregator"
-	"github.com/ambientsound/pms/spotify/localauth"
 	"github.com/ambientsound/pms/spotify/library"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
@@ -25,14 +30,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
-	"io"
-	"os"
-	"strings"
-	"time"
 )
 
 type Visp struct {
-	Auth       *spotify_local_auth.Handler
 	Termui     *widgets.Application
 	Tokencache tokencache.Tokencache
 
@@ -73,9 +73,6 @@ func (v *Visp) Init() {
 func (v *Visp) Main() error {
 	for {
 		select {
-		case token := <-v.Auth.Tokens():
-			v.SetToken(token)
-
 		case <-v.quit:
 			log.Infof("Exiting.")
 			return nil
@@ -220,29 +217,18 @@ func (v *Visp) SourceConfig(reader io.Reader) error {
 	return nil
 }
 
-func (v *Visp) setupAuthenticator() error {
-	clientID := v.Options().GetString(options.SpotifyClientID)
-	clientSecret := v.Options().GetString(options.SpotifyClientSecret)
+func (v *Visp) SetToken(token *oauth2.Token) error {
+	log.Infof("Received Spotify access token.")
 
-	if len(clientID) == 0 && len(clientSecret) == 0 {
-		return fmt.Errorf("you must configure `%s` and `%s`", options.SpotifyClientID, options.SpotifyClientSecret)
-	} else if len(clientID) == 0 {
-		return fmt.Errorf("you must configure `%s`", options.SpotifyClientID)
-	} else if len(clientSecret) == 0 {
-		return fmt.Errorf("you must configure `%s`", options.SpotifyClientSecret)
+	cli := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(token))
+	scli := spotify.NewClient(cli)
+
+	v.client = &scli
+
+	err := v.Tokencache.Write(*token)
+	if err != nil {
+		return fmt.Errorf("write Spotify token to file: %s", err)
 	}
-
-	v.Auth.SetCredentials(clientID, clientSecret)
 
 	return nil
-}
-
-func (v *Visp) SetToken(token oauth2.Token) {
-	log.Infof("Received Spotify access token.")
-	cli := v.Auth.Client(token)
-	v.client = &cli
-	err := v.Tokencache.Write(token)
-	if err != nil {
-		log.Errorf("Unable to write Spotify token to file: %s", err)
-	}
 }

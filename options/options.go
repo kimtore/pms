@@ -9,18 +9,15 @@ import (
 
 // Option names.
 const (
-	Center       = "center"
-	Columns      = "columns"
-	Limit        = "limit"
-	Sort         = "sort"
-	Topbar       = "topbar"
-	PollInterval = "pollinterval"
-
-	SpotifyClientID     = "spotifyclientid"
-	SpotifyClientSecret = "spotifyclientsecret"
-
-	LogFile      = "logfile"
-	LogOverwrite = "logoverwrite"
+	Center            = "center"
+	Columns           = "columns"
+	Limit             = "limit"
+	Sort              = "sort"
+	Topbar            = "topbar"
+	PollInterval      = "pollinterval"
+	SpotifyAuthServer = "spotifyauthserver"
+	LogFile           = "logfile"
+	LogOverwrite      = "logoverwrite"
 )
 
 // Option types.
@@ -40,8 +37,7 @@ func init() {
 	viper.Set(LogOverwrite, boolType)
 	viper.Set(PollInterval, intType)
 	viper.Set(Sort, stringType)
-	viper.Set(SpotifyClientID, stringType)
-	viper.Set(SpotifyClientSecret, stringType)
+	viper.Set(SpotifyAuthServer, stringType)
 	viper.Set(Topbar, stringType)
 }
 
@@ -83,6 +79,7 @@ set nocenter
 set columns=artist,title,track,album,year,time,popularity
 set sort=track,disc,album,year,albumArtist
 set topbar="${tag|artist} - ${tag|title}|$shortname $version|$elapsed $state $time;\\#${tag|track} ${tag|album}|${list|title} [${list|index}/${list|total}]|$device $mode $volume;;"
+set spotifyauthserver="http://localhost:59999"
 set limit=50
 set pollinterval=10
 

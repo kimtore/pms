@@ -20,7 +20,7 @@ import (
 // through the command-line interface.
 type API interface {
 	// Authenticate starts OAuth authentication.
-	Authenticate() error
+	Authenticate(token string) error
 
 	// Db returns the PMS database.
 	Db() *db.List
