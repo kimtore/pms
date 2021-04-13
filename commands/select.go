@@ -11,6 +11,8 @@ import (
 type Select struct {
 	command
 	api    api.API
+	all    bool
+	none   bool
 	toggle bool
 	visual bool
 	nearby []string
@@ -35,6 +37,10 @@ func (cmd *Select) Parse() error {
 	}
 
 	switch lit {
+	case "all":
+		cmd.all = true
+	case "none":
+		cmd.none = true
 	case "toggle":
 		cmd.toggle = true
 	case "visual":
@@ -65,6 +71,17 @@ func (cmd *Select) Exec() error {
 
 	case len(cmd.nearby) > 0:
 		return cmd.selectNearby()
+
+	case cmd.all:
+		list.DisableVisualSelection()
+		for i := 0; i < list.Len(); i++ {
+			list.SetSelected(i, true)
+		}
+		return nil
+
+	case cmd.none:
+		list.ClearSelection()
+		return nil
 
 	default:
 		index := list.Cursor()
@@ -124,7 +141,9 @@ func (cmd *Select) selectNearby() error {
 // setTabCompleteVerbs sets the tab complete list to the list of available sub-commands.
 func (cmd *Select) setTabCompleteVerbs(lit string) {
 	cmd.setTabComplete(lit, []string{
+		"all",
 		"nearby",
+		"none",
 		"toggle",
 		"visual",
 	})

@@ -202,7 +202,6 @@ bind devices <Enter> device activate
 bind playlists <Enter> list open
 
 # Keyboard bindings: other
-bind global <C-c> quit
 bind global <C-l> redraw
 bind global <C-s> sort
 bind tracklist i print file
@@ -216,6 +215,8 @@ bind tracklist <C-j> isolate artist
 bind tracklist <C-t> isolate albumArtist album
 bind tracklist & select nearby albumArtist album
 bind global m select toggle
+bind global <C-a> select all
+bind global <C-c> select none
 bind tracklist <Delete> cut
 bind tracklist x cut
 bind tracklist y yank
