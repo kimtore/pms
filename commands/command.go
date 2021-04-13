@@ -5,6 +5,8 @@ package commands
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/lexer"
@@ -14,7 +16,6 @@ import (
 	"github.com/ambientsound/pms/spotify/playlists"
 	"github.com/ambientsound/pms/spotify/tracklist"
 	"github.com/ambientsound/pms/utils"
-	"sort"
 )
 
 const (
@@ -40,6 +41,7 @@ var contexts = []string{
 // Verbs contain mappings from strings to Command constructors.
 // Make sure to add commands here when implementing them.
 var Verbs = map[string]func(api.API) Command{
+	"add":       NewAdd,
 	"auth":      NewAuth,
 	"bind":      NewBind,
 	"columns":   NewColumns,

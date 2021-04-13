@@ -181,6 +181,7 @@ bind global V select visual
 
 # Keyboard bindings: player and mixer
 bind tracklist <Enter> play selection
+bind tracklist a add
 bind global <Space> pause
 bind global s stop
 bind global h previous
@@ -215,7 +216,6 @@ bind tracklist <C-j> isolate artist
 bind tracklist <C-t> isolate albumArtist album
 bind tracklist & select nearby albumArtist album
 bind global m select toggle
-bind tracklist a add
 bind tracklist <Delete> cut
 bind tracklist x cut
 bind tracklist y yank
