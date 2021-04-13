@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/ambientsound/pms/log"
 	"github.com/ambientsound/pms/prog"
-	"github.com/ambientsound/pms/spotify/auth"
+	"github.com/ambientsound/pms/spotify/localauth"
 	"github.com/ambientsound/pms/tokencache"
 	"github.com/ambientsound/pms/version"
 	"github.com/ambientsound/pms/widgets"
@@ -61,7 +61,7 @@ func run() (int, error) {
 	log.Infof("This program was compiled on %s", version.BuildDate().String())
 
 	visp := &prog.Visp{
-		Auth: spotify_auth.New(spotify_auth.Authenticator()),
+		Auth: spotify_local_auth.New(spotify_local_auth.Authenticator()),
 	}
 
 	ui, err := widgets.NewApplication(visp)
@@ -107,7 +107,7 @@ func run() (int, error) {
 
 	// Set up a listener for oauth2 authorization code flow.
 	go func() {
-		err := http.ListenAndServe(spotify_auth.BindAddress, visp.Auth)
+		err := http.ListenAndServe(spotify_local_auth.BindAddress, visp.Auth)
 		if err != nil {
 			panic(err)
 		}

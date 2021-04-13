@@ -4,6 +4,7 @@ require (
 	github.com/ambientsound/gompd v0.0.0-20170427084842-b065d40b8238
 	github.com/fhs/gompd v2.0.0+incompatible // indirect
 	github.com/gdamore/tcell v1.3.0
+	github.com/go-chi/chi v1.5.4 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect

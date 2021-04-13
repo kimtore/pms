@@ -15,7 +15,7 @@ import (
 	"github.com/ambientsound/pms/player"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/spotify/aggregator"
-	"github.com/ambientsound/pms/spotify/auth"
+	"github.com/ambientsound/pms/spotify/localauth"
 	"github.com/ambientsound/pms/spotify/library"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
@@ -32,7 +32,7 @@ import (
 )
 
 type Visp struct {
-	Auth       *spotify_auth.Handler
+	Auth       *spotify_local_auth.Handler
 	Termui     *widgets.Application
 	Tokencache tokencache.Tokencache
 

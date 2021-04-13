@@ -1,18 +1,14 @@
 package spotify_auth
 
 import (
-	"github.com/ambientsound/pms/log"
+	"net/http"
+	"time"
+
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/google/uuid"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
-	"net/http"
-)
-
-const (
-	preState    = "Iaax5Uz/6vIB6cGItlnd/qbDFb/KGcJGmv5XsdD47+vJA6vGznkObqdvb+izbpw1"
-	authURL     = "http://localhost:59999/auth"
-	callbackURL = "http://localhost:59999/callback"
-	BindAddress = "127.0.0.1:59999"
 )
 
 var scopes = []string{
@@ -31,64 +27,75 @@ var scopes = []string{
 	"user-top-read",
 }
 
+const (
+	cookieName  = "token"
+	loginURL    = "/oauth/login"
+	callbackURL = "/oauth/callback"
+)
+
 type Handler struct {
-	auth  spotify.Authenticator
-	token chan oauth2.Token
-	state string
-	url   string
+	auth     spotify.Authenticator
+	renderer Renderer
 }
 
-// the user will eventually be redirected back to your redirect URL
-func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.RequestURI == "/auth" {
-		http.Redirect(w, r, h.url, http.StatusFound)
-		return
-	}
-
-	token, err := h.auth.Token(h.state, r)
-	if err != nil || token == nil {
-		http.Error(w, "Couldn't get token", http.StatusNotFound)
-		log.Errorf("Unable to retrieve Spotify token: %s", err)
-		return
-	}
-
-	_, _ = w.Write([]byte("Token successfully retrieved. You can close this window now."))
-	h.token <- *token
+type Renderer interface {
+	Render(w http.ResponseWriter, code int, err error, token *oauth2.Token)
 }
 
-func (h *Handler) Tokens() chan oauth2.Token {
-	return h.token
-}
+func New(clientID, clientSecret, redirectURL string, renderer Renderer) *Handler {
+	authenticator := spotify.NewAuthenticator(redirectURL, scopes...)
+	authenticator.SetAuthInfo(clientID, clientSecret)
 
-func (h *Handler) Client(token oauth2.Token) spotify.Client {
-	return h.auth.NewClient(&token)
-}
-
-func (h *Handler) AuthURL() string {
-	h.state = makeState()
-	h.url = h.auth.AuthURL(h.state)
-	return authURL
-}
-
-func (h *Handler) SetCredentials(clientID, clientSecret string) {
-	h.auth.SetAuthInfo(clientID, clientSecret)
-}
-
-func Authenticator() spotify.Authenticator {
-	return spotify.NewAuthenticator(callbackURL, scopes...)
-}
-
-func New(auth spotify.Authenticator) *Handler {
 	return &Handler{
-		token: make(chan oauth2.Token, 1),
-		auth:  auth,
+		auth:     authenticator,
+		renderer: renderer,
 	}
 }
 
-func makeState() string {
+func (h *Handler) ServeLogin(w http.ResponseWriter, r *http.Request) {
 	u, err := uuid.NewRandom()
 	if err != nil {
-		return preState
+		h.renderer.Render(w, http.StatusServiceUnavailable, err, nil)
+		return
 	}
-	return u.String()
+
+	cookie := &http.Cookie{
+		Name:    cookieName,
+		Value:   u.String(),
+		Expires: time.Now().Add(time.Hour),
+	}
+
+	http.SetCookie(w, cookie)
+	http.Redirect(w, r, h.auth.AuthURL(u.String()), http.StatusFound)
+
+	return
+}
+
+func (h *Handler) ServeCallback(w http.ResponseWriter, r *http.Request) {
+	// Get state parameter from cookie
+	cookie, err := r.Cookie(cookieName)
+	if err != nil {
+		h.renderer.Render(w, http.StatusBadRequest, err, nil)
+		return
+	}
+
+	// Exchange credentials into Spotify token
+	token, err := h.auth.Token(cookie.Value, r)
+	if err != nil {
+		h.renderer.Render(w, http.StatusForbidden, err, nil)
+		return
+	}
+
+	// Return token to client
+	h.renderer.Render(w, http.StatusOK, nil, token)
+}
+
+func Router(handler *Handler) chi.Router {
+	router := chi.NewRouter()
+
+	router.Use(middleware.Logger)
+	router.Get(loginURL, handler.ServeLogin)
+	router.Get(callbackURL, handler.ServeCallback)
+
+	return router
 }
