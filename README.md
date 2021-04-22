@@ -26,7 +26,9 @@ PMS has many features that involve sorting, searching, and navigating. It’s de
 
 ## Project status
 
-PMS is in _alpha_ stage, and is a work in progress. A more feature complete, but older, version can be found in the `0.42.x` branch.
+*MAINTAINER NEEDED*: PMS is a discontinued project. If anyone would like to
+continue development, please drop me an e-mail. The address can be found in the
+bottom of the document.
 
 This software was previously written in C++. The master branch now contains a rewrite, currently implemented in Go.
 The current goal of the Go implementation is to implement most of the features found in the 0.42 branch.
