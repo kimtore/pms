@@ -1,0 +1,82 @@
+name: Build
+on:
+  push:
+    paths:
+      - 'Makefile'
+      - 'go.mod'
+      - '**.go'
+      - '.github/workflows/build.yml'
+env:
+  go_version: '1.17'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.go_version }}
+      - name: run tests
+        run: |
+          go mod download
+          make test
+          make pms
+  make_release:
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs:
+      - test
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Delete latest release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          delete_release: true
+          tag_name: latest
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: latest
+          release_name: Latest build
+          draft: false
+          prerelease: false
+  release:
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs:
+      - make_release
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        os_arch:
+          - darwin-amd64
+          - darwin-arm64
+          - linux-amd64
+          - linux-arm64
+          - linux-arm
+          - windows-amd64.exe
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.go_version }}
+      - name: Download dependencies
+        run: |
+          go mod download
+      - name: Build binary
+        run: make ${{ matrix.os_arch }}
+      - name: Upload binary
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ needs.make_release.outputs.upload_url }}
+          asset_path: build/pms-${{ matrix.os_arch }}
+          asset_name: pms-${{ matrix.os_arch }}
+          asset_content_type: application/octet-stream
