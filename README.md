@@ -1,6 +1,6 @@
 # Practical Music Search
 
-[![Build Status](https://travis-ci.org/ambientsound/pms.svg?branch=go)](https://travis-ci.org/ambientsound/pms)
+[![Build Status](https://github.com/ambientsound/pms/actions/workflows/build.yml/badge.svg)](https://github.com/ambientsound/pms/actions/workflows/build.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ambientsound/pms)](https://goreportcard.com/report/github.com/ambientsound/pms)
 [![codecov](https://codecov.io/gh/ambientsound/pms/branch/master/graph/badge.svg)](https://codecov.io/gh/ambientsound/pms/branch/master)
 [![License](https://img.shields.io/github/license/ambientsound/pms.svg)](LICENSE)
