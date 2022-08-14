@@ -3,9 +3,9 @@ package songlist
 import (
 	"fmt"
 
-	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/song"
+	"github.com/fhs/gompd/mpd"
 )
 
 // Queue is a Songlist which represents the MPD play queue.

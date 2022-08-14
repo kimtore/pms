@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
+	"github.com/fhs/gompd/mpd"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -3,9 +3,9 @@ package commands_test
 import (
 	"testing"
 
-	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/song"
+	"github.com/fhs/gompd/mpd"
 )
 
 var cursorTests = []commands.Test{

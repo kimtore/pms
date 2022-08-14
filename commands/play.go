@@ -3,9 +3,9 @@ package commands
 import (
 	"fmt"
 
-	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
+	"github.com/fhs/gompd/mpd"
 )
 
 // Play plays songs in the MPD playlist.
