@@ -3,7 +3,6 @@ module github.com/ambientsound/pms
 require (
 	github.com/RoaringBitmap/roaring v0.4.16 // indirect
 	github.com/Smerity/govarint v0.0.0-20150407073650-7265e41f48f1 // indirect
-	github.com/ambientsound/gompd v0.0.0-20170427084842-b065d40b8238
 	github.com/blevesearch/bleve v0.7.0
 	github.com/blevesearch/blevex v0.0.0-20180227211930-4b158bb555a3 // indirect
 	github.com/blevesearch/go-porterstemmer v1.0.1 // indirect
@@ -18,7 +17,7 @@ require (
 	github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51 // indirect
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870 // indirect
-	github.com/fhs/gompd v2.0.0+incompatible // indirect
+	github.com/fhs/gompd v2.0.0+incompatible
 	github.com/gdamore/tcell v1.3.0
 	github.com/glycerine/go-unsnap-stream v0.0.0-20180323001048-9f0cb55181dd // indirect
 	github.com/glycerine/goconvey v0.0.0-20180728074245-46e3a41ad493 // indirect

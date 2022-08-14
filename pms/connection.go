@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/message"
+	"github.com/fhs/gompd/mpd"
 )
 
 // Connection maintains connections to an MPD server. Two separate connections

@@ -3,11 +3,11 @@ package commands
 import (
 	"fmt"
 
-	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
+	"github.com/fhs/gompd/mpd"
 )
 
 // Add adds songs to MPD's queue.

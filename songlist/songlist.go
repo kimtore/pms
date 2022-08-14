@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ambientsound/gompd/mpd"
+	"github.com/fhs/gompd/mpd"
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/song"

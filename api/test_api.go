@@ -1,7 +1,6 @@
 package api
 
 import (
-	"github.com/ambientsound/gompd/mpd"
 	"github.com/ambientsound/pms/db"
 	"github.com/ambientsound/pms/input/keys"
 	"github.com/ambientsound/pms/message"
@@ -10,6 +9,7 @@ import (
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
+	"github.com/fhs/gompd/mpd"
 )
 
 type testAPI struct {

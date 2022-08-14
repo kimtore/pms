@@ -22,7 +22,7 @@ import (
 	"github.com/ambientsound/pms/widgets"
 	"github.com/gdamore/tcell"
 
-	"github.com/ambientsound/gompd/mpd"
+	"github.com/fhs/gompd/mpd"
 )
 
 // PMS is a kitchen sink of different objects, glued together as a singleton class.
@@ -299,10 +299,12 @@ func (pms *PMS) retrieveQueue() (*songlist.Queue, error) {
 	}
 
 	timer := time.Now()
-	list, err := client.PlChanges(pms.queueVersion, -1, -1)
+
+	list, err := client.Command("plchanges %d", pms.queueVersion).AttrsList("file")
 	if err != nil {
 		return nil, err
 	}
+
 	console.Log("PlChanges in %s", time.Since(timer).String())
 
 	s := songlist.NewQueue(pms.CurrentMpdClient)
