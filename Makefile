@@ -1,8 +1,10 @@
 VERSION := $(shell git describe --always --long --dirty)
 
-.PHONY: all install test
+.PHONY: install pms test
 
-all: test install
+pms:
+	mkdir -p build/
+	go build -o build/pms -ldflags="-X main.buildVersion=${VERSION}" main.go
 
 install:
 	go install -ldflags="-X main.buildVersion=${VERSION}"
