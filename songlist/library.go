@@ -7,7 +7,7 @@ import (
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/index"
-	"github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/v2"
 )
 
 // Library is a Songlist which represents the MPD song library.

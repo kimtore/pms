@@ -2,12 +2,12 @@ package index
 
 import (
 	"github.com/ambientsound/pms/index/filters/unicodestrip"
-	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/analysis/analyzer/custom"
-	"github.com/blevesearch/bleve/analysis/token/edgengram"
-	"github.com/blevesearch/bleve/analysis/token/lowercase"
-	"github.com/blevesearch/bleve/analysis/tokenizer/whitespace"
-	"github.com/blevesearch/bleve/mapping"
+	"github.com/blevesearch/bleve/v2"
+	"github.com/blevesearch/bleve/v2/analysis/analyzer/custom"
+	"github.com/blevesearch/bleve/v2/analysis/token/edgengram"
+	"github.com/blevesearch/bleve/v2/analysis/token/lowercase"
+	"github.com/blevesearch/bleve/v2/analysis/tokenizer/whitespace"
+	"github.com/blevesearch/bleve/v2/mapping"
 )
 
 // buildIndexMapping() returns an object that defines how input data is indexed in Bleve.
