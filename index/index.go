@@ -11,7 +11,7 @@ import (
 	"github.com/ambientsound/pms/song"
 	"github.com/ambientsound/pms/xdg"
 
-	"github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/v2"
 
 	"fmt"
 	"strconv"
