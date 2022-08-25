@@ -18,6 +18,7 @@ type testAPI struct {
 	song      *song.Song
 	songlist  songlist.Songlist
 	clipboard songlist.Songlist
+	db        *db.Instance
 }
 
 func createTestSong() *song.Song {
@@ -36,6 +37,7 @@ func NewTestAPI() API {
 		options:   options.New(),
 		song:      createTestSong(),
 		songlist:  songlist.New(),
+		db:        db.New(),
 	}
 }
 
@@ -44,7 +46,7 @@ func (api *testAPI) Clipboard() songlist.Songlist {
 }
 
 func (api *testAPI) Db() *db.Instance {
-	return nil // FIXME
+	return api.db
 }
 
 func (api *testAPI) Library() *songlist.Library {
@@ -75,8 +77,8 @@ func (api *testAPI) Options() *options.Options {
 	return api.options
 }
 
-func (api *testAPI) PlayerStatus() (p pms_mpd.PlayerStatus) {
-	return // FIXME
+func (api *testAPI) PlayerStatus() pms_mpd.PlayerStatus {
+	return api.db.PlayerStatus()
 }
 
 func (api *testAPI) Queue() *songlist.Queue {
@@ -90,6 +92,13 @@ func (api *testAPI) Quit() {
 func (api *testAPI) Sequencer() *keys.Sequencer {
 	return nil // FIXME
 }
+
+// SetPlayerStatus sets the player status struct to the provided input
+// value, allowing to construct test cases that depend on a particular
+// player status
+//func (api *testAPI) SetPlayerStatus(p pms_mpd.PlayerStatus) {
+//api.status = p
+//}
 
 func (api *testAPI) Song() *song.Song {
 	return api.song
