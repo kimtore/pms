@@ -18,17 +18,14 @@ PMS has many features that involve sorting, searching, and navigating. It’s de
 * Many forms of tracklist manipulation, such as cut, copy, paste, filter, and sort.
 * Config files, tab completion, history, and much more!
 
-
 ## Documentation
 
 [Documentation](doc/README.md) is available in the project repository.
 
-
 ## Project status
 
-*MAINTAINER NEEDED*: PMS is a discontinued project. If anyone would like to
-continue development, please drop me an e-mail. The address can be found in the
-bottom of the document.
+_NEWS_: Development of PMS has resumed! We continue to appreciate contributions and
+strive to make PMS an ever better and continuously evolving MPD client.
 
 This software was previously written in C++. The master branch now contains a rewrite, currently implemented in Go.
 The current goal of the Go implementation is to implement most of the features found in the 0.42 branch.
@@ -39,14 +36,13 @@ This functionality is present in the `0.42.x` branch, but missing in master:
 * Remote playlist management.
 * ...and probably more.
 
-
 ## Getting started
 
 You’re assumed to have a working [Go development environment](https://golang.org/doc/install). Building PMS requires Go version 1.13 or higher.
 
 Assuming you have the `go` binary in your path, you can install PMS using:
 
-```
+```sh
 git clone https://github.com/ambientsound/pms
 cd pms
 make install
@@ -57,10 +53,9 @@ You need to run PMS in a regular terminal with a TTY.
 
 If PMS crashes, and you want to report a bug, please include the debug log:
 
-```
+```sh
 pms --debug /tmp/pms.log 2>>/tmp/pms.log
 ```
-
 
 ## Requirements
 
@@ -70,18 +65,17 @@ A full-text search index takes up both space and memory. For a library of about 
 
 PMS is multithreaded and benefits from multicore CPUs.
 
-
 ## Contributing
 
 See [how to contribute to PMS](CONTRIBUTING.md).
 
-
 ## Authors
 
-Copyright (c) 2006-2019 Kim Tore Jensen <<kimtjen@gmail.com>>.
+Copyright (c) 2006-2022 Kim Tore Jensen <<kimtjen@gmail.com>>.
 
 * Kim Tore Jensen <<kimtjen@gmail.com>>
 * Bart Nagel <<bart@tremby.net>>
+* Thomas Zander <<thomas.e.zander@googlemail.com>>
 
 The source code and latest version can be found at Github:
 <https://github.com/ambientsound/pms>.
