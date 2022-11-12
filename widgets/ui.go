@@ -11,8 +11,8 @@ import (
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
 
-	"github.com/gdamore/tcell"
-	"github.com/gdamore/tcell/views"
+	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v2/views"
 )
 
 type UI struct {

@@ -4,8 +4,8 @@ import (
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/topbar"
-	"github.com/gdamore/tcell"
-	"github.com/gdamore/tcell/views"
+	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v2/views"
 )
 
 // Pieces may be aligned to left, center or right.

@@ -5,7 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/keysequence"
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 )
 
 // Binding holds a parsed, user provided key sequence.
@@ -17,7 +17,6 @@ type Binding struct {
 // Sequencer holds all the keyboard bindings and their action mappings.
 type Sequencer struct {
 	binds []Binding
-	event *tcell.EventKey
 	input keysequence.KeySequence
 }
 
@@ -32,7 +31,7 @@ func NewSequencer() *Sequencer {
 // AddBind creates a new key mapping.
 func (s *Sequencer) AddBind(seq keysequence.KeySequence, command string) error {
 	if s.dupes(seq) {
-		return fmt.Errorf("Can't bind: conflicting with already bound key sequence")
+		return fmt.Errorf("can't bind: conflicting with already bound key sequence")
 	}
 	s.binds = append(s.binds, Binding{Sequence: seq, Command: command})
 	return nil
@@ -52,7 +51,7 @@ func (s *Sequencer) RemoveBind(seq keysequence.KeySequence) error {
 		}
 	}
 
-	return fmt.Errorf("Can't unbind: sequence not bound")
+	return fmt.Errorf("can't unbind: sequence not bound")
 }
 
 // KeyInput feeds a keypress to the sequencer. Returns true if there is one match or more, or false if there is no match.
