@@ -32,7 +32,7 @@ func NewSequencer() *Sequencer {
 // AddBind creates a new key mapping.
 func (s *Sequencer) AddBind(seq keysequence.KeySequence, command string) error {
 	if s.dupes(seq) {
-		return fmt.Errorf("Can't bind: conflicting with already bound key sequence")
+		return fmt.Errorf("can't bind: conflicting with already bound key sequence")
 	}
 	s.binds = append(s.binds, Binding{Sequence: seq, Command: command})
 	return nil
@@ -52,7 +52,7 @@ func (s *Sequencer) RemoveBind(seq keysequence.KeySequence) error {
 		}
 	}
 
-	return fmt.Errorf("Can't unbind: sequence not bound")
+	return fmt.Errorf("can't unbind: sequence not bound")
 }
 
 // KeyInput feeds a keypress to the sequencer. Returns true if there is one match or more, or false if there is no match.
