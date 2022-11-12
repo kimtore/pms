@@ -1,7 +1,7 @@
 package style
 
 import (
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 )
 
 type Stylesheet map[string]tcell.Style

@@ -5,7 +5,7 @@ import (
 
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/keysequence"
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 )
 
 // Binding holds a parsed, user provided key sequence.

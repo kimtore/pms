@@ -6,7 +6,7 @@ import (
 
 	"github.com/ambientsound/pms/api"
 	"github.com/ambientsound/pms/input/lexer"
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 )
 
 // Style manipulates the style table, allowing to set colors and attributes for UI elements.

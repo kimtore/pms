@@ -1,6 +1,6 @@
 package keysequence
 
-import "github.com/gdamore/tcell"
+import "github.com/gdamore/tcell/v2"
 
 // keyNames maps special key names to their corresponding Key value in tcell.
 // Used for specifying keybindings. Always use lowercase keys.
