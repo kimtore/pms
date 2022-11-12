@@ -17,7 +17,6 @@ type Binding struct {
 // Sequencer holds all the keyboard bindings and their action mappings.
 type Sequencer struct {
 	binds []Binding
-	event *tcell.EventKey
 	input keysequence.KeySequence
 }
 
