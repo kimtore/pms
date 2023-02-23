@@ -6,7 +6,7 @@ require (
 	github.com/gdamore/tcell/v2 v2.5.3
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/stretchr/testify v1.7.1
-	golang.org/x/text v0.3.7
+	golang.org/x/text v0.3.8
 )
 
 go 1.13
