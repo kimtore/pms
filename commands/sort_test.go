@@ -7,7 +7,7 @@ import (
 	"github.com/ambientsound/pms/commands"
 	"github.com/ambientsound/pms/options"
 	"github.com/ambientsound/pms/song"
-	"github.com/fhs/gompd/mpd"
+	"github.com/fhs/gompd/v2/mpd"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -2,7 +2,7 @@ module github.com/ambientsound/pms
 
 require (
 	github.com/blevesearch/bleve/v2 v2.3.4
-	github.com/fhs/gompd v2.0.0+incompatible
+	github.com/fhs/gompd/v2 v2.3.0 // indirect
 	github.com/gdamore/tcell/v2 v2.7.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/mattn/go-runewidth v0.0.15
