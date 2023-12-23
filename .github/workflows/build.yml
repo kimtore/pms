@@ -7,7 +7,7 @@ on:
       - '**.go'
       - '.github/workflows/build.yml'
 env:
-  go_version: '1.17'
+  go_version: '1.21'
 
 jobs:
   test:
