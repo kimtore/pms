@@ -48,6 +48,7 @@ func (cmd *Print) Execute(class int, s string) error {
 				msg := ""
 				value, ok := song.StringTags[tag]
 				if ok {
+					value = strings.ReplaceAll(value, "%", "%%")
 					msg = fmt.Sprintf("%s: '%s'", tag, value)
 				} else {
 					msg = fmt.Sprintf("%s: <MISSING>", tag)
