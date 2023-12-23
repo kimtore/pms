@@ -11,6 +11,7 @@ import (
 	"github.com/ambientsound/pms/songlist"
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/utils"
+	`github.com/mattn/go-runewidth`
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/gdamore/tcell/v2/views"
@@ -36,17 +37,22 @@ func NewSonglistWidget(a api.API) (w *SonglistWidget) {
 	}
 }
 
-func (w *SonglistWidget) drawNext(x, y, strmin, strmax int, runes []rune, style tcell.Style) int {
-	strmin = utils.Min(len(runes), strmin)
-	n := 0
-	for n < strmin {
-		w.viewport.SetContent(x, y, runes[n], nil, style)
-		n++
-		x++
+// Draw characters on the (y, x) coordinates of the terminal, up to `content_width` physical width.
+// Pad the rest of the column with whitespace.
+func (w *SonglistWidget) drawNext(x, y, content_width, column_width int, runes []rune, style tcell.Style) int {
+	content_width = utils.Min(runewidth.StringWidth(string(runes)), content_width)
+	rune_index := 0
+	length_used := 0
+	for length_used < content_width {
+		w.viewport.SetContent(x, y, runes[rune_index], nil, style)
+		width := runewidth.RuneWidth(runes[rune_index])
+		length_used += width
+		x += width
+		rune_index++
 	}
-	for n < strmax {
+	for length_used < column_width {
 		w.viewport.SetContent(x, y, ' ', nil, style)
-		n++
+		length_used++
 		x++
 	}
 	return x
@@ -72,7 +78,7 @@ func (w *SonglistWidget) List() songlist.Songlist {
 }
 
 func (w *SonglistWidget) Draw() {
-	//console.Log("Draw() in songlist widget")
+	// console.Log("Draw() in songlist widget")
 	list := w.List()
 	if w.view == nil || list == nil || list.Songs() == nil {
 		console.Log("BUG: nil list, aborting draw!")
@@ -84,11 +90,11 @@ func (w *SonglistWidget) Draw() {
 		w.viewport.Resize(0, 0, -1, -1)
 		PostEventListChanged(w)
 	} else if list.Updated().Before(w.lastDraw) {
-		//console.Log("SonglistWidget::Draw(): not drawing, already drawn")
-		//return
+		// console.Log("SonglistWidget::Draw(): not drawing, already drawn")
+		// return
 	}
 
-	//console.Log("SonglistWidget::Draw()")
+	// console.Log("SonglistWidget::Draw()")
 
 	// Make sure that the viewport matches the list size.
 	w.setViewportSize()
@@ -267,7 +273,7 @@ func (w *SonglistWidget) SetColumns(tags []string) {
 	xmax, _ := w.Size()
 	w.columns = w.List().Columns(tags)
 	w.columns.Expand(xmax)
-	//console.Log("SetColumns(%v) yields %+v", tags, w.columns)
+	// console.Log("SetColumns(%v) yields %+v", tags, w.columns)
 }
 
 // ScrollViewport scrolls the viewport by delta rows, as far as possible.
