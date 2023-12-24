@@ -6,6 +6,7 @@ import (
 	"github.com/ambientsound/pms/topbar"
 	"github.com/gdamore/tcell/v2"
 	"github.com/gdamore/tcell/v2/views"
+	`github.com/mattn/go-runewidth`
 )
 
 // Pieces may be aligned to left, center or right.
@@ -79,7 +80,7 @@ func (w *Topbar) Draw() {
 func (w *Topbar) drawNext(x, y int, s string, style tcell.Style) int {
 	for _, r := range s {
 		w.view.SetContent(x, y, r, nil, style)
-		x++
+		x += runewidth.RuneWidth(r)
 	}
 	return x
 }
