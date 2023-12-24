@@ -128,7 +128,7 @@ func pieceTextWidth(piece *topbar.PieceStatement) int {
 	width := 0
 	for _, fragment := range piece.Fragments {
 		s, _ := fragment.Instance.Text()
-		width += len(s)
+		width += runewidth.StringWidth(s)
 	}
 	return width
 }
