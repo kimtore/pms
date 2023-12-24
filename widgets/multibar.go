@@ -14,6 +14,7 @@ import (
 	"github.com/ambientsound/pms/style"
 	"github.com/ambientsound/pms/tabcomplete"
 	"github.com/ambientsound/pms/utils"
+	`github.com/mattn/go-runewidth`
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/gdamore/tcell/v2/views"
@@ -181,9 +182,14 @@ func (m *MultibarWidget) RuneLen() int {
 	return len(m.runes)
 }
 
-// Cursor returns the cursor position.
+// Cursor returns the physical cursor position.
+// The `cursor` member points to the actual character index, which may be a wide character.
+// Thus, we must calculate the actual physical width of the content up to the point where the cursor is.
 func (m *MultibarWidget) Cursor() int {
-	return m.cursor
+	if m.cursor == 0 {
+		return m.cursor
+	}
+	return runewidth.StringWidth(string(m.runes[:m.cursor]))
 }
 
 // validateCursor makes sure the cursor stays within boundaries.
@@ -437,7 +443,7 @@ func (m *MultibarWidget) handleTextInputEvent(ev *tcell.EventKey) bool {
 
 // handleNormalEvent is called when an input event is received during command mode.
 func (m *MultibarWidget) handleNormalEvent(ev *tcell.EventKey) bool {
-	//console.Log("Input event in command mode: %s %s", ke.Key, string(ke.Rune))
+	// console.Log("Input event in command mode: %s %s", ke.Key, string(ke.Rune))
 	m.events <- ev
 	return true
 }
