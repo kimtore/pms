@@ -5,9 +5,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/blevesearch/bleve/v2"
+
 	"github.com/ambientsound/pms/console"
 	"github.com/ambientsound/pms/index"
-	"github.com/blevesearch/bleve/v2"
 )
 
 // Library is a Songlist which represents the MPD song library.
@@ -21,6 +22,7 @@ type Library struct {
 func NewLibrary() (s *Library) {
 	s = &Library{
 		shutdownReIndex: make(chan int, 1),
+		version:         -1,
 	}
 	s.clear()
 	return
