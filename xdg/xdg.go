@@ -6,18 +6,25 @@ package xdg
 
 import (
 	"os"
-	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 )
 
 // appendPmsDirectory adds "pms" to a directory tree.
 func appendPmsDirectory(dir string) string {
-	return path.Join(dir, "pms")
+	return filepath.Join(dir, "pms")
 }
 
 // ConfigDirectories returns a list of configuration directories. The least
 // important directory is listed first.
 func ConfigDirectories() []string {
+	if runtime.GOOS == "windows" {
+		if dir, err := os.UserConfigDir(); err == nil {
+			return []string{appendPmsDirectory(dir)}
+		}
+	}
+
 	dirs := make([]string, 0)
 
 	// $XDG_CONFIG_DIRS defines the preference-ordered set of base directories
@@ -30,7 +37,7 @@ func ConfigDirectories() []string {
 	}
 
 	// Add entries from $XDG_CONFIG_DIRS to directory list.
-	configDirs := strings.Split(xdgConfigDirs, ":")
+	configDirs := strings.Split(xdgConfigDirs, string(os.PathListSeparator))
 	for i := len(configDirs) - 1; i >= 0; i-- {
 		if len(configDirs[i]) > 0 {
 			dir := appendPmsDirectory(configDirs[i])
@@ -43,7 +50,7 @@ func ConfigDirectories() []string {
 	// either not set or empty, a default equal to $HOME/.config should be used.
 	xdgConfigHome := os.Getenv("XDG_CONFIG_HOME")
 	if len(xdgConfigHome) == 0 {
-		xdgConfigHome = path.Join(os.Getenv("HOME"), ".config")
+		xdgConfigHome = filepath.Join(os.Getenv("HOME"), ".config")
 	}
 	dir := appendPmsDirectory(xdgConfigHome)
 
@@ -60,8 +67,8 @@ func CacheDirectory() string {
 	// either not set or empty, a default equal to $HOME/.cache should be used.
 	xdgCacheHome := os.Getenv("XDG_CACHE_HOME")
 	if len(xdgCacheHome) == 0 {
-		xdgCacheHome = path.Join(os.Getenv("HOME"), ".cache")
+		xdgCacheHome = filepath.Join(os.Getenv("HOME"), ".cache")
 	}
 
-	return path.Join(xdgCacheHome, "pms")
+	return filepath.Join(xdgCacheHome, "pms")
 }
