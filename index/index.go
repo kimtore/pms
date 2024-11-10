@@ -3,7 +3,7 @@ package index
 import (
 	"bufio"
 	"os"
-	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/ambientsound/pms/console"
@@ -49,8 +49,8 @@ func New(basePath string) (*Index, error) {
 
 	i := &Index{}
 	i.path = basePath
-	i.indexPath = path.Join(i.path, "index")
-	i.statePath = path.Join(i.path, "state")
+	i.indexPath = filepath.Join(i.path, "index")
+	i.statePath = filepath.Join(i.path, "state")
 
 	// Try to stat the Bleve index path. If it does not exist, create it.
 	if _, err := os.Stat(i.indexPath); err != nil {
@@ -123,7 +123,7 @@ func open(path string) (bleve.Index, error) {
 // server should be stored.
 func Path(host, port string) string {
 	cacheDir := xdg.CacheDirectory()
-	return path.Join(cacheDir, host, port)
+	return filepath.Join(cacheDir, host, port)
 }
 
 // SetVersion writes the MPD library version to the state file.

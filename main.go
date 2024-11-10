@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/ambientsound/pms/console"
@@ -110,7 +110,7 @@ func main() {
 	// Source configuration files from all XDG standard directories.
 	configDirs := xdg.ConfigDirectories()
 	for _, dir := range configDirs {
-		path := path.Join(dir, "pms.conf")
+		path := filepath.Join(dir, "pms.conf")
 		p.Message("Reading configuration file '%s'.", path)
 		err = p.SourceConfigFile(path)
 		if err != nil {
