@@ -2,7 +2,10 @@ VERSION := $(shell git describe --always --long --dirty)
 DATE := $(shell date +%s)
 LDFLAGS := -ldflags="-X main.buildVersion=${VERSION}"
 
-.PHONY: pms test linux-amd64 linux-arm64 linux-arm darwin-amd64 darwin-arm64 windows-amd64.exe
+.PHONY: install pms test linux-amd64 linux-arm64 linux-arm darwin-amd64 darwin-arm64 windows-amd64.exe
+
+install: pms
+	sh ./install.sh
 
 pms:
 	go build ${LDFLAGS} -o build/pms main.go
