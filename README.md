@@ -49,6 +49,13 @@ make install
 ```
 
 This will put the binary in `$GOBIN/pms`, usually at `~/go/bin/pms`.
+
+If you prefer to link the binary instead of copying it, set the `INSTALL_TYPE` environment variable to `link`:
+
+```sh
+INSTALL_TYPE=link make install
+```
+
 You need to run PMS in a regular terminal with a TTY.
 
 If PMS crashes, and you want to report a bug, please include the debug log:
